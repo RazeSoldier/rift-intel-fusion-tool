@@ -240,6 +240,11 @@ object WhatsNew {
                 - Tabs, like map regions, can now be closed with the middle mouse button
                 - Added additional protection against settings corruption in case of power loss
             """.trimIndent(),
+            "4.7.0" description """
+                - Added parsing "clr du" as an intel clear message
+                - Added wrapping implants in the Characters window into multiple lines when there is not enough space to show all on one line
+                - Added ellipsis when a context menu entry is too long to fit
+            """.trimIndent(),
         ).reversed()
     }
 }
