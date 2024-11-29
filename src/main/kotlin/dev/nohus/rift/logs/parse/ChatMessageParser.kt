@@ -180,12 +180,12 @@ class ChatMessageParser(
 
     /**
      * @param message Chat message to parse
-     * @param regionHint Region the intel channel this message is from is for
+     * @param regionsHint Regions the intel channel this message is from is for
      * @return All possible tokenizations of the message
      */
     suspend fun parse(
         message: String,
-        regionHint: String,
+        regionsHint: List<String>,
     ): Set<List<Token>> = coroutineScope {
         var replaced = message
             .replace("* ", "  ") // Links sometimes end with *. Replace with a space, so they get detected as links.
@@ -234,7 +234,7 @@ class ChatMessageParser(
                 // A token cannot contain a space except at the end
                 if (token.any { it.isBlank() }) break
 
-                val types = getPossibleTokenTypes(token, characterNamesStatus, regionHint)
+                val types = getPossibleTokenTypes(token, characterNamesStatus, regionsHint)
                 val newToken = Token(token, types = types)
                 var tokens = parsing.tokens + newToken
                 val isAtEnd = wordsToConsume == parsing.remainingWords.size
@@ -258,7 +258,7 @@ class ChatMessageParser(
         completeParsings
             .asSequence()
             .map(::filterCharactersUntilDone)
-            .map { filterMultiTypes(it, regionHint) }
+            .map { filterMultiTypes(it, regionsHint) }
             .map(::mergePlainTextTokens)
             .toSet()
     }
@@ -490,7 +490,7 @@ class ChatMessageParser(
         }
     }
 
-    private fun filterMultiTypes(parsing: List<Token>, regionHint: String): List<Token> {
+    private fun filterMultiTypes(parsing: List<Token>, regionsHint: List<String>): List<Token> {
         // TODO: We could expose tokens with a single type instead of list of types after this
         return buildList {
             for (token in parsing) {
@@ -508,7 +508,7 @@ class ChatMessageParser(
                 if (token.types.any { it is System } && token.types.any { it is Player }) {
                     // Token is both a system and a player
                     val inRegionSystem = token.types.filterIsInstance<System>()
-                        .firstOrNull { solarSystemsRepository.getRegionBySystem(it.name) == regionHint }
+                        .firstOrNull { solarSystemsRepository.getRegionBySystem(it.name) in regionsHint }
                     if (inRegionSystem != null) {
                         // If the system is in this region, choose the system
                         add(token.copy(types = listOf(inRegionSystem)))
@@ -545,7 +545,7 @@ class ChatMessageParser(
     private fun getPossibleTokenTypes(
         words: List<String>,
         characterNamesStatus: Map<String, CharacterState>,
-        regionHint: String,
+        regionsHint: List<String>,
     ): List<TokenType> {
         val text = words.joinToString(" ")
         return buildList {
@@ -554,7 +554,7 @@ class ChatMessageParser(
                 return@buildList
             }
 
-            val systemName = solarSystemsRepository.getSystemName(text, regionHint)
+            val systemName = solarSystemsRepository.getSystemName(text, regionsHint)
             if (systemName != null) add(System(systemName))
 
             val shipText = text

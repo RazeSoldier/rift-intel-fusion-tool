@@ -219,4 +219,8 @@ class Settings(
     var dismissedWarnings: List<String>
         get() = model.dismissedWarnings
         set(value) = update { copy(dismissedWarnings = value) }
+
+    var uiScale: Float
+        get() = model.uiScale
+        set(value) = update { copy(uiScale = value) }
 }

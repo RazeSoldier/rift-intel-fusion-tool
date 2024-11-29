@@ -89,15 +89,15 @@ class ChatLogWatcher(
                     }
 
                     if (isMessageRelevantForIntel(channelChatMessage)) {
-                        val region = getIntelRegion(channelChatMessage)
-                        if (region != null) {
+                        val regions = getIntelRegions(channelChatMessage)
+                        if (regions.isNotEmpty()) {
                             try {
-                                val parsings = chatMessageParser.parse(channelChatMessage.chatMessage.message, region)
+                                val parsings = chatMessageParser.parse(channelChatMessage.chatMessage.message, regions)
                                 if (parsings.isNotEmpty()) {
                                     val bestParsing = chooseChatMessageTokenizationUseCase(parsings)
                                     val parsed = ParsedChannelChatMessage(
                                         chatMessage = channelChatMessage.chatMessage,
-                                        channelRegion = region,
+                                        channelRegions = regions,
                                         metadata = channelChatMessage.metadata,
                                         parsed = bestParsing,
                                     )
@@ -109,7 +109,7 @@ class ChatLogWatcher(
                                     }
                                 }
                             } catch (e: Exception) {
-                                Sentry.captureException(IOException("Could not parse: \"${channelChatMessage.chatMessage.message}\", region: \"$region\"", e))
+                                Sentry.captureException(IOException("Could not parse: \"${channelChatMessage.chatMessage.message}\", regions: \"$regions\"", e))
                             }
                         }
                     }
@@ -165,7 +165,7 @@ class ChatLogWatcher(
         return channelName in settings.intelChannels.map { it.name }
     }
 
-    private fun getIntelRegion(message: ChannelChatMessage): String? {
-        return settings.intelChannels.firstOrNull { it.name == message.metadata.channelName }?.region
+    private fun getIntelRegions(message: ChannelChatMessage): List<String> {
+        return settings.intelChannels.filter { it.name == message.metadata.channelName }.map { it.region }
     }
 }

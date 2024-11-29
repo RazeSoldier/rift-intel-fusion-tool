@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.about.GetPatronsUseCase.Patron
@@ -73,7 +72,7 @@ fun SplashWindow(
         ),
         title = "RIFT Intel Fusion Tool",
         icon = painterResource(Res.drawable.window_rift_64),
-        decoration = WindowDecoration.Undecorated(),
+        undecorated = true,
         resizable = false,
         alwaysOnTop = true,
     ) {

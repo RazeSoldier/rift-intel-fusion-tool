@@ -122,7 +122,7 @@ private fun FiltersRow(
         val allChannelsOption = "All channels"
         RiftDropdownWithLabel(
             label = "Filter:",
-            items = listOf(allChannelsOption) + state.intelChannels.map { it.name },
+            items = listOf(allChannelsOption) + state.intelChannels.map { it.name }.toSet(),
             selectedItem = state.filteredChannel?.name ?: allChannelsOption,
             onItemSelected = onIntelChannelFilterSelect,
             getItemName = { it },

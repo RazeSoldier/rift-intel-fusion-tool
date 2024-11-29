@@ -6,7 +6,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 
 data class ParsedChannelChatMessage(
     val chatMessage: ChatMessage,
-    val channelRegion: String,
+    val channelRegions: List<String>,
     val metadata: ChatLogFileMetadata,
     val parsed: List<Token>,
 )

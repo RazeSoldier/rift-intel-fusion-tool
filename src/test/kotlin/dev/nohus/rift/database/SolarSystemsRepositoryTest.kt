@@ -16,43 +16,46 @@ class SolarSystemsRepositoryTest : FreeSpec({
     )
 
     listOf(
-        Triple("Jita", null, "Jita"),
-        Triple("Jita", "Delve", "Jita"),
-        Triple("jita", null, "Jita"),
-        Triple("1DQ1-A", null, "1DQ1-A"),
-        Triple("1dq", null, "1DQ1-A"),
-        Triple("1DQ", null, "1DQ1-A"),
-        Triple("1dq1", null, "1DQ1-A"),
-        Triple("1dQ1-a", null, "1DQ1-A"),
-        Triple("invalid", null, null),
-        Triple("", null, null),
-        Triple("RP", null, null),
-        Triple("rp", null, null),
-        Triple("1dq1-", null, null),
-        Triple("Jita ", null, null),
-        Triple(" Jita", null, null),
-        Triple("40-239", null, "4O-239"),
-        Triple("O-3VW8", null, "0-3VW8"),
-        Triple("4O-", "Outer Passage", "4O-ZRI"),
-        Triple("4O-", "Delve", "4O-239"),
-        Triple("4O-", "Period Basis", null),
-        Triple("4O-", null, null),
-        Triple("40-", "Outer Passage", "4O-ZRI"),
-        Triple("40-", "Delve", "4O-239"),
-        Triple("40-", "Period Basis", null),
-        Triple("40-", null, null),
-        Triple("1B", "Delve", "1B-VKF"),
-        Triple("1B", "Tenal", "1BWK-S"),
-        Triple("1B", null, null),
-        Triple("1d", null, null),
-        Triple("1D", null, null),
-        Triple("1d", "Delve", null),
-        Triple("1D", "Delve", null),
-        Triple("1d", "Paragon Soul", "1DDR-X"),
-        Triple("1D", "Paragon Soul", "1DDR-X"),
-    ).forEach { (input, regionHint, expected) ->
-        "for input \"$input\" with region hint \"$regionHint\" getSystem() returns \"$expected\"" {
-            val actual = target.getSystemName(input, regionHint)
+        Triple("Jita", emptyList(), "Jita"),
+        Triple("Jita", listOf("Delve"), "Jita"),
+        Triple("jita", emptyList(), "Jita"),
+        Triple("1DQ1-A", emptyList(), "1DQ1-A"),
+        Triple("1dq", emptyList(), "1DQ1-A"),
+        Triple("1DQ", emptyList(), "1DQ1-A"),
+        Triple("1dq1", emptyList(), "1DQ1-A"),
+        Triple("1dQ1-a", emptyList(), "1DQ1-A"),
+        Triple("invalid", emptyList(), null),
+        Triple("", emptyList(), null),
+        Triple("RP", emptyList(), null),
+        Triple("rp", emptyList(), null),
+        Triple("1dq1-", emptyList(), null),
+        Triple("Jita ", emptyList(), null),
+        Triple(" Jita", emptyList(), null),
+        Triple("40-239", emptyList(), "4O-239"),
+        Triple("O-3VW8", emptyList(), "0-3VW8"),
+        Triple("4O-", listOf("Outer Passage"), "4O-ZRI"),
+        Triple("4O-", listOf("Delve"), "4O-239"),
+        Triple("4O-", listOf("Period Basis"), null),
+        Triple("4O-", emptyList(), null),
+        Triple("40-", listOf("Outer Passage"), "4O-ZRI"),
+        Triple("40-", listOf("Delve"), "4O-239"),
+        Triple("40-", listOf("Period Basis"), null),
+        Triple("40-", emptyList(), null),
+        Triple("1B", listOf("Delve"), "1B-VKF"),
+        Triple("1B", listOf("Tenal"), "1BWK-S"),
+        Triple("1B", listOf("Delve", "Tenal"), null),
+        Triple("1B", listOf("Tenal", "Delve"), null),
+        Triple("1B", emptyList(), null),
+        Triple("1d", listOf("Delve"), null),
+        Triple("1D", emptyList(), null),
+        Triple("1d", listOf("Delve"), null),
+        Triple("1D", listOf("Delve"), null),
+        Triple("1d", listOf("Paragon Soul"), "1DDR-X"),
+        Triple("1D", listOf("Paragon Soul"), "1DDR-X"),
+        Triple("1D", listOf("Paragon Soul", "Tenal"), "1DDR-X"),
+    ).forEach { (input, regionsHint, expected) ->
+        "for input \"$input\" with region hint \"$regionsHint\" getSystem() returns \"$expected\"" {
+            val actual = target.getSystemName(input, regionsHint)
             actual shouldBe expected
         }
     }
@@ -66,7 +69,7 @@ class SolarSystemsRepositoryTest : FreeSpec({
         Triple("AND", listOf(), null),
     ).forEach { (input, systemHints, expected) ->
         "for input \"$input\" with system hints \"$systemHints\" getSystem() returns \"$expected\"" {
-            val actual = target.getSystemName(input, null, systemHints)
+            val actual = target.getSystemName(input, emptyList(), systemHints)
             actual shouldBe expected
         }
     }

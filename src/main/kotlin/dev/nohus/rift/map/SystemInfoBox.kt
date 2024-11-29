@@ -71,8 +71,12 @@ import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.network.esi.SovereigntySystem
 import dev.nohus.rift.repositories.MapStatusRepository.SolarSystemStatus
 import dev.nohus.rift.repositories.NamesRepository
+import dev.nohus.rift.repositories.RatsRepository.RatType
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
+import dev.nohus.rift.standings.Standing
+import dev.nohus.rift.standings.StandingsRepository
+import dev.nohus.rift.standings.getSystemColor
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
 import org.jetbrains.compose.resources.DrawableResource
@@ -116,7 +120,9 @@ fun SystemInfoBox(
                     modifier = Modifier.width(IntrinsicSize.Max),
                 ) {
                     val intelGroups = if (intelInPopup != null) groupIntelByTime(intelInPopup) else null
-                    Row {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         val isShowingSecurity = (isExpanded && MapSystemInfoType.Security in infoTypes) || (!isExpanded && MapSystemInfoType.Security in indicatorsInfoTypes)
                         val securityColor = SecurityColors[system.security]
                         val systemNameText = buildAnnotatedString {
@@ -136,6 +142,11 @@ fun SystemInfoBox(
                             text = systemNameText,
                             style = style,
                         )
+
+                        val isShowingStandings = (isExpanded && MapSystemInfoType.Standings in infoTypes) || (!isExpanded && MapSystemInfoType.Standings in indicatorsInfoTypes)
+                        if (isShowingStandings) {
+                            StandingsIndicator(system.security, systemStatus)
+                        }
                     }
 
                     if (regionName != null) {
@@ -192,6 +203,9 @@ fun SystemInfoBox(
     }
 }
 
+/**
+ * These show when the system info box is expanded
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ColumnScope.SystemInfoTypes(
@@ -201,6 +215,7 @@ private fun ColumnScope.SystemInfoTypes(
 ) {
     val namesRepository: NamesRepository = koin.get()
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
         infoTypes.distinct()
@@ -256,6 +271,8 @@ private fun ColumnScope.SystemInfoTypes(
                         InfoTypeIndicator("$colonies".takeIf { colonies != null }, Res.drawable.indicator_colony, "Colonies: $colonies")
                     }
                     MapSystemInfoType.Clones -> {} // In column
+                    MapSystemInfoType.Standings -> {} // In system name row
+                    MapSystemInfoType.RatsType -> {} // In column
                 }
             }
     }
@@ -356,10 +373,32 @@ private fun ColumnScope.SystemInfoTypes(
                         ClonesIndicators(clones, true)
                     }
                 }
+                MapSystemInfoType.Standings -> {} // In system name row
+                MapSystemInfoType.RatsType -> {
+                    val text = when (systemStatus?.ratType) {
+                        RatType.BloodRaiders -> "Blood Raiders"
+                        RatType.Guristas -> "Guristas"
+                        RatType.SanshasNation -> "Sansha's Nation"
+                        RatType.Serpentis -> "Serpentis"
+                        RatType.AngelCartel -> "Angel Cartel"
+                        RatType.RogueDrones -> "Rogue Drones"
+                        RatType.TriglavianCollective -> "Triglavians"
+                        null -> null
+                    }
+                    if (text != null) {
+                        Text(
+                            text = "Rats: $text",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                    }
+                }
             }
         }
 }
 
+/**
+ * These show when the system info box is collapsed
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SystemInfoTypesIndicators(
@@ -458,8 +497,42 @@ private fun SystemInfoTypesIndicators(
                         ClonesIndicators(clones, false)
                     }
                 }
+                MapSystemInfoType.Standings -> {} // In system name row
+                MapSystemInfoType.RatsType -> {}
             }
         }
+}
+
+@Composable
+private fun StandingsIndicator(security: Double, systemStatus: SolarSystemStatus?) {
+    val standingsRepository: StandingsRepository = koin.get()
+    val allianceId = systemStatus?.sovereignty?.allianceId
+    val standing = standingsRepository.getStanding(allianceId, null, null)
+    val (tooltip, color) = if (security >= 0.5) {
+        "High sec" to Color(0xFF71E754)
+    } else if (security > 0.0) {
+        "Low sec" to Color(0xFFF5FF83)
+    } else if (allianceId == null) {
+        "No sovereignty" to Color(0xFF7D7E7E)
+    } else {
+        when (standing) {
+            Standing.Terrible -> "Terrible standing" to standing.getSystemColor()
+            Standing.Bad -> "Bad standing" to standing.getSystemColor()
+            Standing.Neutral -> "Neutral standing" to standing.getSystemColor()
+            Standing.Good -> "Good standing" to standing.getSystemColor()
+            Standing.Excellent -> "Excellent standing" to standing.getSystemColor()
+        }
+    }
+
+    RiftTooltipArea(text = tooltip) {
+        Box(
+            modifier = Modifier
+                .padding(bottom = 0.5.dp, start = 2.dp)
+                .clip(CircleShape)
+                .background(color)
+                .size(8.dp),
+        )
+    }
 }
 
 @Composable
