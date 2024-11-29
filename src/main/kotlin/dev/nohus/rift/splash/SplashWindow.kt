@@ -94,12 +94,19 @@ private fun SplashWindowContent(state: UiState) {
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
         )
+        val isDarkBackground = true
         Column {
+            Spacer(Modifier.weight(1f))
+            val shadeColor = if (isDarkBackground) {
+                Color.White.copy(alpha = 0.15f)
+            } else {
+                Color.Black.copy(alpha = 0.75f)
+            }
             Column(
                 modifier = Modifier
-                    .padding(top = Spacing.large)
+                    .padding(vertical = Spacing.large)
                     .clip(RoundedCornerShape(topEndPercent = 100, bottomEndPercent = 100))
-                    .background(Color.Black.copy(alpha = 0.75f))
+                    .background(shadeColor)
                     .padding(vertical = Spacing.large)
                     .padding(start = Spacing.large, end = 32.dp),
             ) {
@@ -109,9 +116,9 @@ private fun SplashWindowContent(state: UiState) {
                     style = RiftTheme.typography.headlinePrimary.copy(color = Color.White),
                 )
             }
-            Spacer(Modifier.weight(1f))
+
             if (state.patrons.isNotEmpty()) {
-                Patrons(state.patrons)
+                Patrons(isDarkBackground, state.patrons)
             }
         }
     }
@@ -168,15 +175,21 @@ fun RiftAppName() {
 
 @Composable
 private fun Patrons(
+    isDarkBackground: Boolean,
     patrons: List<Patron>,
 ) {
     var isVisible by remember { mutableStateOf(false) }
     AnimatedVisibility(visible = isVisible, enter = fadeIn(tween(delayMillis = 500))) {
+        val shadeColor = if (isDarkBackground) {
+            Color.White.copy(alpha = 0.15f)
+        } else {
+            Color.Black.copy(alpha = 0.5f)
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .background(Color.Black.copy(alpha = 0.5f))
+                .background(shadeColor)
                 .fillMaxWidth()
                 .heightIn(min = 32.dp)
                 .padding(start = Spacing.large)
@@ -187,9 +200,10 @@ private fun Patrons(
                 style = RiftTheme.typography.headlineHighlighted.copy(fontWeight = FontWeight.Bold),
             )
 
+            val shuffledPatrons = remember(patrons) { patrons.shuffled() }
             Layout(
                 content = {
-                    patrons.forEach {
+                    shuffledPatrons.forEach {
                         Patron(it)
                     }
                 },

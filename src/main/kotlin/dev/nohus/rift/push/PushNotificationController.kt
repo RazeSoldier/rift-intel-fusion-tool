@@ -83,7 +83,7 @@ class PushNotificationController(
                     message = message,
                 ),
             ).also {
-                if (it.success?.status != 1) {
+                if (it.success?.status == 1) {
                     logger.info { "Sent Pushover notification" }
                 } else {
                     logger.error { "Failed sending Pushover notification: $it" }
