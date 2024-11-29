@@ -9,6 +9,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPlacement.Maximized
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import dev.nohus.rift.Event
@@ -294,6 +295,7 @@ class WindowManager(
         val scale = uiScaleController.uiScale
         states.value
             .filter { (_, state) -> state.window !in nonSavedWindows }
+            .filter { (_, state) -> state.windowState.placement != Maximized }
             .forEach { (window, state) ->
                 settings.windowPlacements += window to WindowPlacement(
                     position = state.windowState.position.let { Pos(it.x.value.toInt(), it.y.value.toInt()) },

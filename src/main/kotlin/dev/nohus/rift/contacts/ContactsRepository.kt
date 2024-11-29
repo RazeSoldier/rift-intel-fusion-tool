@@ -285,8 +285,10 @@ class ContactsRepository(
         val ownerIds = allianceContactsList.keys + corporationContactsList.keys + characterContactsList.keys
         val contactIds = (allianceContactsList.values + corporationContactsList.values + characterContactsList.values)
             .flatMap { it.map { it.contactId } }
-        val names = esiApi.postUniverseNames((ownerIds + contactIds).distinct()).success
-            ?.associate { it.id to it.name } ?: return@coroutineScope null
+        val names = (ownerIds + contactIds).distinct().chunked(1000).flatMap { ids ->
+            esiApi.postUniverseNames(ids).success
+                ?.map { it.id to it.name } ?: return@coroutineScope null
+        }.toMap()
 
         // Await labels
         val allianceLabels = allianceContactsLabelsDeferred.awaitAll().associate { (allianceId, result) ->

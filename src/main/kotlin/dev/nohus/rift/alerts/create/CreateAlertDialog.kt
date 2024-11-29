@@ -72,6 +72,7 @@ import dev.nohus.rift.generated.resources.play
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.get
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
+import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.sound.SoundPlayer
 import dev.nohus.rift.utils.viewModel
@@ -294,7 +295,9 @@ private fun FormQuestion(
                 ) {
                     var min: Int by remember { mutableStateOf(0) }
                     var max: Int by remember { mutableStateOf(0) }
-                    val itemNames = listOf("Same system", "1 jump", "2 jumps", "3 jumps", "4 jumps", "5 jumps")
+
+                    fun getItemName(jumps: Int) = if (jumps == 0) "Same system" else "$jumps jump${jumps.plural}"
+
                     LaunchedEffect(formQuestion) {
                         onFormAnswer(JumpsRangeAnswer(minJumps = min, maxJumps = max))
                     }
@@ -302,30 +305,31 @@ private fun FormQuestion(
                         text = "From: ",
                         style = RiftTheme.typography.titlePrimary,
                     )
+                    val maxJumps = 16 // 0 - 15
                     RiftDropdown(
-                        items = List(6) { it },
+                        items = List(maxJumps) { it },
                         selectedItem = min,
                         onItemSelected = {
                             min = it
                             if (max < min) max = min
                             onFormAnswer(JumpsRangeAnswer(minJumps = min, maxJumps = max))
                         },
-                        getItemName = { itemNames[it] },
-                        maxItems = 3,
+                        getItemName = { getItemName(it) },
+                        maxItems = 5,
                     )
                     Text(
                         text = " To: ",
                         style = RiftTheme.typography.titlePrimary,
                     )
                     RiftDropdown(
-                        items = List(6 - min) { min + it },
+                        items = List(maxJumps - min) { min + it },
                         selectedItem = max,
                         onItemSelected = {
                             max = it
                             onFormAnswer(JumpsRangeAnswer(minJumps = min, maxJumps = max))
                         },
-                        getItemName = { itemNames[it] },
-                        maxItems = 3,
+                        getItemName = { getItemName(it) },
+                        maxItems = 5,
                     )
                 }
             }

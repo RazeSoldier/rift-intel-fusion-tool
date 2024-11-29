@@ -98,6 +98,7 @@ data class IntelMap(
     val isJumpBridgeNetworkShown: Boolean = true,
     val jumpBridgeNetworkOpacity: Int = 100,
     val openedRegionId: Int? = null,
+    val isAlwaysShowingSystems: Boolean = false,
 )
 
 @Serializable

@@ -65,6 +65,7 @@ fun MapSettingsWindow(
             onIsUsingCompactModeChange = viewModel::onIsUsingCompactModeChange,
             onIsCharacterFollowingChange = viewModel::onIsCharacterFollowingChange,
             onIsScrollZoomInvertedChange = viewModel::onIsScrollZoomInvertedChange,
+            onIsAlwaysShowingSystemsChange = viewModel::onIsAlwaysShowingSystemsChange,
             onIsUsingRiftAutopilotRouteChange = viewModel::onIsUsingRiftAutopilotRouteChange,
             onIsJumpBridgeNetworkShownChange = viewModel::onIsJumpBridgeNetworkShownChange,
             onJumpBridgeNetworkOpacityChange = viewModel::onJumpBridgeNetworkOpacityChange,
@@ -126,6 +127,7 @@ private fun MapSettingsWindowContent(
     onIsUsingCompactModeChange: (Boolean) -> Unit,
     onIsCharacterFollowingChange: (Boolean) -> Unit,
     onIsScrollZoomInvertedChange: (Boolean) -> Unit,
+    onIsAlwaysShowingSystemsChange: (Boolean) -> Unit,
     onIsUsingRiftAutopilotRouteChange: (Boolean) -> Unit,
     onIsJumpBridgeNetworkShownChange: (Boolean) -> Unit,
     onJumpBridgeNetworkOpacityChange: (Int) -> Unit,
@@ -154,6 +156,12 @@ private fun MapSettingsWindowContent(
                 tooltip = "Zoom direction will be reversed",
                 isChecked = intelMap.isInvertZoom,
                 onCheckedChange = { onIsScrollZoomInvertedChange(it) },
+            )
+            RiftCheckboxWithLabel(
+                label = "Always show system labels",
+                tooltip = "System labels won't hide when zooming out",
+                isChecked = intelMap.isAlwaysShowingSystems,
+                onCheckedChange = { onIsAlwaysShowingSystemsChange(it) },
             )
             Text(
                 text = buildAnnotatedString {
@@ -370,6 +378,7 @@ private fun MapSettingsWindowContent(
         SectionTitle("Intel visibility", Modifier.padding(vertical = Spacing.medium))
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
             val timeoutItems = mapOf(
+                "Don't show" to 0,
                 "10 seconds" to 10,
                 "30 seconds" to 30,
                 "1 minute" to 60,
