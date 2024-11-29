@@ -236,6 +236,10 @@ object WhatsNew {
                 - Added support for intel channels spanning multiple regions. Add the same channel multiple times with each region it's for.
                 - Added a UI scale setting, enabling you to make everything in RIFT bigger or smaller.
             """.trimIndent(),
+            "4.6.0" description """
+                - Tabs, like map regions, can now be closed with the middle mouse button
+                - Added additional protection against settings corruption in case of power loss
+            """.trimIndent(),
         ).reversed()
     }
 }

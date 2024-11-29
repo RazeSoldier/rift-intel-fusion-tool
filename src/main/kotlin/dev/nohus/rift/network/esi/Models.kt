@@ -94,7 +94,7 @@ data class Contact(
     @SerialName("contact_type")
     val contactType: ContactType,
     @SerialName("label_ids")
-    val labelIds: List<Int>? = emptyList(),
+    val labelIds: List<Long>? = emptyList(),
     @SerialName("standing")
     val standing: Float,
 )

@@ -237,6 +237,7 @@ private fun TabBarTab(
                 .widthIn(min = 30.dp)
                 .pointerInteraction(pointerInteractionStateHolder)
                 .pointerHoverIcon(PointerIcon(Cursors.pointerDropdown))
+                .onClick(MouseButton.Middle) { if (tab.isCloseable) onTabClosed(tab.id) }
                 .onClick { onTabSelected(tab.id) },
         ) {
             val effectiveTextColor = if (isSelected) {
