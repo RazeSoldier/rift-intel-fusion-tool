@@ -104,7 +104,7 @@ class ParsePingUseCase(
         val splitRegex = """[\s/]""".toRegex()
         return if (splitRegex in text) { // Multiple systems
             val locations = text.split(splitRegex).filterNot {
-                it.lowercase() in listOf("and", "or", "-")
+                it.trim().lowercase() in listOf("", "and", "or", "-")
             }.map(::parseFormupLocation)
             // Merge consecutive text formup locations
             return mutableListOf<FormupLocation>().apply {

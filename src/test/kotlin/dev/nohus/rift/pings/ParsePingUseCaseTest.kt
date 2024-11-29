@@ -39,6 +39,8 @@ class ParsePingUseCaseTest : FreeSpec({
     every { mockSolarSystemsRepository.getSystemName("1DQ1-A", emptyList()) } returns "1DQ1-A"
     every { mockSolarSystemsRepository.getSystemName("U-Q", emptyList()) } returns null
     every { mockSolarSystemsRepository.getSystemName("U-Q", emptyList(), listOf(30000629)) } returns "U-QMOA"
+    every { mockSolarSystemsRepository.getSystemName("49-U", emptyList(), listOf(30000629)) } returns "49-U6U"
+    every { mockSolarSystemsRepository.getSystemName("4-07", emptyList(), listOf(30000629)) } returns "4-07MU"
     every { mockStandingsRepository.getFriendlyAllianceIds() } returns setOf(1)
     every { mockMapStatusRepository.status } returns mockk {
         every { value } returns mapOf(
@@ -237,6 +239,26 @@ class ParsePingUseCaseTest : FreeSpec({
             doctrine = Doctrine("None - This is a theory class", null),
             broadcastSource = "bigbee_pings",
             target = "gooniversity",
+        ),
+        """
+            Fleet up on Asher
+            
+            FC: Asher Elias
+            Formup Location: 49-U / 4-07
+            
+            ~~~ This was a broadcast from asher_elias to discord at 2024-01-31 00:17:02.533642 EVE ~~~
+        """.trimIndent() to PingModel.FleetPing(
+            timestamp = timestamp,
+            sourceText = "",
+            description = "Fleet up on Asher",
+            fleetCommander = FleetCommander("Asher Elias", 4),
+            fleet = null,
+            formupLocations = listOf(FormupLocation.System("49-U6U"), FormupLocation.System("4-07MU")),
+            papType = null,
+            comms = null,
+            doctrine = null,
+            broadcastSource = null,
+            target = "discord",
         ),
     ).forEachIndexed { index, (text, expected) ->
         "ping $index is parsed correctly" {

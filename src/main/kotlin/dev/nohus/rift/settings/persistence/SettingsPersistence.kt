@@ -71,8 +71,12 @@ class SettingsPersistence(
                 val temp = configFile.parent.resolve("settings-${Instant.now().toEpochMilli()}.tmp")
                 temp.writeText(serialized)
                 val readBack = temp.readText()
-                json.decodeFromString<SettingsModel>(readBack)
-                temp.moveTo(configFile, overwrite = true)
+                val readBackModel = json.decodeFromString<SettingsModel>(readBack)
+                if (readBackModel == model) {
+                    temp.moveTo(configFile, overwrite = true)
+                } else {
+                    logger.error { "Could not write settings, reading back validation failed to return the same model" }
+                }
             } catch (e: SerializationException) {
                 logger.error { "Could not write settings, reading back validation failed to deserialize: $e" }
             } catch (e: FileSystemException) {
