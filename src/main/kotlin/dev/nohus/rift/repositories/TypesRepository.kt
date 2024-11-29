@@ -42,6 +42,10 @@ class TypesRepository(
         typeIds = rows.associate { it[Types.typeName] to it[Types.typeId] }
     }
 
+    fun getAllTypeNames(): List<String> {
+        return types.values.map { it.name }
+    }
+
     fun getTypeId(name: String): Int? {
         return typeIds[name]
     }

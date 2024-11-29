@@ -18,11 +18,11 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
-import dev.nohus.rift.repositories.CharactersRepository
-import dev.nohus.rift.repositories.CharactersRepository.CharacterState
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.WordsRepository
+import dev.nohus.rift.repositories.character.CharacterStatus
+import dev.nohus.rift.repositories.character.CharactersRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -55,6 +55,7 @@ class ChatMessageParserTest : FreeSpec({
     every { mockShipTypesRepository.getShip(any()) } returns null
     coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns emptyMap()
     every { mockWordsRepository.isWord(any()) } returns false
+    every { mockWordsRepository.isTypeName(any()) } returns false
 
     "system link, player link, player" {
         every { mockSolarSystemsRepository.getSystemName("D-W7F0", listOf("Delve")) } returns "D-W7F0"
@@ -450,7 +451,7 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "character-like plain text" {
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("was", "the blues").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("was", "the blues").existing(CharacterStatus.Inactive(0))
         every { mockWordsRepository.isWord("was") } returns true
         every { mockWordsRepository.isWord("the") } returns true
         every { mockWordsRepository.isWord("blues") } returns true
@@ -461,6 +462,23 @@ class ChatMessageParserTest : FreeSpec({
             "nothing of value was lost it's the blues".token(),
         )
         actual shouldHaveSize 1
+    }
+
+    "character-like plain text with active characters" {
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("was", "the blues").existing(CharacterStatus.Active(0))
+        every { mockWordsRepository.isWord("was") } returns true
+        every { mockWordsRepository.isWord("the") } returns true
+        every { mockWordsRepository.isWord("blues") } returns true
+
+        val actual = target.parse("nothing of value was lost it's the blues", listOf("Delve"))
+
+        actual shouldContain listOf(
+            "nothing of value".token(),
+            "was".token(Player(0)),
+            "lost it's".token(),
+            "the blues".token(Player(0)),
+        )
+        actual shouldHaveSize 4
     }
 
     "system gate" {
@@ -630,6 +648,52 @@ class ChatMessageParserTest : FreeSpec({
         )
     }
 
+    "inactive player name matching a type name" {
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Drake", "Fortizar", "Festival Launcher").existing(CharacterStatus.Inactive(0))
+        every { mockWordsRepository.isTypeName("Drake") } returns true
+        every { mockWordsRepository.isTypeName("Fortizar") } returns true
+        every { mockWordsRepository.isTypeName("Festival Launcher") } returns true
+        every { mockShipTypesRepository.getShip("Drake") } returns "Drake"
+
+        val actual = target.parse("Drake at a Fortizar with a Festival Launcher", listOf("Delve"))
+
+        actual shouldContain listOf(
+            "Drake".token(Ship("Drake")),
+            "at a Fortizar with a Festival Launcher".token(),
+        )
+        actual shouldHaveSize 2
+    }
+
+    "active player name matching a type name" {
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Drake", "Fortizar", "Festival Launcher").existing(CharacterStatus.Active(0))
+        every { mockWordsRepository.isTypeName("Drake") } returns true
+        every { mockWordsRepository.isTypeName("Fortizar") } returns true
+        every { mockWordsRepository.isTypeName("Festival Launcher") } returns true
+        every { mockShipTypesRepository.getShip("Drake") } returns "Drake"
+
+        val actual = target.parse("Drake at a Fortizar with a Festival Launcher", listOf("Delve"))
+
+        actual shouldContain listOf(
+            "Drake".token(Ship("Drake")),
+            "at a".token(),
+            "Fortizar".token(Player(0)),
+            "with a".token(),
+            "Festival Launcher".token(Player(0)),
+        )
+        actual shouldHaveSize 8
+    }
+
+    "dormant character" {
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Dormant").existing(CharacterStatus.Dormant(0))
+
+        val actual = target.parse("Dormant", listOf("Delve"))
+
+        actual shouldContain listOf(
+            "Dormant".token(),
+        )
+        actual shouldHaveSize 1
+    }
+
     "system, player name substring matching a system name" {
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Jita Alt 1").existing()
         every { mockSolarSystemsRepository.getSystemName("Jita", listOf("Delve")) } returns "Jita"
@@ -663,6 +727,6 @@ private fun String.token(vararg types: TokenType): Token {
     return Token(split(" "), types = types.toList())
 }
 
-private fun List<String>.existing(): Map<String, CharacterState> {
-    return associateWith { CharacterState.Exists(0) }
+private fun List<String>.existing(status: CharacterStatus = CharacterStatus.Active(0)): Map<String, CharacterStatus> {
+    return associateWith { status }
 }

@@ -3,7 +3,7 @@ package dev.nohus.rift.about
 import dev.nohus.rift.network.HttpGetUseCase
 import dev.nohus.rift.network.HttpGetUseCase.CacheBehavior
 import dev.nohus.rift.network.Result
-import dev.nohus.rift.repositories.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope

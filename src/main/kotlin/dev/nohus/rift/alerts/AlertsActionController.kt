@@ -13,11 +13,11 @@ import dev.nohus.rift.notifications.NotificationsController
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.notifications.system.SendNotificationUseCase
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
-import dev.nohus.rift.pushover.SendPushNotificationUseCase
-import dev.nohus.rift.repositories.CharactersRepository
+import dev.nohus.rift.push.PushNotificationController
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.repositories.character.CharactersRepository
 import dev.nohus.rift.utils.formatDurationLong
 import dev.nohus.rift.utils.sound.SoundPlayer
 import dev.nohus.rift.utils.sound.SoundsRepository
@@ -34,7 +34,7 @@ import kotlin.io.path.absolutePathString
 @Single
 class AlertsActionController(
     private val sendNotificationUseCase: SendNotificationUseCase,
-    private val sendPushNotificationUseCase: SendPushNotificationUseCase,
+    private val pushNotificationController: PushNotificationController,
     private val soundPlayer: SoundPlayer,
     private val soundsRepository: SoundsRepository,
     private val notificationsController: NotificationsController,
@@ -324,7 +324,7 @@ class AlertsActionController(
 
     private fun sendPushNotification(title: String, message: String) {
         scope.launch {
-            sendPushNotificationUseCase(title, message)
+            pushNotificationController.sendPushNotification(title, message)
         }
     }
 }

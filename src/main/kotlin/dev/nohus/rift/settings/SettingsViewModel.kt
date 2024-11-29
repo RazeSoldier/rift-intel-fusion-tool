@@ -232,7 +232,7 @@ class SettingsViewModel(
     }
 
     fun onConfigurePushoverClick() {
-        windowManager.onWindowOpen(RiftWindow.Pushover)
+        windowManager.onWindowOpen(RiftWindow.Push)
     }
 
     fun onEditNotificationDone(editPos: Pos?, pos: Pos?) {

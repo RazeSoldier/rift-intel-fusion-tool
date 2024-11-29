@@ -21,6 +21,7 @@ import dev.nohus.rift.network.killboard.KillboardObserver
 import dev.nohus.rift.pings.PingsRepository
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.MapStatusRepository
+import dev.nohus.rift.repositories.character.ZkillboardRecentActivityRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.StandingsRepository
 import dev.nohus.rift.utils.ResetSparkleUpdateCheckUseCase
@@ -55,6 +56,7 @@ class BackgroundProcesses(
     private val clonesRepository: ClonesRepository,
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
     private val planetaryInteractionAlertTriggerController: PlanetaryInteractionAlertTriggerController,
+    private val zkillboardRecentActivityRepository: ZkillboardRecentActivityRepository,
     private val settings: Settings,
 ) {
 
@@ -132,6 +134,9 @@ class BackgroundProcesses(
             }
             launch {
                 planetaryInteractionAlertTriggerController.start()
+            }
+            launch {
+                zkillboardRecentActivityRepository.start()
             }
         }
     }

@@ -44,9 +44,9 @@ import dev.nohus.rift.generated.resources.keywords_wormhole
 import dev.nohus.rift.intel.state.CharacterBound
 import dev.nohus.rift.intel.state.Clearable
 import dev.nohus.rift.intel.state.SystemEntity
-import dev.nohus.rift.repositories.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.standings.isFriendly
 import dev.nohus.rift.utils.openBrowser

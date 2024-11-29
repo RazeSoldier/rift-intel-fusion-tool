@@ -16,11 +16,11 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
-import dev.nohus.rift.repositories.CharactersRepository
-import dev.nohus.rift.repositories.CharactersRepository.CharacterState
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.WordsRepository
+import dev.nohus.rift.repositories.character.CharacterStatus
+import dev.nohus.rift.repositories.character.CharactersRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
@@ -49,6 +49,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     every { mockShipTypesRepository.getShip(any()) } returns null
     coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns emptyMap()
     every { mockWordsRepository.isWord(any()) } returns false
+    every { mockWordsRepository.isTypeName(any()) } returns false
 
     "system link, player link, player" {
         every { mockSolarSystemsRepository.getSystemName("D-W7F0", listOf("Delve")) } returns "D-W7F0"
@@ -446,12 +447,27 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
             "caracal".token(Ship("Caracal")),
         )
     }
+
+    "ambiguous navy ships with capitalisation" {
+        every { mockShipTypesRepository.getShip("Osprey") } returns "Osprey"
+        every { mockShipTypesRepository.getShip("Osprey Navy") } returns "Osprey Navy Issue"
+        every { mockShipTypesRepository.getShip("Navy Brutix") } returns "Brutix Navy Issue"
+        every { mockShipTypesRepository.getShip("Brutix") } returns "Brutix"
+        val tokenizations = parser.parse("Osprey Navy, Brutix", listOf("Delve"))
+
+        val actual = target(tokenizations)
+
+        actual shouldBe listOf(
+            "Osprey Navy".token(Ship("Osprey Navy Issue")),
+            "Brutix".token(Ship("Brutix")),
+        )
+    }
 })
 
 private fun String.token(vararg types: TokenType): Token {
     return Token(split(" "), types = types.toList())
 }
 
-private fun List<String>.existing(): Map<String, CharacterState> {
-    return associateWith { CharacterState.Exists(0) }
+private fun List<String>.existing(): Map<String, CharacterStatus> {
+    return associateWith { CharacterStatus.Active(0) }
 }
