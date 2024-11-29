@@ -6,6 +6,7 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.CharactersIdAsset
 import dev.nohus.rift.network.esi.CharactersIdAssetLocationType
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.esi.EsiErrorException
 import dev.nohus.rift.network.esi.UniverseStationsId
 import dev.nohus.rift.network.esi.UniverseStructuresId
 import dev.nohus.rift.repositories.TypesRepository
@@ -24,7 +25,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
-import retrofit2.HttpException
 
 private val logger = KotlinLogging.logger {}
 
@@ -123,7 +123,7 @@ class AssetsRepository(
         val assets = when (val result = loadAllAssetsWithLocations(characters)) {
             is Result.Success -> result.data
             is Result.Failure -> {
-                logger.error(result.cause) { "Could not load assets" }
+                logger.error { "Could not load assets: ${result.cause?.message}" }
                 _assets.update { it.copy(isLoading = false) }
                 return
             }
@@ -190,7 +190,7 @@ class AssetsRepository(
             when (result) {
                 is Result.Success -> id to result.data
                 is Result.Failure -> run {
-                    if ((result.cause as? HttpException)?.code() == 403) {
+                    if ((result.cause as? EsiErrorException)?.code == 403) {
                         structureIds -= id
                         id to null
                     } else {

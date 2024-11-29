@@ -34,6 +34,7 @@ import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
+import dev.nohus.rift.generated.resources.window_contacts
 import dev.nohus.rift.generated.resources.window_evemailtag
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.generated.resources.window_map
@@ -44,13 +45,14 @@ import dev.nohus.rift.generated.resources.window_satellite
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_sovereignty
 import dev.nohus.rift.utils.viewModel
-import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import dev.nohus.rift.windowing.WindowManager
+import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun NeocomWindow(
-    windowState: RiftWindowState,
+    windowState: WindowManager.RiftWindowState,
     onCloseRequest: () -> Unit,
 ) {
     val viewModel: NeocomViewModel = viewModel()
@@ -66,19 +68,20 @@ fun NeocomWindow(
         isResizable = false,
     ) {
         Column {
-            NeocomButton(icon = Res.drawable.window_loudspeaker_icon, name = "Alerts", viewModel::onAlertsClick)
-            NeocomButton(icon = Res.drawable.window_map, name = "Map", viewModel::onMapClick)
-            NeocomButton(icon = Res.drawable.window_satellite, name = "Intel Feed", viewModel::onIntelFeedClick)
-            NeocomButton(icon = Res.drawable.window_bleedchannel, name = "Intel Reports", viewModel::onIntelReportsClick)
-            NeocomButton(icon = Res.drawable.window_characters, name = "Characters", viewModel::onCharactersClick)
-            NeocomButton(icon = Res.drawable.window_assets, name = "Assets", viewModel::onAssetsClick)
-            NeocomButton(icon = Res.drawable.window_planets, name = "Planetary Industry", viewModel::onPlanetaryIndustryClick)
+            NeocomButton(icon = Res.drawable.window_loudspeaker_icon, name = "Alerts") { viewModel.onButtonClick(RiftWindow.Alerts) }
+            NeocomButton(icon = Res.drawable.window_map, name = "Map") { viewModel.onButtonClick(RiftWindow.Map) }
+            NeocomButton(icon = Res.drawable.window_satellite, name = "Intel Feed") { viewModel.onButtonClick(RiftWindow.IntelFeed) }
+            NeocomButton(icon = Res.drawable.window_bleedchannel, name = "Intel Reports") { viewModel.onButtonClick(RiftWindow.IntelReports) }
+            NeocomButton(icon = Res.drawable.window_characters, name = "Characters") { viewModel.onButtonClick(RiftWindow.Characters) }
+            NeocomButton(icon = Res.drawable.window_assets, name = "Assets") { viewModel.onButtonClick(RiftWindow.Assets) }
+            NeocomButton(icon = Res.drawable.window_planets, name = "Planetary Industry") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) }
+            NeocomButton(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) }
             if (state.isJabberEnabled) {
-                NeocomButton(icon = Res.drawable.window_sovereignty, name = "Pings", viewModel::onPingsClick)
-                NeocomButton(icon = Res.drawable.window_chatchannels, name = "Jabber", viewModel::onJabberClick)
+                NeocomButton(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) }
+                NeocomButton(icon = Res.drawable.window_chatchannels, name = "Jabber") { viewModel.onButtonClick(RiftWindow.Jabber) }
             }
-            NeocomButton(icon = Res.drawable.window_settings, name = "Settings", viewModel::onSettingsClick)
-            NeocomButton(icon = Res.drawable.window_evemailtag, name = "About", viewModel::onAboutClick)
+            NeocomButton(icon = Res.drawable.window_settings, name = "Settings") { viewModel.onButtonClick(RiftWindow.Settings) }
+            NeocomButton(icon = Res.drawable.window_evemailtag, name = "About") { viewModel.onButtonClick(RiftWindow.About) }
             NeocomButton(icon = Res.drawable.window_quitgame, name = "Quit", viewModel::onQuitClick)
         }
     }

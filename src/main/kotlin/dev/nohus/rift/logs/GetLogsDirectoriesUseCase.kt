@@ -34,13 +34,15 @@ class GetLogsDirectoriesUseCase(
     }
 
     private fun getWindowsLogsDirectories(): List<Path> {
-        val getWindowsDocumentsFolder = GetWindowsDocumentsFolderUseCase()
+        val windowsDocumentsFolder = GetWindowsDocumentsFolderUseCase()()
         val homeDirectory = SystemUtils.getUserHome().toPath()
-        return listOf(
-            Path.of(getWindowsDocumentsFolder(), "EVE/logs"),
-            homeDirectory.resolve("Documents/EVE/logs"),
-            homeDirectory.resolve("OneDrive/Documents/EVE/logs"),
-        )
+        return buildList {
+            if (windowsDocumentsFolder != null) {
+                add(Path.of(windowsDocumentsFolder, "EVE/logs"))
+            }
+            add(homeDirectory.resolve("Documents/EVE/logs"))
+            add(homeDirectory.resolve("OneDrive/Documents/EVE/logs"))
+        }
     }
 
     private fun getMacLogsDirectories(): List<Path> {

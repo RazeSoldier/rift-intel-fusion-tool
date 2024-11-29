@@ -64,6 +64,67 @@ class EsiApi(
         }
     }
 
+    suspend fun getAlliancesIdContactsLabels(characterId: Int, allianceId: Int): Result<List<ContactsLabel>> {
+        return executeEveAuthorized(characterId) { authorization ->
+            service.getAlliancesIdContactsLabels(allianceId, authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdContactsLabels(characterId: Int, corporationId: Int): Result<List<ContactsLabel>> {
+        return executeEveAuthorized(characterId) { authorization ->
+            service.getCorporationsIdContactsLabels(corporationId, authorization)
+        }
+    }
+    suspend fun getCharactersIdContactsLabels(characterId: Int): Result<List<ContactsLabel>> {
+        return executeEveAuthorized(characterId) { authorization ->
+            service.getCharactersIdContactsLabels(characterId, authorization)
+        }
+    }
+
+    suspend fun deleteCharactersIdContacts(
+        characterId: Int,
+        contactIds: List<Int>,
+    ): Result<Unit> {
+        return executeEveAuthorized(characterId) { authorization ->
+            service.deleteCharactersIdContacts(
+                characterId = characterId,
+                contactIds = contactIds,
+                authorization = authorization,
+            )
+        }
+    }
+
+    suspend fun postCharactersIdContacts(
+        characterId: Int,
+        labelIds: List<Long>?,
+        standing: Float,
+        watched: Boolean?,
+        contactIds: List<Int>,
+    ): Result<List<Int>> {
+        return executeEveAuthorized(characterId) { authorization ->
+            service.postCharactersIdContacts(
+                characterId = characterId,
+                labelIds = labelIds,
+                standing = standing,
+                watched = watched,
+                authorization = authorization,
+                contactIds = contactIds,
+            )
+        }
+    }
+
+    suspend fun putCharactersIdContacts(
+        characterId: Int,
+        labelIds: List<Long>?,
+        standing: Float,
+        watched: Boolean?,
+        contactIds: List<Int>,
+    ): Result<Unit> {
+        return executeEveAuthorized(characterId) { authorization ->
+            service.putCharactersIdContacts(characterId, labelIds, standing, watched, authorization, contactIds)
+        }
+    }
+
     suspend fun getCharacterIdOnline(characterId: Int): Result<CharacterIdOnline> {
         return executeEveAuthorized(characterId) { authorization ->
             service.getCharacterIdOnline(characterId, authorization)
@@ -82,7 +143,7 @@ class EsiApi(
         }
     }
 
-    suspend fun getCharactersIdSearch(characterId: Int, categories: String, strict: Boolean, search: String): Result<CharactersIdSearch> {
+    suspend fun getCharactersIdSearch(characterId: Int, categories: List<String>, strict: Boolean, search: String): Result<CharactersIdSearch> {
         return executeEveAuthorized(characterId) { authorization ->
             service.getCharactersIdSearch(characterId, categories, strict, search, authorization)
         }

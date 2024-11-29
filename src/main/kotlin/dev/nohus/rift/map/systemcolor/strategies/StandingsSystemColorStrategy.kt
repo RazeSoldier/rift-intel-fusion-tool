@@ -27,7 +27,7 @@ class StandingsSystemColorStrategy(
             return Color(0xFF71E754)
         } else if (security > 0.0) return Color(0xFFF5FF83)
         val allianceId = systemStatus[system]?.sovereignty?.allianceId ?: return Color(0xFF7D7E7E)
-        val standing = standingsRepository.getStanding(allianceId = allianceId, null, null)
+        val standing = standingsRepository.getStandingLevel(allianceId = allianceId, null, null)
         return standing.getSystemColor()
     }
 }

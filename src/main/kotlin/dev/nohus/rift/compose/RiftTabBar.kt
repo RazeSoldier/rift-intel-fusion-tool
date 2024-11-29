@@ -64,6 +64,7 @@ fun RiftTabBar(
     onTabSelected: (Int) -> Unit,
     onTabClosed: (Int) -> Unit,
     withUnderline: Boolean = true,
+    withWideTabs: Boolean = false,
     isShowingIcons: Boolean = false,
     fixedHeight: Dp? = null,
     modifier: Modifier = Modifier,
@@ -80,6 +81,7 @@ fun RiftTabBar(
                         tab = tab,
                         isShowingIcons = isShowingIcons,
                         fixedHeight = fixedHeight,
+                        withWideTabs = withWideTabs,
                         onTabSelected = onTabSelected,
                         onTabClosed = onTabClosed,
                         modifier = Modifier.width(IntrinsicSize.Max),
@@ -107,6 +109,7 @@ fun RiftTabBar(
                                 tab = tab,
                                 isShowingIcons = isShowingIcons,
                                 fixedHeight = fixedHeight,
+                                withWideTabs = withWideTabs,
                                 onTabSelected = onTabSelected,
                                 onTabClosed = onTabClosed,
                                 modifier = Modifier.width(IntrinsicSize.Max),
@@ -205,6 +208,7 @@ private fun TabBarTab(
     tab: Tab,
     isShowingIcons: Boolean,
     fixedHeight: Dp? = null,
+    withWideTabs: Boolean,
     onTabSelected: (Int) -> Unit,
     onTabClosed: (Int) -> Unit,
     modifier: Modifier = Modifier,
@@ -233,11 +237,12 @@ private fun TabBarTab(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
+                .modifyIf(withWideTabs) { padding(horizontal = Spacing.mediumLarge) }
                 .modifyIfNotNull(fixedHeight) { height(it) }
                 .widthIn(min = 30.dp)
                 .pointerInteraction(pointerInteractionStateHolder)
                 .pointerHoverIcon(PointerIcon(Cursors.pointerDropdown))
-                .onClick(MouseButton.Middle) { if (tab.isCloseable) onTabClosed(tab.id) }
+                .onMouseClick(MouseButton.Middle) { if (tab.isCloseable) onTabClosed(tab.id) }
                 .onClick { onTabSelected(tab.id) },
         ) {
             val effectiveTextColor = if (isSelected) {

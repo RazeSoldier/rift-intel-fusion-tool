@@ -18,6 +18,7 @@ import dev.nohus.rift.assets.AssetsWindow
 import dev.nohus.rift.characters.CharactersWindow
 import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.configurationpack.ConfigurationPackReminderWindow
+import dev.nohus.rift.contacts.ContactsWindow
 import dev.nohus.rift.debug.DebugWindow
 import dev.nohus.rift.fleet.FleetsWindow
 import dev.nohus.rift.intel.feed.IntelFeedWindow
@@ -120,6 +121,9 @@ class WindowManager(
         @SerialName("Pushover")
         Pushover,
 
+        @SerialName("Contacts")
+        Contacts,
+
         @Deprecated("Removed")
         @SerialName("NonEnglishEveClientWarning")
         NonEnglishEveClientWarning,
@@ -195,6 +199,7 @@ class WindowManager(
                     RiftWindow.PlanetaryIndustry -> PlanetaryIndustryWindow(state, onCloseRequest = { onWindowClose(RiftWindow.PlanetaryIndustry) })
                     RiftWindow.StartupWarning -> StartupWarningWindow(state.inputModel as? StartupWarningInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.StartupWarning) })
                     RiftWindow.Pushover -> PushoverWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Pushover) })
+                    RiftWindow.Contacts -> ContactsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Contacts) })
                     RiftWindow.NonEnglishEveClientWarning -> {}
                 }
             }
@@ -266,6 +271,7 @@ class WindowManager(
             RiftWindow.PlanetaryIndustry -> WindowSizing(defaultSize = saved ?: (540 to 800), minimumSize = 540 to 360)
             RiftWindow.StartupWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (350 to null), minimumSize = 350 to null)
+            RiftWindow.Contacts -> WindowSizing(defaultSize = saved ?: (650 to 600), minimumSize = 650 to 600)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
         }
         return windowSizing.scaled(uiScaleController.uiScale)

@@ -59,13 +59,13 @@ private fun StartupWarningContent(
     onDoneClick: (dismissedIds: List<String>) -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        verticalArrangement = Arrangement.spacedBy(Spacing.large),
     ) {
         var checkedIds by remember { mutableStateOf(listOf<String>()) }
         val showTitles = state.warnings.size > 1
         state.warnings.forEach { warning ->
             Column(
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
             ) {
                 if (showTitles) {
                     Text(

@@ -154,6 +154,7 @@ private fun RiftContextMenuPopup(
                         }
                         is ContextMenuItem.CheckboxItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, false, item.onClick)
                         is ContextMenuItem.RadioItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, true, item.onClick)
+                        is ContextMenuItem.HeaderItem -> ContextMenuHeader(item.text)
                         ContextMenuItem.DividerItem -> ContextMenuDivider()
                     }
                 }
@@ -179,6 +180,10 @@ sealed interface ContextMenuItem {
         val text: String,
         val isSelected: Boolean,
         val onClick: () -> Unit,
+    ) : ContextMenuItem
+
+    data class HeaderItem(
+        val text: String,
     ) : ContextMenuItem
 
     data object DividerItem : ContextMenuItem
@@ -257,6 +262,21 @@ private fun ContextMenuRow(
             }
         }
     }
+}
+
+@Composable
+private fun ContextMenuHeader(text: String) {
+    Text(
+        text = text,
+        style = RiftTheme.typography.headlineHighlighted,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = Spacing.small)
+            .padding(Spacing.verySmall)
+            .padding(horizontal = Spacing.medium),
+    )
 }
 
 @Composable

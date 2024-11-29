@@ -5,6 +5,7 @@ import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.esi.EsiErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -17,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
-import retrofit2.HttpException
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -83,7 +83,7 @@ class FleetsRepository(
                     }
                 }
                 is Failure -> {
-                    if (result.cause is HttpException && result.cause.code() == 404) {
+                    if (result.cause is EsiErrorException && result.cause.code == 404) {
                         if (characterId in joinedFleets) {
                             joinedFleets -= characterId
                             needsDetailsUpdate = true

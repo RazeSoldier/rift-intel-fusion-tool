@@ -2,6 +2,7 @@ package dev.nohus.rift.whatsnew
 
 import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import org.koin.core.annotation.Single
@@ -10,12 +11,14 @@ import org.koin.core.annotation.Single
 class WhatsNewController(
     private val windowManager: WindowManager,
     private val settings: Settings,
+    private val eveSsoRepository: EveSsoRepository,
 ) {
 
     fun showIfRequired() {
         val lastShownVersion = settings.whatsNewVersion
         val currentVersion = BuildConfig.version
         if (lastShownVersion != null && lastShownVersion != currentVersion) {
+            runMigrations(lastShownVersion)
             val hasChangelog = WhatsNew.getVersions().any {
                 VersionUtils.isNewer(lastShownVersion, it.version)
             }
@@ -28,5 +31,19 @@ class WhatsNewController(
 
     fun resetWhatsNewVersion() {
         settings.whatsNewVersion = BuildConfig.version
+    }
+
+    private fun runMigrations(lastVersion: String) {
+        val migrations = listOf(
+            "4.8.0" to {
+                // New scope added
+                eveSsoRepository.removeAllAuthentications()
+            },
+        )
+        migrations.forEach { (version, migration) ->
+            if (VersionUtils.isNewer(lastVersion, version)) {
+                migration()
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.clones.ClonesRepository
+import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogWatcher
 import dev.nohus.rift.intel.ChatLogWatcher
 import dev.nohus.rift.jabber.client.StartJabberUseCase
@@ -49,6 +50,7 @@ class BackgroundProcesses(
     private val mapStatusRepository: MapStatusRepository,
     private val mapJumpRangeController: MapJumpRangeController,
     private val analytics: Analytics,
+    private val contactsRepository: ContactsRepository,
     private val standingsRepository: StandingsRepository,
     private val clonesRepository: ClonesRepository,
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
@@ -115,6 +117,9 @@ class BackgroundProcesses(
             }
             launch {
                 analytics.start()
+            }
+            launch {
+                contactsRepository.start()
             }
             launch {
                 standingsRepository.start()

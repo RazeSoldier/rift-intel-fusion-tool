@@ -13,8 +13,12 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import dev.nohus.rift.autopilot.AutopilotController
 import dev.nohus.rift.compose.theme.Cursors
+import dev.nohus.rift.contacts.ContactsExternalControl
+import dev.nohus.rift.contacts.ContactsRepository
+import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.menu_add
 import dev.nohus.rift.generated.resources.menu_anoikis
 import dev.nohus.rift.generated.resources.menu_dotlan
 import dev.nohus.rift.generated.resources.menu_everef
@@ -32,10 +36,14 @@ import dev.nohus.rift.utils.toURIOrNull
 
 @Composable
 fun ClickableLocation(
-    systemId: Int,
+    systemId: Int?,
     locationId: Long?,
     content: @Composable () -> Unit,
 ) {
+    if (systemId == null) {
+        content()
+        return
+    }
     val repository: SolarSystemsRepository = remember { koin.get() }
     val isKnownSpace = repository.isKnownSpace(systemId)
     RiftContextMenuArea(
@@ -63,6 +71,19 @@ fun ClickableSystem(
         content()
         return
     }
+    ClickableSystem(systemId, content)
+}
+
+@Composable
+fun ClickableSystem(
+    systemId: Int?,
+    content: @Composable () -> Unit,
+) {
+    if (systemId == null) {
+        content()
+        return
+    }
+    val repository: SolarSystemsRepository = remember { koin.get() }
     val isKnownSpace = repository.isKnownSpace(systemId)
     RiftContextMenuArea(
         items = GetSystemContextMenuItems(systemId),
@@ -206,6 +227,8 @@ fun ClickablePlayer(
         listOf(
             ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
             ContextMenuItem.TextItem("EveWho", Res.drawable.menu_evewho, onClick = { evewhoUrl.toURIOrNull()?.openBrowser() }),
+            ContextMenuItem.DividerItem,
+            getContactMenuItem(characterId, EntityType.Character),
         ),
     ) {
         ClickableEntity(
@@ -233,6 +256,8 @@ fun ClickableCorporation(
         listOf(
             ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
             ContextMenuItem.TextItem("EveWho", Res.drawable.menu_evewho, onClick = { evewhoUrl.toURIOrNull()?.openBrowser() }),
+            ContextMenuItem.DividerItem,
+            getContactMenuItem(corporationId, EntityType.Corporation),
         ),
     ) {
         ClickableEntity(
@@ -260,6 +285,8 @@ fun ClickableAlliance(
         listOf(
             ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
             ContextMenuItem.TextItem("EveWho", Res.drawable.menu_evewho, onClick = { evewhoUrl.toURIOrNull()?.openBrowser() }),
+            ContextMenuItem.DividerItem,
+            getContactMenuItem(allianceId, EntityType.Alliance),
         ),
     ) {
         ClickableEntity(
@@ -268,6 +295,20 @@ fun ClickableAlliance(
             },
             content = content,
         )
+    }
+}
+
+@Composable
+private fun getContactMenuItem(id: Int, type: EntityType): ContextMenuItem {
+    val contactsRepository: ContactsRepository = remember { koin.get() }
+    val contactsExternalControl: ContactsExternalControl = remember { koin.get() }
+    val onEditContact = {
+        contactsExternalControl.editContact(id, type)
+    }
+    return if (contactsRepository.isCharacterContact(id)) {
+        ContextMenuItem.TextItem("Edit Contact", null, onClick = onEditContact)
+    } else {
+        ContextMenuItem.TextItem("Add Contact", Res.drawable.menu_add, onClick = onEditContact)
     }
 }
 

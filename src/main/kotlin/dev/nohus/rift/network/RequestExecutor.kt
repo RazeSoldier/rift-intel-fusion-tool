@@ -2,6 +2,7 @@ package dev.nohus.rift.network
 
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
+import dev.nohus.rift.network.esi.EsiErrorException
 import dev.nohus.rift.network.esi.EsiErrorResponse
 import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.authentication.NoAuthenticationException
@@ -73,11 +74,16 @@ class RequestExecutorImpl(
                         }
                     } else if ("Forbidden" == errorResponse.error) {
                         logger.debug { "Forbidden API response" }
+                    } else if ("unroutable" == errorResponse.error) {
+                        logger.error { "ESI request could not be routed to Tranquility, the game is probably down" }
+                    } else if ("Timeout contacting tranquility" == errorResponse.error) {
+                        logger.error { "ESI request timed out contacting Tranquility, the game is probably down" }
                     } else if (e.code() == 404) {
                         // Valid response
                     } else {
                         logger.error { "Unknown API error response: $errorResponse" }
                     }
+                    return Failure(EsiErrorException(errorResponse, e.code()))
                 } catch (ignored: SerializationException) {
                     logger.error { "API HTTP error: ${e.code()} (with unknown body)" }
                 }

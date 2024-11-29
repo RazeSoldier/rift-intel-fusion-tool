@@ -132,9 +132,11 @@ fun AsyncPlayerPortrait(
     modifier: Modifier = Modifier,
     withAnimatedLoading: Boolean = true,
 ) {
-    val effectiveSize = if (LocalDensity.current.density >= 2) size * 2 else size
-    AsyncImage(
-        url = "https://images.evetech.net/characters/${characterId ?: 0}/portrait?size=$effectiveSize",
+    AsyncEntityPortrait(
+        urlPath1 = "characters",
+        urlPath2 = "portrait",
+        id = characterId,
+        size = size,
         modifier = modifier,
         withAnimatedLoading = withAnimatedLoading,
     )
@@ -149,9 +151,11 @@ fun AsyncCorporationLogo(
     size: Int,
     modifier: Modifier = Modifier,
 ) {
-    val effectiveSize = if (LocalDensity.current.density >= 2) size * 2 else size
-    AsyncImage(
-        url = "https://images.evetech.net/corporations/${corporationId ?: 0}/logo?size=$effectiveSize",
+    AsyncEntityPortrait(
+        urlPath1 = "corporations",
+        urlPath2 = "logo",
+        id = corporationId,
+        size = size,
         modifier = modifier,
     )
 }
@@ -165,10 +169,29 @@ fun AsyncAllianceLogo(
     size: Int,
     modifier: Modifier = Modifier,
 ) {
+    AsyncEntityPortrait(
+        urlPath1 = "alliances",
+        urlPath2 = "logo",
+        id = allianceId,
+        size = size,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun AsyncEntityPortrait(
+    urlPath1: String,
+    urlPath2: String,
+    id: Int?,
+    size: Int,
+    modifier: Modifier = Modifier,
+    withAnimatedLoading: Boolean = true,
+) {
     val effectiveSize = if (LocalDensity.current.density >= 2) size * 2 else size
     AsyncImage(
-        url = "https://images.evetech.net/alliances/${allianceId ?: 0}/logo?size=$effectiveSize",
+        url = "https://images.evetech.net/$urlPath1/${id ?: 0}/$urlPath2?size=$effectiveSize",
         modifier = modifier,
+        withAnimatedLoading = withAnimatedLoading,
     )
 }
 

@@ -245,6 +245,23 @@ object WhatsNew {
                 - Added wrapping implants in the Characters window into multiple lines when there is not enough space to show all on one line
                 - Added ellipsis when a context menu entry is too long to fit
             """.trimIndent(),
+            "4.8.0" description """
+                -! New feature: Contacts
+                - View all your in-game contacts across all your characters, including corporation and alliance contacts
+                - Filter by character, corporation, alliance, standing level or any label
+                - Search through your contacts and see their details
+                - Add, edit or delete your contacts, assign standings, labels, and more
+                - In the right-click menu of any character, corporation and alliance you see in the app, you will now find a new option to Add Contact
+                
+                -! New feature: Search
+                - Search for anything from the game: characters, corporations, alliances, items, structures, and many more
+                - See character affiliations
+                - See standings for characters, corporations and alliances
+                - Add to contacts
+                - View on the map and set destination to found structures, stations and systems
+                
+                - Added a warning if you have chat logs disabled in EVE settings
+            """.trimIndent(),
         ).reversed()
     }
 }

@@ -1,6 +1,8 @@
 package dev.nohus.rift.compose
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
@@ -10,8 +12,8 @@ import org.jetbrains.skia.FilterMode
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.MipmapMode
 
-fun Modifier.modifyIf(condition: Boolean, modifier: Modifier.() -> Modifier): Modifier {
-    return if (condition) {
+fun Modifier.modifyIf(condition: Boolean, modifier: @Composable Modifier.() -> Modifier): Modifier = composed {
+    if (condition) {
         then(modifier(Modifier))
     } else {
         this

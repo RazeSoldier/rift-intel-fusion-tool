@@ -20,6 +20,7 @@ fun RiftSearchField(
     search: String?,
     isCompact: Boolean,
     onSearchChange: (String) -> Unit,
+    onSearchConfirm: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var search by remember { mutableStateOf(search ?: "") }
@@ -45,7 +46,11 @@ fun RiftSearchField(
                         focusManager.clearFocus()
                         true
                     }
-
+                    Key.Enter -> {
+                        focusManager.clearFocus()
+                        onSearchConfirm()
+                        true
+                    }
                     else -> false
                 }
             },
