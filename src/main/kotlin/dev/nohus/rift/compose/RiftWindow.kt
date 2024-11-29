@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,15 +63,18 @@ import dev.nohus.rift.generated.resources.window_locked_16px
 import dev.nohus.rift.generated.resources.window_overlay_fullscreen_off_16px
 import dev.nohus.rift.generated.resources.window_overlay_fullscreen_on_16px
 import dev.nohus.rift.generated.resources.window_titlebar_close
+import dev.nohus.rift.generated.resources.window_titlebar_float
+import dev.nohus.rift.generated.resources.window_titlebar_fullscreen
 import dev.nohus.rift.generated.resources.window_titlebar_kebab
 import dev.nohus.rift.generated.resources.window_titlebar_minimize
 import dev.nohus.rift.generated.resources.window_titlebar_tune
 import dev.nohus.rift.generated.resources.window_unlocked_16px
 import dev.nohus.rift.get
-import dev.nohus.rift.windowing.AlwaysOnTopController
 import dev.nohus.rift.windowing.LocalRiftWindow
 import dev.nohus.rift.windowing.LocalRiftWindowState
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import dev.nohus.rift.windowing.WindowStatesController
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
@@ -88,12 +92,15 @@ fun RiftWindow(
     titleBarContent: @Composable ((height: Dp) -> Unit)? = null,
     withContentPadding: Boolean = true,
     isResizable: Boolean = true,
+    isMaximizeButtonShown: Boolean = false,
     content: @Composable WindowScope.() -> Unit,
 ) {
     val uiScaleController: UiScaleController = remember { koin.get() }
-    val alwaysOnTopController: AlwaysOnTopController = remember { koin.get() }
-    val isAlwaysOnTop by alwaysOnTopController.isAlwaysOnTop(state.window).collectAsState(false)
-    val isLocked by alwaysOnTopController.isLocked(state.window).collectAsState(false)
+    val windowStatesController: WindowStatesController = remember { koin.get() }
+    val scope = rememberCoroutineScope()
+    val isAlwaysOnTop by windowStatesController.isAlwaysOnTop(state.window).collectAsState(false)
+    val isLocked by windowStatesController.isLocked(state.window).collectAsState(false)
+    val isMaximized by windowStatesController.isMaximized(state.window).collectAsState(false)
     Window(
         onCloseRequest = onCloseClick,
         state = state.windowState,
@@ -116,15 +123,23 @@ fun RiftWindow(
                     icon = icon,
                     isAlwaysOnTop = isAlwaysOnTop,
                     isLocked = isLocked,
+                    isMaximized = isMaximized,
+                    isResizable = isResizable,
+                    isMaximizeButtonShown = isMaximizeButtonShown,
                     onTuneClick = onTuneClick,
                     tuneContextMenuItems = tuneContextMenuItems,
                     onAlwaysOnTopClick = if (state.window != null) {
-                        { alwaysOnTopController.toggleAlwaysOnTop(state.window) }
+                        { windowStatesController.toggleAlwaysOnTop(state.window) }
                     } else {
                         null
                     },
                     onLockClick = if (state.window != null) {
-                        { alwaysOnTopController.toggleLocked(state.window) }
+                        { windowStatesController.toggleLocked(state.window) }
+                    } else {
+                        null
+                    },
+                    onMaximizeClick = if (state.window != null && isResizable) {
+                        { scope.launch { window.placement = windowStatesController.toggleMaximized(state.window) } }
                     } else {
                         null
                     },
@@ -192,10 +207,14 @@ fun WindowScope.RiftDialog(
                 icon = icon,
                 isAlwaysOnTop = false,
                 isLocked = false,
+                isMaximized = false,
+                isMaximizeButtonShown = false,
+                isResizable = false,
                 onTuneClick = null,
                 tuneContextMenuItems = null,
                 onAlwaysOnTopClick = null,
                 onLockClick = null,
+                onMaximizeClick = null,
                 onMinimizeClick = { parentState.windowState.isMinimized = true },
                 onCloseClick = onCloseClick,
                 width = state.size.width,
@@ -218,10 +237,14 @@ private fun WindowScope.RiftWindowContent(
     icon: DrawableResource,
     isAlwaysOnTop: Boolean,
     isLocked: Boolean,
+    isMaximized: Boolean,
+    isResizable: Boolean,
+    isMaximizeButtonShown: Boolean,
     onTuneClick: (() -> Unit)?,
     tuneContextMenuItems: List<ContextMenuItem>?,
     onAlwaysOnTopClick: (() -> Unit)?,
     onLockClick: (() -> Unit)?,
+    onMaximizeClick: (() -> Unit)?,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
     width: Dp,
@@ -254,10 +277,14 @@ private fun WindowScope.RiftWindowContent(
                 titleBarContent = titleBarContent,
                 isAlwaysOnTop = isAlwaysOnTop,
                 isLocked = isLocked,
+                isMaximized = isMaximized,
+                isResizable = isResizable,
+                isMaximizeButtonShown = isMaximizeButtonShown,
                 onTuneClick = onTuneClick,
                 tuneContextMenuItems = tuneContextMenuItems,
                 onAlwaysOnTopClick = onAlwaysOnTopClick,
                 onLockClick = onLockClick,
+                onMaximizeClick = onMaximizeClick,
                 onMinimizeClick = onMinimizeClick,
                 onCloseClick = onCloseClick,
                 width = width,
@@ -317,19 +344,26 @@ private fun WindowScope.TitleBar(
     width: Dp,
     isAlwaysOnTop: Boolean,
     isLocked: Boolean,
+    isMaximized: Boolean,
+    isResizable: Boolean,
+    isMaximizeButtonShown: Boolean,
     onTuneClick: (() -> Unit)?,
     tuneContextMenuItems: List<ContextMenuItem>?,
     onAlwaysOnTopClick: (() -> Unit)?,
     onLockClick: (() -> Unit)?,
+    onMaximizeClick: (() -> Unit)?,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
 ) {
     val contextMenuItems = getTitleBarContextMenuItems(
         isAlwaysOnTop = isAlwaysOnTop,
         isLocked = isLocked,
+        isMaximized = isMaximized,
+        isResizable = isResizable,
         onAlwaysOnTopClick = onAlwaysOnTopClick,
         onLockClick = onLockClick,
         onMinimizeClick = onMinimizeClick,
+        onMaximizeClick = onMaximizeClick,
         onCloseClick = onCloseClick,
     )
     if (isLocked) {
@@ -346,6 +380,8 @@ private fun WindowScope.TitleBar(
             isAlwaysOnTop = isAlwaysOnTop,
             onLockClick = onLockClick,
             isLocked = isLocked,
+            onMaximizeClick = onMaximizeClick.takeIf { isMaximizeButtonShown },
+            isMaximized = isMaximized,
             onMinimizeClick = onMinimizeClick,
             onCloseClick = onCloseClick,
         )
@@ -364,6 +400,8 @@ private fun WindowScope.TitleBar(
                 isAlwaysOnTop = isAlwaysOnTop,
                 onLockClick = onLockClick,
                 isLocked = isLocked,
+                onMaximizeClick = onMaximizeClick.takeIf { isMaximizeButtonShown },
+                isMaximized = isMaximized,
                 onMinimizeClick = onMinimizeClick,
                 onCloseClick = onCloseClick,
             )
@@ -385,6 +423,8 @@ private fun TitleBar(
     isAlwaysOnTop: Boolean,
     onLockClick: (() -> Unit)?,
     isLocked: Boolean,
+    onMaximizeClick: (() -> Unit)?,
+    isMaximized: Boolean,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
 ) {
@@ -402,6 +442,7 @@ private fun TitleBar(
             .pointerHoverIcon(PointerIcon(Cursors.drag))
             .size(width, height),
     ) {
+        // Window icon
         RiftContextMenuArea(contextMenuItems) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -420,6 +461,7 @@ private fun TitleBar(
                 }
             }
         }
+        // Window title or custom content
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f),
@@ -440,6 +482,7 @@ private fun TitleBar(
                 }
             }
         }
+        // Tune button
         RiftContextMenuArea(contextMenuItems) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -463,6 +506,7 @@ private fun TitleBar(
                 }
             }
         }
+        // Menu button
         if (contextMenuItems.size > 2) {
             RiftContextMenuArea(contextMenuItems, acceptsLeftClick = true) {
                 Row(
@@ -476,6 +520,7 @@ private fun TitleBar(
                 }
             }
         }
+        // Window management buttons
         RiftContextMenuArea(contextMenuItems) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -491,6 +536,10 @@ private fun TitleBar(
                 if (onLockClick != null && isLocked) {
                     RiftImageButton(Res.drawable.window_locked_16px, 16.dp, onLockClick)
                 }
+                if (onMaximizeClick != null) {
+                    val maximizeIcon = if (isMaximized) Res.drawable.window_titlebar_fullscreen else Res.drawable.window_titlebar_float
+                    RiftImageButton(maximizeIcon, 16.dp, onMaximizeClick)
+                }
                 RiftImageButton(Res.drawable.window_titlebar_minimize, 16.dp, onMinimizeClick)
                 RiftImageButton(Res.drawable.window_titlebar_close, 16.dp, onCloseClick)
             }
@@ -501,8 +550,11 @@ private fun TitleBar(
 private fun getTitleBarContextMenuItems(
     isAlwaysOnTop: Boolean,
     isLocked: Boolean,
+    isMaximized: Boolean,
+    isResizable: Boolean,
     onAlwaysOnTopClick: (() -> Unit)?,
     onLockClick: (() -> Unit)?,
+    onMaximizeClick: (() -> Unit)?,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
 ): List<ContextMenuItem> {
@@ -526,7 +578,7 @@ private fun getTitleBarContextMenuItems(
                 )
             }
         }
-        if (onLockClick != null) {
+        if (onLockClick != null && !isMaximized) {
             if (isLocked) {
                 add(
                     ContextMenuItem.TextItem(
@@ -547,6 +599,25 @@ private fun getTitleBarContextMenuItems(
         }
         if (onAlwaysOnTopClick != null || onLockClick != null) {
             add(ContextMenuItem.DividerItem)
+        }
+        if (onMaximizeClick != null && isResizable) {
+            if (isMaximized) {
+                add(
+                    ContextMenuItem.TextItem(
+                        "Restore to floating",
+                        Res.drawable.window_titlebar_fullscreen,
+                        onClick = onMaximizeClick,
+                    ),
+                )
+            } else {
+                add(
+                    ContextMenuItem.TextItem(
+                        "Maximize",
+                        Res.drawable.window_titlebar_float,
+                        onClick = onMaximizeClick,
+                    ),
+                )
+            }
         }
         add(ContextMenuItem.TextItem("Minimize", onClick = onMinimizeClick))
         add(ContextMenuItem.TextItem("Close", Res.drawable.menu_close, onClick = onCloseClick))

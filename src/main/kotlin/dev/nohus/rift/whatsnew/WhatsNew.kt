@@ -262,6 +262,13 @@ object WhatsNew {
                 
                 - Added a warning if you have chat logs disabled in EVE settings
             """.trimIndent(),
+            "4.9.0" description """
+                - Added the ability to maximize windows. It's available in the three-dots menu for most windows, and directly on the title bar for the map window.
+                - Added map setting to not hide system name labels when zooming out region maps.
+                - Alerts can now be created for intel up to 15 jumps away, up from the previous limit of 5 jumps
+                - Updated map setting for showing automatic intel popups to allow disabling the popups completely
+                - Updated default intel channel list for users of The Imperium configuration back. If you'd like to use it, remove all intel channels from your list to return to the updated defaults.
+            """.trimIndent(),
         ).reversed()
     }
 }

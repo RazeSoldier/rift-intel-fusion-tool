@@ -145,6 +145,7 @@ class ChatLogsObserver(
 
             val newActiveLogFiles = currentActiveLogFiles.filter { it.first.file.name !in activeLogFiles.keys }
             activeLogFiles = currentActiveLogFiles.associate { (logFile, metadata) -> logFile.file.name to metadata }
+            logger.debug { "Active chat log files: ${newActiveLogFiles.size}" }
 
             newActiveLogFiles.forEach { (logFile, metadata) ->
                 readLogFile(logFile, metadata)

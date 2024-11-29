@@ -105,6 +105,10 @@ class MapSettingsViewModel(
         settings.intelMap = settings.intelMap.copy(isInvertZoom = enabled)
     }
 
+    fun onIsAlwaysShowingSystemsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isAlwaysShowingSystems = enabled)
+    }
+
     fun onIsUsingRiftAutopilotRouteChange(enabled: Boolean) {
         settings.isUsingRiftAutopilotRoute = enabled
     }

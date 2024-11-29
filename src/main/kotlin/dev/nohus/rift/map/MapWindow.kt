@@ -147,6 +147,7 @@ fun MapWindow(
             )
         },
         withContentPadding = !state.settings.isUsingCompactMode,
+        isMaximizeButtonShown = true,
     ) {
         MapWindowContent(
             state = state,
@@ -660,7 +661,11 @@ private fun SystemInfoBoxesLayer(
             null
         }
 
-        if ((state.mapType is RegionMap && mapScale <= (0.9f / LocalDensity.current.density)) || (state.mapType is ClusterSystemsMap) || isHighlightedOrHovered) {
+        val isZoomEnough = (state.settings.isAlwaysShowingSystems || mapScale <= (0.9f / LocalDensity.current.density))
+        val isShowingSystemInfoBox = (state.mapType is RegionMap && isZoomEnough) ||
+            (state.mapType is ClusterSystemsMap) ||
+            isHighlightedOrHovered
+        if (isShowingSystemInfoBox) {
             val maxHeight = with(LocalDensity.current) { canvasSize.height.toDp() } - (dpCoordinates.second + nodeSizes.radius) - Spacing.medium
             SystemInfoBox(
                 system = system,
