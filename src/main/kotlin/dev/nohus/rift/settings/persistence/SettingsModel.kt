@@ -80,7 +80,8 @@ enum class MapType {
 enum class MapSystemInfoType {
     StarColor, Security, NullSecurity, IntelHostiles, Jumps, Kills, NpcKills, Assets, Clones, Incursions, Stations,
     FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Colonies, Standings,
-    RatsType,
+    RatsType, IndustryIndexCopying, IndustryIndexInvention, IndustryIndexManufacturing, IndustryIndexReaction,
+    IndustryIndexMaterialEfficiency, IndustryIndexTimeEfficiency,
 }
 
 @Serializable

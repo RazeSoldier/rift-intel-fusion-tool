@@ -303,6 +303,12 @@ object WhatsNew {
                 - Updated jump bridge parsing to work with an updated alliance wiki page
                 - Account settings files backed up by other third party tools no longer interfere with RIFT
             """.trimIndent(),
+            "4.16.0" description """
+                -! Industry Cost Indices on the map
+                - New indicators for Copying, Invention, Manufacturing, Reactions, Material Efficiency Research and Time Efficiency Research Cost Indices
+                - Each index can be shown or hidden separately
+                - New system and background coloring modes for each index to see the relative values at a glance
+            """.trimIndent(),
         ).reversed()
     }
 }

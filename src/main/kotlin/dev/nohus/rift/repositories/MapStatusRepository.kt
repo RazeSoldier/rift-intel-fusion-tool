@@ -8,6 +8,7 @@ import dev.nohus.rift.map.MapPlanetsController
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.FactionWarfareSystem
 import dev.nohus.rift.network.esi.Incursion
+import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.network.esi.SovereigntySystem
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.Storm
@@ -58,6 +59,7 @@ class MapStatusRepository(
         val sovereignty: SovereigntySystem?,
         val stations: List<Station>,
         val storms: List<Storm>,
+        val industryIndices: Map<IndustryActivity, Float>,
         val distance: SystemDistance?,
         val planets: List<Planet>,
         val colonies: Int,
@@ -70,6 +72,7 @@ class MapStatusRepository(
     private val factionWarfare = MutableStateFlow<Map<Int, FactionWarfareSystem>>(emptyMap())
     private val sovereignty = MutableStateFlow<Map<Int, SovereigntySystem>>(emptyMap())
     private val storms = MutableStateFlow<Map<Int, List<Storm>>>(emptyMap())
+    private val industryIndices = MutableStateFlow<Map<Int, Map<IndustryActivity, Float>>>(emptyMap())
     private val _status = MutableStateFlow<Map<Int, SolarSystemStatus>>(emptyMap())
     val status = _status.asStateFlow()
 
@@ -87,17 +90,18 @@ class MapStatusRepository(
                 factionWarfare,
                 sovereignty,
                 storms,
+                industryIndices,
                 assetsRepository.assets,
                 mapJumpRangeController.state.map { it.systemDistances },
                 mapPlanetsController.state,
                 planetaryIndustryRepository.colonies,
                 clonesRepository.clones,
-            ) { universe, incursions, factionWarfare, sovereignty, storms, assets, distances, planets, colonies, clones ->
+            ) { universe, incursions, factionWarfare, sovereignty, storms, industryIndices, assets, distances, planets, colonies, clones ->
                 val assetsPerSystem = getAssetCountPerSystem(assets)
                 val stationsPerSystem = stationsRepository.getStations()
                 val systems = (
-                    universe.keys + incursions.keys + factionWarfare.keys + sovereignty.keys +
-                        storms.keys + assetsPerSystem.keys + stationsPerSystem.keys + distances.keys
+                    universe.keys + incursions.keys + factionWarfare.keys + sovereignty.keys + storms.keys +
+                        industryIndices.keys + assetsPerSystem.keys + stationsPerSystem.keys + distances.keys
                     ).distinct()
                 val clones = clones.entries.flatMap { (characterId, clones) ->
                     clones.mapNotNull { clone ->
@@ -121,6 +125,7 @@ class MapStatusRepository(
                         sovereignty = sovereignty[systemId],
                         stations = stationsPerSystem[systemId] ?: emptyList(),
                         storms = storms[systemId] ?: emptyList(),
+                        industryIndices = industryIndices[systemId] ?: emptyMap(),
                         distance = distances[systemId],
                         planets = (planets.planets[systemId] ?: emptyList()).filter { it.type in planets.selectedTypes },
                         colonies = colonies.success?.count { it.value.colony.system.id == systemId } ?: 0,
@@ -150,6 +155,9 @@ class MapStatusRepository(
             }
             launch {
                 loadMetaliminalStorms()
+            }
+            launch {
+                loadIndustryIndices()
             }
         }
     }
@@ -214,7 +222,15 @@ class MapStatusRepository(
         storms.value = getMetaliminalStormsUseCase()
     }
 
-    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> combine(
+    private suspend fun loadIndustryIndices() {
+        val response = esiApi.getIndustrySystems().success ?: return
+        industryIndices.value = response.associate { industrySystem ->
+            val indices = industrySystem.indices.associate { index -> index.activity to index.costIndex }
+            industrySystem.solarSystemId to indices
+        }
+    }
+
+    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R> combine(
         flow: Flow<T1>,
         flow2: Flow<T2>,
         flow3: Flow<T3>,
@@ -225,8 +241,9 @@ class MapStatusRepository(
         flow8: Flow<T8>,
         flow9: Flow<T9>,
         flow10: Flow<T10>,
-        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) -> R,
-    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10) { args: Array<*> ->
+        flow11: Flow<T11>,
+        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) -> R,
+    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11) { args: Array<*> ->
         transform(
             args[0] as T1,
             args[1] as T2,
@@ -238,6 +255,7 @@ class MapStatusRepository(
             args[7] as T8,
             args[8] as T9,
             args[9] as T10,
+            args[10] as T11,
         )
     }
 }

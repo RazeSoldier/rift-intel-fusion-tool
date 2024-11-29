@@ -571,3 +571,52 @@ data class PlanetaryRoute(
     @SerialName("waypoints")
     val waypoints: List<Long>? = null,
 )
+
+@Serializable
+data class IndustrySystem(
+    @SerialName("cost_indices")
+    val indices: List<IndustrySystemIndex>,
+    @SerialName("solar_system_id")
+    val solarSystemId: Int,
+)
+
+@Serializable
+data class IndustrySystemIndex(
+    @SerialName("activity")
+    val activity: IndustryActivity,
+    @SerialName("cost_index")
+    val costIndex: Float,
+)
+
+@Serializable
+enum class IndustryActivity {
+    @SerialName("copying")
+    Copying,
+
+    @SerialName("duplicating")
+    Duplicating,
+
+    @SerialName("invention")
+    Invention,
+
+    @SerialName("manufacturing")
+    Manufacturing,
+
+    @SerialName("none")
+    None,
+
+    @SerialName("reaction")
+    Reaction,
+
+    @SerialName("researching_material_efficiency")
+    ResearchingMaterialEfficiency,
+
+    @SerialName("researching_technology")
+    ResearchingTechnology,
+
+    @SerialName("researching_time_efficiency")
+    ResearchingTimeEfficiency,
+
+    @SerialName("reverse_engineering")
+    ReverseEngineering,
+}

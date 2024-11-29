@@ -220,4 +220,7 @@ interface EsiService {
         @Path("planet_id") planetId: Int,
         @Header("Authorization") authorization: String,
     ): CharactersIdPlanetsId
+
+    @GET("/v1/industry/systems/")
+    suspend fun getIndustrySystems(): List<IndustrySystem>
 }
