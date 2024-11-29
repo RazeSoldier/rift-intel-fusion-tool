@@ -14,14 +14,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
@@ -29,6 +32,8 @@ import dev.nohus.rift.repositories.AbyssalSystemNames
 import dev.nohus.rift.repositories.GetSystemDistanceFromCharacterUseCase
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.WormholeRegionClasses
+import dev.nohus.rift.utils.plural
+import dev.nohus.rift.utils.withColor
 import java.time.Duration
 import java.time.Instant
 
@@ -90,9 +95,15 @@ private fun SystemDistanceIndicator(
     isUsingJumpBridges: Boolean,
 ) {
     val getDistance: GetSystemDistanceFromCharacterUseCase by koin.inject()
-    val distance = getDistance(systemId, maxDistance = 9, withJumpBridges = isUsingJumpBridges)
-    if (distance > 9) return
-    val distanceColor = getDistanceColor(distance)
+    val localCharactersRepository: LocalCharactersRepository by koin.inject()
+    val characterDistance = remember(systemId, isUsingJumpBridges, localCharactersRepository.characters.value) {
+        getDistance(systemId, maxDistance = 9, withJumpBridges = isUsingJumpBridges)
+    }
+    if (characterDistance == null || characterDistance.distance > 9) return
+    val distanceColor = getDistanceColor(characterDistance.distance)
+    val characterName = localCharactersRepository.characters.value
+        .firstOrNull { it.characterId == characterDistance.characterId }
+        ?.info?.success?.name
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -101,11 +112,23 @@ private fun SystemDistanceIndicator(
             .border(2.dp, distanceColor, RoundedCornerShape(100))
             .padding(horizontal = 4.dp),
     ) {
-        Text(
-            text = "$distance",
-            style = RiftTheme.typography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier,
-        )
+        RiftTooltipArea(
+            buildAnnotatedString {
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append("${characterDistance.distance}")
+                }
+                append(" jump${characterDistance.distance.plural} from ")
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append(characterName ?: "${characterDistance.distance}")
+                }
+            },
+        ) {
+            Text(
+                text = "${characterDistance.distance}",
+                style = RiftTheme.typography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier,
+            )
+        }
     }
 }
 

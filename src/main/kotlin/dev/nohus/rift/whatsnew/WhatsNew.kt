@@ -295,6 +295,14 @@ object WhatsNew {
                 - Added integration with ntfy.sh for push notifications, in addition to the existing Pushover integration.
                 - All dropdowns can now be quickly navigated with the keyboard by typing, which scrolls it to the matching item. Arrows keys and the Enter key can now also be used.
             """.trimIndent(),
+            "4.14.0" description """
+                - Updated splash screen
+            """.trimIndent(),
+            "4.15.0" description """
+                - Solar system distances in intel now have a hover tooltip to show which of your characters is closest
+                - Updated jump bridge parsing to work with an updated alliance wiki page
+                - Account settings files backed up by other third party tools no longer interfere with RIFT
+            """.trimIndent(),
         ).reversed()
     }
 }

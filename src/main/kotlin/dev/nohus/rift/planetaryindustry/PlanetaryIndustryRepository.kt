@@ -217,7 +217,7 @@ class PlanetaryIndustryRepository(
             maxDistance = 9,
             withJumpBridges = true,
             characterId = colony.characterId,
-        )
+        )?.distance ?: Int.MAX_VALUE
     }
 
     private suspend fun loadColonies(): AsyncResource<List<Colony>> = coroutineScope {

@@ -38,7 +38,7 @@ class JumpBridgesParser(
                 null
             }
         }
-        return if (connections.size > 100) {
+        return if (connections.size > 20) {
             JumpBridgeNetwork(connections)
         } else {
             null

@@ -103,7 +103,7 @@ class PingsViewModel(
             is FormupLocation.System -> {
                 val id = solarSystemsRepository.getSystemId(name) ?: return FormupLocationUiModel.Text(name)
                 val security = solarSystemsRepository.getSystemSecurity(id) ?: return FormupLocationUiModel.Text(name)
-                val distance = getSystemDistanceFromCharacterUseCase(id, maxDistance = 9, withJumpBridges = true)
+                val distance = getSystemDistanceFromCharacterUseCase(id, maxDistance = 9, withJumpBridges = true)?.distance
                 FormupLocationUiModel.System(name, security, distance)
             }
         }

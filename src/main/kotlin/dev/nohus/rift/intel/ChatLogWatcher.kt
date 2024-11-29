@@ -84,7 +84,7 @@ class ChatLogWatcher(
             launch {
                 getMutex(channelChatMessage.metadata.channelName).withLock {
                     val duration = Duration.between(channelChatMessage.chatMessage.timestamp, Instant.now())
-                    if (duration < Duration.ofSeconds(10)) {
+                    if (duration < Duration.ofMinutes(2)) {
                         alertsTriggerController.onNewChatMessage(channelChatMessage)
                     }
 

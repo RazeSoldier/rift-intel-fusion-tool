@@ -13,6 +13,11 @@ class GetSystemDistanceFromCharacterUseCase(
     private val characterLocationRepository: CharacterLocationRepository,
 ) {
 
+    data class CharacterDistance(
+        val characterId: Int,
+        val distance: Int,
+    )
+
     /**
      * @param characterId - The character to measure from.
      * If not provided, uses the closest online character, or closest any character.
@@ -22,7 +27,7 @@ class GetSystemDistanceFromCharacterUseCase(
         maxDistance: Int,
         withJumpBridges: Boolean,
         characterId: Int? = null,
-    ): Int {
+    ): CharacterDistance? {
         val characterLocations = characterLocationRepository.locations.value
 
         if (characterId != null) {
@@ -37,7 +42,7 @@ class GetSystemDistanceFromCharacterUseCase(
             getClosestDistance(systemId, characters, characterLocations, maxDistance, withJumpBridges)?.let { return it }
         }
 
-        return Int.MAX_VALUE
+        return null
     }
 
     private fun getClosestDistance(
@@ -46,18 +51,21 @@ class GetSystemDistanceFromCharacterUseCase(
         characterLocations: Map<Int, CharacterLocationRepository.Location>,
         maxDistance: Int,
         withJumpBridges: Boolean,
-    ): Int? {
+    ): CharacterDistance? {
         if (characterIds.isEmpty()) return null
         characterIds
             .mapNotNull { characterId ->
-                characterLocations[characterId]?.solarSystemId ?: return@mapNotNull null
+                characterId to (characterLocations[characterId]?.solarSystemId ?: return@mapNotNull null)
             }
             .distinct()
-            .mapNotNull { characterSystemId ->
-                getSystemDistanceUseCase(characterSystemId, systemId, maxDistance = maxDistance, withJumpBridges = withJumpBridges) ?: return@mapNotNull null
+            .mapNotNull { (characterId, characterSystemId) ->
+                characterId to (getSystemDistanceUseCase(characterSystemId, systemId, maxDistance = maxDistance, withJumpBridges = withJumpBridges) ?: return@mapNotNull null)
             }
-            .minOrNull()?.let { distance ->
-                return distance
+            .minByOrNull { (_, distance) ->
+                distance
+            }
+            ?.let { (characterId, distance) ->
+                return CharacterDistance(characterId, distance)
             }
         return null
     }
