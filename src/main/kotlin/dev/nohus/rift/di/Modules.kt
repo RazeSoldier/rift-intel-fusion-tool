@@ -70,7 +70,7 @@ val platformModule = module {
     }
     single<SendNotificationUseCase> {
         when (get<OperatingSystem>()) {
-            Linux -> LinuxSendNotificationUseCase(get())
+            Linux -> LinuxSendNotificationUseCase(get(), get())
             Windows -> WindowsSendNotificationUseCase()
             MacOs -> MacSendNotificationUseCase(get())
         }

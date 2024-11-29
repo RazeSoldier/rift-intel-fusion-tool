@@ -11,6 +11,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+import java.io.IOException
 import java.io.InputStream
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
@@ -30,7 +31,7 @@ class SoundPlayer(
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val playSubmission = Channel<InputStream>()
 
-    suspend fun start() = scope.launch {
+    fun start() = scope.launch {
         while (true) {
             val inputStream = playSubmission.receive()
             val gain = settings.soundsVolume / 100f
@@ -68,6 +69,8 @@ class SoundPlayer(
             play(file.inputStream())
         } catch (e: InvalidPathException) {
             logger.error { "Could not play file with in invalid path: \"$path\"" }
+        } catch (e: IOException) {
+            logger.error(e) { "Could not play file due to IO exception" }
         }
     }
 

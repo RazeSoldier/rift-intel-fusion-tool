@@ -64,6 +64,7 @@ import dev.nohus.rift.generated.resources.window_titlebar_close
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.utils.Pos
+import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.exposed.sql.not
 
@@ -246,7 +247,7 @@ fun NotificationContent(
                                     append(message.sender)
                                     append(" > ")
                                 }
-                                append(message.message)
+                                appendMessageWithHighlight(message.message, message.highlight)
                             },
                             style = RiftTheme.typography.titlePrimary,
                         )
@@ -284,7 +285,7 @@ fun NotificationContent(
                                 append(notification.sender)
                                 append(" > ")
                             }
-                            append(notification.message)
+                            appendMessageWithHighlight(notification.message, notification.highlight)
                         },
                         style = RiftTheme.typography.titlePrimary,
                     )
@@ -340,6 +341,24 @@ fun NotificationContent(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AnnotatedString.Builder.appendMessageWithHighlight(message: String, highlight: String?) {
+    if (highlight != null) {
+        val index = message.lowercase().indexOf(highlight.lowercase())
+        if (index >= 0) {
+            append(message.take(index))
+            withColor(RiftTheme.colors.textSpecialHighlighted) {
+                append(message.drop(index).take(highlight.length))
+            }
+            append(message.drop(index + highlight.length))
+        } else {
+            append(message)
+        }
+    } else {
+        append(message)
     }
 }
 

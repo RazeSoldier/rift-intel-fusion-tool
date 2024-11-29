@@ -45,6 +45,7 @@ class NotificationsController(
 
         data class ChatMessage(
             val message: String,
+            val highlight: String?,
             val sender: String,
             val senderCharacterId: Int?,
         )
@@ -52,6 +53,7 @@ class NotificationsController(
         data class JabberMessageNotification(
             val chat: String,
             val message: String,
+            val highlight: String?,
             val sender: String,
         ) : Notification
 

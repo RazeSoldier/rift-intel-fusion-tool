@@ -46,6 +46,7 @@ class JabberViewModel(
             val collapsedGroups: List<String>,
             val selectedTab: TabModel = TabModel.Contacts,
             val unreadChats: List<EntityBareJid> = emptyList(),
+            val isUsingBiggerFontSize: Boolean,
         ) : UiState(5)
     }
 
@@ -103,13 +104,26 @@ class JabberViewModel(
     }
 
     private fun setLoggedInState(jabberState: JabberClient.JabberState) {
-        _state.update { UiState.LoggedIn(jabberState = jabberState, collapsedGroups = settings.jabberCollapsedGroups) }
+        _state.update {
+            UiState.LoggedIn(
+                jabberState = jabberState,
+                collapsedGroups = settings.jabberCollapsedGroups,
+                isUsingBiggerFontSize = settings.jabberIsUsingBiggerFontSize,
+            )
+        }
     }
 
     fun onLogoutClick() {
         jabberClient.logout()
         jabberAccountRepository.clearAccount()
         _state.update { UiState.NoAccount(canImport = detectJabberAccountUseCase() != null) }
+    }
+
+    fun onBiggerFontSizeClick() {
+        val enabled = !settings.jabberIsUsingBiggerFontSize
+        settings.jabberIsUsingBiggerFontSize = enabled
+        val state = _state.value as? UiState.LoggedIn ?: return
+        _state.update { state.copy(isUsingBiggerFontSize = enabled) }
     }
 
     fun onTabSelect(model: TabModel) {

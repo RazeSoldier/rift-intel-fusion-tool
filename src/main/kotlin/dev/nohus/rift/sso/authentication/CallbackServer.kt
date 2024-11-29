@@ -11,10 +11,12 @@ import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
+import java.net.BindException
 
 private val logger = KotlinLogging.logger {}
 
@@ -25,13 +27,19 @@ class CallbackServer {
     private var server: NettyApplicationEngine? = null
     private var callback: (suspend (code: String, state: String) -> Unit)? = null
 
-    fun start(port: Int) {
+    fun start(port: Int, deferred: CompletableDeferred<Authentication>) {
         stop()
         scope.launch {
-            createCallbackServer(port).let {
-                server = it
-                logger.info { "Starting server" }
-                it.start(wait = true)
+            try {
+                createCallbackServer(port).let {
+                    server = it
+                    logger.info { "Starting server" }
+                    it.start(wait = true)
+                }
+            } catch (e: BindException) {
+                logger.error { "Could not start SSO callback server due to a BindException: ${e.message}" }
+                stop()
+                deferred.completeExceptionally(e)
             }
         }
     }
@@ -46,7 +54,7 @@ class CallbackServer {
         server = null
     }
 
-    private suspend fun createCallbackServer(port: Int): NettyApplicationEngine {
+    private fun createCallbackServer(port: Int): NettyApplicationEngine {
         return embeddedServer(Netty, port = port) {
             routing {
                 get("/callback") {

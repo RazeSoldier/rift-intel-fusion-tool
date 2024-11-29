@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.koin.core.annotation.Factory
+import java.io.IOException
 import java.nio.file.FileSystemException
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds.ENTRY_CREATE
@@ -125,10 +126,14 @@ class DirectoryObserver(
             repeat(100) { // 100 * 200 == 20 seconds
                 recentFiles.forEach { file ->
                     val oldLastModified = lastModifiedMap[file] ?: 0L
-                    val newLastModified = file.getLastModifiedTime().toMillis()
-                    if (oldLastModified != newLastModified) {
-                        lastModifiedMap[file] = newLastModified
-                        onUpdate(FileEvent(file, FileEventType.Modified))
+                    try {
+                        val newLastModified = file.getLastModifiedTime().toMillis()
+                        if (oldLastModified != newLastModified) {
+                            lastModifiedMap[file] = newLastModified
+                            onUpdate(FileEvent(file, FileEventType.Modified))
+                        }
+                    } catch (e: IOException) {
+                        logger.error { "Could not check last modification time of watched file: ${e.message}" }
                     }
                 }
                 delay(200)

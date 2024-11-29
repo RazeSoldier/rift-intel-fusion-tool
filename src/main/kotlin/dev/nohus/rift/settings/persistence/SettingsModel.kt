@@ -37,6 +37,7 @@ data class SettingsModel(
     val jabberJidLocalPart: String? = null,
     val jabberPassword: String? = null,
     val jabberCollapsedGroups: List<String> = emptyList(),
+    val jabberIsUsingBiggerFontSize: Boolean = false,
     val isDemoMode: Boolean = false,
     val isSettingsReadFailure: Boolean = false,
     val isUsingDarkTrayIcon: Boolean = false,

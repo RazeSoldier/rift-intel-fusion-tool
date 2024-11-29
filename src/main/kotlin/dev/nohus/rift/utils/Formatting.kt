@@ -10,15 +10,15 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
-private val compactFormatter = NumberFormat.getCompactNumberInstance().apply {
+private val compactFormatter = NumberFormat.getCompactNumberInstance(Locale.ENGLISH, NumberFormat.Style.SHORT).apply {
     minimumFractionDigits = 1
 }
-private val formatter = NumberFormat.getInstance()
+private val formatter = NumberFormat.getInstance(Locale.ENGLISH)
 private val dateFormatter = DateTimeFormatter
     .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
     .withLocale(Locale.ENGLISH)
-private val dateFormatterWithDateTime = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss")
-private val dateFormatterWithTime = DateTimeFormatter.ofPattern("HH:mm:ss")
+private val dateFormatterWithDateTime = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss", Locale.ENGLISH)
+private val dateFormatterWithTime = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH)
 
 fun formatIsk(number: Double): String = "${formatNumberCompact(number)} ISK"
 

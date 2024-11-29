@@ -21,12 +21,15 @@ import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.Settings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.time.Duration
 import java.time.Instant
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Responsible for checking events against alert conditions
@@ -73,10 +76,12 @@ class AlertsTriggerController(
     )
 
     fun onNewIntel(message: ParsedChannelChatMessage, understanding: IntelUnderstanding) {
+        logger.debug { "Checking alerts for new intel: $understanding" }
         val triggeredIntelAlerts = enabledAlerts.mapNotNull { alert ->
             if (alert.trigger is IntelReported) {
                 val matchingEntities = getMatchingEntities(alert.trigger.reportTypes, understanding)
                 if (matchingEntities.isNotEmpty() && understanding.systems.isNotEmpty()) {
+                    logger.debug { "Entities are matching the alert: $matchingEntities" }
                     val reportSystem = understanding.systems.first()
                     val reportSystemId = solarSystemsRepository.getSystemId(reportSystem) ?: throw IllegalArgumentException("No system $reportSystem")
                     getMatchingAlertLocation(alert.trigger.reportLocation, reportSystemId)?.let { alertLocationMatch ->
@@ -178,7 +183,7 @@ class AlertsTriggerController(
                         val isMessageMatching = channelChatMessage.chatMessage.message.lowercase().containsNonNull(containing?.lowercase())
                         if (isMessageMatching) {
                             withCooldown(alert) {
-                                alertsActionController.triggerChatMessageAlert(alert, channelChatMessage)
+                                alertsActionController.triggerChatMessageAlert(alert, channelChatMessage, containing)
                             }
                         }
                     }
@@ -204,7 +209,7 @@ class AlertsTriggerController(
                         val isMessageMatching = message.lowercase().containsNonNull(containing?.lowercase())
                         if (isMessageMatching) {
                             withCooldown(alert) {
-                                alertsActionController.triggerJabberMessageAlert(alert, chat, sender, message)
+                                alertsActionController.triggerJabberMessageAlert(alert, chat, sender, message, containing)
                             }
                         }
                     }

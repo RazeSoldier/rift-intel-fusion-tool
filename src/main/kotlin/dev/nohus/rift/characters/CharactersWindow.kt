@@ -396,21 +396,15 @@ private fun CharacterRow(
                             modifier = Modifier.padding(start = Spacing.small),
                         )
                     }
-
-                    AnimatedVisibility(isChoosingDisabledCharacters) {
-                        RiftIconButton(
-                            icon = Res.drawable.buttoniconminus,
-                            onClick = { onDisableCharacterClick(character.characterId) },
-                            modifier = Modifier.padding(start = Spacing.small),
-                        )
-                    }
                 }
 
                 is AsyncResource.Error -> {
                     Text(
                         text = "Could not load",
                         style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
-                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                        modifier = Modifier
+                            .padding(horizontal = Spacing.medium)
+                            .weight(1f),
                     )
                 }
 
@@ -418,9 +412,19 @@ private fun CharacterRow(
                     Text(
                         text = "Loading…",
                         style = RiftTheme.typography.bodySecondary,
-                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                        modifier = Modifier
+                            .padding(horizontal = Spacing.medium)
+                            .weight(1f),
                     )
                 }
+            }
+
+            AnimatedVisibility(isChoosingDisabledCharacters) {
+                RiftIconButton(
+                    icon = Res.drawable.buttoniconminus,
+                    onClick = { onDisableCharacterClick(character.characterId) },
+                    modifier = Modifier.padding(start = Spacing.small),
+                )
             }
         }
 

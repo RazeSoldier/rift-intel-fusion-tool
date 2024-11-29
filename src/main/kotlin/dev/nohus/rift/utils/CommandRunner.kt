@@ -45,7 +45,7 @@ class CommandRunner {
 
         if (exitValue < 0 && !ignoreFailure) {
             logger.error { "Command \"$command\" failed, output: $outputStream" }
-            throw IllegalStateException("Command \"$command\" has failed.")
+            throw IllegalStateException("Command \"$command\" has failed with exit code $exitValue")
         }
 
         return CommandResult(
