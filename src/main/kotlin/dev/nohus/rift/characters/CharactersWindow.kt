@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -38,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlurEffect
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -48,7 +48,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.characters.CharactersViewModel.CharacterItem
-import dev.nohus.rift.characters.CharactersViewModel.CopyingState
 import dev.nohus.rift.characters.CharactersViewModel.UiState
 import dev.nohus.rift.clones.Clone
 import dev.nohus.rift.compose.AsyncAllianceLogo
@@ -63,7 +62,6 @@ import dev.nohus.rift.compose.RequirementIcon
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftIconButton
 import dev.nohus.rift.compose.RiftImageButton
-import dev.nohus.rift.compose.RiftMessageDialog
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -77,9 +75,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.buttoniconminus
 import dev.nohus.rift.generated.resources.buttoniconplus
 import dev.nohus.rift.generated.resources.clone
-import dev.nohus.rift.generated.resources.copy_16px
 import dev.nohus.rift.generated.resources.editplanicon
-import dev.nohus.rift.generated.resources.recall_drones_16px
 import dev.nohus.rift.generated.resources.sso
 import dev.nohus.rift.generated.resources.sso_dark
 import dev.nohus.rift.generated.resources.window_characters
@@ -119,22 +115,10 @@ fun CharactersWindow(
             state = state,
             onSsoClick = viewModel::onSsoClick,
             onCopySettingsClick = viewModel::onCopySettingsClick,
-            onCopyCancel = viewModel::onCopyCancel,
-            onCopySourceClick = viewModel::onCopySourceClick,
-            onCopyDestinationClick = viewModel::onCopyDestinationClick,
-            onCopySettingsConfirmClick = viewModel::onCopySettingsConfirmClick,
             onChooseDisabledClick = viewModel::onChooseDisabledClick,
             onDisableCharacterClick = viewModel::onDisableCharacterClick,
             onEnableCharacterClick = viewModel::onEnableCharacterClick,
         )
-
-        state.dialogMessage?.let {
-            RiftMessageDialog(
-                dialog = it,
-                parentWindowState = windowState,
-                onDismiss = viewModel::onCloseDialogMessage,
-            )
-        }
 
         if (state.isSsoDialogOpen) {
             SsoDialog(
@@ -151,10 +135,6 @@ private fun CharactersWindowContent(
     state: UiState,
     onSsoClick: () -> Unit,
     onCopySettingsClick: () -> Unit,
-    onCopyCancel: () -> Unit,
-    onCopySourceClick: (Int) -> Unit,
-    onCopyDestinationClick: (Int) -> Unit,
-    onCopySettingsConfirmClick: () -> Unit,
     onChooseDisabledClick: () -> Unit,
     onDisableCharacterClick: (characterId: Int) -> Unit,
     onEnableCharacterClick: (characterId: Int) -> Unit,
@@ -165,68 +145,14 @@ private fun CharactersWindowContent(
                 state = state,
                 onSsoClick = onSsoClick,
                 onCopySettingsClick = onCopySettingsClick,
-                onCopyCancel = onCopyCancel,
-                onCopySettingsConfirmClick = onCopySettingsConfirmClick,
                 onChooseDisabledClick = onChooseDisabledClick,
             )
-
-            ScrollbarLazyColumn(
-                modifier = Modifier.weight(1f),
-            ) {
-                items(state.characters.filterNot { it.isHidden }, key = { it.characterId }) { character ->
-                    Box(modifier = Modifier.animateItem()) {
-                        CharacterRow(
-                            character = character,
-                            isOnline = character.characterId in state.onlineCharacters,
-                            location = state.locations[character.characterId],
-                            copyingState = state.copying,
-                            isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
-                            isShowingClones = state.isShowingClones,
-                            onCopySourceClick = { onCopySourceClick(character.characterId) },
-                            onCopyDestinationClick = { onCopyDestinationClick(character.characterId) },
-                            onDisableCharacterClick = onDisableCharacterClick,
-                        )
-                    }
-                }
-                item(key = "disabled characters") {
-                    Box(modifier = Modifier.animateItem()) {
-                        RiftTooltipArea(
-                            text = "Disabled characters will not be used in RIFT.",
-                            modifier = Modifier.padding(vertical = Spacing.medium),
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-                            ) {
-                                if (state.characters.any { it.isHidden }) {
-                                    Text(
-                                        text = "Disabled characters",
-                                        style = RiftTheme.typography.titlePrimary,
-                                    )
-                                } else {
-                                    Text(
-                                        text = "No disabled characters",
-                                        style = RiftTheme.typography.titlePrimary,
-                                    )
-                                }
-                                RiftImageButton(
-                                    resource = Res.drawable.editplanicon,
-                                    size = 20.dp,
-                                    onClick = onChooseDisabledClick,
-                                )
-                            }
-                        }
-                    }
-                }
-                items(state.characters.filter { it.isHidden }, key = { it.characterId }) { character ->
-                    Box(modifier = Modifier.animateItem()) {
-                        HiddenCharacterRow(
-                            character = character,
-                            isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
-                            onEnableCharacterClick = onEnableCharacterClick,
-                        )
-                    }
-                }
-            }
+            CharactersList(
+                state = state,
+                onDisableCharacterClick = onDisableCharacterClick,
+                onChooseDisabledClick = onChooseDisabledClick,
+                onEnableCharacterClick = onEnableCharacterClick,
+            )
         }
     } else {
         Text(
@@ -240,95 +166,106 @@ private fun CharactersWindowContent(
 }
 
 @Composable
+private fun ColumnScope.CharactersList(
+    state: UiState,
+    onDisableCharacterClick: (characterId: Int) -> Unit,
+    onChooseDisabledClick: () -> Unit,
+    onEnableCharacterClick: (characterId: Int) -> Unit,
+) {
+    ScrollbarLazyColumn(
+        modifier = Modifier.Companion.weight(1f),
+    ) {
+        items(state.characters.filterNot { it.isHidden }, key = { it.characterId }) { character ->
+            Box(modifier = Modifier.animateItem()) {
+                CharacterRow(
+                    character = character,
+                    isOnline = character.characterId in state.onlineCharacters,
+                    location = state.locations[character.characterId],
+                    isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
+                    isShowingClones = state.isShowingClones,
+                    onDisableCharacterClick = onDisableCharacterClick,
+                )
+            }
+        }
+        item(key = "disabled characters") {
+            Box(modifier = Modifier.animateItem()) {
+                RiftTooltipArea(
+                    text = "Disabled characters will not be used in RIFT.",
+                    modifier = Modifier.padding(vertical = Spacing.medium),
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                    ) {
+                        if (state.characters.any { it.isHidden }) {
+                            Text(
+                                text = "Disabled characters",
+                                style = RiftTheme.typography.titlePrimary,
+                            )
+                        } else {
+                            Text(
+                                text = "No disabled characters",
+                                style = RiftTheme.typography.titlePrimary,
+                            )
+                        }
+                        RiftImageButton(
+                            resource = Res.drawable.editplanicon,
+                            size = 20.dp,
+                            onClick = onChooseDisabledClick,
+                        )
+                    }
+                }
+            }
+        }
+        items(state.characters.filter { it.isHidden }, key = { it.characterId }) { character ->
+            Box(modifier = Modifier.animateItem()) {
+                HiddenCharacterRow(
+                    character = character,
+                    isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
+                    onEnableCharacterClick = onEnableCharacterClick,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun TopRow(
     state: UiState,
     onSsoClick: () -> Unit,
     onCopySettingsClick: () -> Unit,
-    onCopyCancel: () -> Unit,
-    onCopySettingsConfirmClick: () -> Unit,
     onChooseDisabledClick: () -> Unit,
 ) {
-    AnimatedContent(state.copying, contentKey = { it::class }) { copying ->
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-            modifier = Modifier.padding(bottom = Spacing.medium).fillMaxWidth(),
-        ) {
-            when (copying) {
-                is CopyingState.NotCopying -> {
-                    AnimatedContent(state.isChoosingDisabledCharacters) { isChoosingDisabledCharacters ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                        ) {
-                            if (isChoosingDisabledCharacters) {
-                                Text(
-                                    text = "Enable or disable characters you don't want to use.",
-                                    style = RiftTheme.typography.bodyPrimary,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                RiftButton(
-                                    text = "Done",
-                                    type = ButtonType.Primary,
-                                    onClick = onChooseDisabledClick,
-                                )
-                            } else {
-                                SsoButton(onClick = onSsoClick)
-                                RiftTooltipArea(
-                                    text = "Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.",
-                                ) {
-                                    RiftButton(
-                                        text = "Copy settings",
-                                        onClick = onCopySettingsClick,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                is CopyingState.DestinationSelected -> {
-                    AnimatedContent(copying, modifier = Modifier.weight(1f)) { copying ->
-                        Text(
-                            text = "Copy Eve settings from ${copying.source.name} to ${copying.destination.joinToString { it.name }}?",
-                            style = RiftTheme.typography.bodyPrimary,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        modifier = Modifier.padding(bottom = Spacing.medium).fillMaxWidth(),
+    ) {
+        AnimatedContent(state.isChoosingDisabledCharacters) { isChoosingDisabledCharacters ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+            ) {
+                if (isChoosingDisabledCharacters) {
+                    Text(
+                        text = "Enable or disable characters you don't want to use.",
+                        style = RiftTheme.typography.bodyPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    RiftButton(
+                        text = "Done",
+                        type = ButtonType.Primary,
+                        onClick = onChooseDisabledClick,
+                    )
+                } else {
+                    SsoButton(onClick = onSsoClick)
+                    RiftTooltipArea(
+                        text = "Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.",
+                    ) {
+                        RiftButton(
+                            text = "Copy settings",
+                            onClick = onCopySettingsClick,
                         )
                     }
-                    RiftButton(
-                        text = "Cancel",
-                        type = ButtonType.Secondary,
-                        onClick = onCopyCancel,
-                    )
-                    RiftButton(
-                        text = "Confirm",
-                        onClick = onCopySettingsConfirmClick,
-                    )
-                }
-
-                is CopyingState.SelectingDestination -> {
-                    Text(
-                        text = "Select characters to paste Eve settings to.",
-                        style = RiftTheme.typography.bodyPrimary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    RiftButton(
-                        text = "Cancel",
-                        type = ButtonType.Secondary,
-                        onClick = onCopyCancel,
-                    )
-                }
-
-                is CopyingState.SelectingSource -> {
-                    Text(
-                        text = "Select character to copy Eve settings from.",
-                        style = RiftTheme.typography.bodyPrimary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    RiftButton(
-                        text = "Cancel",
-                        type = ButtonType.Secondary,
-                        onClick = onCopyCancel,
-                    )
                 }
             }
         }
@@ -370,11 +307,8 @@ private fun CharacterRow(
     character: CharacterItem,
     isOnline: Boolean,
     location: Location?,
-    copyingState: CopyingState,
     isChoosingDisabledCharacters: Boolean,
     isShowingClones: Boolean,
-    onCopySourceClick: () -> Unit,
-    onCopyDestinationClick: () -> Unit,
     onDisableCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -447,94 +381,20 @@ private fun CharacterRow(
                         }
                     }
 
-                    AnimatedVisibility(copyingState is CopyingState.NotCopying && !isChoosingDisabledCharacters) {
+                    AnimatedVisibility(!isChoosingDisabledCharacters) {
                         Location(location)
                     }
 
-                    AnimatedContent(
-                        copyingState,
-                        contentKey = {
-                            when (it) {
-                                CopyingState.NotCopying -> 0
-                                CopyingState.SelectingSource -> 1
-                                is CopyingState.SelectingDestination -> 2
-                                is CopyingState.DestinationSelected -> 2
-                            }
-                        },
-                    ) { copyingState ->
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(32.dp),
-                        ) {
-                            when (copyingState) {
-                                CopyingState.NotCopying -> {
-                                    RequirementIcon(
-                                        isFulfilled = character.isAuthenticated,
-                                        fulfilledTooltip = "Authenticated with ESI",
-                                        notFulfilledTooltip = "Not authenticated with ESI.\nClick the log in button above.",
-                                        modifier = Modifier.padding(start = Spacing.small),
-                                    )
-                                }
-
-                                is CopyingState.SelectingSource -> {
-                                    if (character.settingsFile != null) {
-                                        RiftIconButton(
-                                            icon = Res.drawable.copy_16px,
-                                            onClick = onCopySourceClick,
-                                        )
-                                    } else {
-                                        NoSettingsFileIcon()
-                                    }
-                                }
-
-                                is CopyingState.SelectingDestination -> {
-                                    if (character.settingsFile != null) {
-                                        if (copyingState.sourceId == character.characterId) {
-                                            Image(
-                                                painter = painterResource(Res.drawable.copy_16px),
-                                                contentDescription = null,
-                                                colorFilter = ColorFilter.tint(RiftTheme.colors.textPrimary),
-                                                modifier = Modifier.size(16.dp),
-                                            )
-                                        } else {
-                                            RiftIconButton(
-                                                icon = Res.drawable.recall_drones_16px,
-                                                onClick = onCopyDestinationClick,
-                                            )
-                                        }
-                                    } else {
-                                        NoSettingsFileIcon()
-                                    }
-                                }
-
-                                is CopyingState.DestinationSelected -> {
-                                    if (character.settingsFile != null) {
-                                        if (copyingState.source.id == character.characterId) {
-                                            Image(
-                                                painter = painterResource(Res.drawable.copy_16px),
-                                                contentDescription = null,
-                                                colorFilter = ColorFilter.tint(RiftTheme.colors.textPrimary),
-                                                modifier = Modifier.size(16.dp),
-                                            )
-                                        } else if (copyingState.destination.any { it.id == character.characterId }) {
-                                            Image(
-                                                painter = painterResource(Res.drawable.recall_drones_16px),
-                                                contentDescription = null,
-                                                colorFilter = ColorFilter.tint(RiftTheme.colors.textPrimary),
-                                                modifier = Modifier.size(16.dp),
-                                            )
-                                        } else {
-                                            RiftIconButton(
-                                                icon = Res.drawable.recall_drones_16px,
-                                                onClick = onCopyDestinationClick,
-                                            )
-                                        }
-                                    } else {
-                                        NoSettingsFileIcon()
-                                    }
-                                }
-                            }
-                        }
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        RequirementIcon(
+                            isFulfilled = character.isAuthenticated,
+                            fulfilledTooltip = "Authenticated with ESI",
+                            notFulfilledTooltip = "Not authenticated with ESI.\nClick the log in button above.",
+                            modifier = Modifier.padding(start = Spacing.small),
+                        )
                     }
 
                     AnimatedVisibility(isChoosingDisabledCharacters) {
@@ -564,7 +424,7 @@ private fun CharacterRow(
             }
         }
 
-        AnimatedVisibility(copyingState is CopyingState.NotCopying && !isChoosingDisabledCharacters && isShowingClones) {
+        AnimatedVisibility(!isChoosingDisabledCharacters && isShowingClones) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
             ) {
@@ -698,16 +558,6 @@ private fun HiddenCharacterRow(
             )
         }
     }
-}
-
-@Composable
-private fun NoSettingsFileIcon() {
-    RequirementIcon(
-        isFulfilled = false,
-        fulfilledTooltip = "",
-        notFulfilledTooltip = "EVE settings file for this character is missing.\nMake sure you have logged in to the game\nat least once.",
-        modifier = Modifier.padding(start = Spacing.small),
-    )
 }
 
 @Composable

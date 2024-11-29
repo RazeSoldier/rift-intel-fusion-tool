@@ -21,9 +21,11 @@ class Settings(
 
     private fun update(update: SettingsModel.() -> SettingsModel) {
         val newModel = model.update()
-        model = newModel
-        _updateFlow.tryEmit(newModel)
-        persistence.save(newModel)
+        if (newModel != model) {
+            model = newModel
+            _updateFlow.tryEmit(newModel)
+            persistence.save(newModel)
+        }
     }
 
     var eveLogsDirectory: Path?
@@ -223,4 +225,12 @@ class Settings(
     var uiScale: Float
         get() = model.uiScale
         set(value) = update { copy(uiScale = value) }
+
+    var accountAssociations: Map<Int, Int>
+        get() = model.accountAssociations
+        set(value) = update { copy(accountAssociations = value) }
+
+    var isTrayIconWorking: Boolean
+        get() = model.isTrayIconWorking
+        set(value) = update { copy(isTrayIconWorking = value) }
 }

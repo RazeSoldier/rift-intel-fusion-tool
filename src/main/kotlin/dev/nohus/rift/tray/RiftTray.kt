@@ -72,13 +72,13 @@ fun ApplicationScope.RiftTray(
         val didInitialize = initialize(
             items = items,
             operatingSystem = operatingSystem,
-            isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
+            settings = settings,
         )
         if (!didInitialize) {
             logger.info { "Falling back to AWT tray icon" }
             AwtTrayIcon(
                 items = items,
-                isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
+                settings = settings,
                 windowManager = windowManager,
             )
         }
@@ -134,7 +134,7 @@ private fun getTrayMenuItems(
 private fun initialize(
     items: List<TrayMenuItem>,
     operatingSystem: OperatingSystem,
-    isUsingDarkTrayIcon: Boolean,
+    settings: Settings,
 ): Boolean {
     return if (currentSystemTray == null) {
         if (operatingSystem == OperatingSystem.Windows) {
@@ -149,7 +149,7 @@ private fun initialize(
             logger.error { "System tray failed to initialize" }
             false
         } else {
-            val icon = getBestTrayIcon(systemTray, isUsingDarkTrayIcon)
+            val icon = getBestTrayIcon(systemTray, settings.isUsingDarkTrayIcon)
             try {
                 systemTray.setImage(icon)
                 if (operatingSystem == OperatingSystem.Windows) {
@@ -163,7 +163,16 @@ private fun initialize(
             for (item in items) {
                 when (item) {
                     is TrayMenuTextItem -> {
-                        systemTray.menu.add(MenuItem(item.text, item.drawable?.let { getImage(it) }) { item.action() })
+                        systemTray.menu.add(
+                            MenuItem(
+                                item.text,
+                                item.drawable?.let { getImage(it) },
+                                {
+                                    settings.isTrayIconWorking = true
+                                    item.action()
+                                },
+                            ),
+                        )
                     }
                     Separator -> {
                         systemTray.menu.add(JSeparator())
@@ -181,10 +190,10 @@ private fun initialize(
 @Composable
 private fun ApplicationScope.AwtTrayIcon(
     items: List<TrayMenuItem>,
-    isUsingDarkTrayIcon: Boolean,
+    settings: Settings,
     windowManager: WindowManager,
 ) {
-    val icon = if (isUsingDarkTrayIcon) {
+    val icon = if (settings.isUsingDarkTrayIcon) {
         Res.drawable.tray_tray_dark_128
     } else {
         Res.drawable.tray_tray_128
@@ -198,7 +207,10 @@ private fun ApplicationScope.AwtTrayIcon(
             for (item in items) {
                 when (item) {
                     is TrayMenuTextItem -> {
-                        Item(item.text, onClick = item.action)
+                        Item(item.text, onClick = {
+                            settings.isTrayIconWorking = true
+                            item.action
+                        })
                     }
                     Separator -> {
                         Separator()

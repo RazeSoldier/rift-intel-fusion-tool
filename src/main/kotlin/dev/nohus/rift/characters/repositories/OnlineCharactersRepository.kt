@@ -1,5 +1,6 @@
 package dev.nohus.rift.characters.repositories
 
+import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.utils.openwindows.GetOpenEveClientsUseCase
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ import java.time.Instant
 class OnlineCharactersRepository(
     private val getOpenEveClientsUseCase: GetOpenEveClientsUseCase,
     private val localCharactersRepository: LocalCharactersRepository,
+    private val accountAssociationsRepository: AccountAssociationsRepository,
     private val esiApi: EsiApi,
 ) {
 
@@ -79,6 +81,7 @@ class OnlineCharactersRepository(
             lastSeen[characterId] = Instant.now()
         }
         updateOnlineCharacters()
+        accountAssociationsRepository.onCharacterLogin(characterId)
     }
 
     private suspend fun updateOnlineCharacters() {

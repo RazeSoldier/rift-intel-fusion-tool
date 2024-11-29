@@ -17,7 +17,7 @@ import kotlin.math.pow
 fun Pin.isRouted(routes: List<Route>): RoutedState {
     val isInputRouted = if (this is Pin.Factory) {
         val inputTypes = schematic?.inputs?.map { it.key.id } ?: emptyList()
-        val inputTypesReceived = routes.filter { it.destinationPinId == id }.map { it.type.id }.toSet()
+        val inputTypesReceived = routes.toList().filter { it.destinationPinId == id }.map { it.type.id }.toSet()
         inputTypes.all { it in inputTypesReceived }
     } else {
         true

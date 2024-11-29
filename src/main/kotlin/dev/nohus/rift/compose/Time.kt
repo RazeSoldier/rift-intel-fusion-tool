@@ -8,8 +8,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-fun getRelativeTime(timestamp: Instant, displayTimezone: ZoneId): String {
-    val duration = Duration.between(timestamp, Instant.now())
+fun getRelativeTime(timestamp: Instant, displayTimezone: ZoneId, now: Instant = Instant.now()): String {
+    val duration = Duration.between(timestamp, now)
     return if (duration.toSeconds() < 5) {
         "just now"
     } else if (duration.toSeconds() < 60) {
