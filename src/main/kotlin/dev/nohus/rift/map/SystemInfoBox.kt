@@ -68,6 +68,7 @@ import dev.nohus.rift.generated.resources.indicator_storm
 import dev.nohus.rift.intel.state.IntelStateController.Dated
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
+import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.network.esi.SovereigntySystem
 import dev.nohus.rift.repositories.MapStatusRepository.SolarSystemStatus
 import dev.nohus.rift.repositories.NamesRepository
@@ -273,6 +274,12 @@ private fun ColumnScope.SystemInfoTypes(
                     MapSystemInfoType.Clones -> {} // In column
                     MapSystemInfoType.Standings -> {} // In system name row
                     MapSystemInfoType.RatsType -> {} // In column
+                    MapSystemInfoType.IndustryIndexCopying -> {} // In column
+                    MapSystemInfoType.IndustryIndexInvention -> {} // In column
+                    MapSystemInfoType.IndustryIndexManufacturing -> {} // In column
+                    MapSystemInfoType.IndustryIndexReaction -> {} // In column
+                    MapSystemInfoType.IndustryIndexMaterialEfficiency -> {} // In column
+                    MapSystemInfoType.IndustryIndexTimeEfficiency -> {} // In column
                 }
             }
     }
@@ -392,6 +399,12 @@ private fun ColumnScope.SystemInfoTypes(
                         )
                     }
                 }
+                MapSystemInfoType.IndustryIndexCopying -> IndustryActivityIndex(systemStatus, IndustryActivity.Copying, "Copying")
+                MapSystemInfoType.IndustryIndexInvention -> IndustryActivityIndex(systemStatus, IndustryActivity.Invention, "Invention")
+                MapSystemInfoType.IndustryIndexManufacturing -> IndustryActivityIndex(systemStatus, IndustryActivity.Manufacturing, "Manufacturing")
+                MapSystemInfoType.IndustryIndexReaction -> IndustryActivityIndex(systemStatus, IndustryActivity.Reaction, "Reactions")
+                MapSystemInfoType.IndustryIndexMaterialEfficiency -> IndustryActivityIndex(systemStatus, IndustryActivity.ResearchingMaterialEfficiency, "Material Efficiency")
+                MapSystemInfoType.IndustryIndexTimeEfficiency -> IndustryActivityIndex(systemStatus, IndustryActivity.ResearchingTimeEfficiency, "Time Efficiency")
             }
         }
 }
@@ -499,8 +512,25 @@ private fun SystemInfoTypesIndicators(
                 }
                 MapSystemInfoType.Standings -> {} // In system name row
                 MapSystemInfoType.RatsType -> {}
+                MapSystemInfoType.IndustryIndexCopying -> IndustryActivityIndex(systemStatus, IndustryActivity.Copying, "Copying")
+                MapSystemInfoType.IndustryIndexInvention -> IndustryActivityIndex(systemStatus, IndustryActivity.Invention, "Invention")
+                MapSystemInfoType.IndustryIndexManufacturing -> IndustryActivityIndex(systemStatus, IndustryActivity.Manufacturing, "Manufacturing")
+                MapSystemInfoType.IndustryIndexReaction -> IndustryActivityIndex(systemStatus, IndustryActivity.Reaction, "Reactions")
+                MapSystemInfoType.IndustryIndexMaterialEfficiency -> IndustryActivityIndex(systemStatus, IndustryActivity.ResearchingMaterialEfficiency, "Material Efficiency")
+                MapSystemInfoType.IndustryIndexTimeEfficiency -> IndustryActivityIndex(systemStatus, IndustryActivity.ResearchingTimeEfficiency, "Time Efficiency")
             }
         }
+}
+
+@Composable
+private fun IndustryActivityIndex(systemStatus: SolarSystemStatus?, activity: IndustryActivity, name: String) {
+    val index = systemStatus?.industryIndices?.get(activity)
+    if (index != null) {
+        Text(
+            text = String.format("$name Index: %.1f%%", index * 100),
+            style = RiftTheme.typography.bodyPrimary,
+        )
+    }
 }
 
 @Composable

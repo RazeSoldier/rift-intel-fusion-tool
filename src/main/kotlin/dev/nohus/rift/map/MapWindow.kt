@@ -96,6 +96,7 @@ import dev.nohus.rift.map.systemcolor.strategies.ColoniesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.FactionWarfareSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.HostileEntitiesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.IncursionsSystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.IndustryIndicesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.JoveObservatorySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.JumpRangeSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.JumpsSystemColorStrategy
@@ -109,6 +110,7 @@ import dev.nohus.rift.map.systemcolor.strategies.SovereigntySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StandingsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StarColorSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StationsSystemColorStrategy
+import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
@@ -347,6 +349,12 @@ private fun Map(
             clones = ClonesSystemColorStrategy(state.mapState.systemStatus),
             standings = koin.get { parametersOf(state.mapState.systemStatus) },
             rats = RatsTypeSystemColorStrategy(state.mapState.systemStatus),
+            industryCopying = IndustryIndicesSystemColorStrategy(state.mapState.systemStatus, IndustryActivity.Copying),
+            industryInvention = IndustryIndicesSystemColorStrategy(state.mapState.systemStatus, IndustryActivity.Invention),
+            industryManufacturing = IndustryIndicesSystemColorStrategy(state.mapState.systemStatus, IndustryActivity.Manufacturing),
+            industryReaction = IndustryIndicesSystemColorStrategy(state.mapState.systemStatus, IndustryActivity.Reaction),
+            industryMaterialEfficiency = IndustryIndicesSystemColorStrategy(state.mapState.systemStatus, IndustryActivity.ResearchingMaterialEfficiency),
+            industryTimeEfficiency = IndustryIndicesSystemColorStrategy(state.mapState.systemStatus, IndustryActivity.ResearchingTimeEfficiency),
         )
     }
 
@@ -554,6 +562,12 @@ data class SystemStatusColorStrategies(
     val clones: ClonesSystemColorStrategy,
     val standings: StandingsSystemColorStrategy,
     val rats: RatsTypeSystemColorStrategy,
+    val industryCopying: IndustryIndicesSystemColorStrategy,
+    val industryInvention: IndustryIndicesSystemColorStrategy,
+    val industryManufacturing: IndustryIndicesSystemColorStrategy,
+    val industryReaction: IndustryIndicesSystemColorStrategy,
+    val industryMaterialEfficiency: IndustryIndicesSystemColorStrategy,
+    val industryTimeEfficiency: IndustryIndicesSystemColorStrategy,
 )
 
 fun getSolarSystemColorStrategy(
@@ -588,6 +602,12 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.Clones -> systemStatusColorStrategies.clones
         MapSystemInfoType.Standings -> systemStatusColorStrategies.standings
         MapSystemInfoType.RatsType -> systemStatusColorStrategies.rats
+        MapSystemInfoType.IndustryIndexCopying -> systemStatusColorStrategies.industryCopying
+        MapSystemInfoType.IndustryIndexInvention -> systemStatusColorStrategies.industryInvention
+        MapSystemInfoType.IndustryIndexManufacturing -> systemStatusColorStrategies.industryManufacturing
+        MapSystemInfoType.IndustryIndexReaction -> systemStatusColorStrategies.industryReaction
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> systemStatusColorStrategies.industryMaterialEfficiency
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> systemStatusColorStrategies.industryTimeEfficiency
     }
 }
 

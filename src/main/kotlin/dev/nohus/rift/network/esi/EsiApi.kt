@@ -251,4 +251,8 @@ class EsiApi(
             service.getCharactersIdPlanetsId(characterId, planetId, authorization)
         }
     }
+
+    suspend fun getIndustrySystems(): Result<List<IndustrySystem>> {
+        return execute { service.getIndustrySystems() }
+    }
 }

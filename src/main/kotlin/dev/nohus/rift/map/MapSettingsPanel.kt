@@ -624,6 +624,12 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.Clones -> "Clones" to "Colored when you have\njump clones present"
         MapSystemInfoType.Standings -> "Standings" to "Colored based on standings\ntowards the sovereignty holder.\nLow and high sec are always yellow and green."
         MapSystemInfoType.RatsType -> "Rats" to "Colored according to the\nfaction of rats in the system"
+        MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Colored according to the\nindustry cost index of Copying"
+        MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Colored according to the\nindustry cost index of Invention"
+        MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Colored according to the\nindustry cost index of Manufacturing"
+        MapSystemInfoType.IndustryIndexReaction -> "Reactions Index" to "Colored according to the\nindustry cost index of Reactions"
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> "Material Efficiency Index" to "Colored according to the\nindustry cost index of Researching Material Efficiency"
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> "Time Efficiency Index" to "Colored according to the\nindustry cost index of Researching Time Efficiency"
         null -> "None" to "No background color"
     }
 }
@@ -653,6 +659,12 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.Clones -> "Clones" to "Indicators for jump clones"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
         MapSystemInfoType.RatsType -> "" to ""
+        MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
+        MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Industry cost index of Invention"
+        MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Industry cost index of Manufacturing"
+        MapSystemInfoType.IndustryIndexReaction -> "Reactions Index" to "Industry cost index of Reactions"
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> "Material Efficiency Index" to "Industry cost index of Researching Material Efficiency"
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> "Time Efficiency Index" to "Industry cost index of Researching Time Efficiency"
         null -> "None" to "No background color"
     }
 }
@@ -682,6 +694,12 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.Clones -> "Clones" to "Jump clones information"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
         MapSystemInfoType.RatsType -> "Rats" to "Faction of rats in the system"
+        MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
+        MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Industry cost index of Invention"
+        MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Industry cost index of Manufacturing"
+        MapSystemInfoType.IndustryIndexReaction -> "Reactions Index" to "Industry cost index of Reactions"
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> "Material Efficiency Index" to "Industry cost index of Researching Material Efficiency"
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> "Time Efficiency Index" to "Industry cost index of Researching Time Efficiency"
         null -> "None" to "No background color"
     }
 }

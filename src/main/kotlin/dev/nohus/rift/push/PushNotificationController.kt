@@ -26,11 +26,11 @@ class PushNotificationController(
         var wasAttempted = false
         if (settings.ntfy.topic != null) {
             wasAttempted = true
-            sendPushoverNotification(title, message).map { }
+            sendNtfyNotification(title, message).map { }
         }
         if (settings.pushover.apiToken != null && settings.pushover.userKey != null) {
             wasAttempted = true
-            sendNtfyNotification(title, message).map { }
+            sendPushoverNotification(title, message).map { }
         }
         if (!wasAttempted) {
             logger.error { "Could not send push notification as no push service is setup" }
