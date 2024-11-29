@@ -8,11 +8,13 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.WindowExceptionHandler
 import androidx.compose.ui.window.WindowExceptionHandlerFactory
 import androidx.compose.ui.window.awaitApplication
+import ch.qos.logback.classic.Logger
 import dev.nohus.rift.compose.theme.RiftTheme
 import io.sentry.Sentry
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import java.awt.Window
 import java.awt.event.WindowEvent
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,7 +32,15 @@ var isCrashed = AtomicBoolean(false)
 fun handleFatalException(throwable: Throwable, window: Window? = null) {
     if (isCrashed.getAndSet(true)) return
     val sentryId = Sentry.captureException(throwable)
-    println("RIFT has encountered a fatal issue: $sentryId")
+
+    try {
+        val logger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME) as Logger
+        logger.error("RIFT has encountered a fatal issue: $sentryId", throwable)
+    } catch (e: Throwable) {
+        println("Couldn't print crash to logger: $e")
+        println("RIFT has encountered a fatal issue: $sentryId, $throwable")
+    }
+
     SwingUtilities.invokeLater {
         showErrorDialog(throwable, sentryId.toString())
         window?.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING))

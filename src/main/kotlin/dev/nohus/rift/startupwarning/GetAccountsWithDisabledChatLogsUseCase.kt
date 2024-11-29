@@ -4,6 +4,7 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.charactersettings.GetAccountsUseCase
+import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
 import dev.nohus.rift.network.AsyncResource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.FlowPreview
@@ -39,7 +40,7 @@ class GetAccountsWithDisabledChatLogsUseCase(
                 val indexOfLogChat = bytes.indexOf("logchat")
                 if (indexOfLogChat != null) {
                     if (bytes[indexOfLogChat + CHAT_LOGS_DISABLED_BYTE_OFFSET].toInt() == CHAT_LOGS_DISABLED_BYTE_VALUE) {
-                        getMessageForAccount(account.id, characters.await())
+                        getMessageForAccount(account, characters.await())
                     } else {
                         null // Chat logs are enabled
                     }
@@ -64,23 +65,29 @@ class GetAccountsWithDisabledChatLogsUseCase(
         }
     }
 
-    private fun getMessageForAccount(accountId: Int, characters: List<LocalCharacter>): String {
+    private fun getMessageForAccount(account: Account, characters: List<LocalCharacter>): String {
         val accountAssociations = accountAssociationsRepository.getAssociations()
         val charactersOnAccount = characters.filter { character ->
             val characterAccountId = accountAssociations[character.characterId] ?: return@filter false
-            characterAccountId == accountId
+            characterAccountId == account.id
         }
-        return if (charactersOnAccount.isNotEmpty()) {
-            val names = charactersOnAccount.mapNotNull { it.info.success?.name }
-            if (names.isNotEmpty()) {
-                val characterNames = names.joinToString(", ")
-                "Account with characters: $characterNames"
-            } else {
-                val characterIds = charactersOnAccount.joinToString(", ") { it.characterId.toString() }
-                "Account with character IDs: $characterIds"
+
+        return buildString {
+            val profile = account.profile.takeIf { it != "Default" }
+            if (profile != null) {
+                append("In profile $profile: ")
             }
-        } else {
-            "Account with ID: $accountId"
+            append("Account with ID ${account.id}")
+            if (charactersOnAccount.isNotEmpty()) {
+                val names = charactersOnAccount.mapNotNull { it.info.success?.name }
+                if (names.isNotEmpty()) {
+                    val characterNames = names.joinToString(", ")
+                    append(" and characters $characterNames")
+                } else {
+                    val characterIds = charactersOnAccount.joinToString(", ") { it.characterId.toString() }
+                    append(" and character IDs $characterIds")
+                }
+            }
         }
     }
 

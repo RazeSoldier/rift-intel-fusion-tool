@@ -15,7 +15,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser
 import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
-import dev.nohus.rift.repositories.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope

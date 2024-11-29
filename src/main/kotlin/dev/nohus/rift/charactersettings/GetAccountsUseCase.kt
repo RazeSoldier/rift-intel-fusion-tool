@@ -25,6 +25,7 @@ class GetAccountsUseCase(
 
     data class Account(
         val id: Int,
+        val profile: String,
         val path: Path,
         val lastModified: Instant,
     )
@@ -43,7 +44,8 @@ class GetAccountsUseCase(
                     val id = accountFile.nameWithoutExtension.substringAfterLast("_").toIntOrNull()
                         ?: return@mapNotNull null
                     val lastModified = accountFile.getLastModifiedTime().toInstant()
-                    Account(id, accountFile, lastModified)
+                    val profile = accountFile.parent.name.substringAfter("settings_")
+                    Account(id, profile, accountFile, lastModified)
                 }
         } catch (e: IOException) {
             logger.error(e) { "Failed reading account settings" }

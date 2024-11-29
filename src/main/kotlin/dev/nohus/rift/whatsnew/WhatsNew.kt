@@ -289,6 +289,12 @@ object WhatsNew {
                 - 14 new maps are now available showing related areas across multiple regions
                 - You can switch between alternative maps from the map settings panel, when you are viewing regions that have alternative maps available
             """.trimIndent(),
+            "4.13.0" description """
+                - Improved parsing intel messages to better handle characters that have names that are English words, module names, and similar. Such text will no longer be detected as a character name, if the given character is inactive (hasn't played for a long time).
+                - zKillboard activity is also taken into account, so that if a character appears on any killmail within the last few months, it will never be ignored
+                - Added integration with ntfy.sh for push notifications, in addition to the existing Pushover integration.
+                - All dropdowns can now be quickly navigated with the keyboard by typing, which scrolls it to the matching item. Arrows keys and the Enter key can now also be used.
+            """.trimIndent(),
         ).reversed()
     }
 }

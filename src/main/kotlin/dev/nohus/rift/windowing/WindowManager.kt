@@ -34,7 +34,7 @@ import dev.nohus.rift.map.settings.MapSettingsWindow
 import dev.nohus.rift.neocom.NeocomWindow
 import dev.nohus.rift.pings.PingsWindow
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryWindow
-import dev.nohus.rift.pushover.PushoverWindow
+import dev.nohus.rift.push.PushWindow
 import dev.nohus.rift.settings.SettingsInputModel
 import dev.nohus.rift.settings.SettingsWindow
 import dev.nohus.rift.settings.persistence.Settings
@@ -120,8 +120,8 @@ class WindowManager(
         @SerialName("StartupWarning")
         StartupWarning,
 
-        @SerialName("Pushover")
-        Pushover,
+        @SerialName("Push")
+        Push,
 
         @SerialName("Contacts")
         Contacts,
@@ -132,6 +132,10 @@ class WindowManager(
         @Deprecated("Removed")
         @SerialName("NonEnglishEveClientWarning")
         NonEnglishEveClientWarning,
+
+        @Deprecated("Removed")
+        @SerialName("Pushover")
+        Pushover,
     }
 
     data class RiftWindowState(
@@ -212,10 +216,11 @@ class WindowManager(
                     RiftWindow.Fleets -> FleetsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Fleets) })
                     RiftWindow.PlanetaryIndustry -> PlanetaryIndustryWindow(state, onCloseRequest = { onWindowClose(RiftWindow.PlanetaryIndustry) })
                     RiftWindow.StartupWarning -> StartupWarningWindow(state.inputModel as? StartupWarningInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.StartupWarning) })
-                    RiftWindow.Pushover -> PushoverWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Pushover) })
+                    RiftWindow.Push -> PushWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Push) })
                     RiftWindow.Contacts -> ContactsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Contacts) })
                     RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings) })
                     RiftWindow.NonEnglishEveClientWarning -> {}
+                    RiftWindow.Pushover -> {}
                 }
             }
         }
@@ -285,10 +290,11 @@ class WindowManager(
             RiftWindow.Fleets -> WindowSizing(defaultSize = saved ?: (300 to 300), minimumSize = 300 to 300)
             RiftWindow.PlanetaryIndustry -> WindowSizing(defaultSize = saved ?: (540 to 800), minimumSize = 540 to 360)
             RiftWindow.StartupWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
-            RiftWindow.Pushover -> WindowSizing(defaultSize = (350 to null), minimumSize = 350 to null)
+            RiftWindow.Push -> WindowSizing(defaultSize = (350 to 435), minimumSize = 350 to 435)
             RiftWindow.Contacts -> WindowSizing(defaultSize = saved ?: (650 to 600), minimumSize = 650 to 600)
             RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
-            RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
+            RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
+            RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
         }
         return windowSizing.scaled(uiScaleController.uiScale)
     }

@@ -1,4 +1,4 @@
-package dev.nohus.rift.repositories
+package dev.nohus.rift.repositories.character
 
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.AlliancesIdAlliance

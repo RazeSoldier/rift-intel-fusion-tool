@@ -15,11 +15,11 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
-import dev.nohus.rift.repositories.CharactersRepository
-import dev.nohus.rift.repositories.CharactersRepository.CharacterState
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.WordsRepository
+import dev.nohus.rift.repositories.character.CharacterStatus
+import dev.nohus.rift.repositories.character.CharactersRepository
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
 import java.util.LinkedHashSet
@@ -259,7 +259,7 @@ class ChatMessageParser(
 
         completeParsings
             .asSequence()
-            .map(::filterCharactersUntilDone)
+            .map { filterCharactersUntilDone(it, characterNamesStatus) }
             .map { filterMultiTypes(it, regionsHint) }
             .map(::mergePlainTextTokens)
             .toSet()
@@ -284,7 +284,7 @@ class ChatMessageParser(
         return squashedMessage
     }
 
-    private fun findKillMail(tokens: List<Token>, characterNamesStatus: Map<String, CharacterState>): List<Token> {
+    private fun findKillMail(tokens: List<Token>, characterNamesStatus: Map<String, CharacterStatus>): List<Token> {
         return if (tokens.size >= 3) {
             val threeTokens = tokens.takeLast(3)
             val (t1, t2, t3) = threeTokens
@@ -293,7 +293,7 @@ class ChatMessageParser(
                 val player = t2.words.joinToString(" ")
                 val target = t3.words.joinToString(" ").removePrefix("(").removeSuffix(")")
                 val words = threeTokens.flatMap { it.words }
-                val characterId = (characterNamesStatus[player] as? CharacterState.Exists)?.characterId
+                val characterId = (characterNamesStatus[player] as? CharacterStatus.Exists)?.characterId
                 tokens.dropLast(3) + Token(words, types = listOf(Kill(player, characterId, target)))
             } else {
                 tokens
@@ -444,46 +444,61 @@ class ChatMessageParser(
         }
     }
 
-    private fun filterCharactersUntilDone(parsing: List<Token>): List<Token> {
+    private fun filterCharactersUntilDone(parsing: List<Token>, characterNamesStatus: Map<String, CharacterStatus>): List<Token> {
         var previous: List<Token>
         var new = parsing
         do {
             previous = new
-            new = filterCharacters(previous)
+            new = filterCharacters(previous, characterNamesStatus)
         } while (new != previous)
         return new
     }
 
-    private fun filterCharacters(parsing: List<Token>): List<Token> {
+    private fun filterCharacters(parsing: List<Token>, characterNamesStatus: Map<String, CharacterStatus>): List<Token> {
         return buildList {
             for ((index, token) in parsing.withIndex()) {
                 if (token.types.any { it is Player }) {
-                    val isEnglish = token.words.all { wordsRepository.isWord(it) }
-                    val isLowercase = token.words.all { word -> word.all { it.isLowerCase() } }
-                    if (isEnglish) {
-                        if (isLowercase) {
-                            val before = parsing.getOrNull(index - 1)?.takeIf { it.types.all { it is Question || it is Link } }?.words?.lastOrNull()
-                            val after = parsing.getOrNull(index + 1)?.takeIf { it.types.all { it is Question || it is Link } }?.words?.firstOrNull()
-                            val surroundingLowercaseWords = listOfNotNull(before, after)
-                                .filter { word ->
-                                    word.all { it.isLowerCase() || it in listOf('\'', '?') } || word in listOf("I")
-                                }
-                            if (surroundingLowercaseWords.isNotEmpty()) {
-                                // Lowercase English words character name touches a lowercase plaintext, ignore
-                                add(token.copy(types = token.types.filterNot { it is Player }))
-                                continue
-                            }
-                        } else {
-                            val isOnlyFirstLetterUppercase = token.words.joinToString("").drop(1).all { it.isLowerCase() }
-                            if (isOnlyFirstLetterUppercase) {
-                                val nextWord = parsing.getOrNull(index + 1)?.takeIf { it.types.all { it is Question || it is Link } }?.words?.firstOrNull()
-                                val nextLowercaseWord = nextWord?.all { it.isLowerCase() || it in listOf('\'', '?') }
-                                if (nextLowercaseWord == true) {
-                                    // English words character name with first capital letter, with next word being lowercase plaintext, ignore
+                    val fullText = token.words.joinToString(" ")
+                    val status = characterNamesStatus[fullText]!! // TODO
+                    if (status is CharacterStatus.Dormant) {
+                        // Character is dormant, ignore
+                        add(token.copy(types = token.types.filterNot { it is Player }))
+                        continue
+                    }
+                    if (status !is CharacterStatus.Active) {
+                        val isEnglish = token.words.all { wordsRepository.isWord(it) }
+                        val isTypeName = wordsRepository.isTypeName(fullText)
+                        val isLowercase = token.words.all { word -> word.all { it.isLowerCase() } }
+                        if (isEnglish) {
+                            if (isLowercase) {
+                                val before = parsing.getOrNull(index - 1)?.takeIf { it.types.all { it is Question || it is Link } }?.words?.lastOrNull()
+                                val after = parsing.getOrNull(index + 1)?.takeIf { it.types.all { it is Question || it is Link } }?.words?.firstOrNull()
+                                val surroundingLowercaseWords = listOfNotNull(before, after)
+                                    .filter { word ->
+                                        word.all { it.isLowerCase() || it in listOf('\'', '?') } || word in listOf("I")
+                                    }
+                                if (surroundingLowercaseWords.isNotEmpty()) {
+                                    // Lowercase English words character name touches a lowercase plaintext, ignore
                                     add(token.copy(types = token.types.filterNot { it is Player }))
                                     continue
                                 }
+                            } else {
+                                val isOnlyFirstLetterUppercase = token.words.joinToString("").drop(1).all { it.isLowerCase() }
+                                if (isOnlyFirstLetterUppercase) {
+                                    val nextWord = parsing.getOrNull(index + 1)?.takeIf { it.types.all { it is Question || it is Link } }?.words?.firstOrNull()
+                                    val nextLowercaseWord = nextWord?.all { it.isLowerCase() || it in listOf('\'', '?') }
+                                    if (nextLowercaseWord == true) {
+                                        // English words character name with first capital letter, with next word being lowercase plaintext, ignore
+                                        add(token.copy(types = token.types.filterNot { it is Player }))
+                                        continue
+                                    }
+                                }
                             }
+                        }
+                        if (isTypeName) {
+                            // Character name is a type name
+                            add(token.copy(types = token.types.filterNot { it is Player }))
+                            continue
                         }
                     }
                 }
@@ -515,7 +530,7 @@ class ChatMessageParser(
                         // If the system is in this region, choose the system
                         add(token.copy(types = listOf(inRegionSystem)))
                     } else {
-                        // Otherwise choose the character name
+                        // Otherwise choose the player
                         add(token.copy(types = token.types.filterIsInstance<Player>()))
                     }
                     continue
@@ -546,7 +561,7 @@ class ChatMessageParser(
 
     private fun getPossibleTokenTypes(
         words: List<String>,
-        characterNamesStatus: Map<String, CharacterState>,
+        characterNamesStatus: Map<String, CharacterStatus>,
         regionsHint: List<String>,
     ): List<TokenType> {
         val text = words.joinToString(" ")
@@ -570,10 +585,8 @@ class ChatMessageParser(
             }
 
             if (shipName == null) { // Ship names are assumed to be ships
-                if (characterNameValidator.isValid(text)) {
-                    val status = characterNamesStatus[text]
-                    if (status is CharacterState.Exists) add(Player(status.characterId))
-                }
+                val status = characterNamesStatus[text]
+                if (status is CharacterStatus.Exists) add(Player(status.characterId))
             }
 
             val keywordText = words.joinToString(" ")

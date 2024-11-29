@@ -1,4 +1,4 @@
-package dev.nohus.rift.pushover
+package dev.nohus.rift.push
 
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.compose.DialogMessage
@@ -12,34 +12,41 @@ import org.koin.core.annotation.Single
 import java.util.Locale
 
 @Single
-class PushoverViewModel(
-    private val sendPushNotification: SendPushNotificationUseCase,
+class PushViewModel(
+    private val pushNotificationController: PushNotificationController,
     private val settings: Settings,
 ) : ViewModel() {
 
     data class UiState(
         val dialogMessage: DialogMessage? = null,
-        val apiToken: String,
-        val userKey: String,
+        val pushoverApiToken: String,
+        val pushoverApiKey: String,
+        val ntfyTopic: String,
         val isLoading: Boolean = false,
     )
 
     private val _state = MutableStateFlow(
         UiState(
-            apiToken = settings.pushover.apiToken ?: "",
-            userKey = settings.pushover.userKey ?: "",
+            pushoverApiToken = settings.pushover.apiToken ?: "",
+            pushoverApiKey = settings.pushover.userKey ?: "",
+            ntfyTopic = settings.ntfy.topic ?: "",
         ),
     )
     val state = _state.asStateFlow()
 
-    fun onApiTokenChanged(token: String) {
-        _state.update { it.copy(apiToken = token) }
+    fun onPushoverApiTokenChanged(token: String) {
+        _state.update { it.copy(pushoverApiToken = token) }
         settings.pushover = settings.pushover.copy(apiToken = token)
     }
 
-    fun onUserKeyChanged(key: String) {
-        _state.update { it.copy(userKey = key) }
+    fun onPushoverUserKeyChanged(key: String) {
+        _state.update { it.copy(pushoverApiKey = key) }
         settings.pushover = settings.pushover.copy(userKey = key)
+    }
+
+    fun onNtfyTopicChanged(topic: String) {
+        _state.update { it.copy(ntfyTopic = topic) }
+        settings.ntfy = settings.ntfy.copy(topic = topic)
     }
 
     private fun showDialog(title: String, message: String) {
@@ -54,7 +61,33 @@ class PushoverViewModel(
         }
     }
 
-    fun onSendTest() {
+    fun onNtfySendTest() {
+        if (_state.value.isLoading) return
+
+        val topic = settings.ntfy.topic
+        if (topic.isNullOrEmpty()) {
+            showDialog("No Topic", "You need to enter a ntfy topic name.")
+            return
+        }
+
+        _state.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            val result = pushNotificationController.sendNtfyNotification(
+                title = "RIFT Intel Fusion Tool",
+                message = "Congratulations, RIFT is setup correctly for push notifications.",
+            )
+
+            val response = result.success
+            if (response != null) {
+                showDialog("Success", "Notification sent successfully!")
+            } else {
+                showDialog("Failed to send", result.failure?.message ?: "Unknown error")
+            }
+            _state.update { it.copy(isLoading = false) }
+        }
+    }
+
+    fun onPushoverSendTest() {
         if (_state.value.isLoading) return
 
         val token = settings.pushover.apiToken
@@ -70,7 +103,7 @@ class PushoverViewModel(
 
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            val result = sendPushNotification(
+            val result = pushNotificationController.sendPushoverNotification(
                 title = "RIFT Intel Fusion Tool",
                 message = "Congratulations, RIFT is setup correctly for push notifications.",
             )

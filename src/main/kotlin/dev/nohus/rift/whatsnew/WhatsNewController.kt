@@ -1,6 +1,7 @@
 package dev.nohus.rift.whatsnew
 
 import dev.nohus.rift.BuildConfig
+import dev.nohus.rift.database.local.LocalDatabase
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.windowing.WindowManager
@@ -12,6 +13,7 @@ class WhatsNewController(
     private val windowManager: WindowManager,
     private val settings: Settings,
     private val eveSsoRepository: EveSsoRepository,
+    private val localDatabase: LocalDatabase,
 ) {
 
     fun showIfRequired() {
@@ -38,6 +40,9 @@ class WhatsNewController(
             "4.8.0" to {
                 // New scope added
                 eveSsoRepository.removeAllAuthentications()
+            },
+            "4.13.0" to {
+                localDatabase.dropOldTable()
             },
         )
         migrations.forEach { (version, migration) ->

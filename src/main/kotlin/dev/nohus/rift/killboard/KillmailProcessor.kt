@@ -2,10 +2,10 @@ package dev.nohus.rift.killboard
 
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
-import dev.nohus.rift.repositories.CharacterDetailsRepository
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
 import io.github.oshai.kotlinlogging.KotlinLogging

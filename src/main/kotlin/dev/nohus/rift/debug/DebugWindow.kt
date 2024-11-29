@@ -76,7 +76,7 @@ private fun DebugWindowContent(
         )
 
         Text(
-            text = "zKillboard ${state.isZkillboardConnected.connected}, EVE-KILL ${state.isEveKillConnected.connected}, Jabber ${state.isJabberConnected.connected}",
+            text = "zKillboard ${state.isZkillboardConnected.connected}, Jabber ${state.isJabberConnected.connected}",
             style = RiftTheme.typography.bodyPrimary,
             modifier = Modifier.padding(bottom = Spacing.medium),
         )

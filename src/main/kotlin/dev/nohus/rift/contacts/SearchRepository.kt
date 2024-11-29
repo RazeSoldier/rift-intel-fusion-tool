@@ -4,12 +4,12 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.UniverseStructuresId
-import dev.nohus.rift.repositories.CharacterDetailsRepository
-import dev.nohus.rift.repositories.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.StationsRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.StandingsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

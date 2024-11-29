@@ -219,6 +219,10 @@ class Settings(
         get() = model.pushover
         set(value) = update { copy(pushover = value) }
 
+    var ntfy: Ntfy
+        get() = model.ntfy
+        set(value) = update { copy(ntfy = value) }
+
     val skipSplashScreen: Boolean
         get() = model.skipSplashScreen
 

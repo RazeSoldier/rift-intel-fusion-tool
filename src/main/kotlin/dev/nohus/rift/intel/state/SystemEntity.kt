@@ -1,6 +1,6 @@
 package dev.nohus.rift.intel.state
 
-import dev.nohus.rift.repositories.CharacterDetailsRepository.CharacterDetails
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.Standing
 
 /**

@@ -1,8 +1,8 @@
 package dev.nohus.rift.pings
 
-import dev.nohus.rift.repositories.CharactersRepository
 import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.character.CharactersRepository
 import dev.nohus.rift.standings.StandingsRepository
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.FreeSpec

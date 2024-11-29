@@ -63,6 +63,7 @@ data class SettingsModel(
     val isShowingCharactersClones: Boolean = true,
     val planetaryIndustryTriggeredAlerts: Map<String, Map<String, Long>> = emptyMap(),
     val pushover: Pushover = Pushover(),
+    val ntfy: Ntfy = Ntfy(),
     val skipSplashScreen: Boolean = false,
     val dismissedWarnings: List<String> = emptyList(),
     val uiScale: Float = 1f,
@@ -260,4 +261,9 @@ data class JumpRange(
 data class Pushover(
     val apiToken: String? = null,
     val userKey: String? = null,
+)
+
+@Serializable
+data class Ntfy(
+    val topic: String? = null,
 )

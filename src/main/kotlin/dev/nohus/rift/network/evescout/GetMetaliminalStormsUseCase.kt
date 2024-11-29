@@ -70,7 +70,7 @@ class GetMetaliminalStormsUseCase(
                 }.toMap()
             }
             is Failure -> {
-                logger.error { "Could not get storms from EvE-Scout: ${response.cause}" }
+                logger.error { "Could not get storms from EvE-Scout: ${response.cause?.message}" }
                 emptyMap()
             }
         }
