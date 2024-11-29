@@ -100,7 +100,7 @@ data class IntelMap(
     val isInvertZoom: Boolean = false,
     val isJumpBridgeNetworkShown: Boolean = true,
     val jumpBridgeNetworkOpacity: Int = 100,
-    val openedRegionId: Int? = null,
+    val openedLayoutId: Int? = null,
     val isAlwaysShowingSystems: Boolean = false,
 )
 

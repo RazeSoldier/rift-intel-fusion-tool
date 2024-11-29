@@ -46,6 +46,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.backicon
 import dev.nohus.rift.generated.resources.expand_more_16px
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
+import dev.nohus.rift.map.MapLayoutRepository.Layout
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
@@ -77,7 +78,7 @@ private val editableInfoTypes = mapOf(
     MapSystemInfoType.Planets to Planets,
 )
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun MapSettingsPanel(
     hazeState: HazeState,
@@ -85,6 +86,7 @@ fun MapSettingsPanel(
     systemInfoTypes: SystemInfoTypes,
     mapJumpRangeState: MapJumpRangeState,
     mapPlanetsState: MapPlanetsState,
+    alternativeLayouts: List<Layout>,
     onSystemColorChange: (SettingsMapType, MapSystemInfoType) -> Unit,
     onSystemColorHover: (SettingsMapType, MapSystemInfoType, Boolean) -> Unit,
     onCellColorChange: (SettingsMapType, MapSystemInfoType?) -> Unit,
@@ -94,6 +96,7 @@ fun MapSettingsPanel(
     onJumpRangeTargetUpdate: (String) -> Unit,
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
+    onLayoutSelected: (Int) -> Unit,
 ) {
     val settingsMapType = when (mapType) {
         ClusterRegionsMap -> null
@@ -142,83 +145,96 @@ fun MapSettingsPanel(
                                 .padding(Spacing.medium)
                                 .fillMaxWidth(),
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                            FlowRow(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                maxItemsInEachRow = 2,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
 
-                            ) {
-                                Text(
-                                    text = "System:",
-                                    style = RiftTheme.typography.titlePrimary,
-                                )
-                                SystemColorPills(
-                                    isExpanded = false,
-                                    isCellColor = false,
-                                    selected = systemInfoTypes.starSelected[settingsMapType],
-                                    onPillClick = {
-                                        panelState = StarColor
-                                    },
-                                    onPillEditClick = {
-                                        previousPanelState = panelState
-                                        panelState = editableInfoTypes[it]!!
-                                    },
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                            ) {
-                                Text(
-                                    text = "Background:",
-                                    style = RiftTheme.typography.titlePrimary,
-                                )
-                                SystemColorPills(
-                                    isExpanded = false,
-                                    isCellColor = true,
-                                    selected = systemInfoTypes.cellSelected[settingsMapType],
-                                    onPillClick = {
-                                        panelState = CellColor
-                                    },
-                                    onPillEditClick = {
-                                        previousPanelState = panelState
-                                        panelState = editableInfoTypes[it]!!
-                                    },
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                            ) {
-                                Text(
-                                    text = "Indicators:",
-                                    style = RiftTheme.typography.titlePrimary,
-                                )
-                                val text = systemInfoTypes.indicators[settingsMapType].orEmpty().let {
-                                    if (it.isEmpty()) "None" else "${it.size} enabled"
+                                ) {
+                                    Text(
+                                        text = "System:",
+                                        style = RiftTheme.typography.titlePrimary,
+                                    )
+                                    SystemColorPills(
+                                        isExpanded = false,
+                                        isCellColor = false,
+                                        selected = systemInfoTypes.starSelected[settingsMapType],
+                                        onPillClick = {
+                                            panelState = StarColor
+                                        },
+                                        onPillEditClick = {
+                                            previousPanelState = panelState
+                                            panelState = editableInfoTypes[it]!!
+                                        },
+                                    )
                                 }
-                                RiftPill(
-                                    text = text,
-                                    onClick = {
-                                        panelState = Indicators
-                                    },
-                                )
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                            ) {
-                                Text(
-                                    text = "Info box:",
-                                    style = RiftTheme.typography.titlePrimary,
-                                )
-                                val text = systemInfoTypes.infoBox[settingsMapType].orEmpty().let {
-                                    if (it.isEmpty()) "None" else "${it.size} enabled"
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                ) {
+                                    Text(
+                                        text = "Background:",
+                                        style = RiftTheme.typography.titlePrimary,
+                                    )
+                                    SystemColorPills(
+                                        isExpanded = false,
+                                        isCellColor = true,
+                                        selected = systemInfoTypes.cellSelected[settingsMapType],
+                                        onPillClick = {
+                                            panelState = CellColor
+                                        },
+                                        onPillEditClick = {
+                                            previousPanelState = panelState
+                                            panelState = editableInfoTypes[it]!!
+                                        },
+                                    )
                                 }
-                                RiftPill(
-                                    text = text,
-                                    onClick = {
-                                        panelState = InfoBox
-                                    },
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                ) {
+                                    Text(
+                                        text = "Indicators:",
+                                        style = RiftTheme.typography.titlePrimary,
+                                    )
+                                    val text = systemInfoTypes.indicators[settingsMapType].orEmpty().let {
+                                        if (it.isEmpty()) "None" else "${it.size} enabled"
+                                    }
+                                    RiftPill(
+                                        text = text,
+                                        onClick = {
+                                            panelState = Indicators
+                                        },
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                ) {
+                                    Text(
+                                        text = "Info box:",
+                                        style = RiftTheme.typography.titlePrimary,
+                                    )
+                                    val text = systemInfoTypes.infoBox[settingsMapType].orEmpty().let {
+                                        if (it.isEmpty()) "None" else "${it.size} enabled"
+                                    }
+                                    RiftPill(
+                                        text = text,
+                                        onClick = {
+                                            panelState = InfoBox
+                                        },
+                                    )
+                                }
+                            }
+                            if (mapType is RegionMap) {
+                                AlternativeLayoutsPills(
+                                    alternativeLayouts = alternativeLayouts,
+                                    selectedLayoutId = mapType.layoutId,
+                                    onLayoutSelected = onLayoutSelected,
                                 )
                             }
                         }
@@ -482,6 +498,33 @@ private fun SettingsPanelTitle(
             text = title,
             style = RiftTheme.typography.titlePrimary,
         )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AlternativeLayoutsPills(
+    alternativeLayouts: List<Layout>,
+    selectedLayoutId: Int,
+    onLayoutSelected: (Int) -> Unit,
+) {
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
+        Text(
+            text = "Alternative maps:",
+            style = RiftTheme.typography.titlePrimary,
+        )
+        alternativeLayouts.forEach { layout ->
+            RiftPill(
+                text = layout.name,
+                isSelected = layout.layoutId == selectedLayoutId,
+                onClick = {
+                    onLayoutSelected(layout.layoutId)
+                },
+            )
+        }
     }
 }
 

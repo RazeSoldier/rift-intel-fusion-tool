@@ -25,9 +25,9 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.map.DoubleOffset
 import dev.nohus.rift.map.MapLayoutRepository
 import dev.nohus.rift.map.MapViewModel.Cluster
-import dev.nohus.rift.map.MapViewModel.Layout
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
+import dev.nohus.rift.map.MapViewModel.VoronoiLayout
 import dev.nohus.rift.map.SOLAR_SYSTEM_NODE_BACKGROUND_CIRCLE_MAX_SCALE
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
 import dev.nohus.rift.repositories.MapGateConnectionsRepository
@@ -42,7 +42,7 @@ import kotlin.math.sqrt
 
 class SystemsMapPainter(
     private val cluster: Cluster,
-    private val layout: Map<Int, Layout>,
+    private val layout: Map<Int, VoronoiLayout>,
     private val jumpBridgeAdditionalSystems: Set<Int>,
     private val mapType: MapType,
     private val isJumpBridgeNetworkShown: Boolean,

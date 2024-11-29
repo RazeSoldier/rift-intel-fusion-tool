@@ -55,7 +55,6 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -80,14 +79,13 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_map
-import dev.nohus.rift.get
-import dev.nohus.rift.map.MapViewModel.Layout
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
 import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
 import dev.nohus.rift.map.MapViewModel.Transform
 import dev.nohus.rift.map.MapViewModel.UiState
+import dev.nohus.rift.map.MapViewModel.VoronoiLayout
 import dev.nohus.rift.map.painter.MapPainter
 import dev.nohus.rift.map.painter.RegionsMapPainter
 import dev.nohus.rift.map.painter.SystemsMapPainter
@@ -167,6 +165,7 @@ fun MapWindow(
             onJumpRangeTargetUpdate = viewModel::onJumpRangeTargetUpdate,
             onJumpRangeDistanceUpdate = viewModel::onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = viewModel::onPlanetTypesUpdate,
+            onLayoutSelected = viewModel::onLayoutSelected,
         )
     }
 }
@@ -194,6 +193,7 @@ private fun MapWindowContent(
     onJumpRangeTargetUpdate: (String) -> Unit,
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
+    onLayoutSelected: (Int) -> Unit,
 ) {
     Box {
         val hazeState = remember { HazeState() }
@@ -223,6 +223,7 @@ private fun MapWindowContent(
             systemInfoTypes = state.systemInfoTypes,
             mapJumpRangeState = state.mapJumpRangeState,
             mapPlanetsState = state.mapPlanetsState,
+            alternativeLayouts = state.alternativeLayouts,
             onSystemColorChange = onSystemColorChange,
             onSystemColorHover = onSystemColorHover,
             onCellColorChange = onCellColorChange,
@@ -232,6 +233,7 @@ private fun MapWindowContent(
             onJumpRangeTargetUpdate = onJumpRangeTargetUpdate,
             onJumpRangeDistanceUpdate = onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = onPlanetTypesUpdate,
+            onLayoutSelected = onLayoutSelected,
         )
     }
 }
@@ -264,12 +266,10 @@ private fun ToolbarRow(
             onSearchChange = {
                 onSearchChange(it)
             },
+            onSearchConfirm = onSearchSubmit,
             modifier = Modifier
                 .width(100.dp)
-                .padding(start = Spacing.medium)
-                .onKeyPress(Key.Enter) {
-                    onSearchSubmit()
-                },
+                .padding(start = Spacing.medium),
         )
     }
 }
@@ -655,7 +655,7 @@ private fun SystemInfoBoxesLayer(
     ForEachSystem(state, animatedCenter, mapScale, canvasSize) { isHighlightedOrHovered, dpCoordinates, _, system ->
         val hasIntelPopup = system.id in state.mapState.intelPopupSystems
         val zIndex = if (hasIntelPopup || isHighlightedOrHovered) 1f else 0f
-        val regionName = if (state.mapType is RegionMap && state.mapType.regionId != system.regionId) {
+        val regionName = if (state.mapType is RegionMap && system.regionId !in state.mapType.regionIds) {
             state.cluster.regions.first { it.id == system.regionId }.name
         } else {
             null
@@ -833,7 +833,7 @@ data class MapLayoutBounds(
     val maxY: Int,
 )
 
-private fun getMapLayoutBounds(layout: Map<Int, Layout>): MapLayoutBounds {
+private fun getMapLayoutBounds(layout: Map<Int, VoronoiLayout>): MapLayoutBounds {
     return MapLayoutBounds(
         minX = layout.minOf { it.value.position.x },
         maxX = layout.maxOf { it.value.position.x },

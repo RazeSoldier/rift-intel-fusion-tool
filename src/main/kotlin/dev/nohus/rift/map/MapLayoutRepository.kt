@@ -1,6 +1,7 @@
 package dev.nohus.rift.map
 
 import dev.nohus.rift.database.static.MapLayout
+import dev.nohus.rift.database.static.MapLayouts
 import dev.nohus.rift.database.static.RegionMapLayout
 import dev.nohus.rift.database.static.StaticDatabase
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -15,6 +16,12 @@ class MapLayoutRepository(
     val solarSystemsRepository: SolarSystemsRepository,
 ) {
 
+    data class Layout(
+        val layoutId: Int,
+        val name: String,
+        val regionIds: List<Int>,
+    )
+
     data class Position(
         val x: Int,
         val y: Int,
@@ -22,23 +29,41 @@ class MapLayoutRepository(
         fun distanceSquared(other: Position) = (x - other.x).toDouble().pow(2) + (y - other.y).toDouble().pow(2)
     }
 
-    // region ID -> system ID -> position
-    private val systemPositionsByRegionId: Map<Int, Map<Int, Position>>
+    // layout ID -> system ID -> position
+    private val systemPositionsByLayoutId: Map<Int, Map<Int, Position>>
+
+    // layout ID -> layout
+    private val layoutsById: Map<Int, Layout>
+
+    // region ID -> layouts
+    private val layoutsByRegionId: Map<Int, List<Layout>>
 
     // region ID -> position
     private val regionPositionsById: Map<Int, Position>
 
     init {
-        val rows = staticDatabase.transaction {
+        layoutsById = staticDatabase.transaction {
+            MapLayouts.selectAll().toList()
+        }.groupBy { it[MapLayouts.layoutId] }.map { (layoutId, rows) ->
+            val regionIds = rows.map { it[MapLayouts.regionId] }
+            layoutId to Layout(
+                layoutId = layoutId,
+                name = rows.first()[MapLayouts.name],
+                regionIds = regionIds,
+            )
+        }.toMap()
+
+        layoutsByRegionId = layoutsById.values.flatMap { layout ->
+            layout.regionIds.map { it to layout }
+        }.groupBy { it.first }.mapValues { it.value.map { it.second } }
+
+        systemPositionsByLayoutId = staticDatabase.transaction {
             MapLayout.selectAll().toList()
-        }
-        systemPositionsByRegionId = rows
-            .groupBy { it[MapLayout.regionId] }
-            .mapValues { (_, rows) ->
-                rows.associate {
-                    it[MapLayout.solarSystemId] to Position(it[MapLayout.x], it[MapLayout.y])
-                }
+        }.groupBy { it[MapLayout.layoutId] }.mapValues { (_, rows) ->
+            rows.associate {
+                it[MapLayout.solarSystemId] to Position(it[MapLayout.x], it[MapLayout.y])
             }
+        }
         val regionRows = staticDatabase.transaction {
             RegionMapLayout.selectAll().toList()
         }
@@ -47,17 +72,25 @@ class MapLayoutRepository(
         }
     }
 
-    fun getLayout(regionId: Int): Map<Int, Position>? {
-        return systemPositionsByRegionId[regionId]
+    fun getLayouts(regionId: Int): List<Layout> {
+        return layoutsByRegionId[regionId] ?: emptyList()
     }
 
-    fun getNewEdenLayout(): Map<Int, Position> {
+    fun getLayout(layoutId: Int): Layout? {
+        return layoutsById[layoutId]
+    }
+
+    fun getLayoutSystemPositions(layoutId: Int): Map<Int, Position>? {
+        return systemPositionsByLayoutId[layoutId]
+    }
+
+    fun getNewEdenSystemPosition(): Map<Int, Position> {
         return solarSystemsRepository.getSystems(knownSpace = true).associate { system ->
             system.id to transformNewEdenCoordinate(system.x, system.z)
         }
     }
 
-    fun getRegionLayout(): Map<Int, Position> {
+    fun getRegionsPositions(): Map<Int, Position> {
         return regionPositionsById
     }
 
