@@ -81,7 +81,7 @@ class KillmailProcessor(
             val ships = message.attackers
                 .mapNotNull { attacker ->
                     val shipName = shipTypesRepository.getShipName(attacker.shipTypeId) ?: return@mapNotNull null
-                    val standing = attackers.firstOrNull { it.characterId == attacker.characterId }?.details?.standing ?: Standing.Neutral
+                    val standing = attackers.firstOrNull { it.characterId == attacker.characterId }?.details?.standingLevel ?: Standing.Neutral
                     standing to shipName
                 }
                 .groupBy { it.first }
@@ -92,7 +92,7 @@ class KillmailProcessor(
                         .map { (name, ships) -> SystemEntity.Ship(name, ships.size, standing = standing) }
                 }
                 .flatMap { it.value }
-            val standing = standingsRepository.getStanding(message.victim.allianceId, message.victim.corporationId, message.victim.characterId)
+            val standingLevel = standingsRepository.getStandingLevel(message.victim.allianceId, message.victim.corporationId, message.victim.characterId)
 
             val killmailVictim = SystemEntity.KillmailVictim(
                 characterId = message.victim.characterId,
@@ -103,7 +103,7 @@ class KillmailProcessor(
                 allianceId = message.victim.allianceId ?: victim?.details?.allianceId,
                 allianceName = victim?.details?.allianceName ?: deferredVictimAlliance?.await()?.name,
                 allianceTicker = victim?.details?.allianceTicker ?: deferredVictimAlliance?.await()?.ticker,
-                standing = standing,
+                standing = standingLevel,
             )
             val killmail = SystemEntity.Killmail(
                 url = message.url,

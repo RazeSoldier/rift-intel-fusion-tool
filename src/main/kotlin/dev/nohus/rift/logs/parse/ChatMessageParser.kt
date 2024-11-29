@@ -113,8 +113,9 @@ class ChatMessageParser(
         private val keywords = mapOf(
             "nv" to KeywordType.NoVisual,
             "clr" to KeywordType.Clear,
-            "clear" to KeywordType.Clear,
             "clr du" to KeywordType.Clear,
+            "clear" to KeywordType.Clear,
+            "clear du" to KeywordType.Clear,
             "wh" to KeywordType.Wormhole,
             "wormhole" to KeywordType.Wormhole,
             "k162" to KeywordType.Wormhole,

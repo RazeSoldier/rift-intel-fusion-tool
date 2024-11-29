@@ -5,6 +5,7 @@ import dev.nohus.rift.network.esi.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.CorporationsIdCorporation
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.standings.Standing
+import dev.nohus.rift.standings.StandingUtils.getStandingLevel
 import dev.nohus.rift.standings.StandingsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -25,7 +26,8 @@ class CharacterDetailsRepository(
         val allianceId: Int?,
         val allianceName: String?,
         val allianceTicker: String?,
-        val standing: Standing,
+        val standing: Float,
+        val standingLevel: Standing,
         val title: String?,
     )
 
@@ -46,6 +48,7 @@ class CharacterDetailsRepository(
             allianceName = alliance?.name,
             allianceTicker = alliance?.ticker,
             standing = standing,
+            standingLevel = getStandingLevel(standing),
             title = character.title,
         )
     }

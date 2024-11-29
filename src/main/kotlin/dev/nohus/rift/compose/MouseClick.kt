@@ -12,7 +12,7 @@ enum class MouseButton {
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun Modifier.onClick(onClick: (clickedButton: MouseButton) -> Unit): Modifier {
+fun Modifier.onMouseClick(onClick: (clickedButton: MouseButton) -> Unit): Modifier {
     return onPointerEvent(PointerEventType.Release) { event ->
         val awtEvent = event.awtEventOrNull ?: return@onPointerEvent
         val mouseButton = when (awtEvent.button) {
@@ -27,8 +27,8 @@ fun Modifier.onClick(onClick: (clickedButton: MouseButton) -> Unit): Modifier {
     }
 }
 
-fun Modifier.onClick(button: MouseButton, onClick: () -> Unit): Modifier {
-    return onClick { clickedButton ->
+fun Modifier.onMouseClick(button: MouseButton, onClick: () -> Unit): Modifier {
+    return onMouseClick { clickedButton ->
         if (clickedButton == button) {
             onClick()
         }

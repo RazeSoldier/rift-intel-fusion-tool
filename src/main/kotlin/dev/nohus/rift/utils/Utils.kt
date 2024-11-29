@@ -57,7 +57,7 @@ inline fun <reified VM : ViewModel> viewModel(): VM {
 
 @Composable
 inline fun <reified VM : ViewModel, I> viewModel(inputModel: I): VM {
-    return remember { koin.get { parametersOf(inputModel) } }
+    return remember(inputModel) { koin.get { parametersOf(inputModel) } }
 }
 
 fun AnnotatedString.Builder.withColor(color: Color, block: AnnotatedString.Builder.() -> Unit) {

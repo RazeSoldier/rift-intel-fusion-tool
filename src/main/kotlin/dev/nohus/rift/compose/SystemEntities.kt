@@ -181,9 +181,9 @@ fun SystemEntities(
                     CharactersPortraits(characters.map { it.details }, rowHeight)
 
                     val representative = characters.first().details
-                    val characterWord = if (representative.standing.isFriendly) "friendly" else "hostile${characters.size.plural}"
+                    val characterWord = if (representative.standingLevel.isFriendly) "friendly" else "hostile${characters.size.plural}"
                     var style = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold)
-                    representative.standing.getColor()?.let { style = style.copy(color = it) }
+                    representative.standingLevel.getColor()?.let { style = style.copy(color = it) }
                     val ticker = representative.allianceTicker ?: if (representative.corporationId.isNpcCorp()) "NPC Corp" else representative.corporationTicker ?: ""
                     if (rowHeight < 32.dp) {
                         Row(
@@ -219,13 +219,15 @@ fun SystemEntities(
         entities.filterIsInstance<SystemEntity.Character>()
             .sortedWith(compareBy({ it.details.allianceId }, { it.details.corporationId }))
             .forEach { character ->
-                ClickablePlayer(character.characterId) {
-                    SystemEntityInfoRow(rowHeight, isHorizontal) {
+                SystemEntityInfoRow(rowHeight, isHorizontal) {
+                    ClickablePlayer(character.characterId) {
                         AsyncPlayerPortrait(
                             characterId = character.characterId,
                             size = 32,
                             modifier = Modifier.size(rowHeight),
                         )
+                    }
+                    ClickableCorporation(character.details.corporationId) {
                         RiftTooltipArea(
                             text = character.details.corporationName ?: "",
                         ) {
@@ -235,7 +237,9 @@ fun SystemEntities(
                                 modifier = Modifier.size(rowHeight),
                             )
                         }
-                        if (character.details.allianceId != null) {
+                    }
+                    if (character.details.allianceId != null) {
+                        ClickableAlliance(character.details.allianceId) {
                             RiftTooltipArea(
                                 text = character.details.allianceName ?: "",
                             ) {
@@ -246,13 +250,15 @@ fun SystemEntities(
                                 )
                             }
                         }
+                    }
 
+                    ClickablePlayer(character.characterId) {
                         val ticker = buildString {
                             character.details.corporationTicker?.let { append("$it ") }
                             character.details.allianceTicker?.let { append(it) }
                         }
                         var nameStyle = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold)
-                        character.details.standing.getColor()?.let { nameStyle = nameStyle.copy(color = it) }
+                        character.details.standingLevel.getColor()?.let { nameStyle = nameStyle.copy(color = it) }
                         if (rowHeight < 32.dp) {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),

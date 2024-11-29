@@ -40,6 +40,7 @@ import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.standings.isFriendly
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
@@ -161,8 +162,8 @@ class HostileOrbitPainter {
         this.animationRotation = rotation
         if (!::friendlyEntityBrush.isInitialized) {
             friendlyEntityBrush = Brush.radialGradient(
-                0.0f to RiftTheme.colors.standingGood.copy(alpha = 1.0f),
-                1.0f to RiftTheme.colors.standingGood.copy(alpha = 0f),
+                0.0f to Color(0xFF316BCA).copy(alpha = 1.0f),
+                1.0f to Color(0xFF316BCA).copy(alpha = 0f),
                 radius = friendlyEntityRadius,
                 center = Offset.Zero,
             )
@@ -241,7 +242,7 @@ class HostileOrbitPainter {
         val totalCount = getTotalCount(intel) // Total count of both friendly and hostile
         val hostileShipIcons = getIcons(intel.filter { it.item is SystemEntity.Ship && it.item.standing?.isFriendly != true })
         val friendlyShipIcons = getIcons(intel.filter { it.item is SystemEntity.Ship && it.item.standing?.isFriendly == true })
-        val friendlyCharacters = entities.count { it is SystemEntity.Character && it.details.standing.isFriendly }
+        val friendlyCharacters = entities.count { it is SystemEntity.Character && it.details.standingLevel.isFriendly }
         val friendlyCount = maxOf(friendlyShipIcons.size, friendlyCharacters) // Total count of friendly
         val hostileCharacters = totalCount - friendlyCount // Total count of hostile
         val unknownHostileShips = (hostileCharacters - hostileShipIcons.size).coerceAtLeast(0)

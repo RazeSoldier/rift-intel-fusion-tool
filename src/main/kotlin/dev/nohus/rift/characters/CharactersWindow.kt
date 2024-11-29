@@ -600,7 +600,7 @@ private fun Clone(clone: Clone) {
             FlowRow(
                 modifier = Modifier.weight(1f),
             ) {
-                for (implant in List(3) { clone.implants }.flatten()) {
+                for (implant in clone.implants) {
                     RiftTooltipArea(
                         text = implant.name,
                         modifier = Modifier.size(32.dp),

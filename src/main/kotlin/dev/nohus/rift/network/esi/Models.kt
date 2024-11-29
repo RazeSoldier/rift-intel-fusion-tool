@@ -93,6 +93,10 @@ data class Contact(
     val contactId: Int,
     @SerialName("contact_type")
     val contactType: ContactType,
+    @SerialName("is_blocked")
+    val isBlocked: Boolean? = null,
+    @SerialName("is_watched")
+    val isWatched: Boolean? = null,
     @SerialName("label_ids")
     val labelIds: List<Long>? = emptyList(),
     @SerialName("standing")
@@ -113,6 +117,14 @@ enum class ContactType {
     @SerialName("faction")
     Faction,
 }
+
+@Serializable
+data class ContactsLabel(
+    @SerialName("label_id")
+    val labelId: Long,
+    @SerialName("label_name")
+    val labelName: String,
+)
 
 @Serializable
 data class CharactersIdClones(

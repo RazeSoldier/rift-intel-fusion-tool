@@ -2,9 +2,7 @@ package dev.nohus.rift.assets
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -31,13 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -55,13 +48,14 @@ import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.ExpandChevron
 import dev.nohus.rift.compose.GetSystemContextMenuItems
 import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuArea
 import dev.nohus.rift.compose.RiftDropdown
 import dev.nohus.rift.compose.RiftDropdownWithLabel
-import dev.nohus.rift.compose.RiftTextField
+import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -70,14 +64,12 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.expand_more_16px
 import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
-import org.jetbrains.compose.resources.painterResource
 import java.text.NumberFormat
 
 @Composable
@@ -146,30 +138,10 @@ private fun AssetsWindowContent(
                 },
             )
             Spacer(Modifier.weight(1f))
-            var search by remember { mutableStateOf(state.search) }
-            val focusManager = LocalFocusManager.current
-            RiftTextField(
-                text = search,
-                placeholder = "Search",
-                onTextChanged = {
-                    search = it
-                    onSearchChange(it)
-                },
-                onDeleteClick = {
-                    search = ""
-                    onSearchChange("")
-                },
-                modifier = Modifier
-                    .width(150.dp)
-                    .onKeyEvent {
-                        when (it.key) {
-                            Key.Escape -> {
-                                focusManager.clearFocus()
-                                true
-                            }
-                            else -> false
-                        }
-                    },
+            RiftSearchField(
+                search = state.search,
+                isCompact = false,
+                onSearchChange = onSearchChange,
             )
         }
         var expandedLocations by remember { mutableStateOf<Set<AssetLocation>>(emptySet()) }
@@ -485,17 +457,4 @@ private fun getTotalPrice(asset: Asset): Double {
     val price = asset.price?.let { it * asset.asset.quantity } ?: 0.0
     val childrenPrice = asset.children.sumOf { getTotalPrice(it) }
     return price + childrenPrice
-}
-
-@Composable
-private fun ExpandChevron(isExpanded: Boolean) {
-    val rotation by animateFloatAsState(if (isExpanded) 0f else -90f)
-    Image(
-        painter = painterResource(Res.drawable.expand_more_16px),
-        contentDescription = null,
-        modifier = Modifier
-            .padding(horizontal = Spacing.small)
-            .rotate(rotation)
-            .size(16.dp),
-    )
 }

@@ -49,6 +49,7 @@ import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.zIndex
 import dev.nohus.rift.Event
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
@@ -263,6 +264,7 @@ private fun WindowScope.RiftWindowContent(
             )
             Box(
                 modifier = Modifier
+                    .zIndex(-1f)
                     .modifyIf(withContentPadding) {
                         padding(start = Spacing.large, end = Spacing.large, bottom = Spacing.large)
                     },

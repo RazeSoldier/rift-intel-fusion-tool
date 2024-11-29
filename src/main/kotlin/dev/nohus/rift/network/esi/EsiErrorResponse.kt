@@ -10,3 +10,8 @@ data class EsiErrorResponse(
     @SerialName("sso_status")
     val ssoStatus: Int? = null,
 )
+
+data class EsiErrorException(
+    val error: EsiErrorResponse,
+    val code: Int,
+) : Exception(error.error)

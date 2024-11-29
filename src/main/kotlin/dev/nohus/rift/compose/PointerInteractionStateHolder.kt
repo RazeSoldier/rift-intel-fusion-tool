@@ -88,6 +88,7 @@ fun <T> getStandardTransitionSpec(): @Composable Transition.Segment<PointerInter
 fun Modifier.hoverBackground(
     hoverColor: Color? = null,
     pressColor: Color? = null,
+    normalColor: Color? = null,
     shape: Shape = RectangleShape,
     pointerInteractionStateHolder: PointerInteractionStateHolder? = null,
 ): Modifier = composed {
@@ -97,14 +98,14 @@ fun Modifier.hoverBackground(
     val transition = updateTransition(pointerInteractionStateHolder.current)
     val highlightColor by transition.animateColor(colorTransitionSpec) {
         when (it) {
-            PointerInteractionState.Normal -> hoverColor ?: RiftTheme.colors.backgroundHovered
+            PointerInteractionState.Normal -> normalColor ?: hoverColor ?: RiftTheme.colors.backgroundHovered
             PointerInteractionState.Hover -> hoverColor ?: RiftTheme.colors.backgroundHovered
             PointerInteractionState.Press -> pressColor ?: RiftTheme.colors.backgroundSelected
         }
     }
     val highlightAlpha by transition.animateFloat(floatTransitionSpec) {
         when (it) {
-            PointerInteractionState.Normal -> 0f
+            PointerInteractionState.Normal -> if (normalColor == null) 0f else 1f
             PointerInteractionState.Hover -> 1f
             PointerInteractionState.Press -> 1f
         }

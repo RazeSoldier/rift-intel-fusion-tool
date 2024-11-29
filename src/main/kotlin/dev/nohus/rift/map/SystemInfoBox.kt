@@ -507,7 +507,7 @@ private fun SystemInfoTypesIndicators(
 private fun StandingsIndicator(security: Double, systemStatus: SolarSystemStatus?) {
     val standingsRepository: StandingsRepository = koin.get()
     val allianceId = systemStatus?.sovereignty?.allianceId
-    val standing = standingsRepository.getStanding(allianceId, null, null)
+    val standing = standingsRepository.getStandingLevel(allianceId, null, null)
     val (tooltip, color) = if (security >= 0.5) {
         "High sec" to Color(0xFF71E754)
     } else if (security > 0.0) {

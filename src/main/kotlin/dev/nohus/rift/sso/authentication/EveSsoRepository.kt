@@ -44,6 +44,12 @@ class EveSsoRepository(
         updateAuthenticatedCharacters()
     }
 
+    fun removeAllAuthentications() {
+        logger.info { "Removing all authentications" }
+        authentications.clear()
+        settings.authenticatedCharacters = emptyMap()
+    }
+
     private fun updateAuthenticatedCharacters() {
         settings.authenticatedCharacters = authentications.map { (id, authentication) ->
             id to SsoAuthentication(

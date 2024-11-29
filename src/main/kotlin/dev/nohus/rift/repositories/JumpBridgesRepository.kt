@@ -83,7 +83,7 @@ class JumpBridgesRepository(
                         var searchResult: Result<CharactersIdSearch>? = null
                         repeat(3) {
                             if (searchResult == null || searchResult?.isFailure == true) {
-                                searchResult = esiApi.getCharactersIdSearch(characterId, "structure", false, search = system)
+                                searchResult = esiApi.getCharactersIdSearch(characterId, listOf("structure"), false, search = system)
                             }
                         }
                         val newFoundConnectionsMutex = Mutex()

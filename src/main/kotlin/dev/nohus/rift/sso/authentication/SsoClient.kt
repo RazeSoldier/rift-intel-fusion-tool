@@ -81,6 +81,7 @@ class SsoClient(
                 "esi-alliances.read_contacts.v1",
                 "esi-corporations.read_contacts.v1",
                 "esi-characters.read_contacts.v1",
+                "esi-characters.write_contacts.v1",
                 "esi-clones.read_clones.v1",
                 "esi-clones.read_implants.v1",
                 "esi-planets.manage_planets.v1",

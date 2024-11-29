@@ -2,9 +2,11 @@ package dev.nohus.rift.network.esi
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -53,6 +55,51 @@ interface EsiService {
         @Header("Authorization") authorization: String,
     ): List<Contact>
 
+    @GET("/v1/alliances/{id}/contacts/labels/")
+    suspend fun getAlliancesIdContactsLabels(
+        @Path("id") allianceId: Int,
+        @Header("Authorization") authorization: String,
+    ): List<ContactsLabel>
+
+    @GET("/v1/corporations/{id}/contacts/labels/")
+    suspend fun getCorporationsIdContactsLabels(
+        @Path("id") corporationId: Int,
+        @Header("Authorization") authorization: String,
+    ): List<ContactsLabel>
+
+    @GET("/v1/characters/{id}/contacts/labels/")
+    suspend fun getCharactersIdContactsLabels(
+        @Path("id") characterId: Int,
+        @Header("Authorization") authorization: String,
+    ): List<ContactsLabel>
+
+    @DELETE("/v2/characters/{id}/contacts/")
+    suspend fun deleteCharactersIdContacts(
+        @Path("id") characterId: Int,
+        @Query("contact_ids") contactIds: List<Int>,
+        @Header("Authorization") authorization: String,
+    )
+
+    @POST("/v2/characters/{id}/contacts/")
+    suspend fun postCharactersIdContacts(
+        @Path("id") characterId: Int,
+        @Query("label_ids") labelIds: List<Long>?,
+        @Query("standing") standing: Float,
+        @Query("watched") watched: Boolean?,
+        @Header("Authorization") authorization: String,
+        @Body contactIds: List<Int>,
+    ): List<Int>
+
+    @PUT("/v2/characters/{id}/contacts/")
+    suspend fun putCharactersIdContacts(
+        @Path("id") characterId: Int,
+        @Query("label_ids") labelIds: List<Long>?,
+        @Query("standing") standing: Float,
+        @Query("watched") watched: Boolean?,
+        @Header("Authorization") authorization: String,
+        @Body contactIds: List<Int>,
+    ): Response<Unit>
+
     @GET("/v3/characters/{id}/online/")
     suspend fun getCharacterIdOnline(
         @Path("id") characterId: Int,
@@ -74,7 +121,7 @@ interface EsiService {
     @GET("/v3/characters/{id}/search/")
     suspend fun getCharactersIdSearch(
         @Path("id") characterId: Int,
-        @Query("categories") categories: String,
+        @Query("categories") categories: List<String>,
         @Query("strict") strict: Boolean,
         @Query("search") search: String,
         @Header("Authorization") authorization: String,

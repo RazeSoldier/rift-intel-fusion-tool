@@ -27,48 +27,8 @@ class NeocomViewModel(
     )
     val state = _state.asStateFlow()
 
-    fun onAlertsClick() {
-        windowManager.onWindowOpen(RiftWindow.Alerts)
-    }
-
-    fun onMapClick() {
-        windowManager.onWindowOpen(RiftWindow.Map)
-    }
-
-    fun onIntelFeedClick() {
-        windowManager.onWindowOpen(RiftWindow.IntelFeed)
-    }
-
-    fun onIntelReportsClick() {
-        windowManager.onWindowOpen(RiftWindow.IntelReports)
-    }
-
-    fun onCharactersClick() {
-        windowManager.onWindowOpen(RiftWindow.Characters)
-    }
-
-    fun onAssetsClick() {
-        windowManager.onWindowOpen(RiftWindow.Assets)
-    }
-
-    fun onPlanetaryIndustryClick() {
-        windowManager.onWindowOpen(RiftWindow.PlanetaryIndustry)
-    }
-
-    fun onPingsClick() {
-        windowManager.onWindowOpen(RiftWindow.Pings)
-    }
-
-    fun onJabberClick() {
-        windowManager.onWindowOpen(RiftWindow.Jabber)
-    }
-
-    fun onSettingsClick() {
-        windowManager.onWindowOpen(RiftWindow.Settings)
-    }
-
-    fun onAboutClick() {
-        windowManager.onWindowOpen(RiftWindow.About)
+    fun onButtonClick(window: RiftWindow) {
+        windowManager.onWindowOpen(window)
     }
 
     fun onQuitClick() {

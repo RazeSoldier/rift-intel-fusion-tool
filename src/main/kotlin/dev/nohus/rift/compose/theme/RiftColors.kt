@@ -54,11 +54,6 @@ data class RiftColors(
     val extendedAwayOrange: Color,
     val offlineRed: Color,
 
-    val standingTerrible: Color,
-    val standingBad: Color,
-    val standingGood: Color,
-    val standingExcellent: Color,
-
     val mapBackground: Color,
 
     val progressBarBackground: Color,
@@ -115,11 +110,6 @@ val LocalRiftColors = staticCompositionLocalOf {
         extendedAwayOrange = Color.Unspecified,
         offlineRed = Color.Unspecified,
 
-        standingTerrible = Color.Unspecified,
-        standingBad = Color.Unspecified,
-        standingGood = Color.Unspecified,
-        standingExcellent = Color.Unspecified,
-
         mapBackground = Color.Unspecified,
 
         progressBarBackground = Color.Unspecified,
@@ -175,11 +165,6 @@ fun getRiftColors() = RiftColors(
     awayYellow = Color(0xFFFFD25A),
     extendedAwayOrange = Color(0xFFFF945A),
     offlineRed = Color(0xFFFF494F),
-
-    standingTerrible = Color(0xFFFF494F),
-    standingBad = Color(0xFFFF945A),
-    standingGood = Color(0xFF316BCA),
-    standingExcellent = Color(0xFF0062FF),
 
     mapBackground = Color(0xFF0A0E15),
 
