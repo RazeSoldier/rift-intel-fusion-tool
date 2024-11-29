@@ -267,7 +267,17 @@ object WhatsNew {
                 - Added map setting to not hide system name labels when zooming out region maps.
                 - Alerts can now be created for intel up to 15 jumps away, up from the previous limit of 5 jumps
                 - Updated map setting for showing automatic intel popups to allow disabling the popups completely
-                - Updated default intel channel list for users of The Imperium configuration back. If you'd like to use it, remove all intel channels from your list to return to the updated defaults.
+                - Updated default intel channel list for users of The Imperium configuration pack. If you'd like to use it, remove all intel channels from your list to return to the updated defaults.
+            """.trimIndent(),
+            "4.10.0" description """
+                -! New feature: Character Settings Copying
+                - Copy both character-level and account-level EVE settings between your characters
+                - Automatically detects which characters belong to which accounts
+                - No manual file choosing required
+                
+                - Maximized windows now always show the unmaximize button on the toolbar for easy access
+                - If you never interacted with the tray icon, then the Neocom window now always shows on startup and quits the app completely when closed
+                - The Neocom window is now resizeable and the buttons adapt to the window size
             """.trimIndent(),
         ).reversed()
     }

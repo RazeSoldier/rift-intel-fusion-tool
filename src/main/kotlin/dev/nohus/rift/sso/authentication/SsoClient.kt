@@ -104,6 +104,7 @@ class SsoClient(
                     val response = postSsoTokenRequest(configuration, code, codeVerifier)
                     completableDeferred.complete(response.toAuthentication(configuration))
                 } catch (e: Exception) {
+                    logger.error(e) { "SSO authentication failed after a successful callback" }
                     completableDeferred.completeExceptionally(e)
                 }
             }

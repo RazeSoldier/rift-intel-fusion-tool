@@ -65,6 +65,8 @@ data class SettingsModel(
     val skipSplashScreen: Boolean = false,
     val dismissedWarnings: List<String> = emptyList(),
     val uiScale: Float = 1f,
+    val accountAssociations: Map<Int, Int> = emptyMap(),
+    val isTrayIconWorking: Boolean = false,
 )
 
 @Serializable

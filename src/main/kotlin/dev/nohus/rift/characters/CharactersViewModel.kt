@@ -1,18 +1,19 @@
 package dev.nohus.rift.characters
 
 import dev.nohus.rift.ViewModel
-import dev.nohus.rift.characters.files.CopyEveCharacterSettingsUseCase
 import dev.nohus.rift.characters.repositories.CharacterWalletRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
+import dev.nohus.rift.charactersettings.GetAccountsUseCase
+import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
 import dev.nohus.rift.clones.Clone
 import dev.nohus.rift.clones.ClonesRepository
-import dev.nohus.rift.compose.DialogMessage
-import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.windowing.WindowManager
+import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -24,12 +25,13 @@ import java.nio.file.Path
 
 @Single
 class CharactersViewModel(
-    private val copyEveCharacterSettingsUseCase: CopyEveCharacterSettingsUseCase,
     private val onlineCharactersRepository: OnlineCharactersRepository,
     private val localCharactersRepository: LocalCharactersRepository,
     private val characterLocationRepository: CharacterLocationRepository,
     private val characterWalletRepository: CharacterWalletRepository,
     private val clonesRepository: ClonesRepository,
+    private val getAccounts: GetAccountsUseCase,
+    private val windowManager: WindowManager,
     private val settings: Settings,
 ) : ViewModel() {
 
@@ -45,31 +47,12 @@ class CharactersViewModel(
 
     data class UiState(
         val characters: List<CharacterItem> = emptyList(),
+        val accounts: List<Account> = emptyList(),
         val onlineCharacters: List<Int> = emptyList(),
         val locations: Map<Int, Location> = emptyMap(),
-        val copying: CopyingState = CopyingState.NotCopying,
         val isChoosingDisabledCharacters: Boolean = false,
-        val dialogMessage: DialogMessage? = null,
         val isSsoDialogOpen: Boolean = false,
         val isShowingClones: Boolean,
-    )
-
-    sealed interface CopyingState {
-        data object NotCopying : CopyingState
-        data object SelectingSource : CopyingState
-        data class SelectingDestination(
-            val sourceId: Int,
-        ) : CopyingState
-
-        data class DestinationSelected(
-            val source: CopyingCharacter,
-            val destination: List<CopyingCharacter>,
-        ) : CopyingState
-    }
-
-    data class CopyingCharacter(
-        val id: Int,
-        val name: String,
     )
 
     private val _state = MutableStateFlow(
@@ -108,6 +91,12 @@ class CharactersViewModel(
             }.collect()
         }
         viewModelScope.launch {
+            localCharactersRepository.allCharacters.collect {
+                val accounts = getAccounts()
+                _state.update { it.copy(accounts = accounts) }
+            }
+        }
+        viewModelScope.launch {
             characterLocationRepository.locations.collect { locations ->
                 _state.update { it.copy(locations = locations) }
             }
@@ -124,96 +113,11 @@ class CharactersViewModel(
     }
 
     fun onCopySettingsClick() {
-        _state.update {
-            it.copy(
-                copying = CopyingState.SelectingSource,
-                isChoosingDisabledCharacters = false,
-            )
-        }
-    }
-
-    fun onCopyCancel() {
-        _state.update { it.copy(copying = CopyingState.NotCopying) }
-    }
-
-    fun onCopySourceClick(characterId: Int) {
-        _state.update { it.copy(copying = CopyingState.SelectingDestination(characterId)) }
-    }
-
-    fun onCopyDestinationClick(characterId: Int) {
-        val state = _state.value.copying
-        if (state is CopyingState.SelectingDestination) {
-            val sourceName =
-                _state.value.characters.firstOrNull { it.characterId == state.sourceId }?.info?.success?.name ?: return
-            val destinationName =
-                _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
-            _state.update {
-                it.copy(
-                    copying = CopyingState.DestinationSelected(
-                        source = CopyingCharacter(state.sourceId, sourceName),
-                        destination = listOf(CopyingCharacter(characterId, destinationName)),
-                    ),
-                )
-            }
-        } else if (state is CopyingState.DestinationSelected) {
-            val destinationName =
-                _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
-            val destinations = state.destination + CopyingCharacter(characterId, destinationName)
-            _state.update {
-                it.copy(
-                    copying = CopyingState.DestinationSelected(
-                        source = state.source,
-                        destination = destinations,
-                    ),
-                )
-            }
-        }
-    }
-
-    fun onCopySettingsConfirmClick() {
-        val state = _state.value.copying
-        if (state is CopyingState.DestinationSelected) {
-            val fromFile = _state.value.characters
-                .firstOrNull { it.characterId == state.source.id }?.settingsFile ?: return
-            val toFiles = _state.value.characters
-                .filter { it.characterId in state.destination.map { it.id } }
-                .mapNotNull { it.settingsFile }
-                .takeIf { it.size == state.destination.size } ?: return
-            val success = copyEveCharacterSettingsUseCase(fromFile, toFiles)
-
-            val dialogMessage = if (success) {
-                DialogMessage(
-                    title = "Settings copied",
-                    message = "Eve settings have been copied from ${state.source.name} to ${state.destination.joinToString { it.name }}.",
-                    type = MessageDialogType.Info,
-                )
-            } else {
-                DialogMessage(
-                    title = "Copying failed",
-                    message = "There is something wrong with your character settings files.",
-                    type = MessageDialogType.Warning,
-                )
-            }
-            _state.update {
-                it.copy(
-                    copying = CopyingState.NotCopying,
-                    dialogMessage = dialogMessage,
-                )
-            }
-        }
-    }
-
-    fun onCloseDialogMessage() {
-        _state.update { it.copy(dialogMessage = null) }
+        windowManager.onWindowOpen(RiftWindow.CharacterSettings)
     }
 
     fun onChooseDisabledClick() {
-        _state.update {
-            it.copy(
-                copying = CopyingState.NotCopying,
-                isChoosingDisabledCharacters = !it.isChoosingDisabledCharacters,
-            )
-        }
+        _state.update { it.copy(isChoosingDisabledCharacters = !it.isChoosingDisabledCharacters) }
     }
 
     fun onDisableCharacterClick(characterId: Int) {

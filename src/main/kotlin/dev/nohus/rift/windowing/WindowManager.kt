@@ -17,6 +17,7 @@ import dev.nohus.rift.about.AboutWindow
 import dev.nohus.rift.alerts.list.AlertsWindow
 import dev.nohus.rift.assets.AssetsWindow
 import dev.nohus.rift.characters.CharactersWindow
+import dev.nohus.rift.charactersettings.CharacterSettingsWindow
 import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.configurationpack.ConfigurationPackReminderWindow
 import dev.nohus.rift.contacts.ContactsWindow
@@ -125,6 +126,9 @@ class WindowManager(
         @SerialName("Contacts")
         Contacts,
 
+        @SerialName("CharacterSettings")
+        CharacterSettings,
+
         @Deprecated("Removed")
         @SerialName("NonEnglishEveClientWarning")
         NonEnglishEveClientWarning,
@@ -146,7 +150,15 @@ class WindowManager(
     )
 
     private val nonSavedWindows = listOf(
+        RiftWindow.IntelReportsSettings,
+        RiftWindow.IntelFeedSettings,
+        RiftWindow.MapSettings,
+        RiftWindow.About,
+        RiftWindow.ConfigurationPackReminder,
+        RiftWindow.WhatsNew,
         RiftWindow.StartupWarning,
+        RiftWindow.Pushover,
+        RiftWindow.CharacterSettings,
     )
     private val persistentWindows = listOf(
         RiftWindow.Neocom,
@@ -164,8 +176,9 @@ class WindowManager(
         if (settings.isSetupWizardFinished) {
             if (settings.isRememberOpenWindows) {
                 settings.openWindows.filter { it !in nonSavedWindows }.forEach { onWindowOpen(it) }
-            } else {
-                onWindowOpen(RiftWindow.Neocom)
+            }
+            if (!settings.isRememberOpenWindows || !settings.isTrayIconWorking) {
+                onWindowOpen(RiftWindow.Neocom, ifClosed = true)
             }
         }
     }
@@ -201,6 +214,7 @@ class WindowManager(
                     RiftWindow.StartupWarning -> StartupWarningWindow(state.inputModel as? StartupWarningInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.StartupWarning) })
                     RiftWindow.Pushover -> PushoverWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Pushover) })
                     RiftWindow.Contacts -> ContactsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Contacts) })
+                    RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings) })
                     RiftWindow.NonEnglishEveClientWarning -> {}
                 }
             }
@@ -251,7 +265,7 @@ class WindowManager(
             null
         }
         val windowSizing = when (window) {
-            RiftWindow.Neocom -> WindowSizing(defaultSize = (200 to null), minimumSize = 200 to null)
+            RiftWindow.Neocom -> WindowSizing(defaultSize = saved ?: (160 to 650), minimumSize = 143 to 106)
             RiftWindow.IntelReports -> WindowSizing(defaultSize = saved ?: (800 to 500), minimumSize = 400 to 200)
             RiftWindow.IntelReportsSettings -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.IntelFeed -> WindowSizing(defaultSize = saved ?: (500 to 600), minimumSize = (500 to 250))
@@ -266,13 +280,14 @@ class WindowManager(
             RiftWindow.Pings -> WindowSizing(defaultSize = saved ?: (440 to 500), minimumSize = (440 to 300))
             RiftWindow.ConfigurationPackReminder -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Assets -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = (500 to 300))
-            RiftWindow.WhatsNew -> WindowSizing(defaultSize = saved ?: (450 to 600), minimumSize = (450 to 600))
+            RiftWindow.WhatsNew -> WindowSizing(defaultSize = (450 to 600), minimumSize = (450 to 600))
             RiftWindow.Debug -> WindowSizing(defaultSize = saved ?: (450 to 500), minimumSize = (450 to 500))
             RiftWindow.Fleets -> WindowSizing(defaultSize = saved ?: (300 to 300), minimumSize = 300 to 300)
             RiftWindow.PlanetaryIndustry -> WindowSizing(defaultSize = saved ?: (540 to 800), minimumSize = 540 to 360)
             RiftWindow.StartupWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (350 to null), minimumSize = 350 to null)
             RiftWindow.Contacts -> WindowSizing(defaultSize = saved ?: (650 to 600), minimumSize = 650 to 600)
+            RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
         }
         return windowSizing.scaled(uiScaleController.uiScale)
