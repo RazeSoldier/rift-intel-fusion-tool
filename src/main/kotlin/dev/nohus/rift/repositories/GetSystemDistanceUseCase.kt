@@ -24,6 +24,7 @@ class GetSystemDistanceUseCase(
     private var jumpBridgesHashCode = settings.jumpBridgeNetwork?.hashCode()
 
     operator fun invoke(from: Int, to: Int, maxDistance: Int, withJumpBridges: Boolean): Int? {
+        if (from == to) return 0
         updateJumpBridgesCode()
         val key = CacheKey(from, to, maxDistance, withJumpBridges)
         cache[key]?.let {

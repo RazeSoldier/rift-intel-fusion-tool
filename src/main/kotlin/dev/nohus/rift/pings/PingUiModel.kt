@@ -31,6 +31,6 @@ sealed class PingUiModel(
 }
 
 sealed interface FormupLocationUiModel {
-    data class System(val name: String, val security: Double, val distance: Int) : FormupLocationUiModel
+    data class System(val name: String, val security: Double, val distance: Int?) : FormupLocationUiModel
     data class Text(val text: String) : FormupLocationUiModel
 }

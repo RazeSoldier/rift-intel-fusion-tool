@@ -68,7 +68,7 @@ class IntelStateController(
 
         val timestamp = message.chatMessage.timestamp
         val understanding = understandMessageUseCase(message.parsed)
-        if (Duration.between(timestamp, Instant.now()) < Duration.ofSeconds(30)) {
+        if (Duration.between(timestamp, Instant.now()) < Duration.ofMinutes(2)) {
             alertsTriggerController.onNewIntel(message, understanding)
             alertsTriggerController.onNewIntelMessage(message)
         }

@@ -150,8 +150,8 @@ class IntelFeedViewModel(
             is DistanceFilter.WithinDistance -> {
                 getFilteredIntelByRegions(intel, locationFilterRegionIds).filterKeys { system ->
                     val systemId = solarSystemsRepository.getSystem(system)?.id ?: return@filterKeys false
-                    val distance = getSystemDistanceFromCharacterUseCase(systemId, filter.jumps, withJumpBridges = _state.value.settings.isUsingJumpBridgesForDistance)
-                    distance <= filter.jumps
+                    val characterDistance = getSystemDistanceFromCharacterUseCase(systemId, filter.jumps, withJumpBridges = _state.value.settings.isUsingJumpBridgesForDistance)
+                    characterDistance != null && characterDistance.distance <= filter.jumps
                 }
             }
         }
@@ -181,7 +181,7 @@ class IntelFeedViewModel(
             SortingFilter.Distance -> {
                 filtered.entries.sortedBy {
                     val systemId = solarSystemsRepository.getSystem(it.key)?.id ?: return@sortedBy Int.MAX_VALUE
-                    getSystemDistanceFromCharacterUseCase(systemId, 9, withJumpBridges = _state.value.settings.isUsingJumpBridgesForDistance)
+                    getSystemDistanceFromCharacterUseCase(systemId, 9, withJumpBridges = _state.value.settings.isUsingJumpBridgesForDistance)?.distance ?: return@sortedBy Int.MAX_VALUE
                 }
             }
             SortingFilter.Time -> {

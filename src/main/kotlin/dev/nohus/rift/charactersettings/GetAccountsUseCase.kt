@@ -35,7 +35,7 @@ class GetAccountsUseCase(
         return try {
             directory.listDirectoryEntries()
                 .filter { file ->
-                    file.isDirectory() && file.name.startsWith("settings_")
+                    file.isDirectory() && file.name.startsWith("settings_") && "backup" !in file.name
                 }.flatMap { directory ->
                     directory.listDirectoryEntries()
                         .filter { file -> file.isRegularFile() && file.extension == "dat" }
