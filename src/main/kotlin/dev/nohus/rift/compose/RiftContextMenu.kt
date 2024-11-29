@@ -43,6 +43,7 @@ import androidx.compose.ui.window.Popup
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import java.util.UUID
@@ -69,6 +70,8 @@ fun RiftContextMenuArea(
     var isMenuShown by remember { mutableStateOf(false) }
     LaunchedEffect(openContextMenuId) { if (openContextMenuId != contextMenuId) isMenuShown = false }
 
+    val uiScaleController: UiScaleController = remember { koin.get() }
+    val scale = uiScaleController.uiScale
     var areaOffset by remember { mutableStateOf(IntOffset.Zero) }
     var offset by remember { mutableStateOf(IntOffset.Zero) }
     val density = LocalDensity.current
@@ -81,7 +84,7 @@ fun RiftContextMenuArea(
                 val awtEvent = event.awtEventOrNull ?: return@onPointerEvent
                 if ((acceptsRightClick && awtEvent.button == 3) || (acceptsLeftClick && awtEvent.button == 1)) {
                     with(density) {
-                        offset = IntOffset(awtEvent.x.dp.roundToPx(), awtEvent.y.dp.roundToPx()) - areaOffset
+                        offset = IntOffset((awtEvent.x / scale).dp.roundToPx(), (awtEvent.y / scale).dp.roundToPx()) - areaOffset
                     }
                     isMenuShown = true
                     openContextMenuId = contextMenuId

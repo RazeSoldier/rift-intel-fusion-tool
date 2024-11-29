@@ -61,6 +61,7 @@ class SettingsViewModel(
         val soundsVolume: Int,
         val configurationPack: ConfigurationPack?,
         val dialogMessage: DialogMessage? = null,
+        val uiScale: Float,
     )
 
     private val _state = MutableStateFlow(
@@ -84,6 +85,7 @@ class SettingsViewModel(
             isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
             soundsVolume = settings.soundsVolume,
             configurationPack = settings.configurationPack,
+            uiScale = settings.uiScale,
         ),
     )
     val state = _state.asStateFlow()
@@ -107,6 +109,7 @@ class SettingsViewModel(
                         isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
                         soundsVolume = settings.soundsVolume,
                         configurationPack = settings.configurationPack,
+                        uiScale = settings.uiScale,
                     )
                 }
                 val logsDirectory = settings.eveLogsDirectory
@@ -247,6 +250,11 @@ class SettingsViewModel(
             showRestartRequiredDialog("New tray icon will take effect after you restart the application.")
             settings.isUsingDarkTrayIcon = enabled
         }
+    }
+
+    fun onUiScaleChanged(uiScale: Float) {
+        showRestartRequiredDialog("Changing the UI scale will take effect after you restart the application.")
+        settings.uiScale = uiScale
     }
 
     fun onSoundsVolumeChange(volume: Int) {

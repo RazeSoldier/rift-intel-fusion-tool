@@ -89,6 +89,7 @@ fun RiftWindow(
     isResizable: Boolean = true,
     content: @Composable WindowScope.() -> Unit,
 ) {
+    val uiScaleController: UiScaleController = remember { koin.get() }
     val alwaysOnTopController: AlwaysOnTopController = remember { koin.get() }
     val isAlwaysOnTop by alwaysOnTopController.isAlwaysOnTop(state.window).collectAsState(false)
     val isLocked by alwaysOnTopController.isLocked(state.window).collectAsState(false)
@@ -102,38 +103,40 @@ fun RiftWindow(
         resizable = isResizable && !isLocked,
         alwaysOnTop = isAlwaysOnTop,
     ) {
-        MinimumSizeHandler(state)
-        BringToFrontHandler(state.bringToFrontEvent)
-        CompositionLocalProvider(
-            LocalRiftWindow provides window,
-            LocalRiftWindowState provides state,
-        ) {
-            RiftWindowContent(
-                title = title,
-                icon = icon,
-                isAlwaysOnTop = isAlwaysOnTop,
-                isLocked = isLocked,
-                onTuneClick = onTuneClick,
-                tuneContextMenuItems = tuneContextMenuItems,
-                onAlwaysOnTopClick = if (state.window != null) {
-                    { alwaysOnTopController.toggleAlwaysOnTop(state.window) }
-                } else {
-                    null
-                },
-                onLockClick = if (state.window != null) {
-                    { alwaysOnTopController.toggleLocked(state.window) }
-                } else {
-                    null
-                },
-                onMinimizeClick = { state.windowState.isMinimized = true },
-                onCloseClick = onCloseClick,
-                width = state.windowState.size.width,
-                height = state.windowState.size.height,
-                titleBarStyle = titleBarStyle,
-                titleBarContent = titleBarContent,
-                withContentPadding = withContentPadding,
-                content = content,
-            )
+        uiScaleController.withScale {
+            MinimumSizeHandler(state)
+            BringToFrontHandler(state.bringToFrontEvent)
+            CompositionLocalProvider(
+                LocalRiftWindow provides window,
+                LocalRiftWindowState provides state,
+            ) {
+                RiftWindowContent(
+                    title = title,
+                    icon = icon,
+                    isAlwaysOnTop = isAlwaysOnTop,
+                    isLocked = isLocked,
+                    onTuneClick = onTuneClick,
+                    tuneContextMenuItems = tuneContextMenuItems,
+                    onAlwaysOnTopClick = if (state.window != null) {
+                        { alwaysOnTopController.toggleAlwaysOnTop(state.window) }
+                    } else {
+                        null
+                    },
+                    onLockClick = if (state.window != null) {
+                        { alwaysOnTopController.toggleLocked(state.window) }
+                    } else {
+                        null
+                    },
+                    onMinimizeClick = { state.windowState.isMinimized = true },
+                    onCloseClick = onCloseClick,
+                    width = state.windowState.size.width / uiScaleController.uiScale,
+                    height = state.windowState.size.height / uiScaleController.uiScale,
+                    titleBarStyle = titleBarStyle,
+                    titleBarContent = titleBarContent,
+                    withContentPadding = withContentPadding,
+                    content = content,
+                )
+            }
         }
     }
 }

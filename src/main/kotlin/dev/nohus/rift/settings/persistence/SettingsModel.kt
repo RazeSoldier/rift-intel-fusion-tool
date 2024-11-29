@@ -64,6 +64,7 @@ data class SettingsModel(
     val pushover: Pushover = Pushover(),
     val skipSplashScreen: Boolean = false,
     val dismissedWarnings: List<String> = emptyList(),
+    val uiScale: Float = 1f,
 )
 
 @Serializable
@@ -74,7 +75,8 @@ enum class MapType {
 @Serializable
 enum class MapSystemInfoType {
     StarColor, Security, NullSecurity, IntelHostiles, Jumps, Kills, NpcKills, Assets, Clones, Incursions, Stations,
-    FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Colonies
+    FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Colonies, Standings,
+    RatsType,
 }
 
 @Serializable

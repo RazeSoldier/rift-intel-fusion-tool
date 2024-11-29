@@ -165,6 +165,8 @@ private fun SettingsWindowContent(
                     onIsDisplayEveTimeChanged = viewModel::onIsDisplayEveTimeChanged,
                     isUsingDarkTrayIcon = state.isUsingDarkTrayIcon,
                     onIsUsingDarkTrayIconChanged = viewModel::onIsUsingDarkTrayIconChanged,
+                    uiScale = state.uiScale,
+                    onUiScaleChanged = viewModel::onUiScaleChanged,
                 )
             }
 
@@ -238,6 +240,8 @@ private fun UserInterfaceSection(
     onIsDisplayEveTimeChanged: (Boolean) -> Unit,
     isUsingDarkTrayIcon: Boolean,
     onIsUsingDarkTrayIconChanged: (Boolean) -> Unit,
+    uiScale: Float,
+    onUiScaleChanged: (Float) -> Unit,
 ) {
     SectionTitle("User Interface", Modifier.padding(bottom = Spacing.medium))
     RiftCheckboxWithLabel(
@@ -266,6 +270,13 @@ private fun UserInterfaceSection(
         tooltip = "Enable to use a dark tray icon,\nif you prefer it.",
         isChecked = isUsingDarkTrayIcon,
         onCheckedChange = onIsUsingDarkTrayIconChanged,
+    )
+    RiftDropdownWithLabel(
+        label = "UI scale:",
+        items = listOf(0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f),
+        selectedItem = uiScale,
+        onItemSelected = onUiScaleChanged,
+        getItemName = { String.format("%d%%", (it * 100).toInt()) },
     )
 }
 

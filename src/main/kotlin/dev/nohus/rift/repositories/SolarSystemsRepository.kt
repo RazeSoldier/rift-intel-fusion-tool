@@ -30,6 +30,7 @@ class SolarSystemsRepository(
     private val regionNamesById: Map<Int, String> // Region ID -> Region name
     private val regionNamesBySystemName: Map<String, String> // System name -> Region name
     private val regionIdBySystemId: Map<Int, Int> // System ID -> Region ID
+    private val regionIdsByName: Map<String, Int> // Region name -> Region ID
 
     companion object {
         private const val DEFAULT_SUN_TYPE = 8
@@ -130,6 +131,7 @@ class SolarSystemsRepository(
         regionNamesById = mapRegions.associate { it.id to it.name }
         regionNamesBySystemName = mapSolarSystems.associate { it.name to regionNamesById[it.regionId]!! }
         regionIdBySystemId = mapSolarSystems.associate { it.id to it.regionId }
+        regionIdsByName = mapRegions.associate { it.name to it.id }
     }
 
     fun getSystems(knownSpace: Boolean = true): List<MapSolarSystem> {
@@ -142,24 +144,24 @@ class SolarSystemsRepository(
 
     /**
      * @param name Potential system name
-     * @param regionHint Region the system is expected to be in, to prioritise ambiguous names
+     * @param regionsHint Regions the system is expected to be in, to prioritise ambiguous names
      * @param systemHints System IDs to prioritise for ambiguous names
      * @return Full name of the system or null if it's not a system name
      */
     fun getSystemName(
         name: String,
-        regionHint: String?,
+        regionsHint: List<String>,
         systemHints: List<Int> = emptyList(),
     ): String? {
-        getSystemWithoutTypos(name, regionHint, systemHints)?.let { return it }
-        if ('0' in name) getSystemWithoutTypos(name.replace('0', 'O'), regionHint, systemHints)?.let { return it }
-        if ('O' in name) getSystemWithoutTypos(name.replace('O', '0'), regionHint, systemHints)?.let { return it }
+        getSystemWithoutTypos(name, regionsHint, systemHints)?.let { return it }
+        if ('0' in name) getSystemWithoutTypos(name.replace('0', 'O'), regionsHint, systemHints)?.let { return it }
+        if ('O' in name) getSystemWithoutTypos(name.replace('O', '0'), regionsHint, systemHints)?.let { return it }
         return null
     }
 
     private fun getSystemWithoutTypos(
         name: String,
-        regionHint: String?,
+        regionsHint: List<String>,
         systemHints: List<Int>,
     ): String? {
         if (name in systemNames) return name
@@ -172,7 +174,7 @@ class SolarSystemsRepository(
         }
         return if (candidates.size > 1) {
             candidates.singleOrNull { candidate ->
-                regionNamesBySystemName[candidate] == regionHint
+                regionNamesBySystemName[candidate] in regionsHint
             } ?: candidates.singleOrNull { candidate ->
                 val systemId = systemIdsByName[candidate]
                 systemId in systemHints
@@ -225,6 +227,10 @@ class SolarSystemsRepository(
 
     fun getRegionIdBySystemId(systemId: Int): Int? {
         return regionIdBySystemId[systemId]
+    }
+
+    fun getRegionId(name: String): Int? {
+        return regionIdsByName[name]
     }
 
     fun getSystems() = mapSolarSystems

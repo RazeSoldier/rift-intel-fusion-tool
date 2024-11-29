@@ -105,8 +105,10 @@ import dev.nohus.rift.map.systemcolor.strategies.KillsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.MetaliminalStormsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.NpcKillsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.NullSecuritySystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.RatsTypeSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.SecuritySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.SovereigntySystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.StandingsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StarColorSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StationsSystemColorStrategy
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
@@ -342,6 +344,8 @@ private fun Map(
             jumpRange = JumpRangeSystemColorStrategy(state.mapState.systemStatus),
             colonies = ColoniesSystemColorStrategy(state.mapState.systemStatus),
             clones = ClonesSystemColorStrategy(state.mapState.systemStatus),
+            standings = koin.get { parametersOf(state.mapState.systemStatus) },
+            rats = RatsTypeSystemColorStrategy(state.mapState.systemStatus),
         )
     }
 
@@ -547,6 +551,8 @@ data class SystemStatusColorStrategies(
     val jumpRange: JumpRangeSystemColorStrategy,
     val colonies: ColoniesSystemColorStrategy,
     val clones: ClonesSystemColorStrategy,
+    val standings: StandingsSystemColorStrategy,
+    val rats: RatsTypeSystemColorStrategy,
 )
 
 fun getSolarSystemColorStrategy(
@@ -579,6 +585,8 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.JoveObservatories -> koin.get<JoveObservatorySystemColorStrategy>()
         MapSystemInfoType.Colonies -> systemStatusColorStrategies.colonies
         MapSystemInfoType.Clones -> systemStatusColorStrategies.clones
+        MapSystemInfoType.Standings -> systemStatusColorStrategies.standings
+        MapSystemInfoType.RatsType -> systemStatusColorStrategies.rats
     }
 }
 

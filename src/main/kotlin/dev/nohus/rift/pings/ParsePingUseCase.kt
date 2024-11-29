@@ -123,13 +123,13 @@ class ParsePingUseCase(
     }
 
     private fun parseFormupLocation(text: String): FormupLocation {
-        var system = solarSystemsRepository.getSystemName(text, regionHint = null) // Fast path
+        var system = solarSystemsRepository.getSystemName(text, regionsHint = emptyList()) // Fast path
         if (system == null) { // System not found, try with system hints
             val friendlyAllianceIds = standingsRepository.getFriendlyAllianceIds()
             val friendlySystems = mapStatusRepository.status.value.mapNotNull {
                 if (it.value.sovereignty?.allianceId in friendlyAllianceIds) it.key else null
             }
-            system = solarSystemsRepository.getSystemName(text, regionHint = null, systemHints = friendlySystems)
+            system = solarSystemsRepository.getSystemName(text, regionsHint = emptyList(), systemHints = friendlySystems)
         }
         return if (system != null) FormupLocation.System(system) else FormupLocation.Text(text)
     }

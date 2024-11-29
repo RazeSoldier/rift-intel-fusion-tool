@@ -16,6 +16,7 @@ import dev.nohus.rift.about.AboutWindow
 import dev.nohus.rift.alerts.list.AlertsWindow
 import dev.nohus.rift.assets.AssetsWindow
 import dev.nohus.rift.characters.CharactersWindow
+import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.configurationpack.ConfigurationPackReminderWindow
 import dev.nohus.rift.debug.DebugWindow
 import dev.nohus.rift.fleet.FleetsWindow
@@ -51,6 +52,7 @@ import java.time.Instant
 @Single
 class WindowManager(
     private val settings: Settings,
+    private val uiScaleController: UiScaleController,
 ) {
 
     @Serializable
@@ -242,7 +244,7 @@ class WindowManager(
         } else {
             null
         }
-        return when (window) {
+        val windowSizing = when (window) {
             RiftWindow.Neocom -> WindowSizing(defaultSize = (200 to null), minimumSize = 200 to null)
             RiftWindow.IntelReports -> WindowSizing(defaultSize = saved ?: (800 to 500), minimumSize = 400 to 200)
             RiftWindow.IntelReportsSettings -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
@@ -266,6 +268,14 @@ class WindowManager(
             RiftWindow.Pushover -> WindowSizing(defaultSize = (350 to null), minimumSize = 350 to null)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
         }
+        return windowSizing.scaled(uiScaleController.uiScale)
+    }
+
+    private fun WindowSizing.scaled(scale: Float): WindowSizing {
+        return WindowSizing(
+            defaultSize = defaultSize.first?.let { (it * scale).toInt() } to defaultSize.second?.let { (it * scale).toInt() },
+            minimumSize = minimumSize.first?.let { (it * scale).toInt() } to minimumSize.second?.let { (it * scale).toInt() },
+        )
     }
 
     private fun getWindowOpenPosition(window: RiftWindow): WindowPosition {
@@ -275,12 +285,13 @@ class WindowManager(
     }
 
     private fun rememberWindowPlacements() {
+        val scale = uiScaleController.uiScale
         states.value
             .filter { (_, state) -> state.window !in nonSavedWindows }
             .forEach { (window, state) ->
                 settings.windowPlacements += window to WindowPlacement(
                     position = state.windowState.position.let { Pos(it.x.value.toInt(), it.y.value.toInt()) },
-                    size = state.windowState.size.let { Size(it.width.value.toInt(), it.height.value.toInt()) },
+                    size = state.windowState.size.let { Size((it.width.value / scale).toInt(), (it.height.value / scale).toInt()) },
                 )
             }
     }

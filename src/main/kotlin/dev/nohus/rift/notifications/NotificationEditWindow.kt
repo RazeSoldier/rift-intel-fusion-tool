@@ -38,9 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.utils.Pos
@@ -53,9 +55,10 @@ fun NotificationEditWindow(
     position: Pos?,
     onCloseRequest: (editPos: Pos?, pos: Pos?) -> Unit,
 ) {
+    val uiScaleController: UiScaleController = remember { koin.get() }
     val state = rememberWindowState(
-        width = 300.dp,
-        height = 120.dp,
+        width = (300 * uiScaleController.uiScale).dp,
+        height = (120 * uiScaleController.uiScale).dp,
         position = position?.let { WindowPosition(it.x.dp, it.y.dp) } ?: WindowPosition.PlatformDefault,
     )
     Window(
@@ -66,75 +69,77 @@ fun NotificationEditWindow(
         title = "Edit notification placement",
         icon = painterResource(Res.drawable.window_loudspeaker_icon),
     ) {
-        window.minimumSize = Dimension(300, 120)
+        uiScaleController.withScale {
+            window.minimumSize = Dimension((300 * uiScaleController.uiScale).toInt(), (120 * uiScaleController.uiScale).toInt())
 
-        var notificationOffset by remember { mutableStateOf(Pos(0, 0)) }
+            var notificationOffset by remember { mutableStateOf(Pos(0, 0)) }
 
-        WindowDraggableArea {
-            val transition = rememberInfiniteTransition()
-            val borderPhase by transition.animateFloat(
-                0f,
-                -20f,
-                animationSpec = infiniteRepeatable(tween(1000, easing = LinearEasing)),
-            )
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .background(RiftTheme.colors.windowBackgroundSecondary)
-                    .drawBehind {
-                        drawRoundRect(
-                            color = Color.Red,
-                            style = Stroke(
-                                width = 1f,
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), borderPhase),
-                            ),
-                        )
-                    }
-                    .fillMaxSize()
-                    .pointerHoverIcon(PointerIcon(Cursors.pointer))
-                    .padding(Spacing.medium),
-            ) {
-                Text(
-                    text = "Drag to choose position",
-                    textAlign = TextAlign.Center,
-                    style = RiftTheme.typography.bodyPrimary,
+            WindowDraggableArea {
+                val transition = rememberInfiniteTransition()
+                val borderPhase by transition.animateFloat(
+                    0f,
+                    -20f,
+                    animationSpec = infiniteRepeatable(tween(1000, easing = LinearEasing)),
                 )
-                Text(
-                    text = "Click here when done",
-                    textAlign = TextAlign.Center,
-                    style = RiftTheme.typography.bodyLink,
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-                        .onClick {
-                            val notificationEditPos = Pos(state.position.x.value.toInt(), state.position.y.value.toInt())
-                            val notificationPos = Pos(notificationEditPos.x + notificationOffset.x, notificationEditPos.y + notificationOffset.y)
-                            onCloseRequest(notificationEditPos, notificationPos)
+                        .background(RiftTheme.colors.windowBackgroundSecondary)
+                        .drawBehind {
+                            drawRoundRect(
+                                color = Color.Red,
+                                style = Stroke(
+                                    width = 1f,
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), borderPhase),
+                                ),
+                            )
                         }
-                        .padding(bottom = Spacing.small),
-                )
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .background(Color.Black)
-                        .border(1.dp, RiftTheme.colors.borderGreyLight)
                         .fillMaxSize()
-                        .onGloballyPositioned {
-                            notificationOffset = it.positionInRoot().let { offset -> Pos(offset.x.toInt(), offset.y.toInt()) }
-                        }
+                        .pointerHoverIcon(PointerIcon(Cursors.pointer))
                         .padding(Spacing.medium),
-
                 ) {
                     Text(
-                        text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
-                                append("Sample notification title\n")
-                            }
-                            withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                                append("Sample notification contents")
-                            }
-                        },
+                        text = "Drag to choose position",
                         textAlign = TextAlign.Center,
+                        style = RiftTheme.typography.bodyPrimary,
                     )
+                    Text(
+                        text = "Click here when done",
+                        textAlign = TextAlign.Center,
+                        style = RiftTheme.typography.bodyLink,
+                        modifier = Modifier
+                            .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+                            .onClick {
+                                val notificationEditPos = Pos(state.position.x.value.toInt(), state.position.y.value.toInt())
+                                val notificationPos = Pos(notificationEditPos.x + notificationOffset.x, notificationEditPos.y + notificationOffset.y)
+                                onCloseRequest(notificationEditPos, notificationPos)
+                            }
+                            .padding(bottom = Spacing.small),
+                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .background(Color.Black)
+                            .border(1.dp, RiftTheme.colors.borderGreyLight)
+                            .fillMaxSize()
+                            .onGloballyPositioned {
+                                notificationOffset = it.positionInRoot().let { offset -> Pos(offset.x.toInt(), offset.y.toInt()) }
+                            }
+                            .padding(Spacing.medium),
+
+                    ) {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
+                                    append("Sample notification title\n")
+                                }
+                                withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
+                                    append("Sample notification contents")
+                                }
+                            },
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
         }

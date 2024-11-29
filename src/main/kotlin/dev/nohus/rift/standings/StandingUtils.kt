@@ -15,6 +15,16 @@ fun Standing.getColor(): Color? {
     }
 }
 
+fun Standing.getSystemColor(): Color {
+    return when (this) {
+        Standing.Terrible -> Color(0xFFBB1116)
+        Standing.Bad -> Color(0xFFCE440F)
+        Standing.Neutral -> Color(0xFF8D3163)
+        Standing.Good -> Color(0xFF4ECEF8)
+        Standing.Excellent -> Color(0xFF2C75E1)
+    }
+}
+
 val Standing.isFriendly: Boolean get() {
     return when (this) {
         Standing.Terrible -> false

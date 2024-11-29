@@ -52,6 +52,7 @@ import dev.nohus.rift.compose.ClickableSystem
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.SystemEntities
+import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.compose.modifyIfNotNull
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
@@ -89,46 +90,49 @@ fun NotificationWindow(
         title = "Notification",
         icon = painterResource(Res.drawable.window_loudspeaker_icon),
     ) {
-        var boxSize by remember { mutableStateOf<IntSize?>(null) }
-        val density = LocalDensity.current
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .background(Color.Black)
-                .border(1.dp, RiftTheme.colors.borderGreyLight)
-                .pointerHoverIcon(PointerIcon(Cursors.pointer))
-                .onSizeChanged {
-                    // Force first measured size to be kept. On macOS for some reason there is a second measure
-                    // that is 1 pixel smaller, making text wrap, this will make it ignore it
-                    if (boxSize == null) boxSize = it
-                }
-                .modifyIfNotNull(boxSize) {
-                    with(density) {
-                        requiredSize(it.width.toDp(), it.height.toDp())
-                    }
-                }
-                .onPointerEvent(PointerEventType.Enter) {
-                    onHoldDisappearance(true)
-                }
-                .onPointerEvent(PointerEventType.Exit) {
-                    onHoldDisappearance(false)
-                },
-        ) {
-            ScrollbarColumn(
-                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                contentPadding = PaddingValues(vertical = Spacing.medium),
-                scrollbarModifier = Modifier.padding(vertical = Spacing.small),
+        val uiScaleController: UiScaleController = remember { koin.get() }
+        uiScaleController.withScale {
+            var boxSize by remember { mutableStateOf<IntSize?>(null) }
+            val density = LocalDensity.current
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .heightIn(max = 500.dp)
-                    .widthIn(max = 500.dp)
-                    .width(IntrinsicSize.Max),
+                    .background(Color.Black)
+                    .border(1.dp, RiftTheme.colors.borderGreyLight)
+                    .pointerHoverIcon(PointerIcon(Cursors.pointer))
+                    .onSizeChanged {
+                        // Force first measured size to be kept. On macOS for some reason there is a second measure
+                        // that is 1 pixel smaller, making text wrap, this will make it ignore it
+                        if (boxSize == null) boxSize = it
+                    }
+                    .modifyIfNotNull(boxSize) {
+                        with(density) {
+                            requiredSize(it.width.toDp(), it.height.toDp())
+                        }
+                    }
+                    .onPointerEvent(PointerEventType.Enter) {
+                        onHoldDisappearance(true)
+                    }
+                    .onPointerEvent(PointerEventType.Exit) {
+                        onHoldDisappearance(false)
+                    },
             ) {
-                notifications.reversed().forEachIndexed { index, notification ->
-                    if (index != 0) Divider(color = RiftTheme.colors.borderGreyLight, thickness = 1.dp)
-                    NotificationContent(
-                        notification = notification,
-                        onCloseClick = { onCloseClick(notification) },
-                    )
+                ScrollbarColumn(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                    contentPadding = PaddingValues(vertical = Spacing.medium),
+                    scrollbarModifier = Modifier.padding(vertical = Spacing.small),
+                    modifier = Modifier
+                        .heightIn(max = 500.dp)
+                        .widthIn(max = 500.dp)
+                        .width(IntrinsicSize.Max),
+                ) {
+                    notifications.reversed().forEachIndexed { index, notification ->
+                        if (index != 0) Divider(color = RiftTheme.colors.borderGreyLight, thickness = 1.dp)
+                        NotificationContent(
+                            notification = notification,
+                            onCloseClick = { onCloseClick(notification) },
+                        )
+                    }
                 }
             }
         }

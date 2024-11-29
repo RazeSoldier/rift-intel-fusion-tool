@@ -228,6 +228,14 @@ object WhatsNew {
                 - Crash window will now tell you if you are not running the latest version of RIFT, in case the problem is already fixed
                 - Updated editing alert actions to allow choosing special actions like showing the PI window for PI alerts
             """.trimIndent(),
+            "4.5.0" description """
+                -! Standings and rats on the map
+                - New map coloring mode for standings, which will show your blue space and red space according to your standings towards the sovereignty owner. Also available as small colored indicators next to system names.
+                - New map coloring mode and indicators for rat types. See what faction of rats is present in each system.
+                
+                - Added support for intel channels spanning multiple regions. Add the same channel multiple times with each region it's for.
+                - Added a UI scale setting, enabling you to make everything in RIFT bigger or smaller.
+            """.trimIndent(),
         ).reversed()
     }
 }

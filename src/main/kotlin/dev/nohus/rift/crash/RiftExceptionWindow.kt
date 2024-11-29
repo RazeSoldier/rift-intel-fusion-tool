@@ -34,8 +34,10 @@ import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
+import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_log
 import dev.nohus.rift.utils.openBrowser
@@ -48,7 +50,12 @@ fun RiftExceptionWindow(
     errorId: String,
     onCloseRequest: () -> Unit,
 ) {
-    val windowState = rememberWindowState(width = 400.dp, height = 150.dp)
+    val scale = try {
+        koin.get<UiScaleController>().uiScale
+    } catch (ignored: Exception) {
+        1f
+    }
+    val windowState = rememberWindowState(width = (400 * scale).dp, height = (150 * scale).dp)
     var isUpdateAvailable: Boolean by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         try {
@@ -59,7 +66,7 @@ fun RiftExceptionWindow(
     RiftWindow(
         title = "Fatal Error",
         icon = Res.drawable.window_log,
-        state = RiftWindowState(windowState = windowState, isVisible = true, minimumSize = 200 to 200),
+        state = RiftWindowState(windowState = windowState, isVisible = true, minimumSize = (200 * scale).toInt() to (200 * scale).toInt()),
         onCloseClick = onCloseRequest,
     ) {
         Column {

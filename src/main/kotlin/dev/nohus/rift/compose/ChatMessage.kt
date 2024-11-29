@@ -165,7 +165,7 @@ private fun MessageMetadata(
             if (settings.isShowingRegion) {
                 VerticalDivider(color = RiftTheme.colors.borderGrey)
                 Text(
-                    text = message.channelRegion,
+                    text = message.channelRegions.joinToString("/"),
                     style = RiftTheme.typography.bodyHighlighted,
                     modifier = Modifier.padding(4.dp),
                 )
@@ -579,7 +579,7 @@ private fun ParsedMessagePreview() {
         ) {
             val message = ParsedChannelChatMessage(
                 ChatMessage(Instant.now(), "Player One", ""),
-                "Delve",
+                listOf("Delve"),
                 ChatLogFileMetadata("", "Intel", "", 0, "", null, null),
                 listOf(
                     "ssllss1".token(TokenType.Player(1), Link),
@@ -593,7 +593,7 @@ private fun ParsedMessagePreview() {
 
             val message2 = ParsedChannelChatMessage(
                 ChatMessage(Instant.now(), "Player Two", ""),
-                "Delve",
+                listOf("Delve"),
                 ChatLogFileMetadata("", "Intel", "", 0, "", null, null),
                 listOf(
                     "ssllss1".token(TokenType.Player(1), Link),
@@ -608,7 +608,7 @@ private fun ParsedMessagePreview() {
 
             val message3 = ParsedChannelChatMessage(
                 ChatMessage(Instant.now(), "Player Three", ""),
-                "Delve",
+                listOf("Delve"),
                 ChatLogFileMetadata("", "Intel", "", 0, "", null, null),
                 listOf(
                     "ssllss1".token(TokenType.Player(1), Link),

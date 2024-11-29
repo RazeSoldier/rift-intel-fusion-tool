@@ -292,6 +292,7 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.NullSecurity,
                                     MapSystemInfoType.IntelHostiles,
                                     MapSystemInfoType.FactionWarfare,
+                                    MapSystemInfoType.RatsType,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeIndicatorName,
                                 selected = systemInfoTypes.indicators[settingsMapType].orEmpty(),
@@ -578,6 +579,8 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Colored when a\nJove Observatory is present"
         MapSystemInfoType.Colonies -> "PI Colonies" to "Colored when you have a\nPI colony present"
         MapSystemInfoType.Clones -> "Clones" to "Colored when you have\njump clones present"
+        MapSystemInfoType.Standings -> "Standings" to "Colored based on standings\ntowards the sovereignty holder.\nLow and high sec are always yellow and green."
+        MapSystemInfoType.RatsType -> "Rats" to "Colored according to the\nfaction of rats in the system"
         null -> "None" to "No background color"
     }
 }
@@ -605,6 +608,8 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Indicators for Jove Observatories"
         MapSystemInfoType.Colonies -> "PI Colonies" to "Indicators for PI colonies"
         MapSystemInfoType.Clones -> "Clones" to "Indicators for jump clones"
+        MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
+        MapSystemInfoType.RatsType -> "" to ""
         null -> "None" to "No background color"
     }
 }
@@ -632,6 +637,8 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Jove Observatory presence information"
         MapSystemInfoType.Colonies -> "PI Colonies" to "PI colonies information"
         MapSystemInfoType.Clones -> "Clones" to "Jump clones information"
+        MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
+        MapSystemInfoType.RatsType -> "Rats" to "Faction of rats in the system"
         null -> "None" to "No background color"
     }
 }

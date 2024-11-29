@@ -165,7 +165,7 @@ class ColonySimulation(colony: Colony) {
         type: Type,
         quantity: Long,
         commodities: Map<Type, Long>,
-        maxAmount: Long? = null
+        maxAmount: Long? = null,
     ): Pair<Type?, Long> {
         val sourcePin = getPin(sourceId)
         if (type !in commodities) {

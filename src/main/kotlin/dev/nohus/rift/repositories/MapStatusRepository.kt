@@ -13,6 +13,7 @@ import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.Storm
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.PlanetsRepository.Planet
+import dev.nohus.rift.repositories.RatsRepository.RatType
 import dev.nohus.rift.repositories.StationsRepository.Station
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -36,6 +37,7 @@ class MapStatusRepository(
     private val mapPlanetsController: MapPlanetsController,
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
     private val clonesRepository: ClonesRepository,
+    private val ratsRepository: RatsRepository,
 ) {
 
     private data class UniverseSystemStatus(
@@ -60,6 +62,7 @@ class MapStatusRepository(
         val planets: List<Planet>,
         val colonies: Int,
         val clones: Map<Int, Int>, // Character ID -> Count
+        val ratType: RatType?,
     )
 
     private val universeSystemStatus = MutableStateFlow<Map<Int, UniverseSystemStatus>>(emptyMap())
@@ -122,6 +125,7 @@ class MapStatusRepository(
                         planets = (planets.planets[systemId] ?: emptyList()).filter { it.type in planets.selectedTypes },
                         colonies = colonies.success?.count { it.value.colony.system.id == systemId } ?: 0,
                         clones = clones[systemId] ?: emptyMap(),
+                        ratType = ratsRepository.getRats(systemId),
                     )
                 }
             }.collect {
