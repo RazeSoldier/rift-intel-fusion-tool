@@ -77,6 +77,12 @@ private fun StartupWarningContent(
                     text = warning.description,
                     style = RiftTheme.typography.bodyPrimary,
                 )
+                if (warning.detail != null) {
+                    Text(
+                        text = warning.detail,
+                        style = RiftTheme.typography.bodyHighlighted,
+                    )
+                }
                 RiftCheckboxWithLabel(
                     label = "Don't show again",
                     isChecked = warning.id in checkedIds,

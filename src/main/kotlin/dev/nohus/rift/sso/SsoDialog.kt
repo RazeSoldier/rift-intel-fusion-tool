@@ -117,7 +117,7 @@ private fun SsoDialogContent(
                     )
                 }
 
-                SsoViewModel.SsoStatus.Failed -> {
+                is SsoViewModel.SsoStatus.Failed -> {
                     FailIcon()
                     Text(
                         text = "Authentication failed",
@@ -125,6 +125,14 @@ private fun SsoDialogContent(
                         modifier = Modifier
                             .padding(vertical = Spacing.large),
                     )
+                    if (status.message != null) {
+                        Text(
+                            text = status.message,
+                            style = RiftTheme.typography.bodySecondary,
+                            modifier = Modifier
+                                .padding(vertical = Spacing.large),
+                        )
+                    }
                     RiftButton(
                         text = "Cancel",
                         cornerCut = ButtonCornerCut.Both,

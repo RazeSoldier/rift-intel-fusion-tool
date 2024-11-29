@@ -1,12 +1,14 @@
 package dev.nohus.rift.notifications.system
 
 import dev.nohus.rift.utils.CommandRunner
+import dev.nohus.rift.utils.IsLinuxBinaryFoundUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 class LinuxSendNotificationUseCase(
     private val commandRunner: CommandRunner,
+    private val isLinuxBinaryFound: IsLinuxBinaryFoundUseCase,
 ) : SendNotificationUseCase {
 
     enum class NotificationMethod {
@@ -31,16 +33,12 @@ class LinuxSendNotificationUseCase(
 
     private fun detectAvailableNotificationMethod(): NotificationMethod? {
         return when {
-            isBinaryFound("gdbus") -> NotificationMethod.DBus
-            isBinaryFound("notify-send") -> NotificationMethod.NotifySend
-            isBinaryFound("kdialog") -> NotificationMethod.KDialog
-            isBinaryFound("zenity") -> NotificationMethod.Zenity
+            isLinuxBinaryFound("gdbus") -> NotificationMethod.DBus
+            isLinuxBinaryFound("notify-send") -> NotificationMethod.NotifySend
+            isLinuxBinaryFound("kdialog") -> NotificationMethod.KDialog
+            isLinuxBinaryFound("zenity") -> NotificationMethod.Zenity
             else -> null
         }
-    }
-
-    private fun isBinaryFound(binary: String): Boolean {
-        return commandRunner.run("which", binary).exitStatus == 0
     }
 
     private fun sendDBusNotification(

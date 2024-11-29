@@ -7,7 +7,8 @@ import org.koin.core.annotation.Single
 class GetStartupWarningsUseCase(
     private val hasNonEnglishEveClient: HasNonEnglishEveClientUseCase,
     private val isRunningMsiAfterburner: IsRunningMsiAfterburnerUseCase,
-    private val hasChatLogsDisabled: HasChatLogsDisabledUseCase,
+    private val getAccountsWithDisabledChatLogs: GetAccountsWithDisabledChatLogsUseCase,
+    private val isMissingXWinInfo: IsMissingXWinInfoUseCase,
     private val settings: Settings,
 ) {
 
@@ -15,6 +16,7 @@ class GetStartupWarningsUseCase(
         val id: String,
         val title: String,
         val description: String,
+        val detail: String? = null,
     )
 
     suspend operator fun invoke(): List<StartupWarning> {
@@ -42,15 +44,32 @@ class GetStartupWarningsUseCase(
                     ),
                 )
             }
-            if (hasChatLogsDisabled()) {
+            val accountMessages = getAccountsWithDisabledChatLogs()
+            if (accountMessages.isNotEmpty()) {
                 add(
                     StartupWarning(
-                        id = "chat logs disabled",
+                        id = "chat logs disabled v2",
                         title = "Chat logs are disabled",
+                        description = buildString {
+                            appendLine("You need to enable the \"Log Chat to File\" option in EVE Settings, in the Gameplay section. RIFT won't be able to read intel messages or trigger alerts otherwise.")
+                            appendLine()
+                            if (accountMessages.size == 1) {
+                                append("You have it disabled on this account:")
+                            } else {
+                                append("You have it disabled on these ${accountMessages.size} accounts:")
+                            }
+                        },
+                        detail = accountMessages.joinToString("\n"),
+                    ),
+                )
+            }
+            if (isMissingXWinInfo()) {
+                add(
+                    StartupWarning(
+                        id = "missing x11-utils",
+                        title = "Missing dependency",
                         description = """
-                            You need to enable the "Log Chat to File" option in EVE Settings, in the Gameplay section. RIFT won't be able to read intel messages or trigger alerts otherwise.
-                            
-                            This setting is per-account and you have it disabled on at least one account.
+                            You don't have "xwininfo" or "xprop" installed. Usually they are in a "x11-utils" package or similar. Without them, RIFT won't be able to check the online status of your characters.
                         """.trimIndent(),
                     ),
                 )

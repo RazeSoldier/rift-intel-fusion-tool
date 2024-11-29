@@ -279,6 +279,11 @@ object WhatsNew {
                 - If you never interacted with the tray icon, then the Neocom window now always shows on startup and quits the app completely when closed
                 - The Neocom window is now resizeable and the buttons adapt to the window size
             """.trimIndent(),
+            "4.11.0" description """
+                - Message alerts now highlight the keyword that the alert was looking for
+                - Characters that failed to load can now be added to the disabled characters list
+                - The Jabber window now has an option for a bigger font size in the chats
+            """.trimIndent(),
         ).reversed()
     }
 }

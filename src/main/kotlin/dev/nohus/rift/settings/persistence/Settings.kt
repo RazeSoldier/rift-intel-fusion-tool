@@ -119,6 +119,10 @@ class Settings(
         get() = model.jabberCollapsedGroups
         set(value) = update { copy(jabberCollapsedGroups = value) }
 
+    var jabberIsUsingBiggerFontSize: Boolean
+        get() = model.jabberIsUsingBiggerFontSize
+        set(value) = update { copy(jabberIsUsingBiggerFontSize = value) }
+
     var isSettingsReadFailure: Boolean
         get() = model.isSettingsReadFailure
         set(value) = update { copy(isSettingsReadFailure = value) }

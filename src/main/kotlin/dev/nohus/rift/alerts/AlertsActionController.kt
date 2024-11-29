@@ -69,7 +69,7 @@ class AlertsActionController(
         triggerAlert(alert, notification, title, message.toString())
     }
 
-    fun triggerChatMessageAlert(alert: Alert, chatMessage: ChannelChatMessage) {
+    fun triggerChatMessageAlert(alert: Alert, chatMessage: ChannelChatMessage, highlight: String?) {
         scope.launch {
             val characterId = charactersRepository.getCharacterId(chatMessage.chatMessage.author)
             val title = "Chat message in ${chatMessage.metadata.channelName}"
@@ -79,6 +79,7 @@ class AlertsActionController(
                 messages = listOf(
                     Notification.ChatMessage(
                         message = chatMessage.chatMessage.message,
+                        highlight = highlight,
                         sender = chatMessage.chatMessage.author,
                         senderCharacterId = characterId,
                     ),
@@ -88,12 +89,13 @@ class AlertsActionController(
         }
     }
 
-    fun triggerJabberMessageAlert(alert: Alert, chat: String, sender: String, message: String) {
+    fun triggerJabberMessageAlert(alert: Alert, chat: String, sender: String, message: String, highlight: String?) {
         scope.launch {
             val title = "Jabber message in $chat"
             val notification = Notification.JabberMessageNotification(
                 chat = chat,
                 message = message,
+                highlight = highlight,
                 sender = sender,
             )
             triggerAlert(alert, notification, title, message)

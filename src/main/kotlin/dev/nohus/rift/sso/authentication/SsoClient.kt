@@ -96,7 +96,7 @@ class SsoClient(
         val completableDeferred = CompletableDeferred<Authentication>()
         val configuration = getSsoConfiguration(authority)
 
-        server.start(configuration.callbackPort)
+        server.start(configuration.callbackPort, completableDeferred)
         server.setCallback { code, responseState ->
             if (responseState == state) {
                 server.stop()

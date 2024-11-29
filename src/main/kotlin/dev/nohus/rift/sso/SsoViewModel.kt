@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.InjectedParam
+import java.net.BindException
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,8 +25,10 @@ class SsoViewModel(
         val status: SsoStatus = SsoStatus.Waiting,
     )
 
-    enum class SsoStatus {
-        Waiting, Complete, Failed
+    sealed interface SsoStatus {
+        data object Waiting : SsoStatus
+        data object Complete : SsoStatus
+        data class Failed(val message: String?) : SsoStatus
     }
 
     private val _state = MutableStateFlow(UiState())
@@ -38,9 +41,11 @@ class SsoViewModel(
                 ssoAuthenticator.authenticate(inputModel)
                 _state.update { it.copy(status = SsoStatus.Complete) }
                 localCharactersRepository.load()
+            } catch (e: BindException) {
+                _state.update { it.copy(status = SsoStatus.Failed("Could not listen for a response from EVE SSO. Likely some other application on your computer is interfering.")) }
             } catch (e: Exception) {
                 logger.error(e) { "SSO flow failed" }
-                _state.update { it.copy(status = SsoStatus.Failed) }
+                _state.update { it.copy(status = SsoStatus.Failed(null)) }
             }
         }
     }

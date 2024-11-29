@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ContextMenuItem
+import dev.nohus.rift.compose.ContextMenuItem.CheckboxItem
 import dev.nohus.rift.compose.ContextMenuItem.TextItem
 import dev.nohus.rift.compose.LinkText
 import dev.nohus.rift.compose.LoadingSpinner
@@ -128,8 +129,10 @@ private fun getTuneContextMenuItems(
         UiState.Connecting -> true
         is UiState.LoggedIn -> true
     }
+    val isUsingBiggerFontSize = (state as? UiState.LoggedIn)?.isUsingBiggerFontSize
     return buildList {
         if (canLogout) add(TextItem("Logout", Res.drawable.logout, onClick = viewModel::onLogoutClick))
+        if (isUsingBiggerFontSize != null) add(CheckboxItem("Bigger font size", isSelected = isUsingBiggerFontSize, onClick = viewModel::onBiggerFontSizeClick))
     }.takeIf { it.isNotEmpty() }
 }
 
@@ -500,6 +503,7 @@ private fun LoggedInContent(
                     multiUserChat = chatRoom,
                     subject = state.jabberState.multiUserChatSubjects[chatRoom.room],
                     messages = messages,
+                    isUsingBiggerFontSize = state.isUsingBiggerFontSize,
                     onMessageSend = { onChatRoomMessageSend(chatRoom, it) },
                 )
             } else {
@@ -511,6 +515,7 @@ private fun LoggedInContent(
                         userChat = userChat,
                         rosterUser = rosterUser,
                         messages = messages,
+                        isUsingBiggerFontSize = state.isUsingBiggerFontSize,
                         onMessageSend = { onMessageSend(userChat, it) },
                     )
                 }
@@ -540,7 +545,7 @@ private fun AddContact(
             onTextChanged = {
                 jidLocalPart = it
             },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
         )
         Text(
             text = "Choose nickname",
@@ -656,6 +661,7 @@ private fun UserChat(
     userChat: UserChat,
     rosterUser: RosterUser?,
     messages: List<UserMessage>,
+    isUsingBiggerFontSize: Boolean,
     onMessageSend: (String) -> Unit,
 ) {
     Column {
@@ -699,7 +705,7 @@ private fun UserChat(
             modifier = Modifier.weight(1f),
         ) {
             items(messages) {
-                ChatMessage(userChat, it)
+                ChatMessage(isUsingBiggerFontSize, userChat, it)
             }
         }
         Row(
@@ -740,6 +746,7 @@ private fun MultiUserChat(
     multiUserChat: MultiUserChat,
     subject: String?,
     messages: List<MultiUserMessage>,
+    isUsingBiggerFontSize: Boolean,
     onMessageSend: (String) -> Unit,
 ) {
     Column {
@@ -784,7 +791,7 @@ private fun MultiUserChat(
             modifier = Modifier.weight(1f),
         ) {
             items(messages) {
-                ChatMessage(multiUserChat, it)
+                ChatMessage(isUsingBiggerFontSize, multiUserChat, it)
             }
         }
         Row(
@@ -822,24 +829,27 @@ private fun MultiUserChat(
 
 @Composable
 private fun ChatMessage(
+    isUsingBiggerFontSize: Boolean,
     userChat: UserChat,
     message: UserMessage,
 ) {
     val from = if (message.isOutgoing) "You" else userChat.name
-    ChatMessage(message.timestamp, from, message.text)
+    ChatMessage(isUsingBiggerFontSize, message.timestamp, from, message.text)
 }
 
 @Composable
 private fun ChatMessage(
+    isUsingBiggerFontSize: Boolean,
     userChat: MultiUserChat,
     message: MultiUserMessage,
 ) {
     val from = message.sender ?: "You"
-    ChatMessage(message.timestamp, from, message.text)
+    ChatMessage(isUsingBiggerFontSize, message.timestamp, from, message.text)
 }
 
 @Composable
 private fun ChatMessage(
+    isUsingBiggerFontSize: Boolean,
     timestamp: Instant,
     sender: String,
     message: String,
@@ -874,9 +884,10 @@ private fun ChatMessage(
                 .hoverBackground()
                 .padding(horizontal = Spacing.medium, vertical = Spacing.verySmall),
         ) {
+            val style = if (isUsingBiggerFontSize) RiftTheme.typography.titlePrimary else RiftTheme.typography.bodyPrimary
             TextWithLinks(
                 text = text,
-                style = RiftTheme.typography.bodyPrimary,
+                style = style,
             )
         }
     }

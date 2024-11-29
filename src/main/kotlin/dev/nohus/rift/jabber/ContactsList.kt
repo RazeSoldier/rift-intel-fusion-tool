@@ -240,14 +240,14 @@ private fun Contact(
                     }
                 }
             }.trim()
-            RiftTooltipArea(
-                text = tooltip,
-            ) {
-                PresenceIndicatorDot(
-                    presence = user.presences.last(),
-                    isSubscriptionPending = user.isSubscriptionPending,
-                    modifier = Modifier.padding(end = Spacing.medium),
-                )
+            if (user.presences.isNotEmpty()) {
+                RiftTooltipArea(tooltip) {
+                    PresenceIndicatorDot(
+                        presence = user.presences.last(),
+                        isSubscriptionPending = user.isSubscriptionPending,
+                        modifier = Modifier.padding(end = Spacing.medium),
+                    )
+                }
             }
             val name = user.name.takeIf { it.isNotBlank() } ?: user.jid.localpartOrNull?.toString() ?: ""
             val image = user.vCard?.avatarBytes?.let { bytes ->
