@@ -70,7 +70,7 @@ class IntelFeedViewModel(
             }
         }
         viewModelScope.launch {
-            mapExternalControl.openedRegion.collect {
+            mapExternalControl.openedRegions.collect {
                 if (LocationFilter.CurrentMapRegion in _state.value.settings.locationFilters) {
                     updateFilteredIntel()
                 }
@@ -137,7 +137,7 @@ class IntelFeedViewModel(
                 LocationFilter.KnownSpace -> solarSystemsRepository.getKnownSpaceRegions().map { it.id }
                 LocationFilter.WormholeSpace -> solarSystemsRepository.getWormholeSpaceRegions().map { it.id }
                 LocationFilter.AbyssalSpace -> solarSystemsRepository.getAbyssalSpaceRegions().map { it.id }
-                LocationFilter.CurrentMapRegion -> mapExternalControl.openedRegion.value?.let { listOf(it) } ?: solarSystemsRepository.getKnownSpaceRegions().map { it.id }
+                LocationFilter.CurrentMapRegion -> mapExternalControl.openedRegions.value ?: solarSystemsRepository.getKnownSpaceRegions().map { it.id }
             }
         }.toSet()
 

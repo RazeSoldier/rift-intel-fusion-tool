@@ -284,6 +284,11 @@ object WhatsNew {
                 - Characters that failed to load can now be added to the disabled characters list
                 - The Jabber window now has an option for a bigger font size in the chats
             """.trimIndent(),
+            "4.12.0" description """
+                -! New feature: Combined Region Maps
+                - 14 new maps are now available showing related areas across multiple regions
+                - You can switch between alternative maps from the map settings panel, when you are viewing regions that have alternative maps available
+            """.trimIndent(),
         ).reversed()
     }
 }

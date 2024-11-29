@@ -34,8 +34,14 @@ object Constellations : Table() {
     override val primaryKey = PrimaryKey(constellationId)
 }
 
-object MapLayout : Table() {
+object MapLayouts : Table() {
+    val layoutId = integer("layoutId")
+    val name = varchar("name", 100)
     val regionId = integer("regionId")
+}
+
+object MapLayout : Table() {
+    val layoutId = integer("layoutId")
     val solarSystemId = integer("solarSystemId")
     val x = integer("x")
     val y = integer("y")

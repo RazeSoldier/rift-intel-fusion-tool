@@ -15,7 +15,7 @@ class MapExternalControl(
     private val _event = MutableStateFlow<DataEvent<MapExternalControlEvent>?>(null)
     val event = _event.asStateFlow()
 
-    val openedRegion = MutableStateFlow<Int?>(null)
+    val openedRegions = MutableStateFlow<List<Int>?>(null)
 
     sealed interface MapExternalControlEvent {
         data class ShowSystem(val solarSystemId: Int) : MapExternalControlEvent

@@ -11,13 +11,13 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import dev.nohus.rift.map.DoubleOffset
 import dev.nohus.rift.map.MapViewModel.Cluster
-import dev.nohus.rift.map.MapViewModel.Layout
+import dev.nohus.rift.map.MapViewModel.VoronoiLayout
 import dev.nohus.rift.map.systemcolor.RegionColors
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
 
 class RegionsMapPainter(
     private val cluster: Cluster,
-    private val layout: Map<Int, Layout>,
+    private val layout: Map<Int, VoronoiLayout>,
 ) : MapPainter {
 
     private lateinit var textMeasurer: TextMeasurer

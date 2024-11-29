@@ -55,6 +55,7 @@ import dev.nohus.rift.utils.OperatingSystem.Windows
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager
 import org.jetbrains.compose.resources.painterResource
 
@@ -322,14 +323,14 @@ private fun getUpdateDialogText(
                     "If you installed the DEB package, you can update the app with your package manager as normal. " +
                         "For example you can run ",
                 )
-                withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
+                withColor(RiftTheme.colors.textHighlighted) {
                     append("sudo apt update && sudo apt upgrade")
                 }
                 append(".")
                 appendLine()
                 appendLine()
                 append("If you downloaded the ")
-                withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
+                withColor(RiftTheme.colors.textHighlighted) {
                     append(".tar.gz")
                 }
                 append(" package, then you have to redownload it manually.")
