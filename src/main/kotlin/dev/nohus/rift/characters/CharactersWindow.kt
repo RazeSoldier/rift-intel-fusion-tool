@@ -16,6 +16,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -581,6 +583,7 @@ private fun CharacterRow(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Clone(clone: Clone) {
     Row(
@@ -593,25 +596,32 @@ private fun Clone(clone: Clone) {
             modifier = Modifier.size(32.dp),
         )
 
-        for (implant in clone.implants) {
-            RiftTooltipArea(
-                text = implant.name,
+        if (clone.implants.isNotEmpty()) {
+            FlowRow(
+                modifier = Modifier.weight(1f),
             ) {
-                AsyncTypeIcon(
-                    type = implant,
-                    modifier = Modifier.size(32.dp),
-                )
+                for (implant in List(3) { clone.implants }.flatten()) {
+                    RiftTooltipArea(
+                        text = implant.name,
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        AsyncTypeIcon(
+                            type = implant,
+                            modifier = Modifier.size(32.dp),
+                        )
+                    }
+                }
             }
-        }
-        if (clone.implants.isEmpty()) {
+        } else {
             Text(
                 text = "No implants",
                 style = RiftTheme.typography.bodySecondary,
-                modifier = Modifier.padding(start = Spacing.medium),
+                modifier = Modifier
+                    .padding(start = Spacing.medium)
+                    .weight(1f),
             )
         }
 
-        Spacer(Modifier.weight(1f))
         if (clone.isActive) {
             Text(
                 text = "Active clone",

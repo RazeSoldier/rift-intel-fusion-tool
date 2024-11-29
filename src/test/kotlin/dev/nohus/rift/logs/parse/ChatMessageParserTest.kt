@@ -128,6 +128,18 @@ class ChatMessageParserTest : FreeSpec({
         )
     }
 
+    "system with star, alternative clear" {
+        every { mockSolarSystemsRepository.getSystemName("N-8YET", listOf("Delve")) } returns "N-8YET"
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("clr du").existing()
+
+        val actual = target.parse("N-8YET* clr du", listOf("Delve"))
+
+        actual shouldContain listOf(
+            "N-8YET".token(System("N-8YET"), Link),
+            "clr du".token(Keyword(Clear)),
+        )
+    }
+
     "ship with star, player, system with star" {
         every { mockSolarSystemsRepository.getSystemName("NOL-M9", listOf("Delve")) } returns "NOL-M9"
         every { mockShipTypesRepository.getShip("Caldari Shuttle") } returns "Caldari Shuttle"
