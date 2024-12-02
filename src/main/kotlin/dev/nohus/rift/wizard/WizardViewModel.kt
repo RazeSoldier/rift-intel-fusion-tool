@@ -152,12 +152,12 @@ class WizardViewModel(
             }
 
             is WizardStep.EveInstallation -> {
-                windowManager.onWindowClose(RiftWindow.Settings)
+                windowManager.onWindowClose(RiftWindow.Settings, uuid = null)
                 _state.update { it.copy(step = getCharactersStep()) }
             }
 
             is WizardStep.Characters -> {
-                windowManager.onWindowClose(RiftWindow.Characters)
+                windowManager.onWindowClose(RiftWindow.Characters, uuid = null)
                 val suggestedPack = configurationPackRepository.getSuggestedPack()
                 if (suggestedPack != null) {
                     _state.update { it.copy(step = WizardStep.ConfigurationPacks(pack = suggestedPack)) }
@@ -172,7 +172,7 @@ class WizardViewModel(
             }
 
             is WizardStep.IntelChannels -> {
-                windowManager.onWindowClose(RiftWindow.Settings)
+                windowManager.onWindowClose(RiftWindow.Settings, uuid = null)
                 settings.isSetupWizardFinished = true
                 settings.isShowSetupWizardOnNextStart = false
                 _state.update { it.copy(step = WizardStep.Finish) }

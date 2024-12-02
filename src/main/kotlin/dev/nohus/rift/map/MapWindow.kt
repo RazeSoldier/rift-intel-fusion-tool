@@ -127,7 +127,7 @@ fun MapWindow(
     onCloseRequest: () -> Unit,
     onTuneClick: () -> Unit,
 ) {
-    val viewModel: MapViewModel = viewModel()
+    val viewModel: MapViewModel = viewModel(windowState.uuid)
     val state by viewModel.state.collectAsState()
     RiftWindow(
         title = "Intel Map",
@@ -602,6 +602,8 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.Clones -> systemStatusColorStrategies.clones
         MapSystemInfoType.Standings -> systemStatusColorStrategies.standings
         MapSystemInfoType.RatsType -> systemStatusColorStrategies.rats
+        MapSystemInfoType.Region -> throw IllegalArgumentException("Not used for coloring")
+        MapSystemInfoType.Constellation -> throw IllegalArgumentException("Not used for coloring")
         MapSystemInfoType.IndustryIndexCopying -> systemStatusColorStrategies.industryCopying
         MapSystemInfoType.IndustryIndexInvention -> systemStatusColorStrategies.industryInvention
         MapSystemInfoType.IndustryIndexManufacturing -> systemStatusColorStrategies.industryManufacturing
@@ -675,11 +677,7 @@ private fun SystemInfoBoxesLayer(
     ForEachSystem(state, animatedCenter, mapScale, canvasSize) { isHighlightedOrHovered, dpCoordinates, _, system ->
         val hasIntelPopup = system.id in state.mapState.intelPopupSystems
         val zIndex = if (hasIntelPopup || isHighlightedOrHovered) 1f else 0f
-        val regionName = if (state.mapType is RegionMap && system.regionId !in state.mapType.regionIds) {
-            state.cluster.regions.first { it.id == system.regionId }.name
-        } else {
-            null
-        }
+        val isRegionNameForced = state.mapType is RegionMap && system.regionId !in state.mapType.regionIds
 
         val isZoomEnough = (state.settings.isAlwaysShowingSystems || mapScale <= (0.9f / LocalDensity.current.density))
         val isShowingSystemInfoBox = (state.mapType is RegionMap && isZoomEnough) ||
@@ -689,7 +687,7 @@ private fun SystemInfoBoxesLayer(
             val maxHeight = with(LocalDensity.current) { canvasSize.height.toDp() } - (dpCoordinates.second + nodeSizes.radius) - Spacing.medium
             SystemInfoBox(
                 system = system,
-                regionName = regionName,
+                isRegionNameForced = isRegionNameForced,
                 isHighlightedOrHovered = isHighlightedOrHovered,
                 intel = state.mapState.intel[system.id],
                 hasIntelPopup = hasIntelPopup,

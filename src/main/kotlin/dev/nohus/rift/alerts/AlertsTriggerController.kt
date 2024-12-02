@@ -7,6 +7,7 @@ import dev.nohus.rift.alerts.AlertTrigger.JabberMessage
 import dev.nohus.rift.alerts.AlertTrigger.JabberPing
 import dev.nohus.rift.alerts.AlertTrigger.NoChannelActivity
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
+import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogAction
 import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository
@@ -44,6 +45,7 @@ class AlertsTriggerController(
     private val alertsActionController: AlertsActionController,
     private val shipTypesRepository: ShipTypesRepository,
     private val alertTriggeringMessagesRepository: AlertTriggeringMessagesRepository,
+    private val contactsRepository: ContactsRepository,
 ) {
 
     private val enabledAlerts: List<Alert> get() = settings.alerts.filter { it.isEnabled }
@@ -380,6 +382,20 @@ class AlertsTriggerController(
                 IntelReportType.Bubbles -> understanding.entities.filterIsInstance<SystemEntity.Bubbles>()
                 IntelReportType.GateCamp -> understanding.entities.filterIsInstance<SystemEntity.GateCamp>()
                 IntelReportType.Wormhole -> understanding.entities.filterIsInstance<SystemEntity.Wormhole>()
+                is IntelReportType.LabeledContacts -> {
+                    understanding.entities
+                        .filterIsInstance<SystemEntity.Character>()
+                        .filter { character ->
+                            val ids = listOfNotNull(character.characterId, character.details.corporationId, character.details.allianceId)
+                            val labels = contactsRepository.getLabels(ids)
+                            if (labels.isEmpty()) return@filter false
+                            type.labels.any { expectedLabel ->
+                                labels.any { label ->
+                                    label.owner.id == expectedLabel.ownerId && label.id == expectedLabel.id
+                                }
+                            }
+                        }
+                }
             }
         }.filter { it.second.isNotEmpty() }
     }

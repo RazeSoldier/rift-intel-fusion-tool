@@ -38,6 +38,7 @@ import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.alerts.create.CreateAlertViewModel.UiState
 import dev.nohus.rift.alerts.create.FormAnswer.CharacterAnswer
+import dev.nohus.rift.alerts.create.FormAnswer.ContactsLabelAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.FreeformTextAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.IntelChannelAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.JumpsRangeAnswer
@@ -66,6 +67,7 @@ import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.play
@@ -163,6 +165,7 @@ private fun CreateAlertDialogContent(
                             sounds = state.sounds,
                             recentTargets = state.recentTargets,
                             colonies = state.colonies,
+                            labels = state.labels,
                             onFormAnswer = onFormPendingAnswer,
                         )
                     }
@@ -200,6 +203,7 @@ private fun FormQuestion(
     sounds: List<Sound>,
     recentTargets: Set<String>,
     colonies: List<ColonyItem>,
+    labels: List<Label>,
     onFormAnswer: (FormAnswer) -> Unit,
 ) {
     Column {
@@ -621,6 +625,26 @@ private fun FormQuestion(
                     )
                 }
             }
+
+            is FormQuestion.ContactsLabelQuestion -> {
+                ScrollbarColumn(
+                    modifier = Modifier.heightIn(max = 200.dp),
+                ) {
+                    var selected: List<Label> by remember { mutableStateOf(emptyList()) }
+                    for (label in labels) {
+                        ListSelectorRow(
+                            text = label.name,
+                            description = label.owner.name,
+                            isMultipleChoice = true,
+                            isSelected = label in selected,
+                            onSelect = {
+                                if (label in selected) selected -= label else selected += label
+                                onFormAnswer(ContactsLabelAnswer(selected))
+                            },
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -754,6 +778,15 @@ private fun Pair<FormQuestion, FormAnswer>.toAnswerString(
 
         is FormQuestion.FreeformTextQuestion -> {
             (answer as FreeformTextAnswer).text.takeIf { it.isNotBlank() }
+        }
+
+        is FormQuestion.ContactsLabelQuestion -> {
+            val labels = (answer as ContactsLabelAnswer).labels
+            if (labels.size == 1) {
+                labels.single().name
+            } else {
+                "${labels.size} labels"
+            }
         }
     }
 }

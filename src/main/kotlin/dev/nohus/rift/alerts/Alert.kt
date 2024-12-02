@@ -89,6 +89,12 @@ sealed interface IntelReportType {
     ) : IntelReportType
 
     @Serializable
+    @SerialName("LabeledContacts")
+    data class LabeledContacts(
+        val labels: List<ContactLabel>,
+    ) : IntelReportType
+
+    @Serializable
     @SerialName("Wormhole")
     data object Wormhole : IntelReportType
 
@@ -100,6 +106,12 @@ sealed interface IntelReportType {
     @SerialName("Bubbles")
     data object Bubbles : IntelReportType
 }
+
+@Serializable
+data class ContactLabel(
+    val ownerId: Int,
+    val id: Long,
+)
 
 @Serializable
 sealed interface IntelReportLocation {

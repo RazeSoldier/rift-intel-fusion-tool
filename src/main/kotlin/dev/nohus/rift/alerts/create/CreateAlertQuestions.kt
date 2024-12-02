@@ -1,6 +1,7 @@
 package dev.nohus.rift.alerts.create
 
 import dev.nohus.rift.alerts.create.FormQuestion.CombatTargetQuestion
+import dev.nohus.rift.alerts.create.FormQuestion.ContactsLabelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.FreeformTextQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.IntelChannelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.JumpsRangeQuestion
@@ -47,6 +48,7 @@ class CreateAlertQuestions(
     // Intel report type
     val INTEL_REPORT_TYPE_ANY_CHARACTER = FormChoiceItem(id = id++, text = "Characters")
     val INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS = FormChoiceItem(id = id++, text = "Specific characters")
+    val INTEL_REPORT_TYPE_LABELED_CONTACTS = FormChoiceItem(id = id++, text = "Labeled contacts")
     val INTEL_REPORT_TYPE_ANY_SHIP = FormChoiceItem(id = id++, text = "Ships")
     val INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES = FormChoiceItem(id = id++, text = "Specific ship classes")
     val INTEL_REPORT_TYPE_WORMHOLE = FormChoiceItem(id = id++, text = "Wormholes")
@@ -57,6 +59,7 @@ class CreateAlertQuestions(
         items = listOf(
             INTEL_REPORT_TYPE_ANY_CHARACTER,
             INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS,
+            INTEL_REPORT_TYPE_LABELED_CONTACTS,
             INTEL_REPORT_TYPE_ANY_SHIP,
             INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES,
             INTEL_REPORT_TYPE_WORMHOLE,
@@ -69,6 +72,11 @@ class CreateAlertQuestions(
     val INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS_QUESTION = SpecificCharactersQuestion(
         title = "And the characters reported include any of:",
         allowEmpty = false,
+    )
+
+    // Intel report type, labeled contacts
+    val INTEL_REPORT_TYPE_LABELED_CONTACTS_QUESTION = ContactsLabelQuestion(
+        title = "And the characters reported are in the contact list:",
     )
 
     // Intel report type, specific ship classes

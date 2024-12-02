@@ -66,7 +66,7 @@ fun RiftExceptionWindow(
     RiftWindow(
         title = "Fatal Error",
         icon = Res.drawable.window_log,
-        state = RiftWindowState(windowState = windowState, isVisible = true, minimumSize = (200 * scale).toInt() to (200 * scale).toInt()),
+        state = RiftWindowState(windowState = windowState, minimumSize = (200 * scale).toInt() to (200 * scale).toInt()),
         onCloseClick = onCloseRequest,
     ) {
         Column {

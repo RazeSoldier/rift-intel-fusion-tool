@@ -53,7 +53,7 @@ fun ClickableLocation(
         ClickableEntity(
             onClick = {
                 if (isKnownSpace) {
-                    mapExternalControl.showSystemOnRegionMap(systemId, fromMap = false)
+                    mapExternalControl.showSystemOnRegionMap(systemId)
                 }
             },
             content = content,
@@ -92,7 +92,7 @@ fun ClickableSystem(
         ClickableEntity(
             onClick = {
                 if (isKnownSpace) {
-                    mapExternalControl.showSystemOnRegionMap(systemId, fromMap = false)
+                    mapExternalControl.showSystemOnRegionMap(systemId)
                 }
             },
             content = content,
@@ -169,7 +169,7 @@ fun GetSystemContextMenuItems(
                 ContextMenuItem.TextItem(
                     text = if (mapType == null) "Show on Map" else "Show in New Eden",
                     onClick = {
-                        mapExternalControl.showSystem(systemId, fromMap = mapType != null)
+                        mapExternalControl.showSystem(systemId)
                     },
                 ),
             )
@@ -179,7 +179,7 @@ fun GetSystemContextMenuItems(
                 ContextMenuItem.TextItem(
                     text = if (mapType == null) "Show on Region Map" else "Show in Region",
                     onClick = {
-                        mapExternalControl.showSystemOnRegionMap(systemId, fromMap = mapType != null)
+                        mapExternalControl.showSystemOnRegionMap(systemId)
                     },
                 ),
             )

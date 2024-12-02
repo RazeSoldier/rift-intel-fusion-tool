@@ -104,7 +104,6 @@ fun RiftWindow(
     Window(
         onCloseRequest = onCloseClick,
         state = state.windowState,
-        visible = state.isVisible,
         title = title,
         icon = painterResource(icon),
         undecorated = true,

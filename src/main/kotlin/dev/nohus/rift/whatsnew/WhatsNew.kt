@@ -309,6 +309,21 @@ object WhatsNew {
                 - Each index can be shown or hidden separately
                 - New system and background coloring modes for each index to see the relative values at a glance
             """.trimIndent(),
+            "4.17.0" description """
+                -! New feature: Multiple map windows
+                - Thanks to a major rework of RIFT's window management, you can now open multiple maps at the same time
+                - The positions, sizes, and opened regions are remembered for each map window separately across restarts
+                - When showing a system on the map from a context menu somewhere in the app, it will be opened in the window with that region already opened, if possible
+                - When filtering by opened regions in the Intel Feed window, regions from all open maps will be considered
+                
+                -! New feature: Contacts list label alerts
+                - You can now setup alerts for intel about characters from a contacts label of any of your characters, corporations, and alliances
+                - For example, if you have a contacts list of hot droppers in-game, you can now setup an alert for that list
+                - The alerts will automatically update when contacts are added or removed from the label either in-game or in RIFTs Contacts feature
+                - This also works for labeled corporations and alliances, so you can create an alert for all characters from a specific corporation or alliance
+                
+                - Region names and constellation names can now be enabled to show for systems on the map, either always or on hover
+            """.trimIndent(),
         ).reversed()
     }
 }

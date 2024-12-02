@@ -361,7 +361,7 @@ private fun FiltersRow(
                 isSelected = LocationFilter.AbyssalSpace in settings.locationFilters,
             ),
             ContextMenuItem.CheckboxItem(
-                text = "Opened map region",
+                text = "Opened map regions",
                 onClick = { onLocationFilterSelect(LocationFilter.CurrentMapRegion) },
                 isSelected = LocationFilter.CurrentMapRegion in settings.locationFilters,
             ),

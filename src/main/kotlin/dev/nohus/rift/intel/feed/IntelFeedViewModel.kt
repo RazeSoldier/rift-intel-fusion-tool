@@ -137,7 +137,7 @@ class IntelFeedViewModel(
                 LocationFilter.KnownSpace -> solarSystemsRepository.getKnownSpaceRegions().map { it.id }
                 LocationFilter.WormholeSpace -> solarSystemsRepository.getWormholeSpaceRegions().map { it.id }
                 LocationFilter.AbyssalSpace -> solarSystemsRepository.getAbyssalSpaceRegions().map { it.id }
-                LocationFilter.CurrentMapRegion -> mapExternalControl.openedRegions.value ?: solarSystemsRepository.getKnownSpaceRegions().map { it.id }
+                LocationFilter.CurrentMapRegion -> mapExternalControl.getOpenedRegions()
             }
         }.toSet()
 

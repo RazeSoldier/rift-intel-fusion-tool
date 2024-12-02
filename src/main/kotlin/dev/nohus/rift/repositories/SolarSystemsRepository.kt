@@ -31,6 +31,7 @@ class SolarSystemsRepository(
     private val regionNamesBySystemName: Map<String, String> // System name -> Region name
     private val regionIdBySystemId: Map<Int, Int> // System ID -> Region ID
     private val regionIdsByName: Map<String, Int> // Region name -> Region ID
+    private val constellationNamesById: Map<Int, String> // Constellation ID -> Constellation name
 
     companion object {
         private const val DEFAULT_SUN_TYPE = 8
@@ -132,6 +133,7 @@ class SolarSystemsRepository(
         regionNamesBySystemName = mapSolarSystems.associate { it.name to regionNamesById[it.regionId]!! }
         regionIdBySystemId = mapSolarSystems.associate { it.id to it.regionId }
         regionIdsByName = mapRegions.associate { it.name to it.id }
+        constellationNamesById = mapConstellations.associate { it.id to it.name }
     }
 
     fun getSystems(knownSpace: Boolean = true): List<MapSolarSystem> {
@@ -231,6 +233,14 @@ class SolarSystemsRepository(
 
     fun getRegionId(name: String): Int? {
         return regionIdsByName[name]
+    }
+
+    fun getRegionBySystemId(systemId: Int): String? {
+        return systemsById[systemId]?.regionId?.let { regionNamesById[it] }
+    }
+
+    fun getConstellationBySystemId(systemId: Int): String? {
+        return systemsById[systemId]?.constellationId?.let { constellationNamesById[it] }
     }
 
     fun getSystems() = mapSolarSystems

@@ -171,6 +171,6 @@ class CharacterSettingsViewModel(
 
     fun onCancelClick() {
         _state.update { it.copy(copying = CopyingState.SelectingSource) }
-        windowManager.onWindowClose(RiftWindow.CharacterSettings)
+        windowManager.onWindowClose(RiftWindow.CharacterSettings, uuid = null)
     }
 }

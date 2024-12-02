@@ -412,10 +412,10 @@ private fun ContactFilters(
                 }
                 for (label in owner.second) {
                     ContactLabelRow(
-                        text = label,
+                        text = label.name,
                         count = ownerContacts.count { label in it.labels },
                         currentFilter = state.filter,
-                        filter = Filter.Label(owner.first, label),
+                        filter = Filter.Label(label),
                         onClick = onFilterClick,
                     )
                 }
@@ -557,7 +557,7 @@ private fun Contact(
                     )
                     if (contact.labels.isNotEmpty()) {
                         Text(
-                            text = contact.labels.joinToString(", "),
+                            text = contact.labels.joinToString(", ") { it.name },
                             style = RiftTheme.typography.bodySecondary,
                         )
                     }

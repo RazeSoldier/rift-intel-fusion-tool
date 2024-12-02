@@ -14,6 +14,7 @@ import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Path
+import java.util.UUID
 import kotlin.io.path.createFile
 
 fun URI.openBrowser() {
@@ -53,6 +54,11 @@ operator fun MatchResult.get(key: String): String {
 @Composable
 inline fun <reified VM : ViewModel> viewModel(): VM {
     return remember { koin.get() }
+}
+
+@Composable
+inline fun <reified VM : ViewModel> viewModel(windowUuid: UUID): VM {
+    return remember(windowUuid) { koin.get { parametersOf(windowUuid) } }
 }
 
 @Composable

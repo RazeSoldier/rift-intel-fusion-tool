@@ -13,6 +13,7 @@ import dev.nohus.rift.utils.Size
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 @Serializable
 data class SettingsModel(
@@ -25,7 +26,7 @@ data class SettingsModel(
     val isRememberOpenWindows: Boolean = false,
     val isRememberWindowPlacement: Boolean = true,
     val openWindows: Set<RiftWindow> = emptySet(),
-    val windowPlacements: Map<RiftWindow, WindowPlacement> = emptyMap(),
+    val windowPlacements2: Map<RiftWindow, List<WindowPlacement>> = emptyMap(),
     val alwaysOnTopWindows: Set<RiftWindow> = emptySet(),
     val lockedWindows: Set<RiftWindow> = emptySet(),
     val notificationEditPosition: Pos? = null,
@@ -80,7 +81,7 @@ enum class MapType {
 enum class MapSystemInfoType {
     StarColor, Security, NullSecurity, IntelHostiles, Jumps, Kills, NpcKills, Assets, Clones, Incursions, Stations,
     FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Colonies, Standings,
-    RatsType, IndustryIndexCopying, IndustryIndexInvention, IndustryIndexManufacturing, IndustryIndexReaction,
+    RatsType, Region, Constellation, IndustryIndexCopying, IndustryIndexInvention, IndustryIndexManufacturing, IndustryIndexReaction,
     IndustryIndexMaterialEfficiency, IndustryIndexTimeEfficiency,
 }
 
@@ -102,7 +103,11 @@ data class IntelMap(
     val isInvertZoom: Boolean = false,
     val isJumpBridgeNetworkShown: Boolean = true,
     val jumpBridgeNetworkOpacity: Int = 100,
-    val openedLayoutId: Int? = null,
+    val openedLayoutIds: Map<
+        @Serializable(with = UuidSerializer::class)
+        UUID,
+        Int,
+        > = emptyMap(),
     val isAlwaysShowingSystems: Boolean = false,
 )
 
@@ -121,6 +126,8 @@ data class IntelChannel(
 
 @Serializable
 data class WindowPlacement(
+    @Serializable(with = UuidSerializer::class)
+    val uuid: UUID,
     val position: Pos,
     val size: Size,
 )

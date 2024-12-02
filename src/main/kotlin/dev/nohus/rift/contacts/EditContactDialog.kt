@@ -44,6 +44,7 @@ import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.contacts.ContactsRepository.EntityType
+import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.contacts.ContactsViewModel.DeleteContactRequest
 import dev.nohus.rift.contacts.ContactsViewModel.EditContactDialog
 import dev.nohus.rift.contacts.ContactsViewModel.UpdateContactRequest
@@ -107,7 +108,7 @@ private fun EditContactDialogContent(
 
         var selectedStanding by remember { mutableStateOf(defaultStanding) }
         var selectedCharacter: LocalCharacter by remember { mutableStateOf(defaultCharacter) }
-        var selectedLabels: List<String> by remember { mutableStateOf(emptyList()) }
+        var selectedLabels: List<Label> by remember { mutableStateOf(emptyList()) }
         var selectedWatched: Boolean? by remember { mutableStateOf(null) }
 
         LaunchedEffect(selectedCharacter) {
@@ -187,7 +188,7 @@ private fun EditContactDialogContent(
                         ) {
                             for (label in labels) {
                                 RiftCheckboxWithLabel(
-                                    label = label,
+                                    label = label.name,
                                     isChecked = label in selectedLabels,
                                     onCheckedChange = { selectedLabels = selectedLabels.toggle(label) },
                                 )

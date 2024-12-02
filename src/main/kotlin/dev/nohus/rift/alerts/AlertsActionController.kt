@@ -5,9 +5,9 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withAnnotation
 import dev.nohus.rift.alerts.AlertsTriggerController.AlertLocationMatch
+import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogAction
 import dev.nohus.rift.intel.state.SystemEntity
-import dev.nohus.rift.logging.analytics.Analytics
 import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.notifications.NotificationsController
 import dev.nohus.rift.notifications.NotificationsController.Notification
@@ -42,7 +42,7 @@ class AlertsActionController(
     private val typesRepository: TypesRepository,
     private val charactersRepository: CharactersRepository,
     private val windowManager: WindowManager,
-    private val analytics: Analytics,
+    private val contactsRepository: ContactsRepository,
 ) {
 
     private val scope = CoroutineScope(Job())
@@ -172,7 +172,6 @@ class AlertsActionController(
     }
 
     private fun triggerAlert(alert: Alert, notification: Notification?, title: String, message: String) {
-        analytics.alertTriggered()
         alert.actions.forEach { action ->
             when (action) {
                 AlertAction.RiftNotification -> if (notification != null) sendRiftNotification(notification)
@@ -204,16 +203,31 @@ class AlertsActionController(
     }
 
     private fun getNotificationTitle(matchingEntities: List<Pair<IntelReportType, List<SystemEntity>>>): String {
-        return matchingEntities.map { it.first }.let {
-            if (IntelReportType.GateCamp in it) {
-                "Gate camp reported"
-            } else if (IntelReportType.AnyCharacter in it) {
+        return matchingEntities.let {
+            if (it.any { it.first is IntelReportType.LabeledContacts }) {
+                val (labeledContacts, entities) = it.first { it.first is IntelReportType.LabeledContacts }
+                val expectedLabels = (labeledContacts as IntelReportType.LabeledContacts).labels
+                val matchedLabels = entities.filterIsInstance<SystemEntity.Character>().map { character ->
+                    val ids = listOfNotNull(character.characterId, character.details.corporationId, character.details.allianceId)
+                    contactsRepository.getLabels(ids).filter { label ->
+                        expectedLabels.any { expectedLabel -> label.owner.id == expectedLabel.ownerId && label.id == expectedLabel.id }
+                    }
+                }.flatten().map { it.name }.distinct()
+                val labelsText = matchedLabels.joinToString(", ")
+                "Hostile labeled \"$labelsText\" reported"
+            } else if (it.any { it.first is IntelReportType.SpecificCharacters }) {
+                "Specific hostile reported"
+            } else if (it.any { it.first is IntelReportType.SpecificShipClasses }) {
+                "Specific ship class reported"
+            } else if (it.any { it.first is IntelReportType.AnyCharacter }) {
                 "Hostile reported"
-            } else if (IntelReportType.AnyShip in it) {
+            } else if (it.any { it.first is IntelReportType.GateCamp }) {
+                "Gate camp reported"
+            } else if (it.any { it.first is IntelReportType.AnyShip }) {
                 "Hostile ship reported"
-            } else if (IntelReportType.Bubbles in it) {
+            } else if (it.any { it.first is IntelReportType.Bubbles }) {
                 "Bubbles reported"
-            } else if (IntelReportType.Wormhole in it) {
+            } else if (it.any { it.first is IntelReportType.Wormhole }) {
                 "Wormhole reported"
             } else {
                 "Intel alert"
