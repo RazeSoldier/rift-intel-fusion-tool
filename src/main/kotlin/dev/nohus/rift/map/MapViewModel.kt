@@ -34,13 +34,16 @@ import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.windowing.WindowManager
+import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
+import org.koin.core.annotation.InjectedParam
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
@@ -48,13 +51,15 @@ import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.triangulate.VoronoiDiagramBuilder
 import java.time.Duration
 import java.time.Instant
+import java.util.UUID
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 
-@Single
+@Factory
 class MapViewModel(
+    @InjectedParam private val windowUuid: UUID,
     private val solarSystemsRepository: SolarSystemsRepository,
     private val gateConnectionsRepository: MapGateConnectionsRepository,
     private val layoutRepository: MapLayoutRepository,
@@ -66,6 +71,7 @@ class MapViewModel(
     private val mapStatusRepository: MapStatusRepository,
     private val mapJumpRangeController: MapJumpRangeController,
     private val mapPlanetsController: MapPlanetsController,
+    private val windowManager: WindowManager,
     private val settings: Settings,
 ) : ViewModel() {
 
@@ -199,18 +205,20 @@ class MapViewModel(
         }
         viewModelScope.launch {
             mapExternalControl.event.collect {
-                delay(50) // If this event comes from a context menu, let the menu disappear
-                when (val event = it.get()) {
-                    is MapExternalControlEvent.ShowSystem -> {
-                        openTab(0, event.solarSystemId)
-                    }
-                    is MapExternalControlEvent.ShowSystemOnRegionMap -> {
-                        val regionId = solarSystemsRepository.getRegionIdBySystemId(event.solarSystemId) ?: return@collect
-                        if (regionId in solarSystemsRepository.getKnownSpaceRegions().map { it.id }) {
-                            openRegionMap(regionId, event.solarSystemId)
+                if (it?.value?.let { event -> event.windowUuid == windowUuid || event.windowUuid == null } == true) {
+                    delay(50) // If this event comes from a context menu, let the menu disappear
+                    when (val event = it.get()) {
+                        is MapExternalControlEvent.ShowSystem -> {
+                            openTab(0, event.solarSystemId)
                         }
+                        is MapExternalControlEvent.ShowSystemOnRegionMap -> {
+                            val regionId = solarSystemsRepository.getRegionIdBySystemId(event.solarSystemId) ?: return@collect
+                            if (regionId in solarSystemsRepository.getKnownSpaceRegions().map { it.id }) {
+                                openRegionMap(regionId, event.solarSystemId)
+                            }
+                        }
+                        null -> {}
                     }
-                    null -> {}
                 }
             }
         }
@@ -219,7 +227,7 @@ class MapViewModel(
     }
 
     private fun openInitialTab() {
-        val openedLayoutId = settings.intelMap.openedLayoutId
+        val openedLayoutId = settings.intelMap.openedLayoutIds[windowUuid]
         if (openedLayoutId != null) {
             openLayoutMap(openedLayoutId, focusedId = null)
         } else {
@@ -404,7 +412,7 @@ class MapViewModel(
         val tab = _state.value.tabs.firstOrNull { it.id == id } ?: return
         val mapType = tab.payload as? MapType ?: return
         rememberOpenedLayout(mapType)
-        mapExternalControl.openedRegions.update { (mapType as? RegionMap)?.regionIds }
+        mapExternalControl.setOpenedRegions(windowUuid, (mapType as? RegionMap)?.regionIds ?: emptyList())
 
         val layout = when (mapType) {
             ClusterSystemsMap -> layoutRepository.getNewEdenSystemPosition()
@@ -444,7 +452,11 @@ class MapViewModel(
 
     private fun rememberOpenedLayout(mapType: MapType) {
         val openedLayoutId = if (mapType is RegionMap) mapType.layoutId else null
-        settings.intelMap = settings.intelMap.copy(openedLayoutId = openedLayoutId)
+        if (openedLayoutId != null) {
+            val openWindowUuids = windowManager.getOpenWindowUuids(RiftWindow.Map)
+            val openedLayoutIds = settings.intelMap.openedLayoutIds.filter { it.key in openWindowUuids } + (windowUuid to openedLayoutId)
+            settings.intelMap = settings.intelMap.copy(openedLayoutIds = openedLayoutIds)
+        }
     }
 
     private fun calculateVoronoi(systems: Map<Int, Position>): Map<Int, VoronoiLayout> {

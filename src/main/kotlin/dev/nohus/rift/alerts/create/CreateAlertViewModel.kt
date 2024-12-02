@@ -7,6 +7,7 @@ import dev.nohus.rift.alerts.AlertAction
 import dev.nohus.rift.alerts.AlertTrigger
 import dev.nohus.rift.alerts.AlertsRepository
 import dev.nohus.rift.alerts.ChatMessageChannel
+import dev.nohus.rift.alerts.ContactLabel
 import dev.nohus.rift.alerts.GameActionType
 import dev.nohus.rift.alerts.IntelChannel
 import dev.nohus.rift.alerts.IntelReportLocation
@@ -17,6 +18,7 @@ import dev.nohus.rift.alerts.JumpRange
 import dev.nohus.rift.alerts.PapType
 import dev.nohus.rift.alerts.PiEventType
 import dev.nohus.rift.alerts.create.FormAnswer.CharacterAnswer
+import dev.nohus.rift.alerts.create.FormAnswer.ContactsLabelAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.FreeformTextAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.IntelChannelAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.JumpsRangeAnswer
@@ -27,6 +29,7 @@ import dev.nohus.rift.alerts.create.FormAnswer.SoundAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.SpecificCharactersAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.SystemAnswer
 import dev.nohus.rift.alerts.create.FormQuestion.CombatTargetQuestion
+import dev.nohus.rift.alerts.create.FormQuestion.ContactsLabelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.FreeformTextQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.IntelChannelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.JumpsRangeQuestion
@@ -40,6 +43,8 @@ import dev.nohus.rift.alerts.create.FormQuestion.SystemQuestion
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
+import dev.nohus.rift.contacts.ContactsRepository
+import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.gamelogs.RecentTargetsRepository
 import dev.nohus.rift.logs.parse.CharacterNameValidator
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
@@ -51,7 +56,6 @@ import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.sound.SoundsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
@@ -76,6 +80,7 @@ class CreateAlertViewModel(
     configurationPackRepository: ConfigurationPackRepository,
     private val recentTargetsRepository: RecentTargetsRepository,
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
+    private val contactsRepository: ContactsRepository,
 ) : ViewModel() {
 
     data class UiState(
@@ -89,6 +94,7 @@ class CreateAlertViewModel(
         val sounds: List<Sound> = emptyList(),
         val recentTargets: Set<String> = emptySet(),
         val colonies: List<ColonyItem> = emptyList(),
+        val labels: List<Label> = emptyList(),
         val dismissEvent: Event? = null,
         val highlightQuestionEvent: Event? = null,
     )
@@ -133,6 +139,11 @@ class CreateAlertViewModel(
                 resource.success?.values?.let { colonies ->
                     _state.update { it.copy(colonies = colonies.toList()) }
                 }
+            }
+        }
+        viewModelScope.launch {
+            contactsRepository.contacts.collect { contacts ->
+                _state.update { it.copy(labels = contacts.labels.values.flatten()) }
             }
         }
     }
@@ -272,6 +283,9 @@ class CreateAlertViewModel(
                     if (INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS.id in INTEL_REPORT_TYPE_QUESTION.answer!!.ids) {
                         INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS_QUESTION.answer ?: return INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS_QUESTION
                     }
+                    if (INTEL_REPORT_TYPE_LABELED_CONTACTS.id in INTEL_REPORT_TYPE_QUESTION.answer!!.ids) {
+                        INTEL_REPORT_TYPE_LABELED_CONTACTS_QUESTION.answer ?: return INTEL_REPORT_TYPE_LABELED_CONTACTS_QUESTION
+                    }
                     if (INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES.id in INTEL_REPORT_TYPE_QUESTION.answer!!.ids) {
                         INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES_QUESTION.answer ?: return INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES_QUESTION
                     }
@@ -394,6 +408,10 @@ class CreateAlertViewModel(
                                 INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS.id -> {
                                     val answer = INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS_QUESTION.answer ?: return null
                                     IntelReportType.SpecificCharacters(answer.characters)
+                                }
+                                INTEL_REPORT_TYPE_LABELED_CONTACTS.id -> {
+                                    val answer = INTEL_REPORT_TYPE_LABELED_CONTACTS_QUESTION.answer ?: return null
+                                    IntelReportType.LabeledContacts(answer.labels.map { ContactLabel(it.owner.id, it.id) })
                                 }
                                 INTEL_REPORT_TYPE_ANY_SHIP.id -> IntelReportType.AnyShip
                                 INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES.id -> {
@@ -701,4 +719,5 @@ class CreateAlertViewModel(
     private val CombatTargetQuestion.answer: FreeformTextAnswer? get() = formAnswer as? FreeformTextAnswer
     private val PlanetaryIndustryColoniesQuestion.answer: PlanetaryIndustryColoniesAnswer? get() = formAnswer as? PlanetaryIndustryColoniesAnswer
     private val FreeformTextQuestion.answer: FreeformTextAnswer? get() = formAnswer as? FreeformTextAnswer
+    private val ContactsLabelQuestion.answer: ContactsLabelAnswer? get() = formAnswer as? ContactsLabelAnswer
 }

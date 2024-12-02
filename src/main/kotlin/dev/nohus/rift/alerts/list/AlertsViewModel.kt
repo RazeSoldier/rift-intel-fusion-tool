@@ -10,6 +10,8 @@ import dev.nohus.rift.alerts.create.CreateAlertInputModel
 import dev.nohus.rift.alerts.creategroup.CreateGroupInputModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
+import dev.nohus.rift.contacts.ContactsRepository
+import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.settings.persistence.Settings
@@ -30,6 +32,7 @@ class AlertsViewModel(
     private val soundsRepository: SoundsRepository,
     private val soundPlayer: SoundPlayer,
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
+    private val contactsRepository: ContactsRepository,
 ) : ViewModel() {
 
     data class UiState(
@@ -41,6 +44,7 @@ class AlertsViewModel(
         val isCreateGroupDialogOpen: CreateGroupInputModel? = null,
         val groups: Set<String> = emptySet(),
         val colonies: List<ColonyItem> = emptyList(),
+        val labels: List<Label> = emptyList(),
     )
 
     private val _state = MutableStateFlow(
@@ -77,6 +81,11 @@ class AlertsViewModel(
                 resource.success?.values?.let { colonies ->
                     _state.update { it.copy(colonies = colonies.toList()) }
                 }
+            }
+        }
+        viewModelScope.launch {
+            contactsRepository.contacts.collect { contacts ->
+                _state.update { it.copy(labels = contacts.labels.values.flatten()) }
             }
         }
     }

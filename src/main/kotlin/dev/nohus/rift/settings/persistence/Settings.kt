@@ -64,9 +64,9 @@ class Settings(
         get() = model.openWindows
         set(value) = update { copy(openWindows = value) }
 
-    var windowPlacements: Map<RiftWindow, WindowPlacement>
-        get() = model.windowPlacements
-        set(value) = update { copy(windowPlacements = value) }
+    var windowPlacements: Map<RiftWindow, List<WindowPlacement>>
+        get() = model.windowPlacements2
+        set(value) = update { copy(windowPlacements2 = value) }
 
     var alwaysOnTopWindows: Set<RiftWindow>
         get() = model.alwaysOnTopWindows

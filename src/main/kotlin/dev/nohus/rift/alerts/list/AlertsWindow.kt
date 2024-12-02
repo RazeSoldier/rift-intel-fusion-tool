@@ -63,6 +63,7 @@ import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.delete
 import dev.nohus.rift.generated.resources.editplanicon
@@ -338,7 +339,7 @@ private fun LazyItemScope.AlertItem(
                 isChecked = alert.isEnabled,
                 onCheckedChange = { onToggleAlert(alert.id, it) },
             )
-            val text = getAlertText(alert, state.characters, state.sounds)
+            val text = getAlertText(alert, state.characters, state.sounds, state.labels)
 
             Text(
                 text = text,
@@ -355,6 +356,7 @@ private fun LazyItemScope.AlertItem(
                 getSpecificFleetCommandersDetailText(alert),
                 getDecloakIgnoredKeywordsDetailText(alert),
                 getSpecificColoniesDetailText(alert, state.colonies),
+                getLabeledContactsDetailText(alert, state.labels),
             ).forEach {
                 Row(
                     modifier = Modifier
@@ -559,10 +561,47 @@ private fun getSpecificShipClassesDetailText(alert: Alert): AnnotatedString? {
 }
 
 @Composable
+private fun getLabeledContactsDetailText(alert: Alert, labels: List<Label>): AnnotatedString? {
+    return if (alert.trigger is AlertTrigger.IntelReported) {
+        val labeledContacts = alert.trigger.reportTypes
+            .firstOrNull { it is IntelReportType.LabeledContacts }
+        if (labeledContacts != null) {
+            val labels = (labeledContacts as IntelReportType.LabeledContacts).labels.mapNotNull { label ->
+                labels.firstOrNull { it.owner.id == label.ownerId && it.id == label.id }
+            }
+            val secondary = SpanStyle(color = RiftTheme.colors.textSecondary)
+            val primary = SpanStyle(color = RiftTheme.colors.textPrimary)
+            buildAnnotatedString {
+                withStyle(secondary) {
+                    append("Contact labels: ")
+                    labels.forEachIndexed { index, label ->
+                        withStyle(primary) {
+                            append(label.name)
+                        }
+                        append(" from ")
+                        withStyle(primary) {
+                            append(label.owner.name)
+                        }
+                        if (index != labels.lastIndex) {
+                            appendLine()
+                        }
+                    }
+                }
+            }
+        } else {
+            null
+        }
+    } else {
+        null
+    }
+}
+
+@Composable
 private fun getAlertText(
     alert: Alert,
     characters: List<LocalCharacter>,
     sounds: List<Sound>,
+    labels: List<Label>,
 ): AnnotatedString {
     val secondary = SpanStyle(color = RiftTheme.colors.textSecondary)
     val primary = SpanStyle(color = RiftTheme.colors.textPrimary)
@@ -590,6 +629,15 @@ private fun getAlertText(
                                     "${type.classes.single()}-class ships"
                                 } else {
                                     "${type.classes.size} ship classes"
+                                }
+                            }
+                            is IntelReportType.LabeledContacts -> {
+                                if (type.labels.size == 1) {
+                                    val label = type.labels.single()
+                                    val name = labels.firstOrNull { it.owner.id == label.ownerId && it.id == label.id }?.name ?: "Unknown"
+                                    "characters labeled $name"
+                                } else {
+                                    "characters under ${type.labels.size} labels"
                                 }
                             }
                             IntelReportType.Bubbles -> "bubbles"

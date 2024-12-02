@@ -7,6 +7,7 @@ import dev.nohus.rift.contacts.ContactsExternalControl.ContactsExternalControlEv
 import dev.nohus.rift.contacts.ContactsRepository.Contact
 import dev.nohus.rift.contacts.ContactsRepository.Entity
 import dev.nohus.rift.contacts.ContactsRepository.EntityType
+import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.contacts.SearchRepository.SearchCategory
 import dev.nohus.rift.contacts.SearchRepository.SearchResult
 import dev.nohus.rift.get
@@ -41,7 +42,7 @@ class ContactsViewModel(
         val selectedTab: ContactsTab = ContactsTab.Contacts,
         val contacts: List<Contact> = emptyList(),
         val filteredContacts: List<Contact> = emptyList(),
-        val ownerLabels: List<Pair<Entity, List<String>>> = emptyList(),
+        val ownerLabels: List<Pair<Entity, List<Label>>> = emptyList(),
         val filter: Filter = Filter.All,
         val contactSearch: String = "",
         val editDialog: EditContactDialog? = null,
@@ -57,24 +58,24 @@ class ContactsViewModel(
         data class Standings(val level: Standing) : Filter
         data class Owner(val owner: Entity) : Filter
         data class Unlabeled(val owner: Entity) : Filter
-        data class Label(val owner: Entity, val label: String) : Filter
+        data class Label(val label: ContactsRepository.Label) : Filter
     }
 
     data class EditContactDialog(
         val entity: Entity,
         val ownerCharacters: List<Entity>,
         val ownerStandings: Map<Int, Standing>,
-        val ownerLabels: Map<Int, List<String>>,
+        val ownerLabels: Map<Int, List<Label>>,
         val ownerWatched: Map<Int, Boolean>,
         val characters: List<LocalCharacter>,
-        val labels: Map<Int, List<String>>,
+        val labels: Map<Int, List<Label>>,
     )
 
     data class UpdateContactRequest(
         val characterId: Int,
         val entity: Entity,
         val standing: Standing,
-        val labels: List<String>,
+        val labels: List<Label>,
         val isWatched: Boolean?,
     )
 
@@ -99,9 +100,7 @@ class ContactsViewModel(
                     .sortedWith(compareBy({ it.type }, { it.name }))
                 val labels = owners
                     .associateWith { owner ->
-                        contacts.labels[owner]
-                            ?.map { it.name }
-                            ?: emptyList()
+                        contacts.labels[owner] ?: emptyList()
                     }
                     .map { it.key to it.value.distinct() }
                     .sortedWith(compareBy({ it.first.type }, { it.first.name }))
@@ -272,7 +271,7 @@ class ContactsViewModel(
             is Filter.Standings -> filter { filter.level == it.standingLevel }
             is Filter.Owner -> filter { filter.owner == it.owner }
             is Filter.Unlabeled -> filter { filter.owner == it.owner && it.labels.isEmpty() }
-            is Filter.Label -> filter { filter.owner == it.owner && filter.label in it.labels }
+            is Filter.Label -> filter { filter.label in it.labels }
         }
         return if (search.isNotBlank()) {
             val lowercase = search.lowercase()

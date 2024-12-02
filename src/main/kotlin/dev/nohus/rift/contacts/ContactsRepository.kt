@@ -43,7 +43,7 @@ class ContactsRepository(
     data class Contact(
         val entity: Entity,
         val owner: Entity,
-        val labels: List<String> = emptyList(),
+        val labels: List<Label> = emptyList(),
         val isBlocked: Boolean,
         val isWatched: Boolean,
         val standing: Float,
@@ -66,6 +66,7 @@ class ContactsRepository(
     data class Label(
         val id: Long,
         val name: String,
+        val owner: Entity,
     )
 
     data class ContactsResponse(
@@ -111,14 +112,28 @@ class ContactsRepository(
             .map { it.entity.id }
     }
 
+    fun getLabelName(ownerId: Int, labelId: Long): String? {
+        val ownerLabels = _contacts.value.labels.entries.firstOrNull { (owner, _) -> owner.id == ownerId }?.value ?: return null
+        return ownerLabels.firstOrNull { label -> label.id == labelId }?.name
+    }
+
+    /**
+     * Returns labels of the given character/corporation/alliance IDs, if there are contacts for them
+     */
+    fun getLabels(ids: List<Int>): List<Label> {
+        return _contacts.value.contacts
+            .filter { it.entity.id in ids }
+            .flatMap { it.labels }
+    }
+
     suspend fun editContact(
         characterId: Int,
-        labels: List<String>,
+        labels: List<Label>,
         standing: Float,
         isWatched: Boolean?,
         entity: Entity,
     ) {
-        val labelIds = getLabelIds(characterId, labels).takeIf { it.isNotEmpty() }
+        val labelIds = labels.map { it.id }.takeIf { it.isNotEmpty() }
         val existingContact = _contacts.value.contacts
             .firstOrNull { it.owner.id == characterId && it.entity.id == entity.id }
 
@@ -293,15 +308,18 @@ class ContactsRepository(
         // Await labels
         val allianceLabels = allianceContactsLabelsDeferred.awaitAll().associate { (allianceId, result) ->
             val labels = result.success ?: return@coroutineScope null
-            Entity(allianceId, names[allianceId]!!, EntityType.Alliance) to labels.map { Label(it.labelId, it.labelName) }
+            val owner = Entity(allianceId, names[allianceId]!!, EntityType.Alliance)
+            owner to labels.map { Label(it.labelId, it.labelName, owner) }
         }
         val corporationLabels = corporationContactsLabelsDeferred.awaitAll().associate { (corporationId, result) ->
             val labels = result.success ?: return@coroutineScope null
-            Entity(corporationId, names[corporationId]!!, EntityType.Corporation) to labels.map { Label(it.labelId, it.labelName) }
+            val owner = Entity(corporationId, names[corporationId]!!, EntityType.Corporation)
+            owner to labels.map { Label(it.labelId, it.labelName, owner) }
         }
         val characterLabels = characterContactsLabelsDeferred.awaitAll().associate { (characterId, result) ->
             val labels = result.success ?: return@coroutineScope null
-            Entity(characterId, names[characterId]!!, EntityType.Character) to labels.map { Label(it.labelId, it.labelName) }
+            val owner = Entity(characterId, names[characterId]!!, EntityType.Character)
+            owner to labels.map { Label(it.labelId, it.labelName, owner) }
         }
 
         // Process into models
@@ -309,21 +327,21 @@ class ContactsRepository(
             val labels = allianceLabels.entries
                 .firstOrNull { it.key.id == allianceId }
                 ?.value
-                ?.associate { it.id to it.name } ?: emptyMap()
+                ?.associateBy { it.id } ?: emptyMap()
             list.mapNotNull { it.toContact(allianceId, EntityType.Alliance, labels, names) }
         }
         val corporationContacts = corporationContactsList.flatMap { (corporationId, list) ->
             val labels = corporationLabels.entries
                 .firstOrNull { it.key.id == corporationId }
                 ?.value
-                ?.associate { it.id to it.name } ?: emptyMap()
+                ?.associateBy { it.id } ?: emptyMap()
             list.mapNotNull { it.toContact(corporationId, EntityType.Corporation, labels, names) }
         }
         val characterContacts = characterContactsList.flatMap { (characterId, list) ->
             val labels = characterLabels.entries
                 .firstOrNull { it.key.id == characterId }
                 ?.value
-                ?.associate { it.id to it.name } ?: emptyMap()
+                ?.associateBy { it.id } ?: emptyMap()
             list.mapNotNull { it.toContact(characterId, EntityType.Character, labels, names) }
         }
 
@@ -332,7 +350,12 @@ class ContactsRepository(
         return@coroutineScope ContactsResponse(contacts, labels)
     }
 
-    private fun ContactDto.toContact(ownerId: Int, ownerType: EntityType, labels: Map<Long, String>, names: Map<Int, String>): Contact? {
+    private fun ContactDto.toContact(
+        ownerId: Int,
+        ownerType: EntityType,
+        labels: Map<Long, Label>,
+        names: Map<Int, String>,
+    ): Contact? {
         if (isNpcAgent(contactId)) return null
         val entity = Entity(
             id = contactId,
@@ -352,7 +375,7 @@ class ContactsRepository(
         return Contact(
             entity = entity,
             owner = owner,
-            labels = labelIds?.map { labels[it] ?: it.toString() } ?: emptyList(), // TODO
+            labels = labelIds?.mapNotNull { labels[it] } ?: emptyList(), // TODO
             isBlocked = isBlocked == true,
             isWatched = isWatched == true,
             standing = standing,

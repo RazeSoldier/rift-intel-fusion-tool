@@ -89,7 +89,7 @@ import java.time.Instant
 @Composable
 fun SystemInfoBox(
     system: MapSolarSystem,
-    regionName: String?,
+    isRegionNameForced: Boolean,
     isHighlightedOrHovered: Boolean,
     intel: List<Dated<SystemEntity>>?,
     hasIntelPopup: Boolean,
@@ -150,14 +150,25 @@ fun SystemInfoBox(
                         }
                     }
 
-                    if (regionName != null) {
-                        Text(
-                            text = regionName,
-                            style = RiftTheme.typography.captionSecondary,
-                            modifier = Modifier
-                                .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-                                .onClick { onRegionClick() },
-                        )
+                    if (isRegionNameForced || isExpanded && MapSystemInfoType.Region in infoTypes || !isExpanded && MapSystemInfoType.Region in indicatorsInfoTypes) {
+                        systemStatus?.regionName?.let { name ->
+                            Text(
+                                text = name,
+                                style = RiftTheme.typography.captionSecondary,
+                                modifier = Modifier
+                                    .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+                                    .onClick { onRegionClick() },
+                            )
+                        }
+                    }
+
+                    if (isExpanded && MapSystemInfoType.Constellation in infoTypes || !isExpanded && MapSystemInfoType.Constellation in indicatorsInfoTypes) {
+                        systemStatus?.constellationName?.let { name ->
+                            Text(
+                                text = name,
+                                style = RiftTheme.typography.captionSecondary,
+                            )
+                        }
                     }
 
                     if (isExpanded) {
@@ -220,7 +231,6 @@ private fun ColumnScope.SystemInfoTypes(
         horizontalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
         infoTypes.distinct()
-            .sortedByDescending { listOf(MapSystemInfoType.Sovereignty).indexOf(it) }
             .forEach { color ->
                 when (color) {
                     MapSystemInfoType.StarColor -> {}
@@ -274,6 +284,8 @@ private fun ColumnScope.SystemInfoTypes(
                     MapSystemInfoType.Clones -> {} // In column
                     MapSystemInfoType.Standings -> {} // In system name row
                     MapSystemInfoType.RatsType -> {} // In column
+                    MapSystemInfoType.Region -> {} // With system name
+                    MapSystemInfoType.Constellation -> {} // With system name
                     MapSystemInfoType.IndustryIndexCopying -> {} // In column
                     MapSystemInfoType.IndustryIndexInvention -> {} // In column
                     MapSystemInfoType.IndustryIndexManufacturing -> {} // In column
@@ -399,6 +411,8 @@ private fun ColumnScope.SystemInfoTypes(
                         )
                     }
                 }
+                MapSystemInfoType.Region -> {} // With system name
+                MapSystemInfoType.Constellation -> {} // With system name
                 MapSystemInfoType.IndustryIndexCopying -> IndustryActivityIndex(systemStatus, IndustryActivity.Copying, "Copying")
                 MapSystemInfoType.IndustryIndexInvention -> IndustryActivityIndex(systemStatus, IndustryActivity.Invention, "Invention")
                 MapSystemInfoType.IndustryIndexManufacturing -> IndustryActivityIndex(systemStatus, IndustryActivity.Manufacturing, "Manufacturing")
@@ -512,6 +526,8 @@ private fun SystemInfoTypesIndicators(
                 }
                 MapSystemInfoType.Standings -> {} // In system name row
                 MapSystemInfoType.RatsType -> {}
+                MapSystemInfoType.Region -> {} // With system name
+                MapSystemInfoType.Constellation -> {} // With system name
                 MapSystemInfoType.IndustryIndexCopying -> IndustryActivityIndex(systemStatus, IndustryActivity.Copying, "Copying")
                 MapSystemInfoType.IndustryIndexInvention -> IndustryActivityIndex(systemStatus, IndustryActivity.Invention, "Invention")
                 MapSystemInfoType.IndustryIndexManufacturing -> IndustryActivityIndex(systemStatus, IndustryActivity.Manufacturing, "Manufacturing")

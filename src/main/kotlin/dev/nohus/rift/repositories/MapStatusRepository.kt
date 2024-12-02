@@ -39,6 +39,7 @@ class MapStatusRepository(
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
     private val clonesRepository: ClonesRepository,
     private val ratsRepository: RatsRepository,
+    private val solarSystemsRepository: SolarSystemsRepository,
 ) {
 
     private data class UniverseSystemStatus(
@@ -49,6 +50,8 @@ class MapStatusRepository(
     )
 
     data class SolarSystemStatus(
+        val regionName: String?,
+        val constellationName: String?,
         val shipJumps: Int?,
         val npcKills: Int?,
         val podKills: Int?,
@@ -115,6 +118,8 @@ class MapStatusRepository(
                 }.toMap()
                 systems.associateWith { systemId ->
                     SolarSystemStatus(
+                        regionName = solarSystemsRepository.getRegionBySystemId(systemId),
+                        constellationName = solarSystemsRepository.getConstellationBySystemId(systemId),
                         shipJumps = universe[systemId]?.shipJumps,
                         npcKills = universe[systemId]?.npcKills,
                         podKills = universe[systemId]?.podKills,

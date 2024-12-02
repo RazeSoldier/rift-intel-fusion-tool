@@ -43,7 +43,7 @@ private fun ThemePreviewWindow(onCloseRequest: () -> Unit) {
     RiftWindow(
         title = "RIFT – Theme Preview",
         icon = Res.drawable.window_info,
-        state = RiftWindowState(windowState = rememberWindowState(width = 400.dp, height = Dp.Unspecified), isVisible = true, minimumSize = 400 to 400),
+        state = RiftWindowState(windowState = rememberWindowState(width = 400.dp, height = Dp.Unspecified), minimumSize = 400 to 400),
         onCloseClick = onCloseRequest,
     ) {
         Column(

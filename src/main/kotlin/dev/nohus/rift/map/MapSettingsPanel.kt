@@ -542,7 +542,7 @@ private fun SystemColorPills(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets)
+        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation)
         val pills = if (isCellColor) colorEntries + null else colorEntries
         pills.filter { isExpanded || selected == it }
             .forEach { type ->
@@ -624,6 +624,8 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.Clones -> "Clones" to "Colored when you have\njump clones present"
         MapSystemInfoType.Standings -> "Standings" to "Colored based on standings\ntowards the sovereignty holder.\nLow and high sec are always yellow and green."
         MapSystemInfoType.RatsType -> "Rats" to "Colored according to the\nfaction of rats in the system"
+        MapSystemInfoType.Region -> throw IllegalArgumentException("Not used for colors")
+        MapSystemInfoType.Constellation -> throw IllegalArgumentException("Not used for colors")
         MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Colored according to the\nindustry cost index of Copying"
         MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Colored according to the\nindustry cost index of Invention"
         MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Colored according to the\nindustry cost index of Manufacturing"
@@ -659,6 +661,8 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.Clones -> "Clones" to "Indicators for jump clones"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
         MapSystemInfoType.RatsType -> "" to ""
+        MapSystemInfoType.Region -> "Region" to "Region name"
+        MapSystemInfoType.Constellation -> "Constellation" to "Constellation name"
         MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
         MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Industry cost index of Invention"
         MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Industry cost index of Manufacturing"
@@ -694,6 +698,8 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.Clones -> "Clones" to "Jump clones information"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
         MapSystemInfoType.RatsType -> "Rats" to "Faction of rats in the system"
+        MapSystemInfoType.Region -> "Region" to "Region name"
+        MapSystemInfoType.Constellation -> "Constellation" to "Constellation name"
         MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
         MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Industry cost index of Invention"
         MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Industry cost index of Manufacturing"
