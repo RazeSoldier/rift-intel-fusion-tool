@@ -26,9 +26,7 @@ data class SettingsModel(
     val isRememberOpenWindows: Boolean = false,
     val isRememberWindowPlacement: Boolean = true,
     val openWindows: Set<RiftWindow> = emptySet(),
-    val windowPlacements2: Map<RiftWindow, List<WindowPlacement>> = emptyMap(),
-    val alwaysOnTopWindows: Set<RiftWindow> = emptySet(),
-    val lockedWindows: Set<RiftWindow> = emptySet(),
+    val windowSettings: Map<RiftWindow, List<WindowSettings>> = emptyMap(),
     val notificationEditPosition: Pos? = null,
     val notificationPosition: Pos? = null,
     val alerts: List<Alert> = emptyList(),
@@ -125,11 +123,14 @@ data class IntelChannel(
 )
 
 @Serializable
-data class WindowPlacement(
+data class WindowSettings(
     @Serializable(with = UuidSerializer::class)
     val uuid: UUID,
-    val position: Pos,
-    val size: Size,
+    val position: Pos? = null,
+    val size: Size? = null,
+    val isAlwaysOnTop: Boolean = false,
+    val isLocked: Boolean = false,
+    val isTransparent: Boolean = false,
 )
 
 @Serializable

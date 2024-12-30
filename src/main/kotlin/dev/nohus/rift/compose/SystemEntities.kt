@@ -44,6 +44,7 @@ import dev.nohus.rift.generated.resources.keywords_wormhole
 import dev.nohus.rift.intel.state.CharacterBound
 import dev.nohus.rift.intel.state.Clearable
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
@@ -532,4 +533,4 @@ private fun NoVisualRow(
     }
 }
 
-private fun Int.isNpcCorp(): Boolean = this in 1000001..1000441
+private fun Int.isNpcCorp(): Boolean = IdRanges.isNpcCorporation(this)

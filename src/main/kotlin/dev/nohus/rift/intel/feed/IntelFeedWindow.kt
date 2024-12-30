@@ -275,7 +275,7 @@ fun ItemBox(
         val transition = updateTransition(pointerInteractionStateHolder.current)
         val background by transition.animateColor(colorTransitionSpec) {
             when (it) {
-                PointerInteractionState.Normal -> RiftTheme.colors.windowBackgroundActive
+                PointerInteractionState.Normal -> RiftTheme.colors.windowBackgroundActive.copy(alpha = RiftTheme.colors.transparentWindowAlpha)
                 PointerInteractionState.Hover -> RiftTheme.colors.backgroundPrimaryDark
                 PointerInteractionState.Press -> RiftTheme.colors.backgroundPrimary
             }
@@ -285,7 +285,7 @@ fun ItemBox(
                 RiftTheme.colors.borderPrimary
             } else {
                 when (it) {
-                    PointerInteractionState.Normal -> RiftTheme.colors.windowBackgroundActive
+                    PointerInteractionState.Normal -> RiftTheme.colors.windowBackgroundActive.copy(alpha = RiftTheme.colors.transparentWindowAlpha)
                     PointerInteractionState.Hover -> RiftTheme.colors.borderPrimary
                     PointerInteractionState.Press -> RiftTheme.colors.borderPrimary
                 }

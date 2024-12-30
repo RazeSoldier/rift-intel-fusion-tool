@@ -49,6 +49,7 @@ import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ClickablePlayer
 import dev.nohus.rift.compose.ClickableSystem
+import dev.nohus.rift.compose.FlagIcon
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.SystemEntities
@@ -234,6 +235,9 @@ fun NotificationContent(
                                         text = message.sender,
                                         style = RiftTheme.typography.titlePrimary,
                                     )
+                                    if (message.senderStanding != null) {
+                                        FlagIcon(message.senderStanding)
+                                    }
                                     Text(
                                         text = " >",
                                         style = RiftTheme.typography.titlePrimary,

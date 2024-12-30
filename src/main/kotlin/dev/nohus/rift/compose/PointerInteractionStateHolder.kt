@@ -105,9 +105,9 @@ fun Modifier.hoverBackground(
     }
     val highlightAlpha by transition.animateFloat(floatTransitionSpec) {
         when (it) {
-            PointerInteractionState.Normal -> if (normalColor == null) 0f else 1f
-            PointerInteractionState.Hover -> 1f
-            PointerInteractionState.Press -> 1f
+            PointerInteractionState.Normal -> if (normalColor == null) 0f else normalColor.alpha
+            PointerInteractionState.Hover -> (hoverColor ?: RiftTheme.colors.backgroundHovered).alpha
+            PointerInteractionState.Press -> (pressColor ?: RiftTheme.colors.backgroundSelected).alpha
         }
     }
     return@composed this

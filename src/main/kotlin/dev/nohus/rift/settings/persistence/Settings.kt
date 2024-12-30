@@ -64,17 +64,9 @@ class Settings(
         get() = model.openWindows
         set(value) = update { copy(openWindows = value) }
 
-    var windowPlacements: Map<RiftWindow, List<WindowPlacement>>
-        get() = model.windowPlacements2
-        set(value) = update { copy(windowPlacements2 = value) }
-
-    var alwaysOnTopWindows: Set<RiftWindow>
-        get() = model.alwaysOnTopWindows
-        set(value) = update { copy(alwaysOnTopWindows = value) }
-
-    var lockedWindows: Set<RiftWindow>
-        get() = model.lockedWindows
-        set(value) = update { copy(lockedWindows = value) }
+    var windowSettings: Map<RiftWindow, List<WindowSettings>>
+        get() = model.windowSettings
+        set(value) = update { copy(windowSettings = value) }
 
     var notificationEditPosition: Pos?
         get() = model.notificationEditPosition

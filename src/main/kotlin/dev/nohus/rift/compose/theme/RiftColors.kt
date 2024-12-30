@@ -10,6 +10,8 @@ data class RiftColors(
     val windowBackgroundSecondary: Color,
     val windowBackgroundSecondaryHovered: Color,
     val windowBackgroundActive: Color,
+    val windowBorder: Color,
+    val windowBorderActive: Color,
 
     val textSpecialHighlighted: Color,
     val textHighlighted: Color,
@@ -58,6 +60,9 @@ data class RiftColors(
 
     val progressBarBackground: Color,
     val progressBarProgress: Color,
+
+    // 1f for normal, 0f for transparent theme
+    val transparentWindowAlpha: Float,
 )
 
 val LocalRiftColors = staticCompositionLocalOf {
@@ -66,6 +71,8 @@ val LocalRiftColors = staticCompositionLocalOf {
         windowBackgroundSecondary = Color.Unspecified,
         windowBackgroundSecondaryHovered = Color.Unspecified,
         windowBackgroundActive = Color.Unspecified,
+        windowBorder = Color.Unspecified,
+        windowBorderActive = Color.Unspecified,
 
         textSpecialHighlighted = Color.Unspecified,
         textHighlighted = Color.Unspecified,
@@ -114,19 +121,53 @@ val LocalRiftColors = staticCompositionLocalOf {
 
         progressBarBackground = Color.Unspecified,
         progressBarProgress = Color.Unspecified,
+
+        transparentWindowAlpha = 1f,
     )
 }
 
-fun getRiftColors() = RiftColors(
+fun getRiftColors(isTransparent: Boolean): RiftColors {
+    return if (isTransparent) {
+        getRiftColors().run {
+            copy(
+                windowBackground = windowBackground.copy(alpha = 0.4f),
+                windowBackgroundSecondary = Color(0xFFFFFFFF).copy(alpha = 0.05f),
+                windowBackgroundActive = windowBackgroundActive.copy(alpha = 0.6f),
+                windowBorder = Color(0xFFFFFFFF).copy(alpha = 0.1f),
+                windowBorderActive = Color(0xFFFFFFFF).copy(alpha = 0.1f),
+
+                inactiveGray = Color(0xFFFFFFFF).copy(alpha = 0.3f),
+
+                backgroundPrimary = backgroundPrimary.copy(alpha = 0.5f),
+                backgroundPrimaryDark = backgroundPrimaryDark.copy(alpha = 0.5f),
+                backgroundSelected = backgroundSelected.copy(alpha = 0.5f),
+                backgroundHovered = backgroundHovered.copy(alpha = 0.5f),
+
+                borderPrimary = Color(0xFF5B878E),
+                borderGreyLight = Color(0xFFFFFFFF).copy(alpha = 0.1f),
+
+                mapBackground = Color.Transparent,
+
+                transparentWindowAlpha = 0f,
+            )
+        }
+    } else {
+        getRiftColors()
+    }
+}
+
+private fun getRiftColors() = RiftColors(
     windowBackground = Color(0xFF070707),
     windowBackgroundSecondary = Color(0xFF141414),
     windowBackgroundSecondaryHovered = Color(0xFF1F272B),
     windowBackgroundActive = Color(0xFF05080A),
+    windowBorder = Color(0xFF1F1F1F),
+    windowBorderActive = Color(0xFF1E2022),
 
     textSpecialHighlighted = Color(0xFFC3E9FF),
     textHighlighted = Color(0xFFE6E6E7),
     textPrimary = Color(0xFFC3C5C6),
-    textSecondary = Color(0xFF7E8081),
+    textSecondary = Color(0xFF9B9B95),
     textLink = Color(0xFFD98D00),
     textGreen = Color(0xFF029C02),
     textRed = Color(0xFFFB0101),
@@ -138,13 +179,13 @@ fun getRiftColors() = RiftColors(
     backgroundPrimary = Color(0xFF172327),
     backgroundPrimaryDark = Color(0xFF0A1215),
     backgroundPrimaryLight = Color(0xFF36525E),
-    backgroundSelected = Color(0xFF17262C),
+    backgroundSelected = Color(0xFF355866),
     backgroundHovered = Color(0xFF131C1F),
     backgroundWhite = Color(0xFFEAEAEA),
     backgroundError = Color(0xFF7F2628),
     backgroundErrorDark = Color(0xFF60171A),
 
-    borderPrimary = Color(0xFF335a6a),
+    borderPrimary = Color(0xFF41707F),
     borderPrimaryDark = Color(0xFF213841),
     borderPrimaryLight = Color(0xFF71BED3),
     borderError = Color(0xFFFE5B61),
@@ -170,4 +211,6 @@ fun getRiftColors() = RiftColors(
 
     progressBarBackground = Color(0xFF1A1E1F),
     progressBarProgress = Color(0xFF0D557E),
+
+    transparentWindowAlpha = 1f,
 )

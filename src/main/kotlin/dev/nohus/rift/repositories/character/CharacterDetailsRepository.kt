@@ -5,7 +5,6 @@ import dev.nohus.rift.network.esi.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.CorporationsIdCorporation
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.standings.Standing
-import dev.nohus.rift.standings.StandingUtils.getStandingLevel
 import dev.nohus.rift.standings.StandingsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -37,7 +36,8 @@ class CharacterDetailsRepository(
         val deferredAlliance = async { character.allianceId?.let { esiApi.getAlliancesId(it).success } }
         val corporation = deferredCorporation.await()
         val alliance = deferredAlliance.await()
-        val standing = standingsRepository.getStanding(character.allianceId, character.corporationId, characterId)
+        val standing = standingsRepository.getStanding(character.allianceId, character.corporationId, characterId) ?: 0f
+        val standingLevel = standingsRepository.getStandingLevel(character.allianceId, character.corporationId, characterId)
         CharacterDetails(
             characterId = characterId,
             name = character.name,
@@ -48,7 +48,7 @@ class CharacterDetailsRepository(
             allianceName = alliance?.name,
             allianceTicker = alliance?.ticker,
             standing = standing,
-            standingLevel = getStandingLevel(standing),
+            standingLevel = standingLevel,
             title = character.title,
         )
     }

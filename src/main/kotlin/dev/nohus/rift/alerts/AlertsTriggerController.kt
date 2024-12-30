@@ -178,7 +178,7 @@ class AlertsTriggerController(
                 }
                 if (isChannelMatching) {
                     val triggerSender = alert.trigger.sender
-                    val isEveSystem = channelChatMessage.metadata.channelName == "Local" && channelChatMessage.chatMessage.author == "EVE System"
+                    val isEveSystem = channelChatMessage.chatMessage.author == "EVE System"
                     val isSenderMatching = triggerSender == null && !isEveSystem || channelChatMessage.chatMessage.author == triggerSender
                     if (isSenderMatching) {
                         val containing = alert.trigger.messageContaining

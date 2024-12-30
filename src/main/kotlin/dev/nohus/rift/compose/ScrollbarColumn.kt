@@ -55,7 +55,8 @@ fun ScrollbarColumn(
         ) {
             content()
         }
-        if (!isScrollbarConditional || (scrollState.canScrollBackward || scrollState.canScrollForward)) {
+        val canScroll = scrollState.canScrollBackward || scrollState.canScrollForward
+        if (!isScrollbarConditional || canScroll && scrollbarHeight > 0.dp) {
             RiftVerticalScrollbar(
                 hasBackground = hasScrollbarBackground,
                 scrollState = scrollState,

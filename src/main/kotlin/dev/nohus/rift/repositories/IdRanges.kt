@@ -19,4 +19,5 @@ object IdRanges {
 
     fun isNpcAgent(id: Int) = id in npcAgent
     fun isFaction(id: Int) = id in faction
+    fun isNpcCorporation(id: Int) = id in npcCorporation
 }

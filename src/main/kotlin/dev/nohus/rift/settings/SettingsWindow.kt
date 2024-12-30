@@ -84,13 +84,6 @@ fun SettingsWindow(
             onDoneClick = onCloseRequest,
         )
 
-        if (state.isEditNotificationWindowOpen) {
-            NotificationEditWindow(
-                position = state.notificationEditPlacement,
-                onCloseRequest = viewModel::onEditNotificationDone,
-            )
-        }
-
         state.dialogMessage?.let {
             RiftMessageDialog(
                 dialog = it,
@@ -98,6 +91,13 @@ fun SettingsWindow(
                 onDismiss = viewModel::onCloseDialogMessage,
             )
         }
+    }
+
+    if (state.isEditNotificationWindowOpen) {
+        NotificationEditWindow(
+            position = state.notificationEditPlacement,
+            onCloseRequest = viewModel::onEditNotificationDone,
+        )
     }
 }
 

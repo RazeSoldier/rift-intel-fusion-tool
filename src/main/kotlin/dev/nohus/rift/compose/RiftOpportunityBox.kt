@@ -160,7 +160,13 @@ fun RiftOpportunityBox(
                     .background(RiftTheme.colors.primary.copy(alpha = 0.5f)),
             ) {}
         }
-        val background by animateColorAsState(if (pointerInteractionStateHolder.isHovered) RiftTheme.colors.backgroundPrimary else RiftTheme.colors.backgroundPrimaryDark)
+        val background by animateColorAsState(
+            if (pointerInteractionStateHolder.isHovered) {
+                RiftTheme.colors.backgroundPrimary
+            } else {
+                RiftTheme.colors.backgroundPrimaryDark
+            },
+        )
         Surface(
             color = background,
             shape = CutCornerShape(bottomEnd = 15.dp),

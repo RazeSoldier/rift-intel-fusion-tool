@@ -324,6 +324,20 @@ object WhatsNew {
                 
                 - Region names and constellation names can now be enabled to show for systems on the map, either always or on hover
             """.trimIndent(),
+            "4.18.0" description """
+                -! New feature: Window transparency 
+                - You can now make any RIFT window transparent, similar to the "light background" option in-game
+                - This also switches to a new color scheme so that windows look properly in transparent mode
+                
+                - Your own corporations and alliances now show up in blue even if you don't have them explicitly set with positive standing
+                - Chat message notifications now show the standing of the message author
+                - Chat message notifications are no longer sent for "EVE System" messages and MOTDs, unless the alert is set specifically for "EVE System" messages
+                - Optimized chat log file reading, reducing CPU usage
+                - Window states are now managed per unique window, not per-window type, so you can now have one map window be always on-top and another one not, for example
+                - Structure details failing to be loaded from ESI for the Assets window will no longer prevent you from seeing all assets. Instead, the relevant assets will just show to be in an unknown structure.
+                - Updated Steam library detection on Linux to cover more installation types
+                - Context menus will now scroll if there is not enough space to display all items
+            """.trimIndent(),
         ).reversed()
     }
 }

@@ -248,7 +248,7 @@ class AssetsViewModel(
             }
 
             is AssetsRepository.AssetLocation.CustomsOffice -> {
-                AssetLocation(location.locationId, null, "Customs Office", null, null)
+                AssetLocation(location.locationId, null, "Customs Office / Skyhook", null, null)
             }
         }
     }

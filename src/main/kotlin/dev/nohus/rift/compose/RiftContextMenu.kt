@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,6 +18,7 @@ import androidx.compose.foundation.onClick
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,8 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.window.Popup
 import dev.nohus.rift.compose.theme.Cursors
+import dev.nohus.rift.compose.theme.LocalRiftColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.compose.theme.getRiftColors
 import dev.nohus.rift.di.koin
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -136,26 +138,29 @@ private fun RiftContextMenuPopup(
             offset = offset,
             onDismissRequest = onDismissRequest,
         ) {
-            Column(
-                modifier = Modifier
-                    .pointerHoverIcon(PointerIcon(Cursors.pointer))
-                    .width(IntrinsicSize.Max)
-                    .background(RiftTheme.colors.windowBackgroundActive)
-                    .border(1.dp, RiftTheme.colors.divider)
-                    .padding(1.dp)
-                    .padding(vertical = 7.dp),
-            ) {
-                val hasIconSpace = items.any { it is ContextMenuItem.TextItem && it.iconResource != null || it is ContextMenuItem.CheckboxItem || it is ContextMenuItem.RadioItem }
-                for (item in items) {
-                    when (item) {
-                        is ContextMenuItem.TextItem -> ContextMenuRow(item.text, item.iconResource, hasIconSpace, null) {
-                            onDismissRequest()
-                            item.onClick()
+            CompositionLocalProvider(LocalRiftColors provides getRiftColors(isTransparent = false)) {
+                ScrollbarColumn(
+                    isScrollbarConditional = true,
+                    modifier = Modifier
+                        .pointerHoverIcon(PointerIcon(Cursors.pointer))
+                        .width(IntrinsicSize.Max)
+                        .background(RiftTheme.colors.windowBackgroundActive)
+                        .border(1.dp, RiftTheme.colors.divider)
+                        .padding(1.dp)
+                        .padding(vertical = 7.dp),
+                ) {
+                    val hasIconSpace = items.any { it is ContextMenuItem.TextItem && it.iconResource != null || it is ContextMenuItem.CheckboxItem || it is ContextMenuItem.RadioItem }
+                    for (item in items) {
+                        when (item) {
+                            is ContextMenuItem.TextItem -> ContextMenuRow(item.text, item.iconResource, hasIconSpace, null) {
+                                onDismissRequest()
+                                item.onClick()
+                            }
+                            is ContextMenuItem.CheckboxItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, false, item.onClick)
+                            is ContextMenuItem.RadioItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, true, item.onClick)
+                            is ContextMenuItem.HeaderItem -> ContextMenuHeader(item.text)
+                            ContextMenuItem.DividerItem -> ContextMenuDivider()
                         }
-                        is ContextMenuItem.CheckboxItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, false, item.onClick)
-                        is ContextMenuItem.RadioItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, true, item.onClick)
-                        is ContextMenuItem.HeaderItem -> ContextMenuHeader(item.text)
-                        ContextMenuItem.DividerItem -> ContextMenuDivider()
                     }
                 }
             }

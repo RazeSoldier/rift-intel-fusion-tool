@@ -120,23 +120,28 @@ class DirectoryObserver(
     private suspend fun watchFileModification(path: Path, onUpdate: suspend (DirectoryObserverEvent) -> Unit) {
         val lastModifiedMap = mutableMapOf<Path, Long>()
         while (true) {
-            val recentFiles = path.listDirectoryEntries().filter {
-                Duration.between(it.getLastModifiedTime().toInstant(), Instant.now()) < Duration.ofHours(24)
-            }
-            repeat(100) { // 100 * 200 == 20 seconds
-                recentFiles.forEach { file ->
-                    val oldLastModified = lastModifiedMap[file] ?: 0L
-                    try {
-                        val newLastModified = file.getLastModifiedTime().toMillis()
-                        if (oldLastModified != newLastModified) {
-                            lastModifiedMap[file] = newLastModified
-                            onUpdate(FileEvent(file, FileEventType.Modified))
-                        }
-                    } catch (e: IOException) {
-                        logger.error { "Could not check last modification time of watched file: ${e.message}" }
-                    }
+            try {
+                val recentFiles = path.listDirectoryEntries().filter {
+                    Duration.between(it.getLastModifiedTime().toInstant(), Instant.now()) < Duration.ofHours(24)
                 }
-                delay(200)
+                repeat(100) { // 100 * 200 == 20 seconds
+                    recentFiles.forEach { file ->
+                        val oldLastModified = lastModifiedMap[file] ?: 0L
+                        try {
+                            val newLastModified = file.getLastModifiedTime().toMillis()
+                            if (oldLastModified != newLastModified) {
+                                lastModifiedMap[file] = newLastModified
+                                onUpdate(FileEvent(file, FileEventType.Modified))
+                            }
+                        } catch (e: IOException) {
+                            logger.error { "Could not check last modification time of watched file: ${e.message}" }
+                        }
+                    }
+                    delay(200)
+                }
+            } catch (e: FileSystemException) {
+                logger.error { "Could not check file modification timestamps: ${e.message}" }
+                delay(2_000)
             }
         }
     }

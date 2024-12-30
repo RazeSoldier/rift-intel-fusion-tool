@@ -39,7 +39,7 @@ import dev.nohus.rift.push.PushWindow
 import dev.nohus.rift.settings.SettingsInputModel
 import dev.nohus.rift.settings.SettingsWindow
 import dev.nohus.rift.settings.persistence.Settings
-import dev.nohus.rift.settings.persistence.WindowPlacement
+import dev.nohus.rift.settings.persistence.WindowSettings
 import dev.nohus.rift.startupwarning.StartupWarningInputModel
 import dev.nohus.rift.startupwarning.StartupWarningWindow
 import dev.nohus.rift.utils.Pos
@@ -337,7 +337,7 @@ class WindowManager(
      */
     private fun getWindowOpenInfo(window: RiftWindow, forceNew: Boolean): List<WindowInfo> {
         val savedPlacements = if (settings.isRememberWindowPlacement && !forceNew) {
-            settings.windowPlacements[window] ?: listOf(null)
+            settings.windowSettings[window] ?: listOf(null)
         } else {
             listOf(null)
         }
@@ -352,7 +352,7 @@ class WindowManager(
         }
     }
 
-    private fun getWindowOpenSizing(window: RiftWindow, savedPlacement: WindowPlacement?): WindowSizing {
+    private fun getWindowOpenSizing(window: RiftWindow, savedPlacement: WindowSettings?): WindowSizing {
         val saved = savedPlacement?.size?.let { it.width to it.height }
         val windowSizing = when (window) {
             RiftWindow.Neocom -> WindowSizing(defaultSize = saved ?: (160 to 650), minimumSize = 143 to 106)
@@ -391,7 +391,7 @@ class WindowManager(
         )
     }
 
-    private fun getWindowOpenPosition(savedPlacement: WindowPlacement?): WindowPosition {
+    private fun getWindowOpenPosition(savedPlacement: WindowSettings?): WindowPosition {
         val saved = savedPlacement?.position ?: return WindowPosition.PlatformDefault
         return WindowPosition(saved.x.dp, saved.y.dp)
     }
@@ -404,14 +404,21 @@ class WindowManager(
             .filter { (_, state) -> state.windowState.placement != Maximized }
             .groupBy(keySelector = { (window, _) -> window }, valueTransform = { (_, states) -> states })
             .forEach { (window, states) ->
-                val placements = states.map { state ->
-                    WindowPlacement(
+                val existingSettings = settings.windowSettings[window] ?: emptyList()
+                val newSettings = states.map { state ->
+                    val position = state.windowState.position.let { Pos(it.x.value.toInt(), it.y.value.toInt()) }
+                    val size = state.windowState.size.let { Size((it.width.value / scale).toInt(), (it.height.value / scale).toInt()) }
+                    val settings = existingSettings.firstOrNull { it.uuid == state.uuid }
+                    settings?.copy(
+                        position = position,
+                        size = size,
+                    ) ?: WindowSettings(
                         uuid = state.uuid,
-                        position = state.windowState.position.let { Pos(it.x.value.toInt(), it.y.value.toInt()) },
-                        size = state.windowState.size.let { Size((it.width.value / scale).toInt(), (it.height.value / scale).toInt()) },
+                        position = position,
+                        size = size,
                     )
                 }
-                settings.windowPlacements += window to placements
+                settings.windowSettings += window to newSettings
             }
     }
 
