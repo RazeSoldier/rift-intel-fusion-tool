@@ -22,7 +22,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -53,6 +51,7 @@ import dev.nohus.rift.compose.ClickablePlayer
 import dev.nohus.rift.compose.ClickableSystem
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.ExpandChevron
+import dev.nohus.rift.compose.FlagIcon
 import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuArea
@@ -89,18 +88,12 @@ import dev.nohus.rift.generated.resources.contact_faction
 import dev.nohus.rift.generated.resources.contact_standings
 import dev.nohus.rift.generated.resources.contact_tag
 import dev.nohus.rift.generated.resources.contact_watched
-import dev.nohus.rift.generated.resources.flag_background
-import dev.nohus.rift.generated.resources.flag_negative
-import dev.nohus.rift.generated.resources.flag_neutral
-import dev.nohus.rift.generated.resources.flag_positive
 import dev.nohus.rift.generated.resources.region
 import dev.nohus.rift.generated.resources.window_contacts
 import dev.nohus.rift.generated.resources.window_titlebar_tune
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.standings.Standing
-import dev.nohus.rift.standings.StandingUtils
 import dev.nohus.rift.standings.StandingUtils.formatStanding
-import dev.nohus.rift.standings.getFlagColor
 import dev.nohus.rift.utils.toggle
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
@@ -603,41 +596,6 @@ private fun BlockIcon() {
                 painter = painterResource(Res.drawable.contact_blocked),
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun FlagIcon(standing: Float, modifier: Modifier = Modifier) {
-    val level = StandingUtils.getStandingLevel(standing)
-    val tooltip = when (level) {
-        Standing.Terrible -> "Pilot has Terrible Standing"
-        Standing.Bad -> "Pilot has Bad Standing"
-        Standing.Neutral -> "Pilot has No Standing"
-        Standing.Good -> "Pilot has Good Standing"
-        Standing.Excellent -> "Pilot has Excellent Standing"
-    }
-    RiftTooltipArea(tooltip, modifier) {
-        Box(
-            contentAlignment = Alignment.Center,
-        ) {
-            val tint = level.getFlagColor().copy(alpha = 0.75f)
-            Image(
-                painter = painterResource(Res.drawable.flag_background),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(tint),
-                modifier = Modifier.size(12.dp),
-            )
-            val icon = when (level) {
-                Standing.Terrible, Standing.Bad -> Res.drawable.flag_negative
-                Standing.Neutral -> Res.drawable.flag_neutral
-                Standing.Good, Standing.Excellent -> Res.drawable.flag_positive
-            }
-            Image(
-                painter = painterResource(icon),
-                contentDescription = null,
-                modifier = Modifier.size(8.dp),
             )
         }
     }

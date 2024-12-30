@@ -17,6 +17,7 @@ import dev.nohus.rift.push.PushNotificationController
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.repositories.character.CharactersRepository
 import dev.nohus.rift.utils.formatDurationLong
 import dev.nohus.rift.utils.sound.SoundPlayer
@@ -41,6 +42,7 @@ class AlertsActionController(
     private val solarSystemsRepository: SolarSystemsRepository,
     private val typesRepository: TypesRepository,
     private val charactersRepository: CharactersRepository,
+    private val characterDetailsRepository: CharacterDetailsRepository,
     private val windowManager: WindowManager,
     private val contactsRepository: ContactsRepository,
 ) {
@@ -72,6 +74,11 @@ class AlertsActionController(
     fun triggerChatMessageAlert(alert: Alert, chatMessage: ChannelChatMessage, highlight: String?) {
         scope.launch {
             val characterId = charactersRepository.getCharacterId(chatMessage.chatMessage.author)
+            val standing = if (characterId != null) {
+                characterDetailsRepository.getCharacterDetails(characterId)?.standingLevel
+            } else {
+                null
+            }
             val title = "Chat message in ${chatMessage.metadata.channelName}"
             val message = "${chatMessage.chatMessage.author}: ${chatMessage.chatMessage.message}"
             val notification = Notification.ChatMessageNotification(
@@ -82,6 +89,7 @@ class AlertsActionController(
                         highlight = highlight,
                         sender = chatMessage.chatMessage.author,
                         senderCharacterId = characterId,
+                        senderStanding = standing,
                     ),
                 ),
             )

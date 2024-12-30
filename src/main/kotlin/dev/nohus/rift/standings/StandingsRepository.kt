@@ -1,17 +1,22 @@
 package dev.nohus.rift.standings
 
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository.CharacterInfo
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.contacts.ContactsRepository.Contact
 import dev.nohus.rift.contacts.ContactsRepository.EntityType
+import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.StandingUtils.getStandingLevel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 
 @Single
 class StandingsRepository(
+    private val charactersRepository: LocalCharactersRepository,
     private val contactsRepository: ContactsRepository,
     private val settings: Settings,
 ) {
@@ -22,6 +27,8 @@ class StandingsRepository(
         val corporation: Map<Int, Float> = emptyMap(),
         val character: Map<Int, Float> = emptyMap(),
         val friendlyAlliances: Set<Int> = emptySet(),
+        val memberCorporations: Set<Int> = emptySet(),
+        val memberAlliances: Set<Int> = emptySet(),
     )
 
     private val standings get() = settings.standings
@@ -29,20 +36,32 @@ class StandingsRepository(
     suspend fun start() = coroutineScope {
         launch {
             contactsRepository.contacts.collect {
-                updateStandings(it.contacts)
+                updateStandings()
+            }
+        }
+        launch {
+            charactersRepository.characters.debounce(1000).collect {
+                updateStandings()
             }
         }
     }
 
     fun getStandingLevel(allianceId: Int?, corporationId: Int?, characterId: Int?): Standing {
-        return getStandingLevel(getStanding(allianceId, corporationId, characterId))
+        val standing = getStanding(allianceId, corporationId, characterId)
+        return if (standing != null) {
+            getStandingLevel(standing)
+        } else if (allianceId in standings.memberAlliances || corporationId in standings.memberCorporations) {
+            Standing.Excellent
+        } else {
+            Standing.Neutral
+        }
     }
 
-    fun getStanding(allianceId: Int?, corporationId: Int?, characterId: Int?): Float {
+    fun getStanding(allianceId: Int?, corporationId: Int?, characterId: Int?): Float? {
         getStanding(characterId)?.let { return it }
         getStanding(corporationId)?.let { return it }
         getStanding(allianceId)?.let { return it }
-        return 0f
+        return null
     }
 
     private fun getStanding(id: Int?): Float? {
@@ -57,16 +76,19 @@ class StandingsRepository(
         return standings.friendlyAlliances
     }
 
-    private fun updateStandings(contacts: List<Contact>) {
-        val standings = getStandings(contacts)
+    private fun updateStandings() {
+        val contacts = contactsRepository.contacts.value.contacts
+        val characterDetails = charactersRepository.characters.value.mapNotNull { it.info.success }
+        val standings = getStandings(contacts, characterDetails)
         settings.standings = standings
     }
 
-    private fun getStandings(contacts: List<Contact>): Standings {
+    private fun getStandings(contacts: List<Contact>, characterDetails: List<CharacterInfo>): Standings {
         val allianceStandings = mutableMapOf<Int, Float>()
         val corporationStandings = mutableMapOf<Int, Float>()
         val characterStandings = mutableMapOf<Int, Float>()
         val friendlyAlliances = mutableSetOf<Int>()
+
         contacts.forEach { contact ->
             if (contact.standing == 0f) return@forEach
             when (contact.owner.type) {
@@ -79,6 +101,17 @@ class StandingsRepository(
                 friendlyAlliances += contact.entity.id
             }
         }
-        return Standings(allianceStandings, corporationStandings, characterStandings, friendlyAlliances)
+
+        val memberCorporations = characterDetails.mapNotNull { it.corporationId.takeUnless { IdRanges.isNpcCorporation(it) } }.toSet()
+        val memberAlliances = characterDetails.mapNotNull { it.allianceId }.toSet()
+
+        return Standings(
+            allianceStandings,
+            corporationStandings,
+            characterStandings,
+            friendlyAlliances + memberAlliances,
+            memberCorporations,
+            memberAlliances,
+        )
     }
 }

@@ -627,22 +627,29 @@ private fun FormQuestion(
             }
 
             is FormQuestion.ContactsLabelQuestion -> {
-                ScrollbarColumn(
-                    modifier = Modifier.heightIn(max = 200.dp),
-                ) {
-                    var selected: List<Label> by remember { mutableStateOf(emptyList()) }
-                    for (label in labels) {
-                        ListSelectorRow(
-                            text = label.name,
-                            description = label.owner.name,
-                            isMultipleChoice = true,
-                            isSelected = label in selected,
-                            onSelect = {
-                                if (label in selected) selected -= label else selected += label
-                                onFormAnswer(ContactsLabelAnswer(selected))
-                            },
-                        )
+                if (labels.isNotEmpty()) {
+                    ScrollbarColumn(
+                        modifier = Modifier.heightIn(max = 200.dp),
+                    ) {
+                        var selected: List<Label> by remember { mutableStateOf(emptyList()) }
+                        for (label in labels) {
+                            ListSelectorRow(
+                                text = label.name,
+                                description = label.owner.name,
+                                isMultipleChoice = true,
+                                isSelected = label in selected,
+                                onSelect = {
+                                    if (label in selected) selected -= label else selected += label
+                                    onFormAnswer(ContactsLabelAnswer(selected))
+                                },
+                            )
+                        }
                     }
+                } else {
+                    Text(
+                        text = "No contact labels available.\nCheck the Contacts window.",
+                        style = RiftTheme.typography.titlePrimary,
+                    )
                 }
             }
         }

@@ -52,9 +52,9 @@ class MapExternalControl(
 
     fun setOpenedRegions(uuid: UUID, regionIds: List<Int>?) {
         if (regionIds != null) {
-            _openedRegions.value = _openedRegions.value + (uuid to regionIds)
+            _openedRegions.value += (uuid to regionIds)
         } else {
-            _openedRegions.value = _openedRegions.value - uuid
+            _openedRegions.value -= uuid
         }
     }
 
@@ -77,7 +77,7 @@ class MapExternalControl(
             val windows = _openedRegions.value
             windows.filterValues { regionId in it }.keys.firstOrNull() // Open on a map showing this system's region
                 ?: windows.filterValues { it.isEmpty() }.keys.firstOrNull() // Open on a map not showing any region
-                ?: windows.keys.first() // Open on any map
+                ?: windows.keys.firstOrNull() // Open on any map
         } else {
             null
         }

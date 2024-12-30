@@ -53,12 +53,17 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.zIndex
 import dev.nohus.rift.Event
 import dev.nohus.rift.compose.theme.Cursors
+import dev.nohus.rift.compose.theme.LocalRiftColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.compose.theme.getRiftColors
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.menu_close
 import dev.nohus.rift.generated.resources.window_background_dots
+import dev.nohus.rift.generated.resources.window_background_dots_light
+import dev.nohus.rift.generated.resources.window_light_background_off_16px
+import dev.nohus.rift.generated.resources.window_light_background_on_16px
 import dev.nohus.rift.generated.resources.window_locked_16px
 import dev.nohus.rift.generated.resources.window_overlay_fullscreen_off_16px
 import dev.nohus.rift.generated.resources.window_overlay_fullscreen_on_16px
@@ -96,11 +101,14 @@ fun RiftWindow(
     content: @Composable WindowScope.() -> Unit,
 ) {
     val uiScaleController: UiScaleController = remember { koin.get() }
+    val transparentWindowController: TransparentWindowController = remember { koin.get() }
     val windowStatesController: WindowStatesController = remember { koin.get() }
     val scope = rememberCoroutineScope()
-    val isAlwaysOnTop by windowStatesController.isAlwaysOnTop(state.window).collectAsState(false)
-    val isLocked by windowStatesController.isLocked(state.window).collectAsState(false)
-    val isMaximized by windowStatesController.isMaximized(state.window).collectAsState(false)
+    val isAlwaysOnTop by windowStatesController.isAlwaysOnTop(state.window, state.uuid).collectAsState(false)
+    val isLocked by windowStatesController.isLocked(state.window, state.uuid).collectAsState(false)
+    val isTransparent by windowStatesController.isTransparent(state.window, state.uuid).collectAsState(false)
+    val isComposeWindowTransparent = transparentWindowController.isComposeWindowTransparent()
+    val isMaximized by windowStatesController.isMaximized(state.uuid).collectAsState(false)
     Window(
         onCloseRequest = onCloseClick,
         state = state.windowState,
@@ -109,36 +117,45 @@ fun RiftWindow(
         undecorated = true,
         resizable = isResizable && !isLocked,
         alwaysOnTop = isAlwaysOnTop,
+        transparent = isComposeWindowTransparent,
     ) {
         uiScaleController.withScale {
+            transparentWindowController.setTransparency(window, isTransparent)
             MinimumSizeHandler(state)
             BringToFrontHandler(state.bringToFrontEvent)
             CompositionLocalProvider(
                 LocalRiftWindow provides window,
                 LocalRiftWindowState provides state,
+                LocalRiftColors provides getRiftColors(isTransparent && isComposeWindowTransparent),
             ) {
                 RiftWindowContent(
                     title = title,
                     icon = icon,
                     isAlwaysOnTop = isAlwaysOnTop,
                     isLocked = isLocked,
+                    isTransparent = isTransparent,
                     isMaximized = isMaximized,
                     isResizable = isResizable,
                     isMaximizeButtonShown = isMaximizeButtonShown,
                     onTuneClick = onTuneClick,
                     tuneContextMenuItems = tuneContextMenuItems,
                     onAlwaysOnTopClick = if (state.window != null) {
-                        { windowStatesController.toggleAlwaysOnTop(state.window) }
+                        { windowStatesController.toggleAlwaysOnTop(state.window, state.uuid) }
                     } else {
                         null
                     },
                     onLockClick = if (state.window != null) {
-                        { windowStatesController.toggleLocked(state.window) }
+                        { windowStatesController.toggleLocked(state.window, state.uuid) }
+                    } else {
+                        null
+                    },
+                    onTransparentClick = if (state.window != null) {
+                        { windowStatesController.toggleTransparent(state.window, state.uuid) }
                     } else {
                         null
                     },
                     onMaximizeClick = if (state.window != null && isResizable) {
-                        { scope.launch { window.placement = windowStatesController.toggleMaximized(state.window) } }
+                        { scope.launch { window.placement = windowStatesController.toggleMaximized(state.window, state.uuid) } }
                     } else {
                         null
                     },
@@ -200,12 +217,16 @@ fun WindowScope.RiftDialog(
             usePlatformDefaultWidth = false,
         ),
     ) {
-        CompositionLocalProvider(LocalRiftWindowState provides parentState) {
+        CompositionLocalProvider(
+            LocalRiftWindowState provides parentState,
+            LocalRiftColors provides getRiftColors(isTransparent = false),
+        ) {
             RiftWindowContent(
                 title = title,
                 icon = icon,
                 isAlwaysOnTop = false,
                 isLocked = false,
+                isTransparent = false,
                 isMaximized = false,
                 isMaximizeButtonShown = false,
                 isResizable = false,
@@ -213,6 +234,7 @@ fun WindowScope.RiftDialog(
                 tuneContextMenuItems = null,
                 onAlwaysOnTopClick = null,
                 onLockClick = null,
+                onTransparentClick = null,
                 onMaximizeClick = null,
                 onMinimizeClick = { parentState.windowState.isMinimized = true },
                 onCloseClick = onCloseClick,
@@ -236,6 +258,7 @@ private fun WindowScope.RiftWindowContent(
     icon: DrawableResource,
     isAlwaysOnTop: Boolean,
     isLocked: Boolean,
+    isTransparent: Boolean,
     isMaximized: Boolean,
     isResizable: Boolean,
     isMaximizeButtonShown: Boolean,
@@ -243,6 +266,7 @@ private fun WindowScope.RiftWindowContent(
     tuneContextMenuItems: List<ContextMenuItem>?,
     onAlwaysOnTopClick: (() -> Unit)?,
     onLockClick: (() -> Unit)?,
+    onTransparentClick: (() -> Unit)?,
     onMaximizeClick: (() -> Unit)?,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
@@ -264,7 +288,7 @@ private fun WindowScope.RiftWindowContent(
             .size(width, height)
             .pointerHoverIcon(PointerIcon(Cursors.pointer)),
     ) {
-        BackgroundDots(activeTransition, width, height)
+        BackgroundDots(activeTransition, width, height, isTransparent)
         WindowBorder(activeTransition, width, height)
         Column(
             modifier = Modifier.padding(1.dp),
@@ -276,6 +300,7 @@ private fun WindowScope.RiftWindowContent(
                 titleBarContent = titleBarContent,
                 isAlwaysOnTop = isAlwaysOnTop,
                 isLocked = isLocked,
+                isTransparent = isTransparent,
                 isMaximized = isMaximized,
                 isResizable = isResizable,
                 isMaximizeButtonShown = isMaximizeButtonShown,
@@ -283,6 +308,7 @@ private fun WindowScope.RiftWindowContent(
                 tuneContextMenuItems = tuneContextMenuItems,
                 onAlwaysOnTopClick = onAlwaysOnTopClick,
                 onLockClick = onLockClick,
+                onTransparentClick = onTransparentClick,
                 onMaximizeClick = onMaximizeClick,
                 onMinimizeClick = onMinimizeClick,
                 onCloseClick = onCloseClick,
@@ -309,7 +335,7 @@ private fun WindowBorder(
 ) {
     val transitionSpec = getActiveWindowTransitionSpec<Color>()
     val borderColor by activeTransition.animateColor(transitionSpec) {
-        if (it) Color(0xFF1E2022) else Color(0xFF1F1F1F)
+        if (it) RiftTheme.colors.windowBorderActive else RiftTheme.colors.windowBorder
     }
     val activeBorderColor by activeTransition.animateColor(transitionSpec) {
         if (it) RiftTheme.colors.borderPrimary else Color.Transparent
@@ -343,6 +369,7 @@ private fun WindowScope.TitleBar(
     width: Dp,
     isAlwaysOnTop: Boolean,
     isLocked: Boolean,
+    isTransparent: Boolean,
     isMaximized: Boolean,
     isResizable: Boolean,
     isMaximizeButtonShown: Boolean,
@@ -350,6 +377,7 @@ private fun WindowScope.TitleBar(
     tuneContextMenuItems: List<ContextMenuItem>?,
     onAlwaysOnTopClick: (() -> Unit)?,
     onLockClick: (() -> Unit)?,
+    onTransparentClick: (() -> Unit)?,
     onMaximizeClick: (() -> Unit)?,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
@@ -357,10 +385,12 @@ private fun WindowScope.TitleBar(
     val contextMenuItems = getTitleBarContextMenuItems(
         isAlwaysOnTop = isAlwaysOnTop,
         isLocked = isLocked,
+        isTransparent = isTransparent,
         isMaximized = isMaximized,
         isResizable = isResizable,
         onAlwaysOnTopClick = onAlwaysOnTopClick,
         onLockClick = onLockClick,
+        onTransparentClick = onTransparentClick,
         onMinimizeClick = onMinimizeClick,
         onMaximizeClick = onMaximizeClick,
         onCloseClick = onCloseClick,
@@ -379,6 +409,8 @@ private fun WindowScope.TitleBar(
             isAlwaysOnTop = isAlwaysOnTop,
             onLockClick = onLockClick,
             isLocked = isLocked,
+            onTransparentClick = onTransparentClick,
+            isTransparent = isTransparent,
             onMaximizeClick = onMaximizeClick.takeIf { isMaximizeButtonShown || isMaximized },
             isMaximized = isMaximized,
             onMinimizeClick = onMinimizeClick,
@@ -399,6 +431,8 @@ private fun WindowScope.TitleBar(
                 isAlwaysOnTop = isAlwaysOnTop,
                 onLockClick = onLockClick,
                 isLocked = isLocked,
+                onTransparentClick = onTransparentClick,
+                isTransparent = isTransparent,
                 onMaximizeClick = onMaximizeClick.takeIf { isMaximizeButtonShown || isMaximized },
                 isMaximized = isMaximized,
                 onMinimizeClick = onMinimizeClick,
@@ -422,6 +456,8 @@ private fun TitleBar(
     isAlwaysOnTop: Boolean,
     onLockClick: (() -> Unit)?,
     isLocked: Boolean,
+    onTransparentClick: (() -> Unit)?,
+    isTransparent: Boolean,
     onMaximizeClick: (() -> Unit)?,
     isMaximized: Boolean,
     onMinimizeClick: () -> Unit,
@@ -535,6 +571,9 @@ private fun TitleBar(
                 if (onLockClick != null && isLocked) {
                     RiftImageButton(Res.drawable.window_locked_16px, 16.dp, onLockClick)
                 }
+                if (onTransparentClick != null && isTransparent) {
+                    RiftImageButton(Res.drawable.window_light_background_on_16px, 16.dp, onTransparentClick)
+                }
                 if (onMaximizeClick != null) {
                     val maximizeIcon = if (isMaximized) Res.drawable.window_titlebar_fullscreen else Res.drawable.window_titlebar_float
                     RiftImageButton(maximizeIcon, 16.dp, onMaximizeClick)
@@ -549,10 +588,12 @@ private fun TitleBar(
 private fun getTitleBarContextMenuItems(
     isAlwaysOnTop: Boolean,
     isLocked: Boolean,
+    isTransparent: Boolean,
     isMaximized: Boolean,
     isResizable: Boolean,
     onAlwaysOnTopClick: (() -> Unit)?,
     onLockClick: (() -> Unit)?,
+    onTransparentClick: (() -> Unit)?,
     onMaximizeClick: (() -> Unit)?,
     onMinimizeClick: () -> Unit,
     onCloseClick: () -> Unit,
@@ -596,7 +637,26 @@ private fun getTitleBarContextMenuItems(
                 )
             }
         }
-        if (onAlwaysOnTopClick != null || onLockClick != null) {
+        if (onTransparentClick != null) {
+            if (isTransparent) {
+                add(
+                    ContextMenuItem.TextItem(
+                        "Disable transparency",
+                        Res.drawable.window_light_background_on_16px,
+                        onClick = onTransparentClick,
+                    ),
+                )
+            } else {
+                add(
+                    ContextMenuItem.TextItem(
+                        "Enable transparency",
+                        Res.drawable.window_light_background_off_16px,
+                        onClick = onTransparentClick,
+                    ),
+                )
+            }
+        }
+        if (onAlwaysOnTopClick != null || onLockClick != null || onTransparentClick != null) {
             add(ContextMenuItem.DividerItem)
         }
         if (onMaximizeClick != null && isResizable) {
@@ -628,11 +688,18 @@ private fun BackgroundDots(
     activeTransition: Transition<Boolean>,
     width: Dp,
     height: Dp,
+    isTransparent: Boolean,
 ) {
-    val bitmap = imageResource(Res.drawable.window_background_dots)
+    val bitmap = imageResource(if (isTransparent) Res.drawable.window_background_dots_light else Res.drawable.window_background_dots)
     val brush = remember(bitmap) { ShaderBrush(ImageShader(bitmap, TileMode.Repeated, TileMode.Repeated)) }
     val transitionSpec = getActiveWindowTransitionSpec<Float>()
-    val alpha by activeTransition.animateFloat(transitionSpec) { if (it) 1f else 0f }
+    val alpha by activeTransition.animateFloat(transitionSpec) {
+        if (it) {
+            if (isTransparent) 0.1f else 1f
+        } else {
+            0f
+        }
+    }
     Box(Modifier.alpha(alpha).size(width, height).background(brush))
 }
 

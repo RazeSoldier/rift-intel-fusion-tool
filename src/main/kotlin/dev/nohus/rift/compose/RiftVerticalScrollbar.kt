@@ -126,7 +126,7 @@ private fun RiftVerticalScrollbar(
         }
     }
 
-    val background = RiftTheme.colors.windowBackground
+    val background = RiftTheme.colors.windowBackground.copy(alpha = RiftTheme.colors.transparentWindowAlpha)
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier

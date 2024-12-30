@@ -6,7 +6,6 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.CharactersIdAsset
 import dev.nohus.rift.network.esi.CharactersIdAssetLocationType
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.EsiErrorException
 import dev.nohus.rift.network.esi.UniverseStationsId
 import dev.nohus.rift.network.esi.UniverseStructuresId
 import dev.nohus.rift.repositories.TypesRepository
@@ -190,12 +189,8 @@ class AssetsRepository(
             when (result) {
                 is Result.Success -> id to result.data
                 is Result.Failure -> run {
-                    if ((result.cause as? EsiErrorException)?.code == 403) {
-                        structureIds -= id
-                        id to null
-                    } else {
-                        return@coroutineScope result
-                    }
+                    structureIds -= id
+                    id to null
                 }
             }
         }

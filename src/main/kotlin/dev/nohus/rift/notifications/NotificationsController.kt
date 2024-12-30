@@ -14,6 +14,7 @@ import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.notifications.NotificationsController.Notification.ChatMessageNotification
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.standings.Standing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -48,6 +49,7 @@ class NotificationsController(
             val highlight: String?,
             val sender: String,
             val senderCharacterId: Int?,
+            val senderStanding: Standing?,
         )
 
         data class JabberMessageNotification(

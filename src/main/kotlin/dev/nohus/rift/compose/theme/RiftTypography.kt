@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -97,7 +98,11 @@ fun getRiftTypography(colors: RiftColors): RiftTypography {
         fontWeight = FontWeight.Normal,
         fontStyle = FontStyle.Normal,
         letterSpacing = 0.0.sp,
-        shadow = Shadow(offset = Offset(1f, 1f), blurRadius = 0f),
+        shadow = Shadow(
+            offset = Offset(1f, 1f),
+            blurRadius = 0f,
+            color = Color(0xFF000000).copy(alpha = 0.5f),
+        ),
     )
     val caption = base.copy(
         fontSize = 11.sp,

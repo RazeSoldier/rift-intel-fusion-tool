@@ -229,6 +229,9 @@ class CreateAlertViewModel(
             _state.update { it.copy(isPendingAnswerValid = isValid) }
         } else if (answer is PlanetaryIndustryColoniesAnswer) {
             _state.update { it.copy(isPendingAnswerValid = true) }
+        } else if (answer is ContactsLabelAnswer) {
+            val isValid = answer.labels.isNotEmpty()
+            _state.update { it.copy(isPendingAnswerValid = isValid) }
         }
     }
 
