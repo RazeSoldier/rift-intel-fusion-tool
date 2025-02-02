@@ -233,4 +233,12 @@ class Settings(
     var isTrayIconWorking: Boolean
         get() = model.isTrayIconWorking
         set(value) = update { copy(isTrayIconWorking = value) }
+
+    var isWindowTransparencyEnabled: Boolean
+        get() = model.isWindowTransparencyEnabled
+        set(value) = update { copy(isWindowTransparencyEnabled = value) }
+
+    var windowTransparencyModifier: Float
+        get() = model.windowTransparencyModifier
+        set(value) = update { copy(windowTransparencyModifier = value) }
 }

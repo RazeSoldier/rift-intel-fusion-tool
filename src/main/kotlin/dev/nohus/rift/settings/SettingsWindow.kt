@@ -165,6 +165,10 @@ private fun SettingsWindowContent(
                     onIsDisplayEveTimeChanged = viewModel::onIsDisplayEveTimeChanged,
                     isUsingDarkTrayIcon = state.isUsingDarkTrayIcon,
                     onIsUsingDarkTrayIconChanged = viewModel::onIsUsingDarkTrayIconChanged,
+                    isWindowTransparencyEnabled = state.isWindowTransparencyEnabled,
+                    onWindowTransparencyChanged = viewModel::onIsWindowTransparencyChanged,
+                    windowTransparencyModifier = state.windowTransparencyModifier,
+                    onWindowTransparencyModifierChanged = viewModel::onWindowTransparencyModifierChanged,
                     uiScale = state.uiScale,
                     onUiScaleChanged = viewModel::onUiScaleChanged,
                 )
@@ -240,6 +244,10 @@ private fun UserInterfaceSection(
     onIsDisplayEveTimeChanged: (Boolean) -> Unit,
     isUsingDarkTrayIcon: Boolean,
     onIsUsingDarkTrayIconChanged: (Boolean) -> Unit,
+    isWindowTransparencyEnabled: Boolean,
+    onWindowTransparencyChanged: (Boolean) -> Unit,
+    windowTransparencyModifier: Float,
+    onWindowTransparencyModifierChanged: (Float) -> Unit,
     uiScale: Float,
     onUiScaleChanged: (Float) -> Unit,
 ) {
@@ -270,6 +278,29 @@ private fun UserInterfaceSection(
         tooltip = "Enable to use a dark tray icon,\nif you prefer it.",
         isChecked = isUsingDarkTrayIcon,
         onCheckedChange = onIsUsingDarkTrayIconChanged,
+        modifier = Modifier.padding(bottom = Spacing.small),
+    )
+    RiftCheckboxWithLabel(
+        label = "Enable transparent windows",
+        tooltip = "Enable to be able to set\nwindows transparent.",
+        isChecked = isWindowTransparencyEnabled,
+        onCheckedChange = onWindowTransparencyChanged,
+    )
+    RiftDropdownWithLabel(
+        label = "Window transparency:",
+        items = listOf(0f, 0.25f, 0.5f, 0.75f, 1f),
+        selectedItem = windowTransparencyModifier,
+        onItemSelected = onWindowTransparencyModifierChanged,
+        getItemName = {
+            when (it) {
+                0f -> "Maximal"
+                0.25f -> "High"
+                0.5f -> "Medium"
+                0.75f -> "Low"
+                1f -> "Minimal"
+                else -> "Custom"
+            }
+        },
     )
     RiftDropdownWithLabel(
         label = "UI scale:",

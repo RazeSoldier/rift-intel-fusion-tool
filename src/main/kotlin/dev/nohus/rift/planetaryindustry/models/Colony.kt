@@ -20,6 +20,7 @@ data class Colony(
     val pins: List<Pin>,
     val routes: List<Route>,
     val status: ColonyStatus,
+    val overview: ColonyOverview,
 ) {
     fun clone(): Colony {
         return copy(

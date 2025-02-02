@@ -1,6 +1,7 @@
 package dev.nohus.rift.planetaryindustry
 
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.View.DetailsView
@@ -11,6 +12,7 @@ import dev.nohus.rift.settings.persistence.ColonySortingFilter
 import dev.nohus.rift.settings.persistence.ColonyView
 import dev.nohus.rift.settings.persistence.PlanetaryIndustry
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.Clipboard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -21,6 +23,7 @@ import java.time.Instant
 @Single
 class PlanetaryIndustryViewModel(
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
+    private val accountAssociationsRepository: AccountAssociationsRepository,
     private val settings: Settings,
 ) : ViewModel() {
 
@@ -109,15 +112,26 @@ class PlanetaryIndustryViewModel(
         _state.update { it.copy(sortingFilter = sorting, colonies = it.colonies.map { it.sort(sorting) }) }
     }
 
+    fun onCopyData(type: CopyType) {
+        _state.value.colonies.success?.let { colonies ->
+            val text = SpreadsheetFormatter.format(type, colonies)
+            Clipboard.copy(text)
+        }
+    }
+
     private fun List<ColonyItem>.sort(sorting: ColonySortingFilter): List<ColonyItem> {
+        val accountSelector: (ColonyItem) -> Comparable<*> = {
+            accountAssociationsRepository.getAssociations()[it.colony.characterId] ?: 0
+        }
         val characterSelector: (ColonyItem) -> Comparable<*> = { it.colony.characterId }
         val statusSelector: (ColonyItem) -> Comparable<*> = { it.colony.status.order }
         val expiryTimeSelector: (ColonyItem) -> Comparable<*> = { item ->
             item.ffwdColony.currentSimTime.takeIf { it.isAfter(item.colony.currentSimTime) } ?: Instant.MAX
         }
+        val planetSelector: (ColonyItem) -> Comparable<*> = { it.colony.planet.id }
         return when (sorting) {
             ColonySortingFilter.Character -> {
-                sortedWith(compareBy(characterSelector, statusSelector, expiryTimeSelector))
+                sortedWith(compareBy(accountSelector, characterSelector, planetSelector))
             }
 
             ColonySortingFilter.Status -> {

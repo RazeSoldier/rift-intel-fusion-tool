@@ -38,7 +38,7 @@ class ChatLogsObserver(
     private val logFilesMutex = Mutex()
     private var activeLogFiles: Map<String, ChatLogFileMetadata> = emptyMap() // String is the filename
     private var onMessageCallback: ((ChannelChatMessage) -> Unit)? = null
-    private val recentMessages = mutableListOf<ChatMessage>()
+    private val handledMessageHashes = mutableSetOf<Int>()
     private val readingOffsets = mutableMapOf<Path, Long>() // Seek offset of already read portion
     private val handlingNewMessageMutex = Mutex()
 
@@ -169,24 +169,12 @@ class ChatLogsObserver(
 
     private suspend fun handleNewMessage(message: ChatMessage, metadata: ChatLogFileMetadata) {
         handlingNewMessageMutex.withLock {
-            val now = Instant.now()
-            val veryRecentMessages = recentMessages.takeLastWhile { recentMessage ->
-                val age = Duration.between(recentMessage.timestamp, now)
-                age < Duration.ofSeconds(2)
-            }
-            val isDuplicated = veryRecentMessages.any { it.author == message.author && it.message == message.message }
-            saveRecentMessage(message, veryRecentMessages)
+            val hash = message.hashCode()
+            val isDuplicated = hash in handledMessageHashes
+            handledMessageHashes += hash
             if (!isDuplicated) {
                 onMessageCallback?.invoke(ChannelChatMessage(message, metadata))
             }
-        }
-    }
-
-    private fun saveRecentMessage(message: ChatMessage, veryRecentMessages: List<ChatMessage>) {
-        recentMessages += message
-        if (recentMessages.size >= 25) {
-            recentMessages.clear()
-            recentMessages += veryRecentMessages
         }
     }
 }

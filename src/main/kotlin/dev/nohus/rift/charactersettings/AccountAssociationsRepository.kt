@@ -33,6 +33,9 @@ class AccountAssociationsRepository(
         }
     }
 
+    /**
+     * Returns a map of Character ID -> Account ID
+     */
     fun getAssociations(): Map<Int, Int> = settings.accountAssociations
 
     fun associate(characterId: Int, accountId: Int) {

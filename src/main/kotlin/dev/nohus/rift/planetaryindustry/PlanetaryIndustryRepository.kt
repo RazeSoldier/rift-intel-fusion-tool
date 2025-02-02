@@ -11,6 +11,7 @@ import dev.nohus.rift.planetaryindustry.models.Pin
 import dev.nohus.rift.planetaryindustry.models.PinStatus
 import dev.nohus.rift.planetaryindustry.models.Route
 import dev.nohus.rift.planetaryindustry.models.Usage
+import dev.nohus.rift.planetaryindustry.models.getColonyOverview
 import dev.nohus.rift.planetaryindustry.models.getColonyStatus
 import dev.nohus.rift.planetaryindustry.models.getCpuPowerSupply
 import dev.nohus.rift.planetaryindustry.models.getCpuPowerUsage
@@ -174,7 +175,7 @@ class PlanetaryIndustryRepository(
                         val existing = _colonies.value.success ?: emptyMap()
                         val updatedColonies = result.value.map { new ->
                             val old = existing[new.id]
-                            if (old != null && old.colony.checkpointSimTime >= new.checkpointSimTime) {
+                            if (old != null && old.colony.checkpointSimTime >= new.checkpointSimTime && old.characterName != null) {
                                 new.id to old
                             } else {
                                 new.id to toItem(new, new)
@@ -273,6 +274,7 @@ class PlanetaryIndustryRepository(
                 pins = pins,
                 routes = routes,
                 status = getColonyStatus(pins),
+                overview = getColonyOverview(routes, pins),
             )
         }
         AsyncResource.Ready(coloniesWithDetails)
