@@ -18,8 +18,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
 import java.awt.Component
-import java.awt.GraphicsDevice
-import java.awt.GraphicsEnvironment
 import java.awt.peer.WindowPeer
 import kotlin.math.max
 
@@ -35,14 +33,6 @@ class TransparentWindowController(
      * This is only read once at startup and won't change until a restart
      */
     val isEnabled = settings.isWindowTransparencyEnabled
-
-    init {
-        val device = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
-        val perPixelTransparent = device.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSPARENT)
-        val perPixelTranslucent = device.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSLUCENT)
-        val translucent = device.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT)
-        logger.info { "Window translucency supported: perPixelTransparent: $perPixelTransparent, perPixelTranslucent: $perPixelTranslucent, translucent: $translucent" }
-    }
 
     /**
      * Compose-level window transparency is disabled on Linux

@@ -26,12 +26,16 @@ class CharacterActivityRepository(
         val emptyEtag = getEmptyPortraitEtag() ?: return Active(characterId) // Cannot check, assume active
         val etag = getPortraitEtag(characterId) ?: return Active(characterId) // Cannot check, assume active
         return if (etag != emptyEtag) {
+            // Has logged in since Incarna (2011)
             if (zKillboardActiveCharacters != null) {
+                // But hasn't appeared on a killmail in the last 90 days
                 Inactive(characterId)
             } else {
-                Active(characterId) // Assume active if we don't have zKillboard data
+                // Assume active if we don't have zKillboard data
+                Active(characterId)
             }
         } else {
+            // Not logged in since Incarna (2011)
             Dormant(characterId)
         }
     }

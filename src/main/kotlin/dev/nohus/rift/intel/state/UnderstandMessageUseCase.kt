@@ -58,7 +58,7 @@ class UnderstandMessageUseCase(
 
         val deferredCharacterDetails = tokens
             .asSequence()
-            .flatMap { it.types }
+            .mapNotNull { it.type }
             .filterIsInstance<TokenType.Player>()
             .map { it.characterId }
             .distinct()
@@ -68,12 +68,11 @@ class UnderstandMessageUseCase(
         val characterDetails = deferredCharacterDetails.awaitAll().filterNotNull().associateBy { it.characterId }
 
         tokens
-            .filter { it.types.isNotEmpty() }
+            .filter { it.type != null }
             .map map@{ token ->
-                val effectiveTypes = token.types.filter { it !is TokenType.Link }
-                if (effectiveTypes.isEmpty()) return@map
+                val type = token.type ?: return@map
                 val text = token.words.joinToString(" ")
-                when (val type = effectiveTypes.singleOrNull()) {
+                when (type) {
                     is TokenType.Count -> {
                         if (type.isPlus) {
                             entities += UnspecifiedCharacter(type.count)
@@ -119,7 +118,6 @@ class UnderstandMessageUseCase(
                     is TokenType.Ship -> entities += Ship(type.name, type.count)
                     is TokenType.System -> systems += type.name
                     TokenType.Url -> {}
-                    null -> throw IllegalArgumentException("More than one type: ${token.types}")
                 }
             }
 

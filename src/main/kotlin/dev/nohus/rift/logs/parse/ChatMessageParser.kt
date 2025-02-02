@@ -83,7 +83,7 @@ class ChatMessageParser(
         Location, ShipTypes, Number, Status
     }
 
-    data class Token(
+    data class MultiTypeToken(
         val words: List<String>,
         val types: List<TokenType>,
     ) {
@@ -96,8 +96,18 @@ class ChatMessageParser(
         }
     }
 
+    data class Token(
+        val words: List<String>,
+        val type: TokenType?,
+        val isLink: Boolean,
+    ) {
+        override fun toString(): String {
+            return "\"${words.joinToString(" ")}\" $type${if (isLink) " Link" else ""}"
+        }
+    }
+
     data class Parsing(
-        val tokens: List<Token>,
+        val tokens: List<MultiTypeToken>,
         val remainingWords: List<String>,
     )
 
@@ -200,7 +210,7 @@ class ChatMessageParser(
         if (replaced.startsWith(" ")) replaced = replaced.dropWhile { it == ' ' }
         val collapsed = collapseMultipleSpaces(replaced)
         val words = collapsed.split(" ")
-        val completeParsings = mutableListOf<List<Token>>()
+        val completeParsings = mutableListOf<List<MultiTypeToken>>()
         val incompleteParsings = LinkedHashSet<Parsing>()
         incompleteParsings += Parsing(tokens = emptyList(), remainingWords = words)
 
@@ -210,7 +220,7 @@ class ChatMessageParser(
         while (incompleteParsings.isNotEmpty()) {
             if (incompleteParsings.size > MAX_INCOMPLETE_TOKENIZATIONS) {
                 // This text has an unusual number of branching tokenizations, do not continue parsing
-                return@coroutineScope setOf(listOf(Token(words, types = listOf())))
+                return@coroutineScope setOf(listOf(Token(words, type = null, isLink = false)))
             }
 
             val parsing = incompleteParsings.first()
@@ -237,7 +247,7 @@ class ChatMessageParser(
                 if (token.any { it.isBlank() }) break
 
                 val types = getPossibleTokenTypes(token, characterNamesStatus, regionsHint)
-                val newToken = Token(token, types = types)
+                val newToken = MultiTypeToken(token, types = types)
                 var tokens = parsing.tokens + newToken
                 val isAtEnd = wordsToConsume == parsing.remainingWords.size
 
@@ -272,7 +282,7 @@ class ChatMessageParser(
             .flatMap { listOf(it.take(1), it.take(2), it.take(3)).map { it.joinToString(" ") } }
             .filterNot { it.startsWith(" ") || it.endsWith(" ") || it.contains("  ") }
             .filter(characterNameValidator::isValid)
-            .toSet()
+            .distinct()
             .toList()
     }
 
@@ -284,7 +294,7 @@ class ChatMessageParser(
         return squashedMessage
     }
 
-    private fun findKillMail(tokens: List<Token>, characterNamesStatus: Map<String, CharacterStatus>): List<Token> {
+    private fun findKillMail(tokens: List<MultiTypeToken>, characterNamesStatus: Map<String, CharacterStatus>): List<MultiTypeToken> {
         return if (tokens.size >= 3) {
             val threeTokens = tokens.takeLast(3)
             val (t1, t2, t3) = threeTokens
@@ -294,7 +304,7 @@ class ChatMessageParser(
                 val target = t3.words.joinToString(" ").removePrefix("(").removeSuffix(")")
                 val words = threeTokens.flatMap { it.words }
                 val characterId = (characterNamesStatus[player] as? CharacterStatus.Exists)?.characterId
-                tokens.dropLast(3) + Token(words, types = listOf(Kill(player, characterId, target)))
+                tokens.dropLast(3) + MultiTypeToken(words, types = listOf(Kill(player, characterId, target)))
             } else {
                 tokens
             }
@@ -303,7 +313,7 @@ class ChatMessageParser(
         }
     }
 
-    private fun findGates(tokens: List<Token>): List<Token> {
+    private fun findGates(tokens: List<MultiTypeToken>): List<MultiTypeToken> {
         if (tokens.size >= 2) {
             val lastTokens = tokens.takeLast(2)
             val system = lastTokens.mapNotNull { it.types.filterIsInstance<System>().firstOrNull() }.singleOrNull()?.name
@@ -312,14 +322,14 @@ class ChatMessageParser(
                 val isGate = other == "gate"
                 val isAnsiblex = other in listOf("ansiblex", "ansi")
                 if (isGate || isAnsiblex) {
-                    return tokens.dropLast(2) + Token(lastTokens.flatMap { it.words }, types = listOf(Gate(system, isAnsiblex)))
+                    return tokens.dropLast(2) + MultiTypeToken(lastTokens.flatMap { it.words }, types = listOf(Gate(system, isAnsiblex)))
                 }
             }
         }
         return tokens
     }
 
-    private fun findMovement(tokens: List<Token>, isAtEnd: Boolean): List<Token> {
+    private fun findMovement(tokens: List<MultiTypeToken>, isAtEnd: Boolean): List<MultiTypeToken> {
         val keywords = listOf("going", "jumped", "jumping")
         if (tokens.size >= 2) {
             val lastTokens = tokens.takeLast(2)
@@ -327,7 +337,7 @@ class ChatMessageParser(
                 val gate = lastTokens[1].types.filterIsInstance<Gate>().first()
                 val before = lastTokens[0].words.joinToString(" ")
                 if (before.lowercase() in keywords) {
-                    return tokens.dropLast(2) + Token(lastTokens.flatMap { it.words }, types = listOf(Movement(before, gate.system, isGate = true)))
+                    return tokens.dropLast(2) + MultiTypeToken(lastTokens.flatMap { it.words }, types = listOf(Movement(before, gate.system, isGate = true)))
                 }
             }
         }
@@ -338,7 +348,7 @@ class ChatMessageParser(
                     val system = lastTokens[1].types.filterIsInstance<System>().first().name
                     val before = lastTokens[0].words.joinToString(" ")
                     if (before.lowercase() in keywords) {
-                        return tokens.dropLast(2) + Token(lastTokens.flatMap { it.words }, types = listOf(Movement(before, system, isGate = false)))
+                        return tokens.dropLast(2) + MultiTypeToken(lastTokens.flatMap { it.words }, types = listOf(Movement(before, system, isGate = false)))
                     }
                 }
             }
@@ -349,7 +359,7 @@ class ChatMessageParser(
                     val system = lastTokens[1].types.filterIsInstance<System>().first().name
                     val before = lastTokens[0].words.joinToString(" ")
                     if (before.lowercase() in keywords) {
-                        return tokens.dropLast(3) + Token(lastTokens.flatMap { it.words }, types = listOf(Movement(before, system, isGate = false))) + lastTokens.last()
+                        return tokens.dropLast(3) + MultiTypeToken(lastTokens.flatMap { it.words }, types = listOf(Movement(before, system, isGate = false))) + lastTokens.last()
                     }
                 }
             }
@@ -357,7 +367,7 @@ class ChatMessageParser(
         return tokens
     }
 
-    private fun findShipCounts(tokens: List<Token>): List<Token> {
+    private fun findShipCounts(tokens: List<MultiTypeToken>): List<MultiTypeToken> {
         if (tokens.size >= 2) {
             run {
                 val (count, ship) = tokens.takeLast(2)
@@ -421,7 +431,7 @@ class ChatMessageParser(
         }
     }
 
-    private fun findQuestions(tokens: List<Token>): List<Token> {
+    private fun findQuestions(tokens: List<MultiTypeToken>): List<MultiTypeToken> {
         val token = tokens.last()
         val originalText = token.words.joinToString(" ")
         val text = originalText.lowercase()
@@ -435,17 +445,17 @@ class ChatMessageParser(
         }
     }
 
-    private fun findMergeablePlainText(tokens: List<Token>): List<Token> {
+    private fun findMergeablePlainText(tokens: List<MultiTypeToken>): List<MultiTypeToken> {
         return if (tokens.size >= 4) {
             // Last two are potentially going to be used for a 3-token find (e.g. killmail)
-            mergePlainTextTokens(tokens.dropLast(2)) + tokens.takeLast(2)
+            mergePlainTextMultiTypeTokens(tokens.dropLast(2)) + tokens.takeLast(2)
         } else {
             tokens
         }
     }
 
-    private fun filterCharactersUntilDone(parsing: List<Token>, characterNamesStatus: Map<String, CharacterStatus>): List<Token> {
-        var previous: List<Token>
+    private fun filterCharactersUntilDone(parsing: List<MultiTypeToken>, characterNamesStatus: Map<String, CharacterStatus>): List<MultiTypeToken> {
+        var previous: List<MultiTypeToken>
         var new = parsing
         do {
             previous = new
@@ -454,12 +464,12 @@ class ChatMessageParser(
         return new
     }
 
-    private fun filterCharacters(parsing: List<Token>, characterNamesStatus: Map<String, CharacterStatus>): List<Token> {
+    private fun filterCharacters(parsing: List<MultiTypeToken>, characterNamesStatus: Map<String, CharacterStatus>): List<MultiTypeToken> {
         return buildList {
             for ((index, token) in parsing.withIndex()) {
                 if (token.types.any { it is Player }) {
                     val fullText = token.words.joinToString(" ")
-                    val status = characterNamesStatus[fullText]!! // TODO
+                    val status = characterNamesStatus.getValue(fullText)
                     if (status is CharacterStatus.Dormant) {
                         // Character is dormant, ignore
                         add(token.copy(types = token.types.filterNot { it is Player }))
@@ -507,18 +517,18 @@ class ChatMessageParser(
         }
     }
 
-    private fun filterMultiTypes(parsing: List<Token>, regionsHint: List<String>): List<Token> {
-        // TODO: We could expose tokens with a single type instead of list of types after this
+    private fun filterMultiTypes(parsing: List<MultiTypeToken>, regionsHint: List<String>): List<Token> {
         return buildList {
             for (token in parsing) {
+                val isLink = token.types.any { it is Link }
                 if (token.types.any { it is Ship } && token.types.any { it is System }) {
                     // Token is both a system and a ship (Naga)
                     val otherTokens = parsing - token
                     val hasOtherSystem = otherTokens.any { it.types.any { it is System } }
                     if (hasOtherSystem) {
-                        add(token.copy(types = token.types.filterIsInstance<Ship>()))
+                        add(Token(token.words, token.types.filterIsInstance<Ship>().first(), isLink))
                     } else {
-                        add(token.copy(types = token.types.filterIsInstance<System>()))
+                        add(Token(token.words, token.types.filterIsInstance<System>().first(), isLink))
                     }
                     continue
                 }
@@ -528,27 +538,45 @@ class ChatMessageParser(
                         .firstOrNull { solarSystemsRepository.getRegionBySystem(it.name) in regionsHint }
                     if (inRegionSystem != null) {
                         // If the system is in this region, choose the system
-                        add(token.copy(types = listOf(inRegionSystem)))
+                        add(Token(token.words, type = inRegionSystem, isLink))
                     } else {
                         // Otherwise choose the player
-                        add(token.copy(types = token.types.filterIsInstance<Player>()))
+                        add(Token(token.words, type = token.types.filterIsInstance<Player>().first(), isLink))
                     }
                     continue
                 }
-                if (token.types.singleOrNull() == Link) {
-                    add(token.copy(types = emptyList()))
-                    continue
+                val type = token.types.firstOrNull { it !is Link }
+                add(
+                    Token(
+                        words = token.words,
+                        type = type,
+                        isLink = isLink && type != null,
+                    ),
+                )
+            }
+        }
+    }
+
+    private fun mergePlainTextMultiTypeTokens(parsing: List<MultiTypeToken>): List<MultiTypeToken> {
+        return buildList<MultiTypeToken> {
+            for (token in parsing) {
+                val new = if (token.types.isEmpty() && lastOrNull()?.types?.isEmpty() == true) {
+                    val merged = MultiTypeToken(last().words + token.words, types = emptyList())
+                    removeLast()
+                    merged
+                } else {
+                    token
                 }
-                add(token)
+                add(new)
             }
         }
     }
 
     private fun mergePlainTextTokens(parsing: List<Token>): List<Token> {
-        return buildList {
+        return buildList<Token> {
             for (token in parsing) {
-                val new = if (token.types.isEmpty() && lastOrNull()?.types?.isEmpty() == true) {
-                    val merged = Token(last().words + token.words, types = emptyList())
+                val new = if (token.type == null && lastOrNull().let { it != null && it.type == null }) {
+                    val merged = Token(last().words + token.words, type = null, isLink = false)
                     removeLast()
                     merged
                 } else {

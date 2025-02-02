@@ -21,9 +21,9 @@ import java.time.Instant
 
 @Single
 class IntelStateController(
-    private val understandMessageUseCase: UnderstandMessageUseCase,
     private val settings: Settings,
     private val alertsTriggerController: AlertsTriggerController,
+    private val intelConversationMerger: IntelConversationMerger,
 ) {
 
     data class Dated<T>(
@@ -32,6 +32,7 @@ class IntelStateController(
     )
 
     private val systemContents = mutableMapOf<String, List<Dated<SystemEntity>>>()
+
     private val mutex = Mutex()
     private val _state = MutableStateFlow<Map<String, List<Dated<SystemEntity>>>>(emptyMap())
     val state = _state.asStateFlow()
@@ -67,7 +68,7 @@ class IntelStateController(
         if (!isIntelChannel(message.metadata.channelName)) return
 
         val timestamp = message.chatMessage.timestamp
-        val understanding = understandMessageUseCase(message.parsed)
+        val understanding = intelConversationMerger.merge(message, context)
         if (Duration.between(timestamp, Instant.now()) < Duration.ofMinutes(2)) {
             alertsTriggerController.onNewIntel(message, understanding)
             alertsTriggerController.onNewIntelMessage(message)
@@ -110,14 +111,11 @@ class IntelStateController(
                 updateSystemEntities(timestamp, system, removeExisting = isSystemExplicit, entities)
                 removeMovedCharacters(system, entities.filterIsInstance<Character>())
             }
-        } else { // No system in message or context
+        } else { // No system in message or context, or this was a question
             // TODO: Could be a continuation of a previous message or answer to a question
         }
         if (understanding.kills.isNotEmpty()) {
             removeKilledCharacters(understanding.kills.map { it.name })
-        }
-        if (understanding.questions.isNotEmpty()) {
-            // TODO: Remember questions
         }
         removeEmptyEntities()
         removeEmptySystems()
@@ -131,7 +129,7 @@ class IntelStateController(
     ): List<ParsedChannelChatMessage> {
         return context.filter { previousMessage ->
             val characterIdsInPreviousMessage = previousMessage.parsed
-                .flatMap { it.types }
+                .map { it.type }
                 .filterIsInstance<ChatMessageParser.TokenType.Player>()
                 .map { it.characterId }
             characterIds.all { it in characterIdsInPreviousMessage }
@@ -142,7 +140,7 @@ class IntelStateController(
         messages: List<ParsedChannelChatMessage>,
     ): String? {
         return messages.firstNotNullOfOrNull { message ->
-            message.parsed.flatMap { it.types }.filterIsInstance<ChatMessageParser.TokenType.System>().lastOrNull()?.name
+            message.parsed.map { it.type }.filterIsInstance<ChatMessageParser.TokenType.System>().lastOrNull()?.name
         }
     }
 

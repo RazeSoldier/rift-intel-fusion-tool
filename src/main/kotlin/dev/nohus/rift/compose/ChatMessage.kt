@@ -3,13 +3,11 @@ package dev.nohus.rift.compose
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -20,7 +18,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.onClick
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,8 +53,6 @@ import dev.nohus.rift.generated.resources.keywords_systems
 import dev.nohus.rift.generated.resources.keywords_wormhole
 import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.reports.settings.IntelReportsSettings
-import dev.nohus.rift.logs.parse.ChatLogFileMetadata
-import dev.nohus.rift.logs.parse.ChatMessage
 import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
@@ -70,7 +65,6 @@ import dev.nohus.rift.utils.toURIOrNull
 import org.jetbrains.compose.resources.painterResource
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -194,10 +188,10 @@ private fun Message(
     ) {
         metadata()
         for (token in tokens) {
-            val types = token.types.filter { it !is Link }
+            val type = token.type
             val text = token.words.joinToString(" ")
-            if (types.size == 1) {
-                when (val type = types.single()) {
+            if (type != null) {
+                when (type) {
                     is TokenType.Count -> TokenWithCount(settings.rowHeight, text)
                     is TokenType.Keyword -> TokenWithKeyword(settings.rowHeight, type.type)
                     is TokenType.Kill -> TokenWithKill(settings.rowHeight, type)
@@ -208,13 +202,11 @@ private fun Message(
                     is TokenType.System -> TokenWithSystem(settings.rowHeight, settings.isShowingSystemDistance, settings.isUsingJumpBridgesForDistance, type.name)
                     TokenType.Url -> TokenWithUrl(settings.rowHeight, text)
                     is TokenType.Gate -> {
-                        val fromSystem = tokens.mapNotNull { it.types.filterIsInstance<TokenType.System>().firstOrNull() }.singleOrNull()?.name
+                        val fromSystem = tokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.name }
                         TokenWithGate(settings.rowHeight, fromSystem, type.system, type.isAnsiblex)
                     }
                     is TokenType.Movement -> TokenWithMovement(settings.rowHeight, tokens, type)
                 }
-            } else if (types.size > 1) {
-                TokenWithText(settings.rowHeight, text, "Multi")
             } else {
                 TokenWithPlainText(settings.rowHeight, text)
             }
@@ -361,7 +353,7 @@ private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, moveme
         )
         if (movement.isGate) {
             VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-            val systemFrom = previousTokens.mapNotNull { it.types.filterIsInstance<TokenType.System>().firstOrNull() }.lastOrNull()?.name
+            val systemFrom = previousTokens.firstNotNullOf { (it.type as? TokenType.System)?.name }
             GateIcon(
                 isAnsiblex = false,
                 fromSystem = systemFrom,
@@ -552,74 +544,6 @@ private fun TokenWithKill(rowHeight: Dp, token: TokenType.Kill) {
                     modifier = Modifier.padding(4.dp),
                 )
             }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun ParsedMessagePreview() {
-    fun String.token(vararg types: TokenType): Token {
-        return Token(split(" "), types = types.toList())
-    }
-    val settings = IntelReportsSettings(
-        displayTimezone = ZoneId.systemDefault(),
-        isUsingCompactMode = false,
-        isShowingReporter = true,
-        isShowingChannel = true,
-        isShowingRegion = true,
-        isShowingSystemDistance = true,
-        isUsingJumpBridgesForDistance = true,
-    )
-
-    MaterialTheme {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            val message = ParsedChannelChatMessage(
-                ChatMessage(Instant.now(), "Player One", ""),
-                listOf("Delve"),
-                ChatLogFileMetadata("", "Intel", "", 0, "", null, null),
-                listOf(
-                    "ssllss1".token(TokenType.Player(1), Link),
-                    "Yaakov Y2".token(TokenType.Player(1)),
-                    "2x".token(TokenType.Count(2)),
-                    "capsule".token(TokenType.Ship("Capsule"), Link),
-                    "319-3D".token(TokenType.System("319-3D")),
-                ),
-            )
-            ChatMessage(settings, message, null)
-
-            val message2 = ParsedChannelChatMessage(
-                ChatMessage(Instant.now(), "Player Two", ""),
-                listOf("Delve"),
-                ChatLogFileMetadata("", "Intel", "", 0, "", null, null),
-                listOf(
-                    "ssllss1".token(TokenType.Player(1), Link),
-                    "Yaakov Y2".token(TokenType.Player(1)),
-                    "very long text that will not fit".token(),
-                    "2x".token(TokenType.Count(2)),
-                    "capsule".token(TokenType.Ship("Capsule"), Link),
-                    "319-3D".token(TokenType.System("319-3D")),
-                ),
-            )
-            ChatMessage(settings, message2, null)
-
-            val message3 = ParsedChannelChatMessage(
-                ChatMessage(Instant.now(), "Player Three", ""),
-                listOf("Delve"),
-                ChatLogFileMetadata("", "Intel", "", 0, "", null, null),
-                listOf(
-                    "ssllss1".token(TokenType.Player(1), Link),
-                    "Yaakov Y2".token(TokenType.Player(1)),
-                    "very long text that will not fit even on a whole separate line, but will make the pill multiline".token(),
-                    "2x".token(TokenType.Count(2)),
-                    "capsule".token(TokenType.Ship("Capsule"), Link),
-                    "319-3D".token(TokenType.System("319-3D")),
-                ),
-            )
-            ChatMessage(settings, message3, null)
         }
     }
 }

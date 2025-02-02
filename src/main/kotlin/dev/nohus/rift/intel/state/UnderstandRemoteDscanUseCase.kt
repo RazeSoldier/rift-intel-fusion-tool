@@ -26,7 +26,7 @@ class UnderstandRemoteDscanUseCase(
      */
     suspend operator fun invoke(tokens: List<ChatMessageParser.Token>): List<SystemEntity> {
         val urls = tokens
-            .filter { it.types.any { it is ChatMessageParser.TokenType.Url } }
+            .filter { it.type is ChatMessageParser.TokenType.Url }
             .mapNotNull { it.words.singleOrNull() }
 
         val aDashboardId = urls.firstNotNullOfOrNull {

@@ -111,7 +111,7 @@ class IntelReportsViewModel(
 
     private operator fun ParsedChannelChatMessage.contains(term: String): Boolean {
         if (term in chatMessage.message.lowercase()) return true
-        return parsed.flatMap { it.types }.any { token ->
+        return parsed.mapNotNull { it.type }.any { token ->
             when (token) {
                 is ChatMessageParser.TokenType.Count -> false
                 is ChatMessageParser.TokenType.Gate -> term in token.system.lowercase()

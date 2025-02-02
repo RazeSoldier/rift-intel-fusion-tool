@@ -359,7 +359,7 @@ class ContactsRepository(
         if (isNpcAgent(contactId)) return null
         val entity = Entity(
             id = contactId,
-            name = names[contactId] ?: contactId.toString(), // TODO
+            name = names[contactId] ?: contactId.toString(),
             type = when (contactType) {
                 ContactTypeDto.Character -> EntityType.Character
                 ContactTypeDto.Corporation -> EntityType.Corporation
@@ -369,13 +369,13 @@ class ContactsRepository(
         )
         val owner = Entity(
             id = ownerId,
-            name = names[ownerId] ?: ownerId.toString(), // TODO
+            name = names[ownerId] ?: ownerId.toString(),
             type = ownerType,
         )
         return Contact(
             entity = entity,
             owner = owner,
-            labels = labelIds?.mapNotNull { labels[it] } ?: emptyList(), // TODO
+            labels = labelIds?.mapNotNull { labels[it] } ?: emptyList(),
             isBlocked = isBlocked == true,
             isWatched = isWatched == true,
             standing = standing,
