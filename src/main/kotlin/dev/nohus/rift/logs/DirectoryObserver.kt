@@ -36,6 +36,7 @@ private val logger = KotlinLogging.logger {}
 @Factory
 class DirectoryObserver(
     private val operatingSystem: OperatingSystem,
+    private val windowsFilePoker: WindowsFilePoker,
 ) {
 
     enum class FileEventType {
@@ -71,7 +72,7 @@ class DirectoryObserver(
         watchJob = launch {
             if (operatingSystem == OperatingSystem.Windows) {
                 launch(Dispatchers.IO) {
-                    pokeFiles(directory)
+                    windowsFilePoker.pokeFiles(directory)
                 }
             } else if (operatingSystem == OperatingSystem.MacOs) {
                 launch(Dispatchers.IO) {
@@ -91,24 +92,6 @@ class DirectoryObserver(
                     }
                     yield()
                 }
-            }
-        }
-    }
-
-    /**
-     * On Windows the file modification events are not consistently delivered.
-     * Asking for the file size triggers Windows to deliver the event.
-     */
-    private suspend fun pokeFiles(path: Path) {
-        while (true) {
-            val recentFiles = path.toFile().listFiles()
-                ?.filter {
-                    Duration.between(Instant.ofEpochMilli(it.lastModified()), Instant.now()) < Duration.ofHours(2)
-                }
-                ?: emptyList()
-            repeat(100) { // 100 * 200 == 20 seconds
-                recentFiles.forEach { it.length() }
-                delay(200)
             }
         }
     }

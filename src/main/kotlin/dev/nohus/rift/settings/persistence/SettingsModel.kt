@@ -70,6 +70,7 @@ data class SettingsModel(
     val isTrayIconWorking: Boolean = false,
     val isWindowTransparencyEnabled: Boolean = false,
     val windowTransparencyModifier: Float = 1f,
+    val isSmartAlwaysAbove: Boolean = false,
 )
 
 @Serializable

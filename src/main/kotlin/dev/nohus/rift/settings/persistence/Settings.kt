@@ -241,4 +241,8 @@ class Settings(
     var windowTransparencyModifier: Float
         get() = model.windowTransparencyModifier
         set(value) = update { copy(windowTransparencyModifier = value) }
+
+    var isSmartAlwaysAbove: Boolean
+        get() = model.isSmartAlwaysAbove
+        set(value) = update { copy(isSmartAlwaysAbove = value) }
 }

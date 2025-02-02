@@ -13,6 +13,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -32,6 +35,7 @@ import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.CreatorCode
 import dev.nohus.rift.compose.LinkText
+import dev.nohus.rift.compose.MouseButton
 import dev.nohus.rift.compose.Patrons
 import dev.nohus.rift.compose.RiftAppName
 import dev.nohus.rift.compose.RiftButton
@@ -39,6 +43,7 @@ import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
+import dev.nohus.rift.compose.onMouseClick
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
@@ -76,6 +81,7 @@ fun AboutWindow(
         AboutWindowContent(
             state = state,
             onUpdateClick = viewModel::onUpdateClick,
+            onLogLiteClick = viewModel::onLogLiteClick,
             onDebugClick = viewModel::onDebugClick,
             onAppDataClick = viewModel::onAppDataClick,
             onLegalClick = viewModel::onLegalClick,
@@ -153,6 +159,7 @@ fun AboutWindow(
 private fun AboutWindowContent(
     state: UiState,
     onUpdateClick: () -> Unit,
+    onLogLiteClick: () -> Unit,
     onDebugClick: () -> Unit,
     onAppDataClick: () -> Unit,
     onLegalClick: () -> Unit,
@@ -269,7 +276,7 @@ private fun AboutWindowContent(
                     )
 
                     Text(
-                        text = "© 2023–2024 Nohus",
+                        text = "© 2023–2025 Nohus",
                         style = RiftTheme.typography.bodySecondary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
@@ -284,11 +291,23 @@ private fun AboutWindowContent(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
             modifier = Modifier.align(Alignment.End),
         ) {
+            var isLogLiteVisible by remember { mutableStateOf(false) }
+            if (isLogLiteVisible) {
+                RiftButton(
+                    text = "LogLite",
+                    type = ButtonType.Secondary,
+                    cornerCut = ButtonCornerCut.None,
+                    onClick = onLogLiteClick,
+                )
+            }
             RiftButton(
                 text = "Debug",
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.None,
                 onClick = onDebugClick,
+                modifier = Modifier.onMouseClick(MouseButton.Right) {
+                    isLogLiteVisible = true
+                },
             )
             RiftButton(
                 text = "App data",

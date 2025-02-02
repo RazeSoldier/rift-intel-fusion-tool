@@ -10,12 +10,15 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.clones.ClonesRepository
+import dev.nohus.rift.compose.SmartAlwaysAboveRepository
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogWatcher
 import dev.nohus.rift.intel.ChatLogWatcher
 import dev.nohus.rift.jabber.client.StartJabberUseCase
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.logging.analytics.Analytics
+import dev.nohus.rift.loglite.LogLiteParser
+import dev.nohus.rift.loglite.LogLiteServer
 import dev.nohus.rift.map.MapJumpRangeController
 import dev.nohus.rift.network.killboard.KillboardObserver
 import dev.nohus.rift.pings.PingsRepository
@@ -25,6 +28,7 @@ import dev.nohus.rift.repositories.character.ZkillboardRecentActivityRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.StandingsRepository
 import dev.nohus.rift.utils.ResetSparkleUpdateCheckUseCase
+import dev.nohus.rift.utils.activewindow.ActiveEveWindowRepository
 import dev.nohus.rift.utils.sound.SoundPlayer
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -57,6 +61,10 @@ class BackgroundProcesses(
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
     private val planetaryInteractionAlertTriggerController: PlanetaryInteractionAlertTriggerController,
     private val zkillboardRecentActivityRepository: ZkillboardRecentActivityRepository,
+    private val activeEveWindowRepository: ActiveEveWindowRepository,
+    private val smartAlwaysAboveRepository: SmartAlwaysAboveRepository,
+    private val logLiteServer: LogLiteServer,
+    private val logLiteParser: LogLiteParser,
     private val settings: Settings,
 ) {
 
@@ -137,6 +145,18 @@ class BackgroundProcesses(
             }
             launch {
                 zkillboardRecentActivityRepository.start()
+            }
+            launch {
+                activeEveWindowRepository.start()
+            }
+            launch {
+                smartAlwaysAboveRepository.start()
+            }
+            launch {
+                logLiteServer.start()
+            }
+            launch {
+                logLiteParser.start()
             }
         }
     }

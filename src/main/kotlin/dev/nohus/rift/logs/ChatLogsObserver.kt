@@ -33,12 +33,12 @@ class ChatLogsObserver(
     private val directoryObserver: DirectoryObserver,
     private val matchChatLogFilenameUseCase: MatchChatLogFilenameUseCase,
     private val logFileParser: ChatLogFileParser,
+    private val messageDeduplicator: MessageDeduplicator,
 ) {
     private val logFiles = mutableListOf<ChatLogFile>()
     private val logFilesMutex = Mutex()
     private var activeLogFiles: Map<String, ChatLogFileMetadata> = emptyMap() // String is the filename
     private var onMessageCallback: ((ChannelChatMessage) -> Unit)? = null
-    private val handledMessageHashes = mutableSetOf<Int>()
     private val readingOffsets = mutableMapOf<Path, Long>() // Seek offset of already read portion
     private val handlingNewMessageMutex = Mutex()
 
@@ -169,10 +169,7 @@ class ChatLogsObserver(
 
     private suspend fun handleNewMessage(message: ChatMessage, metadata: ChatLogFileMetadata) {
         handlingNewMessageMutex.withLock {
-            val hash = message.hashCode()
-            val isDuplicated = hash in handledMessageHashes
-            handledMessageHashes += hash
-            if (!isDuplicated) {
+            if (!messageDeduplicator.isDuplicate(message)) {
                 onMessageCallback?.invoke(ChannelChatMessage(message, metadata))
             }
         }

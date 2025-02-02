@@ -350,6 +350,20 @@ object WhatsNew {
                 - The window transparency feature now has a global toggle in settings. It defaults to disabled, so enable it to use it again.
                 - Window transparency strength can now be controlled, so you can choose how much transparency you want
             """.trimIndent(),
+            "4.20.0" description """
+                -! New "smart always above" setting
+                - Enabling it will make the always above toggle on windows only apply when you have an EVE client focused. This means you can keep RIFT windows on top of EVE windows, but not on top of other windows when you switch away from the game.
+                
+                - RIFT can now follow conversations across multiple messages in intel channels, and understand when a message is an answer to an earlier relevant question
+                - The Assets window now shows the total volume of your assets per station. The total uses the repackaged volumes.
+                - The Planetary Industry spreadsheet export now includes average extracted per hour figures for every extracted commodity
+                - Setting an autopilot destination in-game will now show your route on the RIFT map
+                - Exequror and Brutix Navy Issues are now recognized in intel reports when reported as ENI and BNI
+                - Optimized watching log files on Windows to prevent slowdowns for people with huge amounts of log files
+                - Optimized reading game logs to be much faster, especially in longer game sessions
+                - Updated duplicate chat message handling to work better when multiboxed chat logs that have inconsistent timestamps
+                - Associating characters with accounts for the settings copying feature was improved to work in more cases
+            """.trimIndent(),
         ).reversed()
     }
 }

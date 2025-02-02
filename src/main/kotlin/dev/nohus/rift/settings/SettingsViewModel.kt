@@ -58,6 +58,7 @@ class SettingsViewModel(
         val isEditNotificationWindowOpen: Boolean = false,
         val notificationEditPlacement: Pos? = null,
         val isUsingDarkTrayIcon: Boolean,
+        val isSmartAlwaysAbove: Boolean,
         val soundsVolume: Int,
         val configurationPack: ConfigurationPack?,
         val dialogMessage: DialogMessage? = null,
@@ -85,6 +86,7 @@ class SettingsViewModel(
             isRememberWindowPlacement = settings.isRememberWindowPlacement,
             notificationEditPlacement = settings.notificationEditPosition,
             isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
+            isSmartAlwaysAbove = settings.isSmartAlwaysAbove,
             soundsVolume = settings.soundsVolume,
             configurationPack = settings.configurationPack,
             uiScale = settings.uiScale,
@@ -111,6 +113,7 @@ class SettingsViewModel(
                         isRememberWindowPlacement = settings.isRememberWindowPlacement,
                         notificationEditPlacement = settings.notificationEditPosition,
                         isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
+                        isSmartAlwaysAbove = settings.isSmartAlwaysAbove,
                         soundsVolume = settings.soundsVolume,
                         configurationPack = settings.configurationPack,
                         uiScale = settings.uiScale,
@@ -256,6 +259,10 @@ class SettingsViewModel(
             showRestartRequiredDialog("New tray icon will take effect after you restart the application.")
             settings.isUsingDarkTrayIcon = enabled
         }
+    }
+
+    fun onIsSmartAlwaysAboveChanged(enabled: Boolean) {
+        settings.isSmartAlwaysAbove = enabled
     }
 
     fun onIsWindowTransparencyChanged(enabled: Boolean) {

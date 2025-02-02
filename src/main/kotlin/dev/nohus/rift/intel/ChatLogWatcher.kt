@@ -2,6 +2,7 @@ package dev.nohus.rift.intel
 
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.intel.state.IntelStateController
+import dev.nohus.rift.intel.state.UnderstandMessageUseCase
 import dev.nohus.rift.location.LocalSystemChangeController
 import dev.nohus.rift.logs.ChatLogsObserver
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
@@ -38,6 +39,7 @@ class ChatLogWatcher(
     private val intelStateController: IntelStateController,
     private val localSystemChangeController: LocalSystemChangeController,
     private val alertsTriggerController: AlertsTriggerController,
+    private val understandMessageUseCase: UnderstandMessageUseCase,
 ) {
 
     private val _channelChatMessages = MutableStateFlow<List<ParsedChannelChatMessage>>(emptyList())
@@ -95,11 +97,13 @@ class ChatLogWatcher(
                                 val parsings = chatMessageParser.parse(channelChatMessage.chatMessage.message, regions)
                                 if (parsings.isNotEmpty()) {
                                     val bestParsing = chooseChatMessageTokenizationUseCase(parsings)
+                                    val understanding = understandMessageUseCase(bestParsing)
                                     val parsed = ParsedChannelChatMessage(
                                         chatMessage = channelChatMessage.chatMessage,
                                         channelRegions = regions,
                                         metadata = channelChatMessage.metadata,
                                         parsed = bestParsing,
+                                        understanding = understanding,
                                     )
 
                                     val context = getMessageContext(parsed)

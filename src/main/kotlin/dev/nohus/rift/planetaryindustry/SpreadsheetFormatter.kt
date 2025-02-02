@@ -4,14 +4,19 @@ import dev.nohus.rift.planetaryindustry.CopyType.Excel
 import dev.nohus.rift.planetaryindustry.CopyType.ExcelWithAddin
 import dev.nohus.rift.planetaryindustry.CopyType.GoogleSheets
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
+import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Extracting
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Idle
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NeedsAttention
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NotSetup
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Producing
+import dev.nohus.rift.planetaryindustry.models.Pin
 import dev.nohus.rift.planetaryindustry.models.PinStatus
-import kotlin.math.max
+import dev.nohus.rift.planetaryindustry.simulation.ExtractionSimulation.Companion.getProgramOutputPrediction
+import dev.nohus.rift.repositories.TypesRepository.Type
+import java.time.Duration
+import kotlin.math.roundToInt
 
 object SpreadsheetFormatter {
 
@@ -24,6 +29,7 @@ object SpreadsheetFormatter {
     }
 
     private fun formatForGoogleSheets(items: List<ColonyItem>): String {
+        val extractedTypes = getAllExtractedTypes(items)
         val rows = items.joinToString("\n") { item ->
             val colony = item.colony
             val finalProducts = colony.overview.finalProducts.joinToString(",") { it.name }
@@ -33,6 +39,7 @@ object SpreadsheetFormatter {
             val otherUsedCapacity = String.format("%.02f", colony.overview.otherUsedCapacity)
             val expiryTimestamp = getGoogleSheetsExpiryTimestamp(item)
             val expiryReasons = getExpiryReason(item.ffwdColony.status)
+            val averagesPerHourExtracted = getAveragesPerHourExtracted(colony)
             listOf(
                 item.characterName,
                 colony.characterId,
@@ -49,6 +56,7 @@ object SpreadsheetFormatter {
                 otherUsedCapacity,
                 expiryTimestamp,
                 expiryReasons,
+                *extractedTypes.map { averagesPerHourExtracted[it] ?: 0 }.toTypedArray(),
             ).joinToString(separator = "\t")
         }
         val headers = listOf(
@@ -67,11 +75,13 @@ object SpreadsheetFormatter {
             "Used capacity (other)",
             "Expires at",
             "Expiry reason",
+            *extractedTypes.map { "Avg. per hour (${it.name})" }.toTypedArray(),
         ).joinToString("\t")
         return "$headers\n$rows"
     }
 
     private fun formatForExcel(items: List<ColonyItem>): String {
+        val extractedTypes = getAllExtractedTypes(items)
         val rows = items.joinToString("\n") { item ->
             val colony = item.colony
             val finalProducts = colony.overview.finalProducts.joinToString(",") { it.name }
@@ -81,6 +91,7 @@ object SpreadsheetFormatter {
             val otherUsedCapacity = String.format("%.02f", colony.overview.otherUsedCapacity)
             val expiryTimestamp = getExcelExpiryTimestamp(item)
             val expiryReasons = getExpiryReason(item.ffwdColony.status)
+            val averagesPerHourExtracted = getAveragesPerHourExtracted(colony)
             listOf(
                 item.characterName,
                 colony.characterId,
@@ -97,6 +108,7 @@ object SpreadsheetFormatter {
                 otherUsedCapacity,
                 expiryTimestamp,
                 expiryReasons,
+                *extractedTypes.map { averagesPerHourExtracted[it] ?: 0 }.toTypedArray(),
             ).joinToString(separator = "\t")
         }
         val headers = listOf(
@@ -115,24 +127,26 @@ object SpreadsheetFormatter {
             "Used capacity (other)",
             "Expires at (Date)",
             "Expiry reason",
+            *extractedTypes.map { "Avg. per hour (${it.name})" }.toTypedArray(),
         ).joinToString("\t")
         return "$headers\n$rows"
     }
 
     private fun formatForExcelWithAddin(items: List<ColonyItem>): String {
-        var maxFinalProducts = 0
+        val extractedTypes = getAllExtractedTypes(items)
+        val maxFinalProducts = items.maxOf { it.colony.overview.finalProducts.size }
         val rows = items.joinToString("\n") { item ->
             val colony = item.colony
             val finalProducts = colony.overview.finalProducts.map {
                 "=EVEONLINE.TYPE(${it.id})"
             }.toTypedArray()
-            maxFinalProducts = max(maxFinalProducts, finalProducts.size)
             val status = colony.status.getDisplayName()
             val totalUsedCapacity = String.format("%.02f", colony.overview.finalProductsUsedCapacity + colony.overview.otherUsedCapacity)
             val finalProductsUsedCapacity = String.format("%.02f", colony.overview.finalProductsUsedCapacity)
             val otherUsedCapacity = String.format("%.02f", colony.overview.otherUsedCapacity)
             val expiryTimestamp = getExcelExpiryTimestamp(item)
             val expiryReasons = getExpiryReason(item.ffwdColony.status)
+            val averagesPerHourExtracted = getAveragesPerHourExtracted(colony)
             listOf(
                 "=EVEONLINE.CHARACTER(${colony.characterId})",
                 colony.planet.name,
@@ -141,12 +155,14 @@ object SpreadsheetFormatter {
                 status,
                 colony.status.isWorking,
                 *finalProducts,
+                *List(maxFinalProducts - finalProducts.size) { "" }.toTypedArray(),
                 colony.overview.capacity,
                 totalUsedCapacity,
                 finalProductsUsedCapacity,
                 otherUsedCapacity,
                 expiryTimestamp,
                 expiryReasons,
+                *extractedTypes.map { averagesPerHourExtracted[it] ?: 0 }.toTypedArray(),
             ).joinToString(separator = "\t")
         }
         val headers = listOf(
@@ -163,8 +179,21 @@ object SpreadsheetFormatter {
             "Used capacity (other)",
             "Expires at (Date)",
             "Expiry reason",
+            *extractedTypes.map { "Avg. per hour (${it.name})" }.toTypedArray(),
         ).joinToString("\t")
         return "$headers\n$rows"
+    }
+
+    private fun getAllExtractedTypes(items: List<ColonyItem>): List<Type> {
+        return items.flatMap { item ->
+            item.colony.pins.filterIsInstance<Pin.Extractor>().mapNotNull { it.productType }
+        }.distinct()
+    }
+
+    private fun getAveragesPerHourExtracted(colony: Colony): Map<Type, Int> {
+        return colony.pins.filterIsInstance<Pin.Extractor>().mapNotNull { extractor ->
+            extractor.productType?.let { it to (extractor.getAveragePerHour() ?: 0) }
+        }.groupBy { it.first }.mapValues { entry -> entry.value.sumOf { it.second } }
     }
 
     private fun ColonyStatus.getDisplayName() = when (this) {
@@ -204,5 +233,19 @@ object SpreadsheetFormatter {
         } else {
             status.pins.map { it.status.getDisplayName() }.distinct().joinToString(",")
         }
+    }
+
+    private fun Pin.Extractor.getAveragePerHour(): Int? {
+        if (isActive) {
+            if (installTime != null && expiryTime != null && baseValue != null && cycleTime != null) {
+                val totalProgramDuration = Duration.between(installTime, expiryTime)
+                val totalCycles = (totalProgramDuration.toSeconds() / cycleTime.toSeconds()).toInt()
+                val prediction = getProgramOutputPrediction(baseValue, cycleTime, totalCycles)
+                val totalMined = prediction.sum()
+                val averagePerHour = (totalMined / totalProgramDuration.toHours().toFloat()).roundToInt()
+                return averagePerHour
+            }
+        }
+        return null
     }
 }

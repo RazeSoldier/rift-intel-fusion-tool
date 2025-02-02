@@ -30,6 +30,7 @@ import dev.nohus.rift.intel.reports.IntelReportsWindow
 import dev.nohus.rift.intel.reports.settings.IntelReportsSettingsWindow
 import dev.nohus.rift.jabber.JabberInputModel
 import dev.nohus.rift.jabber.JabberWindow
+import dev.nohus.rift.loglite.LogLiteWindow
 import dev.nohus.rift.map.MapWindow
 import dev.nohus.rift.map.settings.MapSettingsWindow
 import dev.nohus.rift.neocom.NeocomWindow
@@ -117,6 +118,9 @@ class WindowManager(
 
         @SerialName("Debug")
         Debug,
+
+        @SerialName("LogLite")
+        LogLite,
 
         @SerialName("Fleets")
         Fleets,
@@ -232,6 +236,7 @@ class WindowManager(
                             RiftWindow.Assets -> AssetsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Assets, state.uuid) })
                             RiftWindow.WhatsNew -> WhatsNewWindow(state, onCloseRequest = { onWindowClose(RiftWindow.WhatsNew, state.uuid) })
                             RiftWindow.Debug -> DebugWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Debug, state.uuid) })
+                            RiftWindow.LogLite -> LogLiteWindow(state, onCloseRequest = { onWindowClose(RiftWindow.LogLite, state.uuid) })
                             RiftWindow.Fleets -> FleetsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Fleets, state.uuid) })
                             RiftWindow.PlanetaryIndustry -> PlanetaryIndustryWindow(state, onCloseRequest = { onWindowClose(RiftWindow.PlanetaryIndustry, state.uuid) })
                             RiftWindow.StartupWarning -> StartupWarningWindow(state.inputModel as? StartupWarningInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.StartupWarning, state.uuid) })
@@ -372,6 +377,7 @@ class WindowManager(
             RiftWindow.Assets -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = (500 to 300))
             RiftWindow.WhatsNew -> WindowSizing(defaultSize = (450 to 600), minimumSize = (450 to 600))
             RiftWindow.Debug -> WindowSizing(defaultSize = saved ?: (450 to 500), minimumSize = (450 to 500))
+            RiftWindow.LogLite -> WindowSizing(defaultSize = saved ?: (1200 to 600), minimumSize = (1000 to 500))
             RiftWindow.Fleets -> WindowSizing(defaultSize = saved ?: (300 to 300), minimumSize = 300 to 300)
             RiftWindow.PlanetaryIndustry -> WindowSizing(defaultSize = saved ?: (540 to 800), minimumSize = 540 to 360)
             RiftWindow.StartupWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))

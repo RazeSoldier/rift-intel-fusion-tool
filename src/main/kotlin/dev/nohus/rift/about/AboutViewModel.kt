@@ -85,6 +85,10 @@ class AboutViewModel(
         updateController.triggerUpdate()
     }
 
+    fun onLogLiteClick() {
+        windowManager.onWindowOpen(RiftWindow.LogLite)
+    }
+
     fun onDebugClick() {
         windowManager.onWindowOpen(RiftWindow.Debug)
     }

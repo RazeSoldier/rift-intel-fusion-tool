@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +48,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
 import dev.nohus.rift.configurationpack.displayName
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.deleteicon
 import dev.nohus.rift.generated.resources.window_settings
@@ -56,6 +56,8 @@ import dev.nohus.rift.notifications.NotificationEditWindow
 import dev.nohus.rift.settings.SettingsViewModel.UiState
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.IntelChannel
+import dev.nohus.rift.utils.OperatingSystem
+import dev.nohus.rift.utils.OperatingSystem.MacOs
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import javax.swing.JFileChooser
@@ -81,7 +83,6 @@ fun SettingsWindow(
             inputModel = inputModel,
             state = state,
             viewModel = viewModel,
-            onDoneClick = onCloseRequest,
         )
 
         state.dialogMessage?.let {
@@ -106,7 +107,6 @@ private fun SettingsWindowContent(
     inputModel: SettingsInputModel,
     state: UiState,
     viewModel: SettingsViewModel,
-    onDoneClick: () -> Unit,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -165,6 +165,8 @@ private fun SettingsWindowContent(
                     onIsDisplayEveTimeChanged = viewModel::onIsDisplayEveTimeChanged,
                     isUsingDarkTrayIcon = state.isUsingDarkTrayIcon,
                     onIsUsingDarkTrayIconChanged = viewModel::onIsUsingDarkTrayIconChanged,
+                    isSmartAlwaysAbove = state.isSmartAlwaysAbove,
+                    onIsSmartAlwaysAboveChanged = viewModel::onIsSmartAlwaysAboveChanged,
                     isWindowTransparencyEnabled = state.isWindowTransparencyEnabled,
                     onWindowTransparencyChanged = viewModel::onIsWindowTransparencyChanged,
                     windowTransparencyModifier = state.windowTransparencyModifier,
@@ -193,15 +195,6 @@ private fun SettingsWindowContent(
                     onShowSetupWizardOnNextStartChanged = viewModel::onShowSetupWizardOnNextStartChanged,
                 )
             }
-
-            Spacer(Modifier.weight(1f))
-            RiftButton(
-                text = "Done",
-                onClick = onDoneClick,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(top = Spacing.medium),
-            )
         }
     }
 }
@@ -244,6 +237,8 @@ private fun UserInterfaceSection(
     onIsDisplayEveTimeChanged: (Boolean) -> Unit,
     isUsingDarkTrayIcon: Boolean,
     onIsUsingDarkTrayIconChanged: (Boolean) -> Unit,
+    isSmartAlwaysAbove: Boolean,
+    onIsSmartAlwaysAboveChanged: (Boolean) -> Unit,
     isWindowTransparencyEnabled: Boolean,
     onWindowTransparencyChanged: (Boolean) -> Unit,
     windowTransparencyModifier: Float,
@@ -280,6 +275,15 @@ private fun UserInterfaceSection(
         onCheckedChange = onIsUsingDarkTrayIconChanged,
         modifier = Modifier.padding(bottom = Spacing.small),
     )
+    if (koin.get<OperatingSystem>() != MacOs) {
+        RiftCheckboxWithLabel(
+            label = "Smart always above",
+            tooltip = "Windows set to \"always above\" will\nonly be on top while an EVE client is focused.",
+            isChecked = isSmartAlwaysAbove,
+            onCheckedChange = onIsSmartAlwaysAboveChanged,
+            modifier = Modifier.padding(bottom = Spacing.small),
+        )
+    }
     RiftCheckboxWithLabel(
         label = "Enable transparent windows",
         tooltip = "Enable to be able to set\nwindows transparent.",

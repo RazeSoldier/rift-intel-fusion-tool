@@ -4,6 +4,8 @@ import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.location.CharacterLocationRepository
+import dev.nohus.rift.loglite.ClientLogLiteAction
+import dev.nohus.rift.loglite.LogLiteAction
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.repositories.GetRouteUseCase
 import dev.nohus.rift.settings.persistence.Settings
@@ -65,6 +67,15 @@ class AutopilotController(
         getTargetCharacters().forEach { characterId ->
             scope.launch {
                 clearRoute(characterId)
+            }
+        }
+    }
+
+    fun onLogLiteAction(clientAction: ClientLogLiteAction) {
+        if (clientAction.action is LogLiteAction.AutopilotPath) {
+            activeCharacterRepository.activeCharacter.value?.let { characterId ->
+                logger.info { "Autopilot path set from LogLite: ${clientAction.action}" }
+                _activeRoutes.value += (characterId to Route(clientAction.action.ids))
             }
         }
     }

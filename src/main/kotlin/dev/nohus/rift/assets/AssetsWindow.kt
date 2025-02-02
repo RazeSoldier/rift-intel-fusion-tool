@@ -67,6 +67,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.utils.formatIsk
+import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -270,9 +271,12 @@ private fun LocationHeader(
                     append(location.name)
                     append(" - ")
                     append("${assets.size} Item${if (assets.size != 1) "s" else ""}")
-                    val totalPrice = assets.sumOf { getTotalPrice(it) }
                     append(" - ")
+                    val totalPrice = assets.sumOf { getTotalPrice(it) }
                     append(formatIsk(totalPrice))
+                    append(" - ")
+                    val totalVolume = assets.sumOf { getTotalVolume(it) }
+                    append(formatNumberCompact(totalVolume) + " m3")
                     location.distance?.let {
                         append(" - ")
                         append("Route: $it Jump${if (it != 1) "s" else ""}")
@@ -457,4 +461,11 @@ private fun getTotalPrice(asset: Asset): Double {
     val price = asset.price?.let { it * asset.asset.quantity } ?: 0.0
     val childrenPrice = asset.children.sumOf { getTotalPrice(it) }
     return price + childrenPrice
+}
+
+private fun getTotalVolume(asset: Asset): Double {
+    val volume = asset.type?.repackagedVolume?.toFloat() ?: asset.type?.volume
+    val totalVolume = volume?.let { it * asset.asset.quantity } ?: 0f
+    val childrenVolume = asset.children.sumOf { getTotalVolume(it) }
+    return totalVolume + childrenVolume
 }

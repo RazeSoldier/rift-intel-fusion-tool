@@ -103,7 +103,9 @@ fun RiftWindow(
     val uiScaleController: UiScaleController = remember { koin.get() }
     val transparentWindowController: TransparentWindowController = remember { koin.get() }
     val windowStatesController: WindowStatesController = remember { koin.get() }
+    val smartAlwaysAboveRepository: SmartAlwaysAboveRepository = remember { koin.get() }
     val scope = rememberCoroutineScope()
+    val isAlwaysOnTopActive by smartAlwaysAboveRepository.isActive.collectAsState(false)
     val isAlwaysOnTop by windowStatesController.isAlwaysOnTop(state.window, state.uuid).collectAsState(false)
     val isLocked by windowStatesController.isLocked(state.window, state.uuid).collectAsState(false)
     val isTransparent by windowStatesController.isTransparent(state.window, state.uuid).collectAsState(false)
@@ -116,11 +118,12 @@ fun RiftWindow(
         icon = painterResource(icon),
         undecorated = true,
         resizable = isResizable && !isLocked,
-        alwaysOnTop = isAlwaysOnTop,
+        alwaysOnTop = isAlwaysOnTop && isAlwaysOnTopActive,
         transparent = isComposeWindowTransparent,
     ) {
         uiScaleController.withScale {
             transparentWindowController.setTransparency(window, isTransparent)
+            smartAlwaysAboveRepository.registerWindow()
             MinimumSizeHandler(state)
             BringToFrontHandler(state.bringToFrontEvent)
             CompositionLocalProvider(

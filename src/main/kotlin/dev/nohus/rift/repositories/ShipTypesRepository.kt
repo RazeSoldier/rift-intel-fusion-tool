@@ -67,6 +67,8 @@ class ShipTypesRepository(
             "trasher" to "Thrasher",
             "auguror" to "Augoror",
             "porp" to "Porpoise",
+            "bni" to "Brutix Navy Issue",
+            "eni" to "Exequror Navy Issue",
         )
         navyVariants = mapOf(
             "Slicer" to "Imperial Navy Slicer",
