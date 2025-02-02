@@ -213,7 +213,7 @@ class WizardViewModel(
     private fun getCharactersStep(): WizardStep.Characters {
         val characters = localCharactersRepository.characters.value
         val characterCount = characters.count()
-        val authenticatedCharacterCount = characters.count { it.isAuthenticated }
+        val authenticatedCharacterCount = characters.count { it.scopes.isNotEmpty() }
         return WizardStep.Characters(characterCount, authenticatedCharacterCount)
     }
 

@@ -8,6 +8,7 @@ import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.authentication.NoAuthenticationException
 import dev.nohus.rift.sso.authentication.SsoAuthenticator
 import dev.nohus.rift.sso.authentication.SsoException
+import dev.nohus.rift.sso.scopes.EsiScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +22,7 @@ private val logger = KotlinLogging.logger {}
 
 interface RequestExecutor {
     suspend fun <R : Any> execute(request: suspend () -> R): Result<R>
-    suspend fun <R : Any> executeEveAuthorized(characterId: Int, request: suspend (authentication: String) -> R): Result<R>
+    suspend fun <R : Any> executeEveAuthorized(characterId: Int, scope: EsiScope?, request: suspend (authentication: String) -> R): Result<R>
 }
 
 class RequestExecutorImpl(
@@ -42,10 +43,11 @@ class RequestExecutorImpl(
 
     override suspend fun <R : Any> executeEveAuthorized(
         characterId: Int,
+        scope: EsiScope?,
         request: suspend (authorization: String) -> R,
     ): Result<R> {
         return try {
-            val accessToken = ssoAuthenticator.getValidEveAccessToken(characterId)
+            val accessToken = ssoAuthenticator.getValidEveAccessToken(characterId, scope)
             Success(withContext(Dispatchers.IO) { request("Bearer $accessToken") })
         } catch (e: Exception) {
             handleError(e, characterId)
@@ -56,7 +58,11 @@ class RequestExecutorImpl(
         if (e is SsoException) {
             logger.error { "Could not execute request due to SSO failure: $e" }
         } else if (e is NoAuthenticationException) {
-            logger.error { "Could not execute request because the character ${e.characterId} is not authenticated" }
+            if (e.scope != null) {
+                logger.error { "Could not execute request because the character ${e.characterId} does not allow scope \"${e.scope.id}\"" }
+            } else {
+                logger.error { "Could not execute request because the character ${e.characterId} is not authenticated" }
+            }
         } else if (e is HttpException) {
             val body = e.response()?.errorBody()?.string()
             if (!body.isNullOrBlank()) {

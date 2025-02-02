@@ -7,6 +7,7 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.LocationType
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
@@ -47,7 +48,7 @@ class ClonesRepository(
     suspend fun start() = coroutineScope {
         launch {
             localCharactersRepository.characters
-                .map { characters -> characters.filter { it.isAuthenticated }.map { it.characterId } }
+                .map { characters -> characters.filter { ScopeGroups.readClones in it.scopes }.map { it.characterId } }
                 .distinctUntilChanged()
                 .debounce(500)
                 .collect {
@@ -109,7 +110,9 @@ class ClonesRepository(
     }
 
     private suspend fun updateClones() {
-        val characterIds = localCharactersRepository.characters.value.filter { it.isAuthenticated }.map { it.characterId }
+        val characterIds = localCharactersRepository.characters.value
+            .filter { ScopeGroups.readClones in it.scopes }
+            .map { it.characterId }
         val clones = getClones(characterIds)
         if (clones != null) {
             _clones.value = clones

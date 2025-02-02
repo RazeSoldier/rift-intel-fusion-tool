@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -38,15 +40,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.characters.CharactersViewModel.AuthenticationStatus
 import dev.nohus.rift.characters.CharactersViewModel.CharacterItem
 import dev.nohus.rift.characters.CharactersViewModel.UiState
 import dev.nohus.rift.clones.Clone
@@ -56,9 +62,9 @@ import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ClickableLocation
+import dev.nohus.rift.compose.ClickableShip
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.PointerInteractionStateHolder
-import dev.nohus.rift.compose.RequirementIcon
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftIconButton
 import dev.nohus.rift.compose.RiftImageButton
@@ -78,16 +84,22 @@ import dev.nohus.rift.generated.resources.clone
 import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.sso
 import dev.nohus.rift.generated.resources.sso_dark
+import dev.nohus.rift.generated.resources.status_warning_orange
+import dev.nohus.rift.generated.resources.status_warning_red
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
 import dev.nohus.rift.network.AsyncResource
+import dev.nohus.rift.network.esi.CharacterIdShip
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.sso.SsoAuthority
 import dev.nohus.rift.sso.SsoDialog
+import dev.nohus.rift.utils.article
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 
@@ -332,17 +344,21 @@ private fun CharacterRow(
                     Column(
                         modifier = Modifier.padding(start = Spacing.medium),
                     ) {
-                        AsyncCorporationLogo(
-                            corporationId = character.info.value.corporationId,
-                            size = 32,
-                            modifier = Modifier.size(32.dp),
-                        )
-                        if (character.info.value.allianceId != null) {
-                            AsyncAllianceLogo(
-                                allianceId = character.info.value.allianceId,
+                        RiftTooltipArea(character.info.value.corporationName) {
+                            AsyncCorporationLogo(
+                                corporationId = character.info.value.corporationId,
                                 size = 32,
                                 modifier = Modifier.size(32.dp),
                             )
+                        }
+                        if (character.info.value.allianceId != null) {
+                            RiftTooltipArea(character.info.value.allianceName) {
+                                AsyncAllianceLogo(
+                                    allianceId = character.info.value.allianceId,
+                                    size = 32,
+                                    modifier = Modifier.size(32.dp),
+                                )
+                            }
                         }
                     }
 
@@ -353,26 +369,20 @@ private fun CharacterRow(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.width(IntrinsicSize.Max),
                         ) {
                             Text(
                                 text = character.info.value.name,
                                 style = RiftTheme.typography.titleHighlighted,
+                                modifier = Modifier.weight(1f),
                             )
                             OnlineIndicatorDot(
                                 isOnline = isOnline,
                                 modifier = Modifier.padding(horizontal = Spacing.medium),
                             )
+                            AuthenticationStatusIcon(character.authenticationStatus)
                         }
-                        Text(
-                            text = character.info.value.corporationName,
-                            style = RiftTheme.typography.bodySecondary,
-                        )
-                        if (character.info.value.allianceName != null) {
-                            Text(
-                                text = character.info.value.allianceName,
-                                style = RiftTheme.typography.bodySecondary,
-                            )
-                        }
+                        LocationText(location)
                         if (character.walletBalance != null) {
                             Text(
                                 text = formatIsk(character.walletBalance),
@@ -383,18 +393,6 @@ private fun CharacterRow(
 
                     AnimatedVisibility(!isChoosingDisabledCharacters) {
                         Location(location)
-                    }
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(32.dp),
-                    ) {
-                        RequirementIcon(
-                            isFulfilled = character.isAuthenticated,
-                            fulfilledTooltip = "Authenticated with ESI",
-                            notFulfilledTooltip = "Not authenticated with ESI.\nClick the log in button above.",
-                            modifier = Modifier.padding(start = Spacing.small),
-                        )
                     }
                 }
 
@@ -441,6 +439,120 @@ private fun CharacterRow(
                 )) {
                     if (clone.isActive && clone.implants.isEmpty()) continue
                     Clone(clone)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocationText(location: Location?) {
+    if (location != null) {
+        Column {
+            val systemsRepository: SolarSystemsRepository by koin.inject()
+            val typesRepository: TypesRepository by koin.inject()
+            val systemName = systemsRepository.getSystemName(location.solarSystemId)
+            val shipName = if (location.ship != null) {
+                typesRepository.getType(location.ship.shipTypeId)?.name
+            } else {
+                null
+            }
+
+            if (systemName != null) {
+                val locationId = location.station?.stationId?.toLong() ?: location.structure?.structureId
+                Text(
+                    text = buildAnnotatedString {
+                        if (shipName != null) {
+                            withColor(RiftTheme.colors.textHighlighted) {
+                                append(shipName)
+                            }
+                        }
+                        if (locationId != null) {
+                            if (shipName != null) {
+                                append(" docked in ")
+                            } else {
+                                append("Docked in ")
+                            }
+                            if (location.station != null) {
+                                append("a ")
+                                withColor(RiftTheme.colors.textHighlighted) {
+                                    append("Station")
+                                }
+                            } else if (location.structure != null) {
+                                val structureTypeName = location.structure.typeId?.let { typesRepository.getTypeName(it) } ?: "Structure"
+                                append("${structureTypeName.article} ")
+                                withColor(RiftTheme.colors.textHighlighted) {
+                                    append(structureTypeName)
+                                }
+                            }
+                        } else {
+                            append(" in space")
+                        }
+                    },
+                    style = RiftTheme.typography.bodyPrimary,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AuthenticationStatusIcon(
+    status: AuthenticationStatus,
+    modifier: Modifier = Modifier,
+) {
+    RiftTooltipArea(
+        tooltip = {
+            when (status) {
+                AuthenticationStatus.Authenticated -> {}
+                is AuthenticationStatus.PartiallyAuthenticated -> {
+                    val scopes = status.missingScopes.joinToString("\n") { it.name }
+                    Column(
+                        modifier = Modifier.padding(Spacing.large),
+                    ) {
+                        Text(
+                            text = "Missing ESI scopes:",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                        Text(
+                            text = scopes,
+                            style = RiftTheme.typography.bodySecondary,
+                            modifier = Modifier.padding(vertical = Spacing.small),
+                        )
+                        Text(
+                            text = "Some features won't work.",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                    }
+                }
+                AuthenticationStatus.Unauthenticated -> {
+                    Text(
+                        text = "Not authenticated with ESI.\nClick the log in button above.",
+                        style = RiftTheme.typography.bodyPrimary,
+                        modifier = Modifier.padding(Spacing.large),
+                    )
+                }
+            }
+        },
+        modifier = modifier,
+    ) {
+        val icon = when (status) {
+            AuthenticationStatus.Authenticated -> null
+            is AuthenticationStatus.PartiallyAuthenticated -> Res.drawable.status_warning_orange
+            AuthenticationStatus.Unauthenticated -> Res.drawable.status_warning_red
+        }
+        AnimatedContent(icon) {
+            if (it != null) {
+                Box(
+                    modifier = Modifier
+                        .clipToBounds()
+                        .size(24.dp),
+                ) {
+                    Image(
+                        painter = painterResource(it),
+                        contentDescription = null,
+                        modifier = Modifier.requiredSize(36.dp),
+                    )
                 }
             }
         }
@@ -613,33 +725,103 @@ fun OnlineIndicatorDot(
 @Composable
 private fun Location(location: Location?) {
     if (location == null) return
-    val repository: SolarSystemsRepository by koin.inject()
-    val systemName = repository.getSystemName(location.solarSystemId) ?: return
-    val locationId = location.station?.stationId?.toLong() ?: location.structure?.structureId
+    val systemsRepository: SolarSystemsRepository by koin.inject()
+    val typesRepository: TypesRepository by koin.inject()
 
-    ClickableLocation(location.solarSystemId, locationId) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            val typeId = location.station?.typeId
-                ?: location.structure?.typeId
-                ?: repository.getSystemSunTypeId(systemName)
-            val tooltip = location.station?.name?.replace(" - ", "\n")
-                ?: location.structure?.name?.replace(" - ", "\n")
-                ?: "In space"
-            RiftTooltipArea(
-                text = tooltip,
-            ) {
-                AsyncTypeIcon(
-                    typeId = typeId,
-                    modifier = Modifier.size(32.dp).border(1.dp, RiftTheme.colors.borderGreyLight),
-                )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Row {
+            AnimatedContent(location, contentKey = { it.solarSystemId }) {
+                val systemName = systemsRepository.getSystemName(location.solarSystemId) ?: return@AnimatedContent
+                LocationIcon(location, systemName, systemsRepository, typesRepository)
             }
+            AnimatedContent(location.ship) {
+                ShipIcon(location.ship, typesRepository)
+            }
+        }
+        AnimatedContent(location, contentKey = { it.solarSystemId }) {
+            val systemName = systemsRepository.getSystemName(location.solarSystemId) ?: return@AnimatedContent
             Text(
                 text = systemName,
                 style = RiftTheme.typography.bodyLink,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.width(50.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LocationIcon(
+    location: Location,
+    systemName: String,
+    systemsRepository: SolarSystemsRepository,
+    typesRepository: TypesRepository,
+) {
+    val typeId = location.station?.typeId
+        ?: location.structure?.typeId
+        ?: systemsRepository.getSystemSunTypeId(systemName)
+    val type = typesRepository.getTypeOrPlaceholder(typeId)
+    val locationId = location.station?.stationId?.toLong() ?: location.structure?.structureId
+
+    ClickableLocation(location.solarSystemId, locationId) {
+        RiftTooltipArea(
+            tooltip = {
+                Text(
+                    text = buildAnnotatedString {
+                        val stationName = location.station?.name?.replace(" - ", "\n")
+                        val structureName = location.structure?.name?.replace(" - ", "\n")
+                        if (stationName != null) {
+                            withStyle(RiftTheme.typography.bodyHighlighted.toSpanStyle()) {
+                                appendLine(type.name)
+                            }
+                            append(stationName.trim())
+                        } else if (structureName != null) {
+                            withStyle(RiftTheme.typography.bodyHighlighted.toSpanStyle()) {
+                                appendLine(type.name)
+                            }
+                            append(structureName.removePrefix(systemName).trim())
+                        } else {
+                            append("In space")
+                        }
+                    },
+                    style = RiftTheme.typography.bodyPrimary,
+                    modifier = Modifier.padding(Spacing.large),
+                )
+            },
+        ) {
+            AsyncTypeIcon(
+                typeId = typeId,
+                modifier = Modifier.size(32.dp).border(1.dp, RiftTheme.colors.borderGreyLight),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShipIcon(ship: CharacterIdShip?, typesRepository: TypesRepository) {
+    if (ship == null) return
+    val type = typesRepository.getType(ship.shipTypeId) ?: return
+
+    ClickableShip(type.name, type.id) {
+        RiftTooltipArea(
+            tooltip = {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(RiftTheme.typography.bodyHighlighted.toSpanStyle()) {
+                            appendLine(type.name)
+                        }
+                        append(ship.shipName)
+                    },
+                    style = RiftTheme.typography.bodyPrimary,
+                    modifier = Modifier.padding(Spacing.large),
+                )
+            },
+        ) {
+            AsyncTypeIcon(
+                type = type,
+                modifier = Modifier.size(32.dp).border(1.dp, RiftTheme.colors.borderGreyLight),
             )
         }
     }

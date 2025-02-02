@@ -12,6 +12,8 @@ import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sso.scopes.ScopeGroup
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +40,7 @@ class CharactersViewModel(
     data class CharacterItem(
         val characterId: Int,
         val settingsFile: Path?,
-        val isAuthenticated: Boolean,
+        val authenticationStatus: AuthenticationStatus,
         val isHidden: Boolean,
         val info: AsyncResource<LocalCharactersRepository.CharacterInfo>,
         val walletBalance: Double?,
@@ -54,6 +56,12 @@ class CharactersViewModel(
         val isSsoDialogOpen: Boolean = false,
         val isShowingClones: Boolean,
     )
+
+    sealed class AuthenticationStatus {
+        data object Authenticated : AuthenticationStatus()
+        data class PartiallyAuthenticated(val missingScopes: List<ScopeGroup>) : AuthenticationStatus()
+        data object Unauthenticated : AuthenticationStatus()
+    }
 
     private val _state = MutableStateFlow(
         UiState(
@@ -76,10 +84,16 @@ class CharactersViewModel(
             ) { characters, onlineCharacters, balances, clones, _ ->
                 val items = characters
                     .map { localCharacter ->
+                        val missingScopes = ScopeGroups.all - localCharacter.scopes.toSet()
+                        val authenticationStatus = when {
+                            missingScopes.isEmpty() -> AuthenticationStatus.Authenticated
+                            localCharacter.scopes.isEmpty() -> AuthenticationStatus.Unauthenticated
+                            else -> AuthenticationStatus.PartiallyAuthenticated(missingScopes)
+                        }
                         CharacterItem(
                             characterId = localCharacter.characterId,
                             settingsFile = localCharacter.settingsFile,
-                            isAuthenticated = localCharacter.isAuthenticated,
+                            authenticationStatus = authenticationStatus,
                             isHidden = localCharacter.isHidden,
                             info = localCharacter.info,
                             walletBalance = balances[localCharacter.characterId],

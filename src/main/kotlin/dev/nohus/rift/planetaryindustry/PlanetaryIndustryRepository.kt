@@ -23,6 +23,7 @@ import dev.nohus.rift.repositories.GetSystemDistanceFromCharacterUseCase
 import dev.nohus.rift.repositories.PlanetsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -223,7 +224,7 @@ class PlanetaryIndustryRepository(
 
     private suspend fun loadColonies(): AsyncResource<List<Colony>> = coroutineScope {
         val characters = localCharactersRepository.characters.value
-            .filter { it.isAuthenticated }.map { it.characterId }
+            .filter { ScopeGroups.readPlanetaryIndustryColonies in it.scopes }.map { it.characterId }
 
         val colonies = characters.map { characterId ->
             async { esiApi.getCharactersIdPlanets(characterId) }

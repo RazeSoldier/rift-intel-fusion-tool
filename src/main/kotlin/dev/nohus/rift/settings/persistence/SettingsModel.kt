@@ -117,6 +117,26 @@ data class SsoAuthentication(
     val accessToken: String,
     val refreshToken: String,
     val expiration: Long,
+    /**
+     * The default list are the scopes requested before optional scopes were added, meaning all previous access tokens
+     * have these scopes.
+     */
+    val scopes: List<String> = listOf(
+        "esi-location.read_online.v1",
+        "esi-location.read_location.v1",
+        "esi-universe.read_structures.v1",
+        "esi-ui.write_waypoint.v1",
+        "esi-wallet.read_character_wallet.v1",
+        "esi-search.search_structures.v1",
+        "esi-assets.read_assets.v1",
+        "esi-alliances.read_contacts.v1",
+        "esi-corporations.read_contacts.v1",
+        "esi-characters.read_contacts.v1",
+        "esi-characters.write_contacts.v1",
+        "esi-clones.read_clones.v1",
+        "esi-clones.read_implants.v1",
+        "esi-planets.manage_planets.v1",
+    ),
 )
 
 @Serializable

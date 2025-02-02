@@ -2,19 +2,19 @@ package dev.nohus.rift.repositories
 
 import dev.nohus.rift.database.static.Celestials
 import dev.nohus.rift.database.static.StaticDatabase
+import dev.nohus.rift.repositories.TypesRepository.Type
 import org.jetbrains.exposed.sql.selectAll
 import org.koin.core.annotation.Single
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 @Single(createdAtStart = true)
 class CelestialsRepository(
     staticDatabase: StaticDatabase,
+    typesRepository: TypesRepository,
 ) {
 
     data class Celestial(
         val id: Int,
-        val typeId: Int,
+        val type: Type,
         val solarSystemId: Int,
         val position: Position,
         val radius: Double?,
@@ -33,7 +33,7 @@ class CelestialsRepository(
             Celestials.selectAll().map {
                 Celestial(
                     id = it[Celestials.id],
-                    typeId = it[Celestials.typeId],
+                    type = typesRepository.getType(it[Celestials.typeId]) ?: error("Missing celestial type"),
                     solarSystemId = it[Celestials.solarSystemId],
                     position = Position(
                         x = it[Celestials.x].toDouble(),
@@ -53,14 +53,13 @@ class CelestialsRepository(
      */
     fun getClosestCelestial(solarSystemId: Int, position: Position): ClosestCelestial? {
         val celestials = celestialsBySolarSystemId[solarSystemId] ?: return null
-        val (closest, squaredDistance) = celestials
-            .map { it to it.position.squaredDistanceTo(position) }
-            .minByOrNull { it.second } ?: return null
-        val distance = sqrt(squaredDistance) - (closest.radius ?: 0.0)
-        return ClosestCelestial(closest, distance)
-    }
-
-    private fun Position.squaredDistanceTo(position: Position): Double {
-        return (x - position.x).pow(2) + (y - position.y).pow(2) + (z - position.z).pow(2)
+        val celestial = celestials.minByOrNull { it.position.squaredDistanceTo(position) } ?: return null
+        val warpInPoint = WarpInPoints.getWarpInPoint(celestial)
+        val distanceToWarpInPoint = if (warpInPoint != null) {
+            position.distanceTo(warpInPoint)
+        } else {
+            position.distanceTo(celestial.position) - (celestial.radius ?: 0.0)
+        }
+        return ClosestCelestial(celestial, distanceToWarpInPoint)
     }
 }

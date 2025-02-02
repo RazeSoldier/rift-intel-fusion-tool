@@ -4,6 +4,7 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.repositories.IdRanges.isNpcAgent
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingUtils.getStandingLevel
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -224,7 +225,7 @@ class ContactsRepository(
     private suspend fun updateContacts() {
         _contacts.update { it.copy(isLoading = true) }
         val validCharacters =
-            localCharactersRepository.characters.value.filter { it.isAuthenticated && it.info.success != null }
+            localCharactersRepository.characters.value.filter { ScopeGroups.readContacts in it.scopes && it.info.success != null }
         if (validCharacters.isEmpty()) {
             _contacts.update { it.copy(isLoading = false) }
             return

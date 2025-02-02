@@ -1,6 +1,7 @@
 package dev.nohus.rift
 
 import dev.nohus.rift.configurationpack.ShouldShowConfigurationPackReminderUseCase
+import dev.nohus.rift.logs.RotateLogsUseCase
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.singleinstance.SingleInstanceController
 import dev.nohus.rift.startupwarning.GetStartupWarningsUseCase
@@ -33,6 +34,7 @@ class ApplicationViewModel(
     private val shouldShowConfigurationPackReminderUseCase: ShouldShowConfigurationPackReminderUseCase,
     private val getStartupWarnings: GetStartupWarningsUseCase,
     private val cleanupTempFilesUseCase: CleanupTempFilesUseCase,
+    private val rotateLogsUseCase: RotateLogsUseCase,
     private val whatsNewController: WhatsNewController,
     private val operatingSystem: OperatingSystem,
     private val settings: Settings,
@@ -77,6 +79,7 @@ class ApplicationViewModel(
             cleanupTempFilesUseCase()
         }
         detectDirectoriesUseCase()
+        rotateLogsUseCase()
         viewModelScope.launch {
             backgroundProcesses.start()
         }

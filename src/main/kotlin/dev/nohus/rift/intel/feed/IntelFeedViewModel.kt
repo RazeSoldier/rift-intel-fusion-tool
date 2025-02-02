@@ -212,7 +212,7 @@ class IntelFeedViewModel(
             SystemEntity.CombatProbes -> term in "combat probes"
             SystemEntity.Ess -> term in "ess"
             is SystemEntity.Gate -> term in "gate" || term in system || term == "location"
-            is SystemEntity.Celestial -> term in type.name || term == "location"
+            is SystemEntity.Celestial -> term in celestial.name || term == "location"
             SystemEntity.GateCamp -> term in "gate camp"
             is SystemEntity.Killmail -> {
                 term in "kill" ||

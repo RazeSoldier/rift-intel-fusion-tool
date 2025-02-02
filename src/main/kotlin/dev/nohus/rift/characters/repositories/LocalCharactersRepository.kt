@@ -5,6 +5,8 @@ import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.toResource
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sso.scopes.ScopeGroup
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.stateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -30,7 +32,7 @@ class LocalCharactersRepository(
     data class LocalCharacter(
         val characterId: Int,
         val settingsFile: Path?,
-        val isAuthenticated: Boolean,
+        val scopes: List<ScopeGroup>,
         val info: AsyncResource<CharacterInfo>,
         val isHidden: Boolean,
     )
@@ -60,18 +62,21 @@ class LocalCharactersRepository(
      * was authenticated-only (no local settings file)
      */
     suspend fun start() {
-        settings.updateFlow.collect { model ->
-            val authenticatedIds = model.authenticatedCharacters.map { it.key }
-            val hiddenCharacterIds = model.hiddenCharacterIds.toSet()
-            _characters.value = _characters.value.mapNotNull { character ->
-                val newCharacter = character.copy(
-                    isAuthenticated = character.characterId in authenticatedIds,
-                    isHidden = character.characterId in hiddenCharacterIds,
-                )
-                if (!newCharacter.isAuthenticated && newCharacter.settingsFile == null) return@mapNotNull null
-                newCharacter
+        settings.updateFlow
+            .map { it.authenticatedCharacters to it.hiddenCharacterIds.toSet() }
+            .collect { (authenticatedCharacters, hiddenCharacterIds) ->
+                val scopes = authenticatedCharacters.mapValues { (_, authentication) ->
+                    ScopeGroups.getByIds(authentication.scopes)
+                }
+                _characters.value = _characters.value.mapNotNull { character ->
+                    val newCharacter = character.copy(
+                        scopes = scopes[character.characterId] ?: emptyList(),
+                        isHidden = character.characterId in hiddenCharacterIds,
+                    )
+                    if (newCharacter.scopes.isEmpty() && newCharacter.settingsFile == null) return@mapNotNull null
+                    newCharacter
+                }
             }
-        }
     }
 
     suspend fun load() = withContext(Dispatchers.IO) {
@@ -82,6 +87,9 @@ class LocalCharactersRepository(
     private fun loadLocalCharacters() {
         val directory = settings.eveSettingsDirectory
         val authenticatedCharacterIds = settings.authenticatedCharacters.keys
+        val scopes = settings.authenticatedCharacters.mapValues { (_, authentication) ->
+            ScopeGroups.getByIds(authentication.scopes)
+        }
         val hiddenCharacterIds = settings.hiddenCharacterIds.toSet()
         val charactersFromFiles = if (directory != null) {
             getEveCharactersSettingsUseCase(directory)
@@ -91,7 +99,7 @@ class LocalCharactersRepository(
                     LocalCharacter(
                         characterId = characterId,
                         settingsFile = file,
-                        isAuthenticated = characterId in authenticatedCharacterIds,
+                        scopes = scopes[characterId] ?: emptyList(),
                         info = AsyncResource.Loading,
                         isHidden = characterId in hiddenCharacterIds,
                     )
@@ -107,7 +115,7 @@ class LocalCharactersRepository(
                 LocalCharacter(
                     characterId = characterId,
                     settingsFile = null,
-                    isAuthenticated = true,
+                    scopes = scopes[characterId] ?: emptyList(),
                     info = AsyncResource.Loading,
                     isHidden = characterId in hiddenCharacterIds,
                 )
@@ -117,7 +125,7 @@ class LocalCharactersRepository(
             .distinctBy { it.characterId }
             .sortedWith(
                 compareBy(
-                    { !it.isAuthenticated },
+                    { it.scopes.isEmpty() },
                     { it.settingsFile?.getLastModifiedTime()?.toMillis()?.let { -it } ?: 0L },
                 ),
             )

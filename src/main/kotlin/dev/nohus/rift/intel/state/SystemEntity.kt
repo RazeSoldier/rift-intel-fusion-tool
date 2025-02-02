@@ -1,7 +1,6 @@
 package dev.nohus.rift.intel.state
 
 import dev.nohus.rift.repositories.CelestialsRepository
-import dev.nohus.rift.repositories.CelestialsRepository.Celestial
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.Standing
 
@@ -32,7 +31,7 @@ sealed interface SystemEntity {
     ) : SystemEntity, CharacterBound
 
     data class Celestial(
-        val type: CelestialsRepository.Celestial,
+        val celestial: CelestialsRepository.Celestial,
         val distanceKm: Int,
     ) : SystemEntity, CharacterBound
 

@@ -2,6 +2,7 @@ package dev.nohus.rift.characters.repositories
 
 import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.openwindows.GetOpenEveClientsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -131,7 +132,7 @@ class OnlineCharactersRepository(
                     // No need to check online if we see the client
                     !checkOnline || it.characterId !in onlineGameClients
                 }
-                .filter { it.isAuthenticated } // No point checking unauthenticated characters
+                .filter { ScopeGroups.readOnlineStatus in it.scopes } // No point checking unauthenticated characters
                 .map {
                     async {
                         it.characterId to esiApi.getCharacterIdOnline(it.characterId)

@@ -370,6 +370,20 @@ object WhatsNew {
                 
                 - Push notifications for fleet pings now show details of the ping
             """.trimIndent(),
+            "4.22.0" description """
+                -! Optional ESI scopes (permissions)
+                - RIFT no longer requires all needed ESI scopes to be granted. The features needing a given scope just won't work for characters that don't have it.
+                - This means that when new features come to RIFT requiring new scopes, you will no longer need to reauthenticate all your characters – unless you want to use the new feature.
+                - Now that the app supports not having all scopes, you can choose which scopes to grant when authenticating a character, if you want. You can now also see what each scope is used for.
+                
+                -! Current ship and status
+                - The Characters window now shows the current ship of each of your characters, alongside the ship name and docking status.
+                - This requires a new ESI scope, which you can grant by authenticating a character again.
+                
+                - Killmail locations showing up in intel feeds now show the distance to the celestial's warp-in point, if applicable. For example, if when someone is killed near a planet, you will see the planet along with how far away it happened from that planet's warp-in point.
+                - Updated the setup wizard to be clearer about what intel channels are and that adding them is optional
+                - Your old chat and game log files are now moved to an "old" subdirectory as an optimization.
+            """.trimIndent(),
         ).reversed()
     }
 }

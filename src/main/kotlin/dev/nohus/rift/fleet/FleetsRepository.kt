@@ -68,7 +68,10 @@ class FleetsRepository(
     private suspend fun updateFleets() = coroutineScope {
         val online = onlineCharactersRepository.onlineCharacters.value
         val characters = localCharactersRepository.characters.value
-            .filter { it.isAuthenticated }.map { it.characterId }.filter { it in online }
+            /* Has fleet scopes */
+            .filter { true }
+            .map { it.characterId }
+            .filter { it in online }
         var needsDetailsUpdate = false
         characters.map { characterId ->
             async { characterId to esiApi.getCharactersIdFleet(characterId) }
