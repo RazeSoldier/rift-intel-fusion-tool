@@ -2,6 +2,7 @@ package dev.nohus.rift.sso.authentication
 
 import dev.nohus.rift.sso.SsoAuthority
 import dev.nohus.rift.sso.authentication.Authentication.EveAuthentication
+import dev.nohus.rift.sso.scopes.EsiScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Factory
 import java.time.Instant
@@ -18,8 +19,8 @@ class SsoAuthenticator(
      * Starts the SSO flow, redirecting the user to the SSO login page.
      * Returns once the authentication flow has finished, or failed
      */
-    suspend fun authenticate(authority: SsoAuthority) {
-        val authentication = ssoClient.authenticate(authority)
+    suspend fun authenticate(authority: SsoAuthority, scopes: List<String>) {
+        val authentication = ssoClient.authenticate(authority, scopes)
         when (authority) {
             SsoAuthority.Eve -> eveSsoRepository.addAuthentication(authentication as EveAuthentication)
         }
@@ -35,9 +36,17 @@ class SsoAuthenticator(
 
     /**
      * Retrieves an access token, refreshing it first if needed, or null if there isn't one
+     *
+     * @param characterId Character ID
+     * @param scope ESI scope the token has to be valid for, or null if no scopes are required. If the present
+     * access token isn't valid for that scope, this method will throw.
+     * @throws NoAuthenticationException When no valid token is available
      */
-    suspend fun getValidEveAccessToken(characterId: Int): String {
-        val authentication = eveSsoRepository.getAuthentication(characterId) ?: throw NoAuthenticationException(characterId)
+    suspend fun getValidEveAccessToken(characterId: Int, scope: EsiScope?): String {
+        val authentication = eveSsoRepository.getAuthentication(characterId) ?: throw NoAuthenticationException(characterId, null)
+        if (scope != null && scope.id !in authentication.scopes) {
+            throw NoAuthenticationException(characterId, scope)
+        }
         return if (authentication.expiration.isBefore(Instant.now())) {
             val newAuthentication = ssoClient.refreshToken(SsoAuthority.Eve, authentication) as EveAuthentication
             logger.info { "Eve SSO access token refreshed" }

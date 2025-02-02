@@ -1,6 +1,7 @@
 package dev.nohus.rift.characters.repositories
 
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -27,7 +28,7 @@ class CharacterWalletRepository(
     suspend fun start() = coroutineScope {
         launch {
             localCharactersRepository.characters.collect {
-                load(it.filter { it.isAuthenticated }.map { it.characterId })
+                load(it.filter { ScopeGroups.readWallet in it.scopes }.map { it.characterId })
             }
         }
         launch {

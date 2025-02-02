@@ -402,6 +402,7 @@ private fun IntelChannelsStep(
         onContinueClick = onContinueClick,
         isContinueVisible = hasFinishedTyping,
         isWarning = !step.hasChannels,
+        warningButtonText = "Skip",
     ) {
         val text = buildAnnotatedString {
             if (step.hasChannels) {
@@ -416,7 +417,7 @@ private fun IntelChannelsStep(
                     append("Intel channels")
                 }
                 append(
-                    "\n\nLet's add intel channels that you want RIFT to monitor for intel reports.",
+                    "\n\nIf you are in an alliance with intel channels, you can have RIFT monitor them for intel reports.",
                 )
             }
         }
@@ -488,6 +489,7 @@ private fun StepContent(
     onContinueClick: () -> Unit,
     isContinueVisible: Boolean = true,
     isWarning: Boolean = false,
+    warningButtonText: String = "Continue anyway",
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -500,7 +502,7 @@ private fun StepContent(
             enter = fadeIn(),
             modifier = Modifier.align(Alignment.End),
         ) {
-            val text = if (isWarning) "Continue anyway" else "Continue"
+            val text = if (isWarning) warningButtonText else "Continue"
             val type = if (isWarning) ButtonType.Negative else ButtonType.Primary
             RiftButton(
                 text = text,

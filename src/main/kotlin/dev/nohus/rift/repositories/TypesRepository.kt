@@ -15,6 +15,7 @@ class TypesRepository(
 
     data class Type(
         val id: Int,
+        val groupId: Int,
         val name: String,
         val volume: Float,
         val radius: Float?,
@@ -36,6 +37,7 @@ class TypesRepository(
         types = rows.associate {
             it[Types.typeId] to Type(
                 id = it[Types.typeId],
+                groupId = it[Types.groupId],
                 name = it[Types.typeName],
                 volume = it[Types.volume],
                 radius = it[Types.radius],
@@ -69,6 +71,7 @@ class TypesRepository(
     fun getTypeOrPlaceholder(id: Int): Type {
         return getType(id) ?: Type(
             id = id,
+            groupId = -1,
             name = "Unknown",
             volume = 0f,
             radius = null,

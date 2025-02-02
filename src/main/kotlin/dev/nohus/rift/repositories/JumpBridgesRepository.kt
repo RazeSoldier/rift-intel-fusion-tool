@@ -7,6 +7,7 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.UniverseStructuresId
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -60,7 +61,7 @@ class JumpBridgesRepository(
     fun search(): Flow<SearchState> = channelFlow {
         coroutineScope {
             val characterId = localCharactersRepository.characters.value
-                .firstOrNull { it.isAuthenticated }
+                .firstOrNull { ScopeGroups.readStructures in it.scopes }
                 ?.characterId
             if (characterId == null) {
                 logger.error { "No authenticated characters" }

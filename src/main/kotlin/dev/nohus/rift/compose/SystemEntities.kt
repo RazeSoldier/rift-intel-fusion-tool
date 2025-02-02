@@ -514,7 +514,7 @@ private fun GateInfoRow(system: String, entity: SystemEntity.Gate, rowHeight: Dp
 private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHorizontal: Boolean) {
     SystemEntityInfoRow(rowHeight, isHorizontal) {
         AsyncTypeIcon(
-            typeId = entity.type.typeId,
+            type = entity.celestial.type,
             modifier = Modifier.size(rowHeight),
         )
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
@@ -522,7 +522,7 @@ private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHo
             modifier = Modifier.padding(horizontal = Spacing.small),
         ) {
             Text(
-                text = entity.type.name,
+                text = entity.celestial.name,
                 style = RiftTheme.typography.bodyHighlighted,
             )
             if (rowHeight >= 32.dp) {

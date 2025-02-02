@@ -13,6 +13,7 @@ import dev.nohus.rift.repositories.PricesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -94,7 +95,7 @@ class AssetsViewModel(
         }
         viewModelScope.launch {
             localCharactersRepository.characters.collect { characters ->
-                _state.update { it.copy(characters = characters.filter { it.isAuthenticated }) }
+                _state.update { it.copy(characters = characters.filter { ScopeGroups.readAssets in it.scopes }) }
             }
         }
     }

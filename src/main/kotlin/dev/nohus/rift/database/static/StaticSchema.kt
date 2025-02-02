@@ -62,6 +62,7 @@ object Ships : Table() {
 
 object Types : Table() {
     val typeId = integer("typeId")
+    val groupId = integer("groupId")
     val typeName = varchar("typeName", 100)
     val volume = float("volume")
     val radius = float("radius").nullable()

@@ -106,6 +106,12 @@ interface EsiService {
         @Header("Authorization") authorization: String,
     ): CharacterIdOnline
 
+    @GET("/v2/characters/{id}/ship/")
+    suspend fun getCharacterIdShip(
+        @Path("id") characterId: Int,
+        @Header("Authorization") authorization: String,
+    ): CharacterIdShip
+
     @GET("/v2/characters/{id}/location/")
     suspend fun getCharacterIdLocation(
         @Path("id") characterId: Int,
@@ -186,6 +192,13 @@ interface EsiService {
         @Body assets: List<Long>,
         @Header("Authorization") authorization: String,
     ): List<CharactersIdAssetsName>
+
+    @POST("/v2/characters/{id}/assets/locations/")
+    suspend fun getCharactersIdAssetsLocations(
+        @Path("id") characterId: Int,
+        @Body itemIds: List<Long>,
+        @Header("Authorization") authorization: String,
+    ): List<CharactersIdAssetsLocation>
 
     @GET("/v1/markets/prices/")
     suspend fun getMarketsPrices(): List<MarketsPrice>

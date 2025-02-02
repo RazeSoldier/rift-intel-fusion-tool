@@ -68,3 +68,11 @@ val Int.invertedPlural: String get() {
 val Long.plural: String get() {
     return if (this != 1L) "s" else ""
 }
+
+val String.article: String get() {
+    return when {
+        isEmpty() -> ""
+        lowercase().firstOrNull { it.isLetter() } in listOf('e', 'u', 'i', 'o', 'a') -> "an"
+        else -> "a"
+    }
+}

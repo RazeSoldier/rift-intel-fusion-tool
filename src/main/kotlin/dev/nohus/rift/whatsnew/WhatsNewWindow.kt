@@ -1,7 +1,5 @@
 package dev.nohus.rift.whatsnew
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,10 +9,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -25,15 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.BlurEffect
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.compose.Bullet
 import dev.nohus.rift.compose.CreatorCode
 import dev.nohus.rift.compose.Patrons
 import dev.nohus.rift.compose.RiftButton
@@ -149,28 +142,5 @@ private fun VersionItem(version: Version) {
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun Bullet() {
-    val color = RiftTheme.colors.textHighlighted
-    val blur = 4f
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.height(16.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                .border(2.dp, color, CircleShape),
-        ) {}
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(color),
-        ) {}
     }
 }

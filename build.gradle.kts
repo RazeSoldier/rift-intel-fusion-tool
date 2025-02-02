@@ -132,6 +132,7 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "dev.nohus.rift.MainKt"
+        jvmArgs("--add-opens=java.desktop/java.awt=ALL-UNNAMED", "--add-exports=java.desktop/java.awt.peer=ALL-UNNAMED")
 
         nativeDistributions {
             modules("java.sql", "java.naming", "jdk.naming.dns")

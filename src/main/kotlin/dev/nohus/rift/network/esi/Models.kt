@@ -176,6 +176,16 @@ data class CharacterIdOnline(
 )
 
 @Serializable
+data class CharacterIdShip(
+    @SerialName("ship_item_id")
+    val shipItemId: Long,
+    @SerialName("ship_name")
+    val shipName: String,
+    @SerialName("ship_type_id")
+    val shipTypeId: Int,
+)
+
+@Serializable
 data class CharacterIdLocation(
     @SerialName("solar_system_id")
     val solarSystemId: Int,
@@ -357,6 +367,24 @@ data class CharactersIdAssetsName(
     val itemId: Long,
     @SerialName("name")
     val name: String,
+)
+
+@Serializable
+data class CharactersIdAssetsLocation(
+    @SerialName("item_id")
+    val itemId: Long,
+    @SerialName("position")
+    val position: AssetPosition,
+)
+
+@Serializable
+data class AssetPosition(
+    @SerialName("x")
+    val x: Double,
+    @SerialName("y")
+    val y: Double,
+    @SerialName("z")
+    val z: Double,
 )
 
 @Serializable

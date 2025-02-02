@@ -154,7 +154,7 @@ class KillmailProcessor(
         if (distanceKm >= 1000) return null
 
         val stargateSystemName = starGatesRepository.getStargates(message.solarSystemId)
-            .filter { it.second == closestCelestial.celestial.typeId }
+            .filter { it.second == closestCelestial.celestial.type.id }
             .mapNotNull { solarSystemsRepository.getSystemName(it.first) }
             .singleOrNull { it in closestCelestial.celestial.name }
         return if (stargateSystemName != null) {

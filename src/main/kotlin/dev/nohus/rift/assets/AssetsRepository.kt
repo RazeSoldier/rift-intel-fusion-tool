@@ -9,6 +9,7 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.UniverseStationsId
 import dev.nohus.rift.network.esi.UniverseStructuresId
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -49,14 +50,16 @@ class AssetsRepository(
         launch {
             localCharactersRepository.characters.debounce(500).collect { characters ->
                 // Load assets after all authenticated characters finished loading
-                if (characters.none { it.isAuthenticated && it.info is AsyncResource.Loading }) {
+                if (characters.none { ScopeGroups.readAssets in it.scopes && it.info is AsyncResource.Loading }) {
                     reloadEventFlow.emit(Unit)
                 }
             }
         }
         launch {
             reloadEventFlow.collectLatest {
-                val ids = localCharactersRepository.characters.value.filter { it.isAuthenticated }.map { it.characterId }
+                val ids = localCharactersRepository.characters.value
+                    .filter { ScopeGroups.readAssets in it.scopes }
+                    .map { it.characterId }
                 load(ids)
             }
         }
