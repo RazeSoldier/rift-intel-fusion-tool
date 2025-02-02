@@ -338,6 +338,18 @@ object WhatsNew {
                 - Updated Steam library detection on Linux to cover more installation types
                 - Context menus will now scroll if there is not enough space to display all items
             """.trimIndent(),
+            "4.19.0" description """
+                -! New Planetary Industry features
+                - Colony icons now show the final product of the colony, and have circular progress bars showing the fill level of product storages, allowing you to see the status of your colonies at a glance and know if they need a pickup
+                - The fill level only considers these storages where your final products accumulate, and shows products in blue and other commodities in orange, if they share storages
+                - New animations visually show the colony work status, whether it's extracting, producing, idle, or having a problem
+                - Data about your colonies can now be copied to paste into a spreadsheet. This supports Google Sheets, Excel, as well as Excel with the EVE Online add-in.
+                - When sorting PI colonies by character, they are now also sorted by account – characters on the same account appear together
+                - Added new animations when switching colony views and getting in and out of colony details
+                
+                - The window transparency feature now has a global toggle in settings. It defaults to disabled, so enable it to use it again.
+                - Window transparency strength can now be controlled, so you can choose how much transparency you want
+            """.trimIndent(),
         ).reversed()
     }
 }

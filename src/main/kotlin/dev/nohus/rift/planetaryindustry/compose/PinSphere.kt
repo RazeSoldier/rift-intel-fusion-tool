@@ -66,6 +66,7 @@ import dev.nohus.rift.planetaryindustry.models.PinStatus.ExtractorInactive
 import dev.nohus.rift.planetaryindustry.models.PinStatus.InputNotRouted
 import dev.nohus.rift.planetaryindustry.models.PinStatus.NotSetup
 import dev.nohus.rift.planetaryindustry.models.PinStatus.OutputNotRouted
+import dev.nohus.rift.planetaryindustry.models.PinStatus.StorageFull
 import dev.nohus.rift.planetaryindustry.models.getCapacity
 import dev.nohus.rift.planetaryindustry.models.getName
 import dev.nohus.rift.utils.formatNumberCompact
@@ -99,7 +100,7 @@ fun PinSphere(
     val cycle = imageResource(Res.drawable.pi_cycle_10px, cycleDiameter)
 
     val needsAttention by derivedStateOf {
-        pin.status in listOf(NotSetup, InputNotRouted, OutputNotRouted, ExtractorExpired, ExtractorInactive)
+        pin.status in listOf(NotSetup, InputNotRouted, OutputNotRouted, ExtractorExpired, ExtractorInactive, StorageFull)
     }
     val loadAnimation = remember { Animatable(0f) }
     LaunchedEffect(Unit) {

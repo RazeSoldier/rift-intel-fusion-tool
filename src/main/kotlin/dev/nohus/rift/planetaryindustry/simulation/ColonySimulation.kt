@@ -6,6 +6,7 @@ import dev.nohus.rift.planetaryindustry.models.Pin
 import dev.nohus.rift.planetaryindustry.models.PinStatus.StorageFull
 import dev.nohus.rift.planetaryindustry.models.Route
 import dev.nohus.rift.planetaryindustry.models.getCapacity
+import dev.nohus.rift.planetaryindustry.models.getColonyOverview
 import dev.nohus.rift.planetaryindustry.models.getColonyStatus
 import dev.nohus.rift.planetaryindustry.models.getStatus
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilNow
@@ -44,6 +45,7 @@ class ColonySimulation(colony: Colony) {
         return colony.copy(
             currentSimTime = currentSimTime,
             status = getColonyStatus(currentSimTime),
+            overview = getColonyOverview(colony.routes, colony.pins),
         )
     }
 

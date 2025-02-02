@@ -80,9 +80,12 @@ fun Pin.getStatus(now: Instant, routes: List<Route>): PinStatus {
             return FactoryIdle
         }
         is Pin.CommandCenter, is Pin.Launchpad, is Pin.Storage -> {
-            if (max(getCapacity()!!.toFloat() - capacityUsed, 0f) == 0f) {
-                val hasIncomingRoutes = routes.any { it.destinationPinId == id }
-                if (hasIncomingRoutes) return StorageFull
+            val incomingRoutes = routes.filter { it.destinationPinId == id }
+            if (incomingRoutes.isNotEmpty()) {
+                val capacityRemaining = max(getCapacity()!!.toFloat() - capacityUsed, 0f)
+                if (incomingRoutes.any { it.type.volume * it.quantity > capacityRemaining }) {
+                    return StorageFull
+                }
             }
             return Static
         }

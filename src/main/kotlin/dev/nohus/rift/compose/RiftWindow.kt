@@ -149,7 +149,7 @@ fun RiftWindow(
                     } else {
                         null
                     },
-                    onTransparentClick = if (state.window != null) {
+                    onTransparentClick = if (state.window != null && transparentWindowController.isEnabled) {
                         { windowStatesController.toggleTransparent(state.window, state.uuid) }
                     } else {
                         null
@@ -278,9 +278,8 @@ private fun WindowScope.RiftWindowContent(
     content: @Composable WindowScope.() -> Unit,
 ) {
     val activeTransition = updateTransition(LocalWindowInfo.current.isWindowFocused)
-    val backgroundColor by activeTransition.animateColor {
-        if (it) RiftTheme.colors.windowBackgroundActive else RiftTheme.colors.windowBackground
-    }
+    val transparentWindowController: TransparentWindowController = remember { koin.get() }
+    val backgroundColor = transparentWindowController.getWindowBackgroundColor(activeTransition, isTransparent)
 
     Box(
         modifier = Modifier

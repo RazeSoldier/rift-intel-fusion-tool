@@ -62,6 +62,8 @@ class SettingsViewModel(
         val configurationPack: ConfigurationPack?,
         val dialogMessage: DialogMessage? = null,
         val uiScale: Float,
+        val isWindowTransparencyEnabled: Boolean,
+        val windowTransparencyModifier: Float,
     )
 
     private val _state = MutableStateFlow(
@@ -86,6 +88,8 @@ class SettingsViewModel(
             soundsVolume = settings.soundsVolume,
             configurationPack = settings.configurationPack,
             uiScale = settings.uiScale,
+            isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
+            windowTransparencyModifier = settings.windowTransparencyModifier,
         ),
     )
     val state = _state.asStateFlow()
@@ -110,6 +114,8 @@ class SettingsViewModel(
                         soundsVolume = settings.soundsVolume,
                         configurationPack = settings.configurationPack,
                         uiScale = settings.uiScale,
+                        isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
+                        windowTransparencyModifier = settings.windowTransparencyModifier,
                     )
                 }
                 val logsDirectory = settings.eveLogsDirectory
@@ -250,6 +256,21 @@ class SettingsViewModel(
             showRestartRequiredDialog("New tray icon will take effect after you restart the application.")
             settings.isUsingDarkTrayIcon = enabled
         }
+    }
+
+    fun onIsWindowTransparencyChanged(enabled: Boolean) {
+        if (settings.isWindowTransparencyEnabled != enabled) {
+            if (enabled) {
+                showRestartRequiredDialog("Window transparency will be enabled after you restart the application. This feature requires a modern GPU.")
+            } else {
+                showRestartRequiredDialog("Window transparency will be disabled after you restart the application.")
+            }
+            settings.isWindowTransparencyEnabled = enabled
+        }
+    }
+
+    fun onWindowTransparencyModifierChanged(modifier: Float) {
+        settings.windowTransparencyModifier = modifier
     }
 
     fun onUiScaleChanged(uiScale: Float) {
