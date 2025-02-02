@@ -364,6 +364,12 @@ object WhatsNew {
                 - Updated duplicate chat message handling to work better when multiboxed chat logs that have inconsistent timestamps
                 - Associating characters with accounts for the settings copying feature was improved to work in more cases
             """.trimIndent(),
+            "4.21.0" description """
+                -! Locations in Intel Feed and on the Map
+                - Intel coming from killmails now includes the location in system where it happened. Campers on a stargate or station? Someone got ganked in an asteroid belt? See exactly where it happened.
+                
+                - Push notifications for fleet pings now show details of the ping
+            """.trimIndent(),
         ).reversed()
     }
 }

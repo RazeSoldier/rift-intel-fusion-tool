@@ -75,6 +75,7 @@ class PushViewModel(
             val result = pushNotificationController.sendNtfyNotification(
                 title = "RIFT Intel Fusion Tool",
                 message = "Congratulations, RIFT is setup correctly for push notifications.",
+                iconUrl = null,
             )
 
             val response = result.success

@@ -353,7 +353,7 @@ private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, moveme
         )
         if (movement.isGate) {
             VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-            val systemFrom = previousTokens.firstNotNullOf { (it.type as? TokenType.System)?.name }
+            val systemFrom = previousTokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.name }
             GateIcon(
                 isAnsiblex = false,
                 fromSystem = systemFrom,

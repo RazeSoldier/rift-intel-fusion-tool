@@ -1,6 +1,7 @@
 package dev.nohus.rift.loglite
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import okio.IOException
 import java.net.Socket
 import java.time.Instant
 
@@ -18,30 +19,32 @@ class LogLiteSession(
     fun start() {
         val stream = socket.getInputStream()
         while (!socket.isClosed) {
-            if (stream.available() >= MESSAGE_SIZE) {
-                val bytes = stream.readNBytes(MESSAGE_SIZE)
-                val reader = ByteReader(bytes)
-                val type = getMessageType(reader.read4ByteNumber())
-                if (client == null && type != MessageType.Connection) {
-                    logger.error { "Expected connection message but got $type. Closing connection." }
+            val bytes = stream.readNBytes(MESSAGE_SIZE)
+            val reader = ByteReader(bytes)
+            val type = getMessageType(reader.read4ByteNumber())
+            if (client == null && type != MessageType.Connection) {
+                logger.error { "Expected connection message but got $type. Closing connection." }
+                socket.close()
+                return
+            }
+            reader.skip(4)
+            when (type) {
+                MessageType.Connection -> readConnectionMessage(reader)
+                MessageType.Simple -> readSimpleMessage(reader)
+                MessageType.Large -> readLargeMessage(reader)
+                MessageType.Continuation -> readContinuationMessage(reader)
+                MessageType.ContinuationEnd -> readContinuationEndMessage(reader)
+                MessageType.Unknown -> {
+                    logger.error { "Received unknown message. Closing connection." }
                     socket.close()
-                    return
-                }
-                reader.skip(4)
-                when (type) {
-                    MessageType.Connection -> readConnectionMessage(reader)
-                    MessageType.Simple -> readSimpleMessage(reader)
-                    MessageType.Large -> readLargeMessage(reader)
-                    MessageType.Continuation -> readContinuationMessage(reader)
-                    MessageType.ContinuationEnd -> readContinuationEndMessage(reader)
-                    MessageType.Unknown -> {
-                        logger.error { "Received unknown message. Closing connection." }
-                        socket.close()
-                    }
                 }
             }
         }
         logger.info { "LogLite session disconnected" }
+    }
+
+    fun stop() {
+        socket.close()
     }
 
     private fun readConnectionMessage(reader: ByteReader) {
@@ -61,6 +64,7 @@ class LogLiteSession(
     private fun readSimpleMessage(reader: ByteReader) {
         val logMessage = readLogMessage(reader)
         log(logMessage)
+        handleSessionMessage(logMessage)
     }
 
     private fun readLargeMessage(reader: ByteReader) {
@@ -89,6 +93,14 @@ class LogLiteSession(
         val channel = reader.readString(32)
         val message = reader.readString(256)
         return LogMessage(client!!, timestamp, severity, module, channel, message)
+    }
+
+    private fun handleSessionMessage(message: LogMessage) {
+        if (message.channel == "General") {
+            if (message.message == "Terminate - atexit done, about to shut down") {
+                throw IOException("Client closed")
+            }
+        }
     }
 
     private fun log(message: LogMessage) {

@@ -68,7 +68,9 @@ class MapExternalControl(
             .filterValues { it.isEmpty() }.keys.firstOrNull() // Open on a map not showing any region
             ?: windows.keys.firstOrNull() // Open on any map
         if (mapWindow == null) windowManager.onWindowOpen(RiftWindow.Map)
-        _event.tryEmit(DataEvent(MapExternalControlEvent.ShowSystem(mapWindow, solarSystemId)))
+        scope.launch {
+            _event.emit(DataEvent(MapExternalControlEvent.ShowSystem(mapWindow, solarSystemId)))
+        }
     }
 
     fun showSystemOnRegionMap(solarSystemId: Int) {
@@ -82,6 +84,8 @@ class MapExternalControl(
             null
         }
         if (mapWindow == null) windowManager.onWindowOpen(RiftWindow.Map)
-        _event.tryEmit(DataEvent(MapExternalControlEvent.ShowSystemOnRegionMap(mapWindow, solarSystemId)))
+        scope.launch {
+            _event.emit(DataEvent(MapExternalControlEvent.ShowSystemOnRegionMap(mapWindow, solarSystemId)))
+        }
     }
 }

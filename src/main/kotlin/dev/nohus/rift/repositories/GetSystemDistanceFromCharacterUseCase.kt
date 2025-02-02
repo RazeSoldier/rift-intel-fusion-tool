@@ -1,6 +1,5 @@
 package dev.nohus.rift.repositories
 
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.location.CharacterLocationRepository
 import org.koin.core.annotation.Single
@@ -9,7 +8,6 @@ import org.koin.core.annotation.Single
 class GetSystemDistanceFromCharacterUseCase(
     private val getSystemDistanceUseCase: GetSystemDistanceUseCase,
     private val onlineCharactersRepository: OnlineCharactersRepository,
-    private val localCharactersRepository: LocalCharactersRepository,
     private val characterLocationRepository: CharacterLocationRepository,
 ) {
 
@@ -33,13 +31,8 @@ class GetSystemDistanceFromCharacterUseCase(
         if (characterId != null) {
             getClosestDistance(systemId, listOf(characterId), characterLocations, maxDistance, withJumpBridges)?.let { return it }
         } else {
-            // Try online characters
             val onlineCharacters = onlineCharactersRepository.onlineCharacters.value
             getClosestDistance(systemId, onlineCharacters, characterLocations, maxDistance, withJumpBridges)?.let { return it }
-
-            // No online characters or none had a known location, try any characters
-            val characters = localCharactersRepository.characters.value.map { it.characterId }
-            getClosestDistance(systemId, characters, characterLocations, maxDistance, withJumpBridges)?.let { return it }
         }
 
         return null

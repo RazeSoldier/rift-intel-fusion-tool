@@ -17,6 +17,7 @@ class TypesRepository(
         val id: Int,
         val name: String,
         val volume: Float,
+        val radius: Float?,
         val repackagedVolume: Int?,
         val iconId: Int,
     )
@@ -37,6 +38,7 @@ class TypesRepository(
                 id = it[Types.typeId],
                 name = it[Types.typeName],
                 volume = it[Types.volume],
+                radius = it[Types.radius],
                 repackagedVolume = it[Types.repackagedVolume],
                 iconId = it[Types.iconId] ?: it[Types.typeId],
             )
@@ -69,6 +71,7 @@ class TypesRepository(
             id = id,
             name = "Unknown",
             volume = 0f,
+            radius = null,
             repackagedVolume = null,
             iconId = -1,
         )

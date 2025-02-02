@@ -258,7 +258,7 @@ class AlertsTriggerController(
                                 ping.target?.lowercase()?.contains(fleetPingAlert.target.lowercase()) == true
                             }
                             if (isFleetCommanderMatching && isFormupSystemMatching && isPapTypeMatching && isDoctrineMatching && isTargetMatching) {
-                                alertsActionController.triggerJabberPingAlert(alert)
+                                alertsActionController.triggerJabberPingAlert(alert, ping)
                             }
                         }
                     }
@@ -272,7 +272,7 @@ class AlertsTriggerController(
                                 ping.target?.lowercase()?.contains(messagePingAlert.target.lowercase()) == true
                             }
                             if (isTargetMatching) {
-                                alertsActionController.triggerJabberPingAlert(alert)
+                                alertsActionController.triggerJabberPingAlert(alert, ping)
                             }
                         }
                     }

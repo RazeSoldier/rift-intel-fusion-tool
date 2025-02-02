@@ -2,9 +2,13 @@ package dev.nohus.rift.killboard
 
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.repositories.CelestialsRepository
+import dev.nohus.rift.repositories.CelestialsRepository.Celestial
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.StarGatesRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
@@ -18,6 +22,7 @@ import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
 import java.time.Duration
 import java.time.Instant
+import kotlin.math.roundToInt
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,6 +34,8 @@ class KillmailProcessor(
     private val shipTypesRepository: ShipTypesRepository,
     private val characterDetailsRepository: CharacterDetailsRepository,
     private val standingsRepository: StandingsRepository,
+    private val celestialsRepository: CelestialsRepository,
+    private val starGatesRepository: StarGatesRepository,
 ) {
 
     data class ProcessedKillmail(
@@ -37,6 +44,7 @@ class KillmailProcessor(
         val victim: SystemEntity.Character?,
         val attackers: List<SystemEntity.Character>,
         val killmail: SystemEntity.Killmail,
+        val celestial: SystemEntity?,
         val timestamp: Instant,
     )
 
@@ -105,12 +113,14 @@ class KillmailProcessor(
                 allianceTicker = victim?.details?.allianceTicker ?: deferredVictimAlliance?.await()?.ticker,
                 standing = standingLevel,
             )
+            val victimShipType = message.victim.shipTypeId?.let { typeRepository.getType(it) }
             val killmail = SystemEntity.Killmail(
                 url = message.url,
                 ship = shipTypesRepository.getShipName(message.victim.shipTypeId),
-                typeName = message.victim.shipTypeId?.let { typeRepository.getTypeName(it) },
+                typeName = victimShipType?.name,
                 victim = killmailVictim,
             )
+            val celestial = getCelestial(message, victimShipType)
 
             val processedKillmail = ProcessedKillmail(
                 system = system,
@@ -118,6 +128,7 @@ class KillmailProcessor(
                 victim = victim,
                 attackers = attackers,
                 killmail = killmail,
+                celestial = celestial,
                 timestamp = message.killmailTime,
             )
 
@@ -131,6 +142,25 @@ class KillmailProcessor(
                     logger.debug { "Kill from ${message.killboard}, ignoring, already seen from $killboard" }
                 }
             }
+        }
+    }
+
+    private fun getCelestial(message: Killmail, victimShipType: Type?): SystemEntity? {
+        message.position ?: return null
+        val closestCelestial = celestialsRepository.getClosestCelestial(message.solarSystemId, message.position) ?: return null
+        val shipRadius = victimShipType?.radius ?: 0f
+        val distance = closestCelestial.distance - shipRadius
+        val distanceKm = (distance / 1000).roundToInt()
+        if (distanceKm >= 1000) return null
+
+        val stargateSystemName = starGatesRepository.getStargates(message.solarSystemId)
+            .filter { it.second == closestCelestial.celestial.typeId }
+            .mapNotNull { solarSystemsRepository.getSystemName(it.first) }
+            .singleOrNull { it in closestCelestial.celestial.name }
+        return if (stargateSystemName != null) {
+            SystemEntity.Gate(stargateSystemName, isAnsiblex = false, distanceKm = distanceKm)
+        } else {
+            SystemEntity.Celestial(closestCelestial.celestial, distanceKm)
         }
     }
 }

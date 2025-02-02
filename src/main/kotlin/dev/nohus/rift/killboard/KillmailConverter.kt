@@ -4,6 +4,7 @@ import dev.nohus.rift.killboard.Killboard.EveKill
 import dev.nohus.rift.killboard.Killboard.Zkillboard
 import dev.nohus.rift.network.killboard.EveKillKillmail
 import dev.nohus.rift.network.killboard.ZkillboardKillmail
+import dev.nohus.rift.repositories.Position
 import org.koin.core.annotation.Single
 
 @Single
@@ -28,6 +29,7 @@ class KillmailConverter {
                     shipTypeId = attacker.shipTypeId,
                 )
             },
+            position = victim.position?.let { Position(it.x, it.y, it.z) },
         )
     }
 
@@ -50,6 +52,7 @@ class KillmailConverter {
                     shipTypeId = attacker.shipId?.takeIf { it > 0 },
                 )
             },
+            position = if (x != null && y != null && z != null) Position(x, y, z) else null,
         )
     }
 }

@@ -54,7 +54,7 @@ class IntelStateController(
                 removeKilledCharacters(listOf(it.name))
             }
 
-            val entities: List<SystemEntity> = killmail.attackers + killmail.ships + killmail.killmail
+            val entities: List<SystemEntity> = killmail.attackers + killmail.ships + killmail.killmail + listOfNotNull(killmail.celestial)
             updateSystemEntities(killmail.timestamp, killmail.system, removeExisting = false, entities)
 
             updateState()
