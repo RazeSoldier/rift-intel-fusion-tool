@@ -39,6 +39,13 @@ class StarGatesRepository(
         return getStargateTypeId(fromSystemId, toSystemId)
     }
 
+    /**
+     * Returns a list of stargates in this system as pairs of target system ID and stargate type ID
+     */
+    fun getStargates(fromSystemId: Int): List<Pair<Int, Int>> {
+        return stargateTypeIds[fromSystemId]?.map { it.key to it.value } ?: emptyList()
+    }
+
     private fun getStargateTypeId(fromSystemId: Int, toSystemId: Int): Int? {
         return stargateTypeIds[fromSystemId]?.get(toSystemId)
     }

@@ -12,6 +12,9 @@ import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.notifications.NotificationsController
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.notifications.system.SendNotificationUseCase
+import dev.nohus.rift.pings.FormupLocation
+import dev.nohus.rift.pings.PapType
+import dev.nohus.rift.pings.PingModel
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.push.PushNotificationController
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -110,8 +113,43 @@ class AlertsActionController(
         }
     }
 
-    fun triggerJabberPingAlert(alert: Alert) {
-        triggerAlert(alert, null, "", "")
+    fun triggerJabberPingAlert(alert: Alert, ping: PingModel) {
+        val (title, message) = when (ping) {
+            is PingModel.FleetPing -> {
+                val title = buildString {
+                    val prefix = when (ping.papType) {
+                        PapType.Peacetime -> "Peacetime fleet"
+                        PapType.Strategic -> "Strategic fleet"
+                        is PapType.Text -> "${ping.papType.text} fleet"
+                        else -> "Fleet"
+                    }
+                    appendLine("$prefix under ${ping.fleetCommander.name}")
+                }
+                val message = buildString {
+                    if (ping.formupLocations.isNotEmpty()) {
+                        val formup = ping.formupLocations.joinToString {
+                            when (it) {
+                                is FormupLocation.System -> it.name
+                                is FormupLocation.Text -> it.text
+                            }
+                        }
+                        appendLine("Formup: $formup")
+                    }
+                    if (ping.doctrine != null) {
+                        appendLine("Doctrine: ${ping.doctrine.text}")
+                    }
+                    appendLine(ping.description)
+                }
+                title to message
+            }
+            is PingModel.PlainText -> {
+                "Announcement from ${ping.sender}" to ping.text
+            }
+        }
+        val iconUrl = (ping as? PingModel.FleetPing)?.fleetCommander?.id?.let { id ->
+            "https://images.evetech.net/characters/$id/portrait"
+        }
+        triggerAlert(alert, null, title, message, iconUrl)
     }
 
     @OptIn(ExperimentalTextApi::class)
@@ -179,12 +217,12 @@ class AlertsActionController(
         triggerAlert(alert, notification, title, systemMessage)
     }
 
-    private fun triggerAlert(alert: Alert, notification: Notification?, title: String, message: String) {
+    private fun triggerAlert(alert: Alert, notification: Notification?, title: String, message: String, iconUrl: String? = null) {
         alert.actions.forEach { action ->
             when (action) {
                 AlertAction.RiftNotification -> if (notification != null) sendRiftNotification(notification)
                 AlertAction.SystemNotification -> sendSystemNotification(title, message)
-                AlertAction.PushNotification -> sendPushNotification(title, message)
+                AlertAction.PushNotification -> sendPushNotification(title, message, iconUrl)
                 is AlertAction.Sound -> {
                     withSoundCooldown {
                         val sound = soundsRepository.getSounds().firstOrNull { it.id == action.id } ?: return@withSoundCooldown
@@ -344,9 +382,9 @@ class AlertsActionController(
         )
     }
 
-    private fun sendPushNotification(title: String, message: String) {
+    private fun sendPushNotification(title: String, message: String, iconUrl: String?) {
         scope.launch {
-            pushNotificationController.sendPushNotification(title, message)
+            pushNotificationController.sendPushNotification(title, message, iconUrl)
         }
     }
 }

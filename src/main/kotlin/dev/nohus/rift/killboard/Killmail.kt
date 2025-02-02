@@ -1,5 +1,6 @@
 package dev.nohus.rift.killboard
 
+import dev.nohus.rift.repositories.Position
 import java.time.Instant
 
 data class Killmail(
@@ -10,6 +11,7 @@ data class Killmail(
     val url: String,
     val victim: Victim,
     val attackers: List<Attacker>,
+    val position: Position?,
 )
 
 data class Victim(

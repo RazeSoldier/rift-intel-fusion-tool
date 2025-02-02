@@ -318,6 +318,7 @@ fun SystemEntities(
             SystemEntity.Ess -> IconInfoRow(Res.drawable.keywords_ess, "ESS", rowHeight, isHorizontal)
             SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "Skyhook", rowHeight, isHorizontal)
             is SystemEntity.Gate -> GateInfoRow(system, entity, rowHeight, isHorizontal)
+            is SystemEntity.Celestial -> CelestialInfoRow(entity, rowHeight, isHorizontal)
             SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "Gate camp", rowHeight, isHorizontal)
             SystemEntity.NoVisual -> NoVisualRow(rowHeight, isHorizontal)
             SystemEntity.Spike -> IconInfoRow(Res.drawable.keywords_spike, "Spike", rowHeight, isHorizontal)
@@ -485,11 +486,59 @@ private fun GateInfoRow(system: String, entity: SystemEntity.Gate, rowHeight: Dp
         GateIcon(entity.isAnsiblex, system, entity.system, rowHeight)
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
         val gateText = if (entity.isAnsiblex) "Ansiblex" else "Gate"
-        Text(
-            text = "${entity.system} $gateText",
-            style = RiftTheme.typography.bodyHighlighted,
-            modifier = Modifier.padding(4.dp),
+        Column(
+            modifier = Modifier.padding(horizontal = Spacing.small),
+        ) {
+            Text(
+                text = "${entity.system} $gateText",
+                style = RiftTheme.typography.bodyHighlighted,
+            )
+            if (entity.distanceKm != null && rowHeight >= 32.dp) {
+                Text(
+                    text = "${entity.distanceKm} km",
+                    style = RiftTheme.typography.bodySecondary,
+                )
+            }
+        }
+        if (entity.distanceKm != null && rowHeight < 32.dp) {
+            Text(
+                text = "${entity.distanceKm} km",
+                style = RiftTheme.typography.bodySecondary,
+                modifier = Modifier.padding(4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHorizontal: Boolean) {
+    SystemEntityInfoRow(rowHeight, isHorizontal) {
+        AsyncTypeIcon(
+            typeId = entity.type.typeId,
+            modifier = Modifier.size(rowHeight),
         )
+        VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+        Column(
+            modifier = Modifier.padding(horizontal = Spacing.small),
+        ) {
+            Text(
+                text = entity.type.name,
+                style = RiftTheme.typography.bodyHighlighted,
+            )
+            if (rowHeight >= 32.dp) {
+                Text(
+                    text = "${entity.distanceKm} km",
+                    style = RiftTheme.typography.bodySecondary,
+                )
+            }
+        }
+        if (rowHeight < 32.dp) {
+            Text(
+                text = "${entity.distanceKm} km",
+                style = RiftTheme.typography.bodySecondary,
+                modifier = Modifier.padding(4.dp),
+            )
+        }
     }
 }
 

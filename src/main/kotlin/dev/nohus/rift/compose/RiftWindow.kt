@@ -75,10 +75,12 @@ import dev.nohus.rift.generated.resources.window_titlebar_minimize
 import dev.nohus.rift.generated.resources.window_titlebar_tune
 import dev.nohus.rift.generated.resources.window_unlocked_16px
 import dev.nohus.rift.get
+import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.windowing.LocalRiftWindow
 import dev.nohus.rift.windowing.LocalRiftWindowState
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import dev.nohus.rift.windowing.WindowStatesController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
@@ -111,21 +113,24 @@ fun RiftWindow(
     val isTransparent by windowStatesController.isTransparent(state.window, state.uuid).collectAsState(false)
     val isComposeWindowTransparent = transparentWindowController.isComposeWindowTransparent()
     val isMaximized by windowStatesController.isMaximized(state.uuid).collectAsState(false)
+    val (effectiveAlwaysOnTop, isFocusable, bringToBackEvent) = alwaysOnTopHandler(isAlwaysOnTop, isAlwaysOnTopActive)
     Window(
         onCloseRequest = onCloseClick,
         state = state.windowState,
         title = title,
         icon = painterResource(icon),
         undecorated = true,
+        focusable = isFocusable,
         resizable = isResizable && !isLocked,
-        alwaysOnTop = isAlwaysOnTop && isAlwaysOnTopActive,
+        alwaysOnTop = effectiveAlwaysOnTop,
         transparent = isComposeWindowTransparent,
     ) {
         uiScaleController.withScale {
             transparentWindowController.setTransparency(window, isTransparent)
-            smartAlwaysAboveRepository.registerWindow()
+            smartAlwaysAboveRepository.registerWindow(state)
             MinimumSizeHandler(state)
             BringToFrontHandler(state.bringToFrontEvent)
+            BringToBackHandler(bringToBackEvent)
             CompositionLocalProvider(
                 LocalRiftWindow provides window,
                 LocalRiftWindowState provides state,
@@ -177,6 +182,32 @@ fun RiftWindow(
 }
 
 @Composable
+private fun alwaysOnTopHandler(
+    isAlwaysOnTop: Boolean,
+    isAlwaysOnTopActive: Boolean,
+): Triple<Boolean, Boolean, Event?> {
+    val alwaysOnTop = isAlwaysOnTop && isAlwaysOnTopActive
+    var effectiveAlwaysOnTop by remember { mutableStateOf(alwaysOnTop) }
+    var isFocusable by remember { mutableStateOf(true) }
+    var bringToBackEvent: Event? by remember { mutableStateOf(null) }
+    val operatingSystem: OperatingSystem = remember { koin.get() }
+    if (operatingSystem == OperatingSystem.Windows) {
+        LaunchedEffect(alwaysOnTop) {
+            isFocusable = false
+            effectiveAlwaysOnTop = alwaysOnTop
+            if (isAlwaysOnTop && !isAlwaysOnTopActive) {
+                bringToBackEvent = Event()
+            }
+            delay(100)
+            isFocusable = true
+        }
+    } else {
+        effectiveAlwaysOnTop = alwaysOnTop
+    }
+    return Triple(effectiveAlwaysOnTop, isFocusable, bringToBackEvent)
+}
+
+@Composable
 private fun FrameWindowScope.MinimumSizeHandler(state: RiftWindowState) {
     var isSet by remember { mutableStateOf(false) }
     if (isSet) return
@@ -200,6 +231,13 @@ private fun FrameWindowScope.BringToFrontHandler(event: Event?) {
             window.isVisible = false
             window.isVisible = true
         }
+    }
+}
+
+@Composable
+private fun FrameWindowScope.BringToBackHandler(event: Event?) {
+    if (event.get()) {
+        window.toBack()
     }
 }
 

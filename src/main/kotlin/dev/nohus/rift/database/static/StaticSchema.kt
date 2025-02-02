@@ -64,6 +64,7 @@ object Types : Table() {
     val typeId = integer("typeId")
     val typeName = varchar("typeName", 100)
     val volume = float("volume")
+    val radius = float("radius").nullable()
     val repackagedVolume = integer("repackagedVolume").nullable()
     val iconId = integer("iconID").nullable()
     override val primaryKey = PrimaryKey(typeId)
@@ -103,4 +104,16 @@ object PlanetaryIndustrySchematicsTypes : Table() {
     val typeId = integer("typeId")
     val quantity = integer("quantity")
     val isInput = bool("isInput")
+}
+
+object Celestials : Table() {
+    val id = integer("id")
+    val typeId = integer("typeId")
+    val solarSystemId = integer("solarSystemId")
+    val x = double("x")
+    val y = double("y")
+    val z = double("z")
+    val radius = double("radius").nullable()
+    val name = varchar("name", 100)
+    override val primaryKey = PrimaryKey(id)
 }

@@ -231,7 +231,10 @@ class AssetsRepository(
                     .flatMap { itemIds ->
                         when (val result = esiApi.getCharactersIdAssetsNames(characterId, itemIds)) {
                             is Result.Success -> result.data
-                            is Result.Failure -> return@async result
+                            is Result.Failure -> {
+                                logger.error { "Failed loading asset names: ${result.cause}" }
+                                emptyList()
+                            }
                         }
                     }
                     .associate { it.itemId to it.name.takeIf { it != "None" } }

@@ -46,7 +46,7 @@ class GetSystemDistanceUseCase(
         val code = settings.jumpBridgeNetwork?.hashCode()
         if (code != jumpBridgesHashCode) {
             jumpBridgesHashCode = code
-            cache -= cache.keys.filter { it.withJumpBridges }.toSet()
+            cache -= cache.toMap().keys.filter { it.withJumpBridges }.toSet()
         }
     }
 }
