@@ -304,8 +304,8 @@ private fun Map(
     val animatedZoom by animateFloatAsState(zoom.toFloat(), spring(stiffness = Spring.StiffnessLow))
     var center by remember {
         mutableStateOf(
-            if (state.mapState.selectedSystem != null) {
-                state.layout[state.mapState.selectedSystem]
+            if (state.mapState.centeredSystem != null) {
+                state.layout[state.mapState.centeredSystem]
                     ?.let { Offset(it.position.x.toFloat(), it.position.y.toFloat()) }
                     ?: getMapLayoutCenter(layoutBounds)
             } else {
@@ -382,8 +382,8 @@ private fun Map(
         }
     }.apply { initializeComposed() }
 
-    LaunchedEffect(state.mapState.selectedSystem) {
-        val selectedPosition = state.layout[state.mapState.selectedSystem]?.position ?: return@LaunchedEffect
+    LaunchedEffect(state.mapState.centeredSystem) {
+        val selectedPosition = state.layout[state.mapState.centeredSystem]?.position ?: return@LaunchedEffect
         center = Offset(selectedPosition.x.toFloat(), selectedPosition.y.toFloat())
     }
 
@@ -498,11 +498,12 @@ private fun Map(
                     }
                     .onPointerEvent(PointerEventType.Release) { event ->
                         val awtEvent = event.awtEventOrNull ?: return@onPointerEvent
-                        onMapClick(awtEvent.button)
+                        if (awtEvent.button == RIGHT_BUTTON) onMapClick(awtEvent.button)
                     }
                     .focusRequester(focusRequester)
                     .focusable()
                     .onClick {
+                        onMapClick(LEFT_BUTTON)
                         focusRequester.requestFocus()
                     }
                     .onKeyPress(Key.Spacebar) {
@@ -512,7 +513,15 @@ private fun Map(
             if (mapScale != 0.0f && canvasSize != Size.Zero) {
                 when (state.mapType) {
                     ClusterRegionsMap -> {
-                        RegionsLayer(state, animatedCenter, mapScale, canvasSize, onRegionPointerEnter, onRegionPointerExit, onClick = { onMapClick(1) })
+                        RegionsLayer(
+                            state,
+                            animatedCenter,
+                            mapScale,
+                            canvasSize,
+                            onRegionPointerEnter,
+                            onRegionPointerExit,
+                            onClick = { onMapClick(LEFT_BUTTON) },
+                        )
                     }
                     ClusterSystemsMap, is RegionMap -> {
                         val nodeSizes = NodeSizes(
@@ -875,3 +884,6 @@ private fun getCanvasCoordinates(x: Int, y: Int, center: Offset, scale: Float, c
 private fun isOnCanvas(offset: Offset, canvasSize: Size, margin: Int = 0): Boolean {
     return offset.x >= -margin && offset.y >= -margin && offset.x < canvasSize.width + margin && offset.y < canvasSize.height + margin
 }
+
+private const val LEFT_BUTTON = 1
+private const val RIGHT_BUTTON = 3

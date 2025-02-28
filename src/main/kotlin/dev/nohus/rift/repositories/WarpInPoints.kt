@@ -14,6 +14,7 @@ object WarpInPoints {
 
     private const val GROUP_ID_SUN = 6
     private const val GROUP_ID_PLANET = 7
+    private const val GROUP_ID_STATION = 15
 
     fun getWarpInPoint(celestial: Celestial): Position? {
         val position = celestial.position
@@ -22,6 +23,7 @@ object WarpInPoints {
             when (celestial.type.groupId) {
                 GROUP_ID_SUN -> getSunWarpInPoint(position, radius)
                 GROUP_ID_PLANET -> getPlanetWarpInPoint(celestial.id, position, radius)
+                GROUP_ID_STATION -> null
                 else -> getLargeObjectWarpInPoint(position, radius)
             }
         } else {

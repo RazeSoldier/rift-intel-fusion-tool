@@ -33,7 +33,7 @@ class CelestialsRepository(
             Celestials.selectAll().map {
                 Celestial(
                     id = it[Celestials.id],
-                    type = typesRepository.getType(it[Celestials.typeId]) ?: error("Missing celestial type"),
+                    type = typesRepository.getType(it[Celestials.typeId]) ?: error("Missing celestial type: ${it[Celestials.typeId]}"),
                     solarSystemId = it[Celestials.solarSystemId],
                     position = Position(
                         x = it[Celestials.x].toDouble(),

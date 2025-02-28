@@ -81,7 +81,9 @@ fun RiftContextMenuArea(
     Box(
         modifier = modifier
             .onPlaced {
-                areaOffset = it.positionInRoot().let { IntOffset(it.x.toInt(), it.y.toInt()) }
+                if (it.isAttached) {
+                    areaOffset = it.positionInRoot().let { IntOffset(it.x.toInt(), it.y.toInt()) }
+                }
             }
             .onPointerEvent(PointerEventType.Release) { event ->
                 val awtEvent = event.awtEventOrNull ?: return@onPointerEvent

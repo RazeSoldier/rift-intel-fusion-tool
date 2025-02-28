@@ -28,7 +28,6 @@ import dev.nohus.rift.compose.RiftOpportunityBoxCategory
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.SolarSystemPillState
-import dev.nohus.rift.compose.TextWithLinks
 import dev.nohus.rift.compose.annotateLinks
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
@@ -168,7 +167,7 @@ private fun PlainTextPing(
         }
         val linkStyle = SpanStyle(color = RiftTheme.colors.textLink, fontWeight = FontWeight.Bold)
         val linkifiedMessage = remember(ping.text) { annotateLinks(ping.text, linkStyle) }
-        TextWithLinks(
+        Text(
             text = linkifiedMessage,
             style = descriptionStyle,
         )
@@ -244,7 +243,7 @@ private fun FleetPing(
         }
         val linkStyle = SpanStyle(color = RiftTheme.colors.textLink, fontWeight = FontWeight.Bold)
         val linkifiedMessage = remember(ping.description) { annotateLinks(ping.description, linkStyle) }
-        TextWithLinks(
+        Text(
             text = linkifiedMessage,
             style = descriptionStyle,
             modifier = Modifier.padding(top = Spacing.mediumLarge),
@@ -256,7 +255,7 @@ private fun FleetPing(
                 modifier = Modifier.padding(top = Spacing.mediumLarge),
             )
             val linkifiedComms = remember(ping.comms.text) { annotateLinks(ping.comms.text, linkStyle) }
-            TextWithLinks(
+            Text(
                 text = linkifiedComms,
                 style = RiftTheme.typography.bodyPrimary,
             )

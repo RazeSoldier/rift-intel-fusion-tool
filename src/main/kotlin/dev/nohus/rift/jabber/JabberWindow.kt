@@ -49,7 +49,6 @@ import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.Tab
-import dev.nohus.rift.compose.TextWithLinks
 import dev.nohus.rift.compose.annotateLinks
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.theme.RiftTheme
@@ -756,7 +755,7 @@ private fun MultiUserChat(
             if (subject != null) {
                 val linkStyle = SpanStyle(color = RiftTheme.colors.textLink, fontWeight = FontWeight.Bold)
                 val linkifiedSubject = remember(subject) { annotateLinks(subject.trim(), linkStyle) }
-                TextWithLinks(
+                Text(
                     text = linkifiedSubject,
                     style = RiftTheme.typography.bodyPrimary,
                 )
@@ -885,7 +884,7 @@ private fun ChatMessage(
                 .padding(horizontal = Spacing.medium, vertical = Spacing.verySmall),
         ) {
             val style = if (isUsingBiggerFontSize) RiftTheme.typography.titlePrimary else RiftTheme.typography.bodyPrimary
-            TextWithLinks(
+            Text(
                 text = text,
                 style = style,
             )

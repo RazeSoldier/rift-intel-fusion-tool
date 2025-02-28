@@ -495,14 +495,14 @@ private fun GateInfoRow(system: String, entity: SystemEntity.Gate, rowHeight: Dp
             )
             if (entity.distanceKm != null && rowHeight >= 32.dp) {
                 Text(
-                    text = "${entity.distanceKm} km",
+                    text = "${entity.distanceKm}km",
                     style = RiftTheme.typography.bodySecondary,
                 )
             }
         }
         if (entity.distanceKm != null && rowHeight < 32.dp) {
             Text(
-                text = "${entity.distanceKm} km",
+                text = "${entity.distanceKm}km",
                 style = RiftTheme.typography.bodySecondary,
                 modifier = Modifier.padding(4.dp),
             )
@@ -527,14 +527,14 @@ private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHo
             )
             if (rowHeight >= 32.dp) {
                 Text(
-                    text = "${entity.distanceKm} km",
+                    text = "${entity.distanceKm}km",
                     style = RiftTheme.typography.bodySecondary,
                 )
             }
         }
         if (rowHeight < 32.dp) {
             Text(
-                text = "${entity.distanceKm} km",
+                text = "${entity.distanceKm}km",
                 style = RiftTheme.typography.bodySecondary,
                 modifier = Modifier.padding(4.dp),
             )
