@@ -52,7 +52,7 @@ class LogLiteServer(
         Runtime.getRuntime().addShutdownHook(
             Thread {
                 runBlocking(Dispatchers.IO) {
-                    sessions.forEach {
+                    sessions.toList().forEach {
                         launch {
                             it.stop()
                         }

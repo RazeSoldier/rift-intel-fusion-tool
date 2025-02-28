@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
 
@@ -91,7 +92,9 @@ class ApplicationViewModel(
         }
         viewModelScope.launch {
             if (isSplashScreenEnabled()) delay(3_500)
-            windowManager.openInitialWindows()
+            withContext(MainUIDispatcher) {
+                windowManager.openInitialWindows()
+            }
             _state.update {
                 it.copy(
                     isSplashScreenShown = false,

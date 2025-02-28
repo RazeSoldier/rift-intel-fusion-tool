@@ -10,6 +10,7 @@ import dev.nohus.rift.generated.resources.sun
 import dev.nohus.rift.get
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase.OnlineCharacterLocation
 import dev.nohus.rift.map.MapExternalControl.MapExternalControlEvent
@@ -86,6 +87,7 @@ class MapViewModel(
     data class MapState(
         val hoveredSystem: Int? = null,
         val selectedSystem: Int? = null,
+        val centeredSystem: Int? = null,
         val searchResults: List<Int> = emptyList(),
         val intel: Map<Int, List<IntelStateController.Dated<SystemEntity>>> = emptyMap(),
         val intelPopupSystems: List<Int> = emptyList(),
@@ -349,11 +351,11 @@ class MapViewModel(
         val visibleResultIds = resultIds.intersect(visibleIds).toList()
         if (visibleResultIds.isEmpty()) return
 
-        val selected = _state.value.mapState.selectedSystem
-        var index = visibleResultIds.indexOf(selected) + 1
+        val centered = _state.value.mapState.centeredSystem
+        var index = visibleResultIds.indexOf(centered) + 1
         if (index > visibleResultIds.lastIndex) index = 0
 
-        updateMapState { copy(selectedSystem = visibleResultIds[index]) }
+        updateMapState { copy(centeredSystem = visibleResultIds[index]) }
     }
 
     fun onSystemColorChange(mapType: SettingsMapType, selected: MapSystemInfoType) {
@@ -405,7 +407,7 @@ class MapViewModel(
     }
 
     fun onLayoutSelected(layoutId: Int) {
-        openLayoutMap(layoutId, _state.value.mapState.selectedSystem)
+        openLayoutMap(layoutId, _state.value.mapState.centeredSystem)
     }
 
     private fun openTab(id: Int, focusedId: Int?) {
@@ -424,11 +426,11 @@ class MapViewModel(
 
         val alternativeLayouts = getAlternativeLayouts(mapType)
 
-        var selectedId = focusedId ?: getOnlineCharacterLocationId(mapType)
-        if (selectedId !in layout.keys) selectedId = null
+        var centeredId = focusedId ?: getOnlineCharacterLocationId(mapType)
+        if (centeredId !in layout.keys) centeredId = null
         val initialTransform = mapTransforms[mapType]
 
-        updateMapState { copy(hoveredSystem = null, selectedSystem = selectedId, contextMenuSystem = null, initialTransform = initialTransform) }
+        updateMapState { copy(hoveredSystem = null, centeredSystem = centeredId, contextMenuSystem = null, initialTransform = initialTransform) }
         _state.update {
             it.copy(
                 selectedTab = id,
@@ -548,14 +550,14 @@ class MapViewModel(
 
                 when (val mapType = _state.value.mapType) {
                     ClusterRegionsMap -> {
-                        updateMapState { copy(selectedSystem = regionId) }
+                        updateMapState { copy(centeredSystem = regionId) }
                     }
                     ClusterSystemsMap -> {
-                        updateMapState { copy(selectedSystem = systemId) }
+                        updateMapState { copy(centeredSystem = systemId) }
                     }
                     is RegionMap -> {
                         if (regionId in mapType.regionIds) {
-                            updateMapState { copy(selectedSystem = systemId) }
+                            updateMapState { copy(centeredSystem = systemId) }
                         } else {
                             if (layoutRepository.getLayouts(regionId).isNotEmpty()) {
                                 openRegionMap(regionId, systemId)

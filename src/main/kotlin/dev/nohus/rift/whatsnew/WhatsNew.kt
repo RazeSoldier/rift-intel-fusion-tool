@@ -384,6 +384,11 @@ object WhatsNew {
                 - Updated the setup wizard to be clearer about what intel channels are and that adding them is optional
                 - Your old chat and game log files are now moved to an "old" subdirectory as an optimization.
             """.trimIndent(),
+            "4.23.0" description """
+                - When using the "move with character" map option, the system info box won't be expanded anymore
+                - When clicking a system on the map, the map won't center on the system anymore, so you can click systems without ruining your map layout
+                - Dragging the map won't hide the expanded system info boxes anymore, so you can look around without hiding information you want open
+            """.trimIndent()
         ).reversed()
     }
 }

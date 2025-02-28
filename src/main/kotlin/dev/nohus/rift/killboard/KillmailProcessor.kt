@@ -149,7 +149,7 @@ class KillmailProcessor(
         message.position ?: return null
         val closestCelestial = celestialsRepository.getClosestCelestial(message.solarSystemId, message.position) ?: return null
         val shipRadius = victimShipType?.radius ?: 0f
-        val distance = closestCelestial.distance - shipRadius
+        val distance = (closestCelestial.distance - shipRadius).coerceAtLeast(0.0)
         val distanceKm = (distance / 1000).roundToInt()
         if (distanceKm >= 1000) return null
 

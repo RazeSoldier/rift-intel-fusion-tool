@@ -11,6 +11,8 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.missing
 import dev.nohus.rift.generated.resources.missing_blueprint
 import dev.nohus.rift.generated.resources.missing_skin
+import dev.nohus.rift.network.UserAgentInterceptor.Companion.USER_AGENT
+import dev.nohus.rift.network.UserAgentInterceptor.Companion.USER_AGENT_KEY
 import dev.nohus.rift.repositories.TypesRepository.Type
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kamel.core.utils.cacheControl
@@ -36,7 +38,7 @@ fun AsyncImage(
 ) {
     val painter = asyncPainterResource(url) {
         requestBuilder {
-            header("User-Agent", "RIFT (contact: developer@riftforeve.online)")
+            header(USER_AGENT_KEY, USER_AGENT)
             cacheControl(CacheControl.MAX_AGE)
         }
     }
