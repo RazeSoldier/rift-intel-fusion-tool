@@ -556,11 +556,12 @@ class CreateAlertViewModel(
                         else -> throw IllegalStateException()
                     }
                     val sender = CHAT_MESSAGE_SENDER_QUESTION.answer?.text ?: return null
-                    val messageContaining = CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer?.text ?: return null
+                    val messageContaining = CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer ?: return null
                     AlertTrigger.ChatMessage(
                         channel = channel,
                         sender = sender.takeIf { it.isNotBlank() },
-                        messageContaining = messageContaining.takeIf { it.isNotBlank() },
+                        messageContaining = messageContaining.text.takeIf { it.isNotBlank() },
+                        isRegex = messageContaining.isRegex,
                     )
                 }
 
@@ -610,11 +611,12 @@ class CreateAlertViewModel(
                         else -> throw IllegalStateException()
                     }
                     val sender = JABBER_MESSAGE_SENDER_QUESTION.answer?.text ?: return null
-                    val messageContaining = JABBER_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer?.text ?: return null
+                    val messageContaining = JABBER_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer ?: return null
                     AlertTrigger.JabberMessage(
                         channel = channel,
                         sender = sender.takeIf { it.isNotBlank() },
-                        messageContaining = messageContaining.takeIf { it.isNotBlank() },
+                        messageContaining = messageContaining.text.takeIf { it.isNotBlank() },
+                        isRegex = messageContaining.isRegex,
                     )
                 }
 

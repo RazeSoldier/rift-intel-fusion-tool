@@ -22,6 +22,7 @@ import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.toRegexOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -181,11 +182,20 @@ class AlertsTriggerController(
                     val isEveSystem = channelChatMessage.chatMessage.author == "EVE System"
                     val isSenderMatching = triggerSender == null && !isEveSystem || channelChatMessage.chatMessage.author == triggerSender
                     if (isSenderMatching) {
+                        val message = channelChatMessage.chatMessage.message
                         val containing = alert.trigger.messageContaining
-                        val isMessageMatching = channelChatMessage.chatMessage.message.lowercase().containsNonNull(containing?.lowercase())
+
+                        val (isMessageMatching, match) = if (alert.trigger.isRegex) {
+                            val regex = containing?.toRegexOrNull(RegexOption.IGNORE_CASE)
+                            val match = regex?.find(message)
+                            (match != null) to (match?.value ?: "")
+                        } else {
+                            message.lowercase().containsNonNull(containing?.lowercase()) to (containing ?: "")
+                        }
+
                         if (isMessageMatching) {
                             withCooldown(alert) {
-                                alertsActionController.triggerChatMessageAlert(alert, channelChatMessage, containing)
+                                alertsActionController.triggerChatMessageAlert(alert, channelChatMessage, match)
                             }
                         }
                     }
@@ -208,10 +218,18 @@ class AlertsTriggerController(
                     val isSenderMatching = triggerSender == null && !isDirectorbot || sender == triggerSender
                     if (isSenderMatching) {
                         val containing = alert.trigger.messageContaining
-                        val isMessageMatching = message.lowercase().containsNonNull(containing?.lowercase())
+
+                        val (isMessageMatching, match) = if (alert.trigger.isRegex) {
+                            val regex = containing?.toRegexOrNull(RegexOption.IGNORE_CASE)
+                            val match = regex?.find(message)
+                            (match != null) to (match?.value ?: "")
+                        } else {
+                            message.lowercase().containsNonNull(containing?.lowercase()) to (containing ?: "")
+                        }
+
                         if (isMessageMatching) {
                             withCooldown(alert) {
-                                alertsActionController.triggerJabberMessageAlert(alert, chat, sender, message, containing)
+                                alertsActionController.triggerJabberMessageAlert(alert, chat, sender, message, match)
                             }
                         }
                     }

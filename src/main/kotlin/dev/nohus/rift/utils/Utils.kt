@@ -15,6 +15,7 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.nio.file.Path
 import java.util.UUID
+import java.util.regex.PatternSyntaxException
 import kotlin.io.path.createFile
 
 fun URI.openBrowser() {
@@ -43,6 +44,22 @@ fun String.toURIOrNull(): URI? {
     return try {
         URI(this)
     } catch (e: URISyntaxException) {
+        null
+    }
+}
+
+fun String.toRegexOrNull(): Regex? {
+    return try {
+        toRegex()
+    } catch (e: PatternSyntaxException) {
+        null
+    }
+}
+
+fun String.toRegexOrNull(option: RegexOption): Regex? {
+    return try {
+        toRegex(option)
+    } catch (e: PatternSyntaxException) {
         null
     }
 }

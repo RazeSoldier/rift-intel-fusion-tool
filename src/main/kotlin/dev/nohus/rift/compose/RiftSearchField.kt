@@ -18,6 +18,7 @@ import dev.nohus.rift.generated.resources.search_16px
 @Composable
 fun RiftSearchField(
     search: String?,
+    suggestions: List<String> = emptyList(),
     isCompact: Boolean,
     onSearchChange: (String) -> Unit,
     onSearchConfirm: () -> Unit = {},
@@ -25,13 +26,17 @@ fun RiftSearchField(
 ) {
     var search by remember { mutableStateOf(search ?: "") }
     val focusManager = LocalFocusManager.current
-    RiftTextField(
+    RiftAutocompleteTextField(
         text = search,
+        suggestions = suggestions,
         icon = Res.drawable.search_16px,
         placeholder = "Search",
         onTextChanged = {
             search = it
             onSearchChange(it)
+        },
+        onSuggestionConfirmed = {
+            onSearchConfirm()
         },
         height = if (isCompact) 24.dp else 32.dp,
         onDeleteClick = {

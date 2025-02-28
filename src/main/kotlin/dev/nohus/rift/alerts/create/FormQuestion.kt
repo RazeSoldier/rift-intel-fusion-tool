@@ -56,6 +56,7 @@ sealed class FormQuestion(
         override val title: String,
         val placeholder: String,
         val allowEmpty: Boolean,
+        val isRegexAllowed: Boolean = false,
     ) : FormQuestion(title)
 
     data class ContactsLabelQuestion(
@@ -117,6 +118,7 @@ sealed interface FormAnswer {
 
     data class FreeformTextAnswer(
         val text: String,
+        val isRegex: Boolean = false,
     ) : FormAnswer
 
     data class ContactsLabelAnswer(

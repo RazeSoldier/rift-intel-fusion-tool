@@ -18,6 +18,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.RiftAutocompleteTextField
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftDropdown
@@ -73,6 +74,13 @@ private fun ThemePreviewWindow(onCloseRequest: () -> Unit) {
                 selectedItem = selectedItem,
                 onItemSelected = { selectedItem = it },
                 getItemName = { it },
+            )
+            var text by remember { mutableStateOf("") }
+            RiftAutocompleteTextField(
+                text = text,
+                suggestions = listOf("Aaa", "Bbb", "Ccc").map { text + it }.takeIf { text.isNotEmpty() } ?: emptyList(),
+                placeholder = "Autocomplete text field",
+                onTextChanged = { text = it },
             )
 
             var isChecked by remember { mutableStateOf(true) }

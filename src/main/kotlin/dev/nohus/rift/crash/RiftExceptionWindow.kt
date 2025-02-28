@@ -95,7 +95,8 @@ fun RiftExceptionWindow(
                                         appendLine(errorId)
                                     }
                                     appendLine()
-                                    append("Please report this issue and copy the code into a Discord ticket.")
+                                    appendLine("Please report this issue and copy the code into a Discord ticket.")
+                                    append("Don't send a screenshot of the code.")
                                 }
                             },
                         )

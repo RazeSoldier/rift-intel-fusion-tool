@@ -42,6 +42,7 @@ sealed interface AlertTrigger {
         val channel: ChatMessageChannel,
         val sender: String?,
         val messageContaining: String?,
+        val isRegex: Boolean = false,
     ) : AlertTrigger
 
     @Serializable
@@ -50,6 +51,7 @@ sealed interface AlertTrigger {
         val channel: JabberMessageChannel,
         val sender: String?,
         val messageContaining: String?,
+        val isRegex: Boolean = false,
     ) : AlertTrigger
 
     @Serializable

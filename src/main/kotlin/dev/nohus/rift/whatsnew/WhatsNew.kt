@@ -388,7 +388,13 @@ object WhatsNew {
                 - When using the "move with character" map option, the system info box won't be expanded anymore
                 - When clicking a system on the map, the map won't center on the system anymore, so you can click systems without ruining your map layout
                 - Dragging the map won't hide the expanded system info boxes anymore, so you can look around without hiding information you want open
-            """.trimIndent()
+            """.trimIndent(),
+            "4.24.0" description """
+                - Jump range text field now has autocomplete for system and character names
+                - Map search now has autocomplete for system names
+                - Map search now works for systems that aren't visible on the current map layout, and will automatically switch the map tab to show the result
+                - Chat message alerts now support regular expressions for precise control of matching messages
+            """.trimIndent(),
         ).reversed()
     }
 }
