@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.onClick
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,7 @@ import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RequirementIcon
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCheckbox
+import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftDropdown
 import dev.nohus.rift.compose.RiftFileChooserButton
@@ -77,7 +79,9 @@ import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.sound.SoundPlayer
+import dev.nohus.rift.utils.toRegexOrNull
 import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -606,23 +610,84 @@ private fun FormQuestion(
             }
 
             is FormQuestion.FreeformTextQuestion -> {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
                 ) {
+                    var isRegex by remember { mutableStateOf(false) }
                     var text: String by remember { mutableStateOf("") }
-                    LaunchedEffect(Unit) {
-                        onFormAnswer(FreeformTextAnswer(""))
+                    var testText: String by remember { mutableStateOf("") }
+
+                    val regex = if (isRegex) text.toRegexOrNull(RegexOption.IGNORE_CASE) else null
+                    val match = regex?.find(testText)
+
+                    LaunchedEffect(text, regex) {
+                        val answer = if (regex != null) text else text.trim()
+                        onFormAnswer(FreeformTextAnswer(answer, regex != null))
                     }
-                    RiftTextField(
-                        text = text,
-                        placeholder = formQuestion.placeholder,
-                        onTextChanged = {
-                            text = it
-                            onFormAnswer(FreeformTextAnswer(it.trim()))
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        RiftTextField(
+                            text = text,
+                            placeholder = formQuestion.placeholder,
+                            onTextChanged = { text = it },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                    if (formQuestion.isRegexAllowed) {
+                        RiftCheckboxWithLabel(
+                            label = "Use regex",
+                            tooltip = "Your filter will be evaluated as a regular expression.\nMatching is case insensitive.\n\nYou can learn more about regular expressions online.",
+                            isChecked = isRegex,
+                            onCheckedChange = { isRegex = it },
+                        )
+                        AnimatedVisibility(isRegex) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                RiftTextField(
+                                    text = testText,
+                                    placeholder = "Enter a message to test if it matches",
+                                    onTextChanged = {
+                                        testText = it
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                )
+                                AnimatedContent(match, contentKey = { it != null }) { match ->
+                                    if (match != null) {
+                                        Text(
+                                            text = buildAnnotatedString {
+                                                val trimmed = match.value.trim()
+                                                if (trimmed.isNotBlank()) {
+                                                    append("Matched: ")
+                                                    withColor(RiftTheme.colors.textSpecialHighlighted) {
+                                                        append(trimmed)
+                                                    }
+                                                } else {
+                                                    append("Matched")
+                                                }
+                                            },
+                                            maxLines = 1,
+                                            overflow = TextOverflow.MiddleEllipsis,
+                                            style = RiftTheme.typography.bodyPrimary,
+                                            modifier = Modifier
+                                                .padding(start = Spacing.medium)
+                                                .widthIn(max = 150.dp),
+                                        )
+                                    }
+                                }
+                                RequirementIcon(
+                                    isFulfilled = match != null,
+                                    fulfilledTooltip = "This message would trigger this alert",
+                                    notFulfilledTooltip = "This message wouldn't trigger this alert",
+                                    modifier = Modifier.padding(start = Spacing.small),
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

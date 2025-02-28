@@ -28,15 +28,16 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.onClick
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -262,16 +263,24 @@ private fun ToolbarRow(
             fixedHeight = fixedHeight,
             modifier = Modifier.weight(1f),
         )
+
+        val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+        val suggestions by derivedStateOf {
+            solarSystemsRepository.getSystems()
+                .map { it.name }
+                .filter { it.lowercase().startsWith(state.search?.lowercase() ?: "") }
+        }
+        Spacer(Modifier.width(Spacing.medium))
         RiftSearchField(
             search = state.search,
+            suggestions = suggestions.take(5),
             isCompact = state.settings.isUsingCompactMode,
             onSearchChange = {
                 onSearchChange(it)
             },
             onSearchConfirm = onSearchSubmit,
             modifier = Modifier
-                .width(100.dp)
-                .padding(start = Spacing.medium),
+                .width(100.dp),
         )
     }
 }

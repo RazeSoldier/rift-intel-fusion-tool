@@ -21,6 +21,7 @@ import androidx.compose.foundation.onClick
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,15 +34,17 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.RequirementIcon
+import dev.nohus.rift.compose.RiftAutocompleteTextField
 import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftPill
-import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.backicon
 import dev.nohus.rift.generated.resources.expand_more_16px
@@ -63,6 +66,7 @@ import dev.nohus.rift.map.PanelState.Planets
 import dev.nohus.rift.map.PanelState.StarColor
 import dev.nohus.rift.repositories.PlanetTypes
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
+import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import org.jetbrains.compose.resources.painterResource
 import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
@@ -388,7 +392,19 @@ private fun JumpRangePanel(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.heightIn(min = 36.dp),
         ) {
+            val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+            val charactersRepository: LocalCharactersRepository = remember { koin.get() }
             var targetText by remember { mutableStateOf("") }
+
+            val suggestions by derivedStateOf {
+                val possibleCharacters = charactersRepository.characters.value
+                    .mapNotNull { it.info.success?.name }
+                val possibleSystems = solarSystemsRepository.getSystems()
+                    .map { it.name }
+                (possibleCharacters + possibleSystems)
+                    .filter { it.lowercase().startsWith(targetText.lowercase()) }
+            }
+
             LaunchedEffect(mapJumpRangeState.target) {
                 when (mapJumpRangeState.target) {
                     is MapJumpRangeController.MapJumpRangeTarget.Character -> targetText = mapJumpRangeState.target.name
@@ -396,13 +412,15 @@ private fun JumpRangePanel(
                     null -> {}
                 }
             }
+
             Text(
                 text = "From:",
                 style = RiftTheme.typography.bodyPrimary,
                 modifier = Modifier.padding(end = Spacing.small),
             )
-            RiftTextField(
+            RiftAutocompleteTextField(
                 text = targetText,
+                suggestions = suggestions.take(5),
                 placeholder = "System or character",
                 onTextChanged = {
                     targetText = it

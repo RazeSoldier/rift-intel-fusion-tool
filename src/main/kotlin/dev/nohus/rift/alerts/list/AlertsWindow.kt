@@ -761,6 +761,9 @@ private fun getAlertText(
                     append("a chat message")
                     if (trigger.messageContaining != null) {
                         append(" containing ")
+                        if (trigger.isRegex) {
+                            append("regex ")
+                        }
                         withStyle(primary) {
                             append(trigger.messageContaining)
                         }
@@ -849,6 +852,9 @@ private fun getAlertText(
                     append("a Jabber message")
                     if (trigger.messageContaining != null) {
                         append(" containing ")
+                        if (trigger.isRegex) {
+                            append("regex ")
+                        }
                         withStyle(primary) {
                             append(trigger.messageContaining)
                         }

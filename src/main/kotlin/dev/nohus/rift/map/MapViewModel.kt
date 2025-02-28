@@ -10,7 +10,6 @@ import dev.nohus.rift.generated.resources.sun
 import dev.nohus.rift.get
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
-import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase.OnlineCharacterLocation
 import dev.nohus.rift.map.MapExternalControl.MapExternalControlEvent
@@ -349,7 +348,13 @@ class MapViewModel(
         val resultIds = _state.value.mapState.searchResults
         val visibleIds = _state.value.layout.keys
         val visibleResultIds = resultIds.intersect(visibleIds).toList()
-        if (visibleResultIds.isEmpty()) return
+        if (visibleResultIds.isEmpty()) {
+            if (resultIds.isNotEmpty()) {
+                // Result system is not on this layout, change tab to New Eden
+                openTab(0, resultIds.first())
+            }
+            return
+        }
 
         val centered = _state.value.mapState.centeredSystem
         var index = visibleResultIds.indexOf(centered) + 1

@@ -284,6 +284,7 @@ class CreateAlertQuestions(
         title = "And the message contains:",
         placeholder = "Message contents. Leave empty for any.",
         allowEmpty = true,
+        isRegexAllowed = true,
     )
 
     // Jabber ping, ping type
@@ -368,6 +369,7 @@ class CreateAlertQuestions(
         title = "And the message contains:",
         placeholder = "Message contents. Leave empty for any.",
         allowEmpty = true,
+        isRegexAllowed = true,
     )
 
     // No message channel type

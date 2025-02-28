@@ -66,7 +66,6 @@ fun AsyncTypeIcon(
     key(type) {
         AsyncTypeIcon(
             typeId = type?.id,
-            fallbackIconId = type?.iconId,
             nameHint = type?.name,
             modifier = modifier,
         )
@@ -80,7 +79,6 @@ fun AsyncTypeIcon(
 @Composable
 fun AsyncTypeIcon(
     typeId: Int?,
-    fallbackIconId: Int? = null,
     nameHint: String? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -105,22 +103,14 @@ fun AsyncTypeIcon(
             modifier = modifier,
         )
     }
-    val fallbackIcon = @Composable {
-        AsyncImage(
-            url = "https://images.evetech.net/types/$fallbackIconId/icon",
-            modifier = modifier,
-            fallbackIcon = staticFallbackIcon,
-        )
-    }
-    val primaryFallbackIcon = if (fallbackIconId != null) fallbackIcon else staticFallbackIcon
     if (typeId != null) {
         AsyncImage(
             url = "https://images.evetech.net/types/$typeId/icon",
             modifier = modifier,
-            fallbackIcon = primaryFallbackIcon,
+            fallbackIcon = staticFallbackIcon,
         )
     } else {
-        primaryFallbackIcon()
+        staticFallbackIcon()
     }
 }
 
