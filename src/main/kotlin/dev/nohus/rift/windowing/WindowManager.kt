@@ -32,6 +32,8 @@ import dev.nohus.rift.jabber.JabberInputModel
 import dev.nohus.rift.jabber.JabberWindow
 import dev.nohus.rift.loglite.LogLiteWindow
 import dev.nohus.rift.map.MapWindow
+import dev.nohus.rift.map.markers.MapMarkersInputModel
+import dev.nohus.rift.map.markers.MapMarkersWindow
 import dev.nohus.rift.map.settings.MapSettingsWindow
 import dev.nohus.rift.neocom.NeocomWindow
 import dev.nohus.rift.pings.PingsWindow
@@ -91,6 +93,9 @@ class WindowManager(
 
         @SerialName("MapSettings")
         MapSettings,
+
+        @SerialName("MapMarkers")
+        MapMarkers,
 
         @SerialName("Characters")
         Characters,
@@ -178,6 +183,7 @@ class WindowManager(
         RiftWindow.IntelReportsSettings,
         RiftWindow.IntelFeedSettings,
         RiftWindow.MapSettings,
+        RiftWindow.MapMarkers,
         RiftWindow.About,
         RiftWindow.ConfigurationPackReminder,
         RiftWindow.WhatsNew,
@@ -227,6 +233,7 @@ class WindowManager(
                             RiftWindow.Settings -> SettingsWindow(state.inputModel as? SettingsInputModel ?: SettingsInputModel.Normal, state, onCloseRequest = { onWindowClose(RiftWindow.Settings, state.uuid) })
                             RiftWindow.Map -> MapWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Map, state.uuid) }, onTuneClick = { onWindowOpen(RiftWindow.MapSettings) })
                             RiftWindow.MapSettings -> MapSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.MapSettings, state.uuid) })
+                            RiftWindow.MapMarkers -> MapMarkersWindow(state.inputModel as? MapMarkersInputModel ?: MapMarkersInputModel.New, state, onCloseRequest = { onWindowClose(RiftWindow.MapMarkers, state.uuid) })
                             RiftWindow.Characters -> CharactersWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Characters, state.uuid) })
                             RiftWindow.Alerts -> AlertsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Alerts, state.uuid) })
                             RiftWindow.About -> AboutWindow(state, onCloseRequest = { onWindowClose(RiftWindow.About, state.uuid) })
@@ -368,6 +375,7 @@ class WindowManager(
             RiftWindow.Settings -> WindowSizing(defaultSize = (820 to null), minimumSize = 820 to null)
             RiftWindow.Map -> WindowSizing(defaultSize = saved ?: (800 to 800), minimumSize = 350 to 300)
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
+            RiftWindow.MapMarkers -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.Characters -> WindowSizing(defaultSize = saved ?: (420 to 400), minimumSize = 400 to 300)
             RiftWindow.Alerts -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = 500 to 500)
             RiftWindow.About -> WindowSizing(defaultSize = (500 to null), minimumSize = (500 to null))

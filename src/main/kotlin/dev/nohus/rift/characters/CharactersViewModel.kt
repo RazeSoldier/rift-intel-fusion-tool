@@ -16,6 +16,7 @@ import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -23,7 +24,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.deleteExisting
+
+private val logger = KotlinLogging.logger {}
 
 @Single
 class CharactersViewModel(
@@ -55,6 +60,7 @@ class CharactersViewModel(
         val isChoosingDisabledCharacters: Boolean = false,
         val isSsoDialogOpen: Boolean = false,
         val isShowingClones: Boolean,
+        val deletingCharacter: CharacterItem? = null,
     )
 
     sealed class AuthenticationStatus {
@@ -140,6 +146,29 @@ class CharactersViewModel(
 
     fun onEnableCharacterClick(characterId: Int) {
         settings.hiddenCharacterIds -= characterId
+    }
+
+    fun onDeleteCharacterClick(characterId: Int) {
+        val item = _state.value.characters.firstOrNull { it.characterId == characterId } ?: return
+        _state.update { it.copy(deletingCharacter = item) }
+    }
+
+    fun onDeleteCharacterConfirm() {
+        val item = _state.value.deletingCharacter ?: return
+        try {
+            item.settingsFile?.deleteExisting()
+            settings.hiddenCharacterIds -= item.characterId
+            viewModelScope.launch {
+                localCharactersRepository.load()
+                _state.update { it.copy(deletingCharacter = null) }
+            }
+        } catch (e: IOException) {
+            logger.error(e) { "Failed deleting character" }
+        }
+    }
+
+    fun onDeleteCharacterCancel() {
+        _state.update { it.copy(deletingCharacter = null) }
     }
 
     fun onIsShowingCharactersClonesChange(enabled: Boolean) {

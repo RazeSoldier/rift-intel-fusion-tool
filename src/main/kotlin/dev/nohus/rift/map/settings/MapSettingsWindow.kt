@@ -66,6 +66,7 @@ fun MapSettingsWindow(
             onIsCharacterFollowingChange = viewModel::onIsCharacterFollowingChange,
             onIsScrollZoomInvertedChange = viewModel::onIsScrollZoomInvertedChange,
             onIsAlwaysShowingSystemsChange = viewModel::onIsAlwaysShowingSystemsChange,
+            onMapNotesClick = viewModel::onMapNotesClick,
             onIsUsingRiftAutopilotRouteChange = viewModel::onIsUsingRiftAutopilotRouteChange,
             onIsJumpBridgeNetworkShownChange = viewModel::onIsJumpBridgeNetworkShownChange,
             onJumpBridgeNetworkOpacityChange = viewModel::onJumpBridgeNetworkOpacityChange,
@@ -128,6 +129,7 @@ private fun MapSettingsWindowContent(
     onIsCharacterFollowingChange: (Boolean) -> Unit,
     onIsScrollZoomInvertedChange: (Boolean) -> Unit,
     onIsAlwaysShowingSystemsChange: (Boolean) -> Unit,
+    onMapNotesClick: () -> Unit,
     onIsUsingRiftAutopilotRouteChange: (Boolean) -> Unit,
     onIsJumpBridgeNetworkShownChange: (Boolean) -> Unit,
     onJumpBridgeNetworkOpacityChange: (Int) -> Unit,
@@ -163,6 +165,18 @@ private fun MapSettingsWindowContent(
                 isChecked = intelMap.isAlwaysShowingSystems,
                 onCheckedChange = { onIsAlwaysShowingSystemsChange(it) },
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(end = Spacing.medium).fillMaxWidth(),
+            ) {
+                Text("View and edit your map markers")
+                RiftButton(
+                    text = "Map markers",
+                    type = ButtonType.Primary,
+                    onClick = onMapNotesClick,
+                )
+            }
             Text(
                 text = buildAnnotatedString {
                     withColor(RiftTheme.colors.textPrimary) {

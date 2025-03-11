@@ -54,6 +54,8 @@ class CreateAlertQuestions(
     val INTEL_REPORT_TYPE_WORMHOLE = FormChoiceItem(id = id++, text = "Wormholes")
     val INTEL_REPORT_TYPE_GATE_CAMP = FormChoiceItem(id = id++, text = "Gate camps")
     val INTEL_REPORT_TYPE_BUBBLES = FormChoiceItem(id = id++, text = "Bubbles")
+    val INTEL_REPORT_TYPE_ESS = FormChoiceItem(id = id++, text = "ESS")
+    val INTEL_REPORT_TYPE_SKYHOOK = FormChoiceItem(id = id++, text = "Skyhook")
     val INTEL_REPORT_TYPE_QUESTION = MultipleChoiceQuestion(
         title = "If the report contains any of:",
         items = listOf(
@@ -65,6 +67,8 @@ class CreateAlertQuestions(
             INTEL_REPORT_TYPE_WORMHOLE,
             INTEL_REPORT_TYPE_GATE_CAMP,
             INTEL_REPORT_TYPE_BUBBLES,
+            INTEL_REPORT_TYPE_ESS,
+            INTEL_REPORT_TYPE_SKYHOOK,
         ),
     )
 
@@ -146,6 +150,15 @@ class CreateAlertQuestions(
         text = "You are no longer in combat",
         description = "Includes both being under attack and attacking",
     )
+    val GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES = FormChoiceItem(
+        id = id++,
+        text = "Module has run out of charges",
+    )
+    val GAME_ACTION_TYPE_CUSTOM = FormChoiceItem(
+        id = id++,
+        text = "Custom game log message",
+        description = "Create your own alert type",
+    )
     val GAME_ACTION_TYPE_QUESTION = MultipleChoiceQuestion(
         title = "If any of the following happens:",
         items = listOf(
@@ -155,6 +168,8 @@ class CreateAlertQuestions(
             GAME_ACTION_TYPE_BEING_WARP_SCRAMBLED,
             GAME_ACTION_TYPE_DECLOAKED,
             GAME_ACTION_TYPE_COMBAT_STOPPED,
+            GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES,
+            GAME_ACTION_TYPE_CUSTOM,
         ),
     )
 
@@ -189,6 +204,14 @@ class CreateAlertQuestions(
             GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_2_MINUTES,
             GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_5_MINUTES,
         ),
+    )
+
+    // Game action type, custom game log message
+    val GAME_ACTION_TYPE_CUSTOM_MESSAGE_QUESTION = FreeformTextQuestion(
+        title = "And the message contains:",
+        placeholder = "Message contents.",
+        allowEmpty = false,
+        isRegexAllowed = true,
     )
 
     // Planetary Industry event type

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -23,10 +22,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.SpanStyle
@@ -65,11 +66,13 @@ import dev.nohus.rift.generated.resources.indicator_npc_kills
 import dev.nohus.rift.generated.resources.indicator_pod
 import dev.nohus.rift.generated.resources.indicator_stations
 import dev.nohus.rift.generated.resources.indicator_storm
+import dev.nohus.rift.generated.resources.indicator_wormhole
 import dev.nohus.rift.intel.state.IntelStateController.Dated
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.network.esi.SovereigntySystem
+import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.WormholeSize
 import dev.nohus.rift.repositories.MapStatusRepository.SolarSystemStatus
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.RatsRepository.RatType
@@ -80,6 +83,7 @@ import dev.nohus.rift.standings.StandingsRepository
 import dev.nohus.rift.standings.getSystemColor
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
+import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import java.time.Duration
@@ -210,7 +214,7 @@ fun SystemInfoBox(
             modifier = Modifier.padding(start = 2.dp, top = Spacing.verySmall),
         ) {
             val shownIndicatorsInfoTypes = if (isExpanded) indicatorsInfoTypes - infoTypes.toSet() else indicatorsInfoTypes
-            SystemInfoTypesIndicators(system, shownIndicatorsInfoTypes, systemStatus)
+            SystemInfoTypesIndicators(system, shownIndicatorsInfoTypes, systemStatus, isExpanded)
         }
     }
 }
@@ -218,7 +222,6 @@ fun SystemInfoBox(
 /**
  * These show when the system info box is expanded
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ColumnScope.SystemInfoTypes(
     system: MapSolarSystem,
@@ -267,6 +270,7 @@ private fun ColumnScope.SystemInfoTypes(
                     MapSystemInfoType.JoveObservatories -> {
                         InfoTypeIndicator("".takeIf { system.hasJoveObservatory }, Res.drawable.indicator_jove, "Jove Observatory")
                     }
+                    MapSystemInfoType.Wormholes -> {} // In column
                     MapSystemInfoType.JumpRange -> {
                         systemStatus?.distance?.let {
                             val lightYears = String.format("%.1fly", it.distanceLy)
@@ -385,6 +389,9 @@ private fun ColumnScope.SystemInfoTypes(
                     }
                 }
                 MapSystemInfoType.JoveObservatories -> {} // In icon row
+                MapSystemInfoType.Wormholes -> {
+                    WormholesInfo(systemStatus, isFull = true)
+                }
                 MapSystemInfoType.Colonies -> {} // In icon row
                 MapSystemInfoType.Clones -> {
                     val clones = systemStatus?.clones?.takeIf { it.isNotEmpty() }
@@ -421,17 +428,20 @@ private fun ColumnScope.SystemInfoTypes(
                 MapSystemInfoType.IndustryIndexTimeEfficiency -> IndustryActivityIndex(systemStatus, IndustryActivity.ResearchingTimeEfficiency, "Time Efficiency")
             }
         }
+    systemStatus?.markers?.forEach { marker ->
+        InfoTypeIndicator(marker.label, marker.icon, tint = marker.color)
+    }
 }
 
 /**
  * These show when the system info box is collapsed
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SystemInfoTypesIndicators(
     system: MapSolarSystem,
     infoTypes: List<MapSystemInfoType>,
     systemStatus: SolarSystemStatus?,
+    isExpanded: Boolean,
 ) {
     infoTypes.distinct()
         .sortedBy { listOf(MapSystemInfoType.Incursions, MapSystemInfoType.Sovereignty).indexOf(it) }
@@ -512,6 +522,9 @@ private fun SystemInfoTypesIndicators(
                         InfoTypeIndicator("", Res.drawable.indicator_jove)
                     }
                 }
+                MapSystemInfoType.Wormholes -> {
+                    WormholesInfo(systemStatus, isFull = false)
+                }
                 MapSystemInfoType.Colonies -> {
                     val colonies = systemStatus?.colonies?.takeIf { it > 0 }
                     if (colonies != null) {
@@ -536,6 +549,83 @@ private fun SystemInfoTypesIndicators(
                 MapSystemInfoType.IndustryIndexTimeEfficiency -> IndustryActivityIndex(systemStatus, IndustryActivity.ResearchingTimeEfficiency, "Time Efficiency")
             }
         }
+    if (!isExpanded) {
+        systemStatus?.markers?.forEach { marker ->
+            InfoTypeIndicator(marker.label, marker.icon, tint = marker.color)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun WormholesInfo(systemStatus: SolarSystemStatus?, isFull: Boolean) {
+    val wormholes = systemStatus?.wormholes ?: emptyList()
+    for (wormhole in wormholes.sortedBy { it.outRegionName == null }) {
+        val (sizeCode, size) = when (wormhole.maxShipSize) {
+            WormholeSize.Small -> "S" to "Small"
+            WormholeSize.Medium -> "M" to "Medium"
+            WormholeSize.Large -> "L" to "Large"
+            WormholeSize.XLarge -> "XL" to "Very large"
+            WormholeSize.Capital -> "C" to "Capital"
+            null -> "?" to null
+        }
+        RiftTooltipArea(
+            text = buildAnnotatedString {
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append(wormhole.inType)
+                }
+                append(" wormhole")
+                if (wormhole.inType == "K162") appendLine(" (${wormhole.outType})") else appendLine()
+                if (size != null) {
+                    withColor(RiftTheme.colors.textHighlighted) {
+                        append(size)
+                    }
+                    appendLine(" ships can pass through")
+                } else {
+                    appendLine("Unknown max ship size")
+                }
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append(wormhole.inSignature)
+                }
+                appendLine(" in ${wormhole.inSystemName} (${wormhole.inRegionName})")
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append(wormhole.outSignature)
+                }
+                append(" in ${wormhole.outSystemName}")
+                if (wormhole.outRegionName != null) {
+                    append(" (${wormhole.outRegionName})")
+                }
+            },
+        ) {
+            val mapExternalControl: MapExternalControl = remember { koin.get() }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+                modifier = Modifier
+                    .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+                    .onClick { mapExternalControl.showSystemOnRegionMap(wormhole.outSystemId) },
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.indicator_wormhole),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+                val text = buildString {
+                    append(wormhole.outSystemName)
+                    if (wormhole.outRegionName != null) {
+                        append(" (${wormhole.outRegionName})")
+                    }
+                    if (isFull) {
+                        append(" ${wormhole.inSignature}")
+                    }
+                }
+                Text(
+                    text = text,
+                    style = RiftTheme.typography.bodyPrimary,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -643,6 +733,7 @@ private fun InfoTypeIndicator(
     text: String?,
     icon: DrawableResource,
     tooltip: String? = null,
+    tint: Color? = null,
 ) {
     if (text == null) return
     val content = movableContentOf {
@@ -653,6 +744,7 @@ private fun InfoTypeIndicator(
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
+                colorFilter = tint?.let { ColorFilter.tint(it) },
                 modifier = Modifier.size(16.dp),
             )
             Text(

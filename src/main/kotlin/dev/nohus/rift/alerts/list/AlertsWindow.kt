@@ -643,6 +643,8 @@ private fun getAlertText(
                             IntelReportType.Bubbles -> "bubbles"
                             IntelReportType.GateCamp -> "gate camps"
                             IntelReportType.Wormhole -> "wormholes"
+                            IntelReportType.Ess -> "ESS"
+                            IntelReportType.Skyhook -> "Skyhooks"
                         }
                     }
                     withStyle(primary) {
@@ -718,6 +720,16 @@ private fun getAlertText(
                                         append("${type.durationSeconds} seconds")
                                     }
                                 }
+                            }
+                            GameActionType.RanOutOfCharges -> {
+                                append("a module has run ")
+                                withStyle(primary) { append("out of charges") }
+                            }
+
+                            is GameActionType.Custom -> {
+                                append("a game action has happened containing ")
+                                if (type.isRegex) append("regex ")
+                                withStyle(primary) { append(type.messageContaining) }
                             }
                         }
                     }

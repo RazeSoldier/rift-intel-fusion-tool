@@ -1,7 +1,6 @@
 package dev.nohus.rift.alerts
 
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withAnnotation
 import dev.nohus.rift.alerts.AlertsTriggerController.AlertLocationMatch
@@ -33,6 +32,7 @@ import org.koin.core.annotation.Single
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
+import java.util.Locale
 import kotlin.io.path.absolutePathString
 
 @Single
@@ -71,7 +71,12 @@ class AlertsActionController(
         val message = getNotificationMessage(action)
         val type = getNotificationItemType(action)
         val notification = Notification.TextNotification(title, message, characterId, type)
-        triggerAlert(alert, notification, title, message.toString())
+        val iconUrl = if (type != null) {
+            "https://images.evetech.net/types/${type.id}/icon"
+        } else {
+            null
+        }
+        triggerAlert(alert, notification, title, message.toString(), iconUrl)
     }
 
     fun triggerChatMessageAlert(alert: Alert, chatMessage: ChannelChatMessage, highlight: String?) {
@@ -152,7 +157,6 @@ class AlertsActionController(
         triggerAlert(alert, null, title, message, iconUrl)
     }
 
-    @OptIn(ExperimentalTextApi::class)
     fun triggerInactiveChannelAlert(alert: Alert, triggeredInactiveChannels: List<String>) {
         val styleTag = Notification.TextNotification.styleTag
         val styleValue = Notification.TextNotification.styleValue
@@ -178,7 +182,6 @@ class AlertsActionController(
         triggerAlert(alert, notification, title, message.toString())
     }
 
-    @OptIn(ExperimentalTextApi::class)
     fun triggerPlanetaryIndustryAlert(alert: Alert, colonyItem: ColonyItem) {
         val duration = Duration.between(Instant.now(), colonyItem.ffwdColony.currentSimTime)
         val isInFuture = duration >= Duration.ofMinutes(5)
@@ -315,10 +318,11 @@ class AlertsActionController(
             is GameLogAction.Decloaked -> "Decloaked"
             is GameLogAction.CombatStopped -> "Combat stopped"
             GameLogAction.CloneJumping -> throw IllegalStateException("Not used")
+            is GameLogAction.RanOutOfCharges -> "Module out of charges"
+            is GameLogAction.Generic -> action.type.replaceFirstChar { it.titlecase(Locale.US) }
         }
     }
 
-    @OptIn(ExperimentalTextApi::class)
     private fun getNotificationMessage(action: GameLogAction): AnnotatedString {
         val styleTag = Notification.TextNotification.styleTag
         val styleValue = Notification.TextNotification.styleValue
@@ -354,6 +358,15 @@ class AlertsActionController(
                 }
             }
             GameLogAction.CloneJumping -> throw IllegalStateException("Not used")
+            is GameLogAction.RanOutOfCharges -> buildAnnotatedString {
+                withAnnotation(styleTag, styleValue) {
+                    append(action.module)
+                }
+                append(" needs to reload")
+            }
+            is GameLogAction.Generic -> buildAnnotatedString {
+                append(action.message)
+            }
         }
     }
 
@@ -365,6 +378,8 @@ class AlertsActionController(
             is GameLogAction.Decloaked -> typesRepository.getType(action.by)
             is GameLogAction.CombatStopped -> typesRepository.getType(action.target)
             GameLogAction.CloneJumping -> throw IllegalStateException("Not used")
+            is GameLogAction.RanOutOfCharges -> typesRepository.getType(action.module)
+            is GameLogAction.Generic -> typesRepository.findTypeInText(action.message)
         }
     }
 

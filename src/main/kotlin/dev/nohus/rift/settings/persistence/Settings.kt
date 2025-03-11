@@ -245,4 +245,8 @@ class Settings(
     var isSmartAlwaysAbove: Boolean
         get() = model.isSmartAlwaysAbove
         set(value) = update { copy(isSmartAlwaysAbove = value) }
+
+    var mapMarkers: List<MapMarker>
+        get() = model.mapMarkers
+        set(value) = update { copy(mapMarkers = value) }
 }

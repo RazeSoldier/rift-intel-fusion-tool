@@ -107,6 +107,14 @@ sealed interface IntelReportType {
     @Serializable
     @SerialName("Bubbles")
     data object Bubbles : IntelReportType
+
+    @Serializable
+    @SerialName("Ess")
+    data object Ess : IntelReportType
+
+    @Serializable
+    @SerialName("Skyhook")
+    data object Skyhook : IntelReportType
 }
 
 @Serializable
@@ -179,6 +187,17 @@ sealed interface GameActionType {
     data class CombatStopped(
         val nameContaining: String?,
         val durationSeconds: Int,
+    ) : GameActionType
+
+    @Serializable
+    @SerialName("RanOutOfCharges")
+    data object RanOutOfCharges : GameActionType
+
+    @Serializable
+    @SerialName("Custom")
+    data class Custom(
+        val messageContaining: String,
+        val isRegex: Boolean,
     ) : GameActionType
 }
 

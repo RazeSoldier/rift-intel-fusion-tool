@@ -317,7 +317,7 @@ object WhatsNew {
                 - When filtering by opened regions in the Intel Feed window, regions from all open maps will be considered
                 
                 -! New feature: Contacts list label alerts
-                - You can now setup alerts for intel about characters from a contacts label of any of your characters, corporations, and alliances
+                - You can now set up alerts for intel about characters from a contacts label of any of your characters, corporations, and alliances
                 - For example, if you have a contacts list of hot droppers in-game, you can now setup an alert for that list
                 - The alerts will automatically update when contacts are added or removed from the label either in-game or in RIFTs Contacts feature
                 - This also works for labeled corporations and alliances, so you can create an alert for all characters from a specific corporation or alliance
@@ -394,6 +394,27 @@ object WhatsNew {
                 - Map search now has autocomplete for system names
                 - Map search now works for systems that aren't visible on the current map layout, and will automatically switch the map tab to show the result
                 - Chat message alerts now support regular expressions for precise control of matching messages
+            """.trimIndent(),
+            "4.25.0" description """
+                -! New Map Markers feature
+                - Do you want to add your own markers and notes to systems on the map? Now you can.
+                - Add a marker to any system from it's right-click menu, or access your markers from the Map Settings window
+                - Choose from a big list of icons, and give your marker a color if you want
+                - View, edit, and delete your markers from the new Map Markers window
+                
+                -! Thera and Turnur connections on the map
+                - The map can now show indicators for Thera and Turnur wormholes
+                - These include more details about the connection on mouseover
+                
+                -! New alert types
+                - You can now set up alerts for intel relating to ESS and Skyhooks
+                - You can now set up an alert for modules running out of charges
+                - You can now set up custom alerts for any game log message you wish, including regular expressions support
+                
+                -! Deleting characters
+                - Do you have unused or biomassed characters whose data you no longer want to keep? You can now delete them from your EVE installation and RIFT's character list.
+                
+                - Added New Eden Encyclopedia as an option for viewing ship details
             """.trimIndent(),
         ).reversed()
     }

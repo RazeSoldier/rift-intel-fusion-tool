@@ -5,6 +5,8 @@ import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.map.MapJumpRangeController
 import dev.nohus.rift.map.MapJumpRangeController.SystemDistance
 import dev.nohus.rift.map.MapPlanetsController
+import dev.nohus.rift.map.markers.MapMarkersRepository
+import dev.nohus.rift.map.markers.MapMarkersRepository.MapMarker
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.FactionWarfareSystem
 import dev.nohus.rift.network.esi.Incursion
@@ -12,6 +14,8 @@ import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.network.esi.SovereigntySystem
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.Storm
+import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase
+import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.Wormhole
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.PlanetsRepository.Planet
 import dev.nohus.rift.repositories.RatsRepository.RatType
@@ -34,12 +38,14 @@ class MapStatusRepository(
     private val stationsRepository: StationsRepository,
     private val namesRepository: NamesRepository,
     private val getMetaliminalStormsUseCase: GetMetaliminalStormsUseCase,
+    private val getPublicWormholesUseCase: GetPublicWormholesUseCase,
     private val mapJumpRangeController: MapJumpRangeController,
     private val mapPlanetsController: MapPlanetsController,
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
     private val clonesRepository: ClonesRepository,
     private val ratsRepository: RatsRepository,
     private val solarSystemsRepository: SolarSystemsRepository,
+    private val mapMarkersRepository: MapMarkersRepository,
 ) {
 
     private data class UniverseSystemStatus(
@@ -62,12 +68,14 @@ class MapStatusRepository(
         val sovereignty: SovereigntySystem?,
         val stations: List<Station>,
         val storms: List<Storm>,
+        val wormholes: List<Wormhole>,
         val industryIndices: Map<IndustryActivity, Float>,
         val distance: SystemDistance?,
         val planets: List<Planet>,
         val colonies: Int,
         val clones: Map<Int, Int>, // Character ID -> Count
         val ratType: RatType?,
+        val markers: List<MapMarker>,
     )
 
     private val universeSystemStatus = MutableStateFlow<Map<Int, UniverseSystemStatus>>(emptyMap())
@@ -75,6 +83,7 @@ class MapStatusRepository(
     private val factionWarfare = MutableStateFlow<Map<Int, FactionWarfareSystem>>(emptyMap())
     private val sovereignty = MutableStateFlow<Map<Int, SovereigntySystem>>(emptyMap())
     private val storms = MutableStateFlow<Map<Int, List<Storm>>>(emptyMap())
+    private val wormholes = MutableStateFlow<Map<Int, List<Wormhole>>>(emptyMap())
     private val industryIndices = MutableStateFlow<Map<Int, Map<IndustryActivity, Float>>>(emptyMap())
     private val _status = MutableStateFlow<Map<Int, SolarSystemStatus>>(emptyMap())
     val status = _status.asStateFlow()
@@ -93,13 +102,15 @@ class MapStatusRepository(
                 factionWarfare,
                 sovereignty,
                 storms,
+                wormholes,
                 industryIndices,
                 assetsRepository.assets,
                 mapJumpRangeController.state.map { it.systemDistances },
                 mapPlanetsController.state,
                 planetaryIndustryRepository.colonies,
                 clonesRepository.clones,
-            ) { universe, incursions, factionWarfare, sovereignty, storms, industryIndices, assets, distances, planets, colonies, clones ->
+                mapMarkersRepository.markers,
+            ) { universe, incursions, factionWarfare, sovereignty, storms, wormholes, industryIndices, assets, distances, planets, colonies, clones, markers ->
                 val assetsPerSystem = getAssetCountPerSystem(assets)
                 val stationsPerSystem = stationsRepository.getStations()
                 val systems = (
@@ -130,12 +141,14 @@ class MapStatusRepository(
                         sovereignty = sovereignty[systemId],
                         stations = stationsPerSystem[systemId] ?: emptyList(),
                         storms = storms[systemId] ?: emptyList(),
+                        wormholes = wormholes[systemId] ?: emptyList(),
                         industryIndices = industryIndices[systemId] ?: emptyMap(),
                         distance = distances[systemId],
                         planets = (planets.planets[systemId] ?: emptyList()).filter { it.type in planets.selectedTypes },
                         colonies = colonies.success?.count { it.value.colony.system.id == systemId } ?: 0,
                         clones = clones[systemId] ?: emptyMap(),
                         ratType = ratsRepository.getRats(systemId),
+                        markers = markers[systemId] ?: emptyList(),
                     )
                 }
             }.collect {
@@ -160,6 +173,9 @@ class MapStatusRepository(
             }
             launch {
                 loadMetaliminalStorms()
+            }
+            launch {
+                loadPublicWormholes()
             }
             launch {
                 loadIndustryIndices()
@@ -227,6 +243,10 @@ class MapStatusRepository(
         storms.value = getMetaliminalStormsUseCase()
     }
 
+    private suspend fun loadPublicWormholes() {
+        wormholes.value = getPublicWormholesUseCase()
+    }
+
     private suspend fun loadIndustryIndices() {
         val response = esiApi.getIndustrySystems().success ?: return
         industryIndices.value = response.associate { industrySystem ->
@@ -235,7 +255,7 @@ class MapStatusRepository(
         }
     }
 
-    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, R> combine(
+    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> combine(
         flow: Flow<T1>,
         flow2: Flow<T2>,
         flow3: Flow<T3>,
@@ -247,8 +267,10 @@ class MapStatusRepository(
         flow9: Flow<T9>,
         flow10: Flow<T10>,
         flow11: Flow<T11>,
-        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) -> R,
-    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11) { args: Array<*> ->
+        flow12: Flow<T12>,
+        flow13: Flow<T13>,
+        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) -> R,
+    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11, flow12, flow13) { args: Array<*> ->
         transform(
             args[0] as T1,
             args[1] as T2,
@@ -261,6 +283,8 @@ class MapStatusRepository(
             args[8] as T9,
             args[9] as T10,
             args[10] as T11,
+            args[11] as T12,
+            args[12] as T13,
         )
     }
 }

@@ -7,6 +7,8 @@ import dev.nohus.rift.map.settings.JumpBridgesParser.JumpBridgeNetwork
 import dev.nohus.rift.repositories.JumpBridgesRepository
 import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.windowing.WindowManager
+import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +24,7 @@ class MapSettingsViewModel(
     private val jumpBridgesParser: JumpBridgesParser,
     configurationPackRepository: ConfigurationPackRepository,
     private val jumpBridgesRepository: JumpBridgesRepository,
+    private val windowManager: WindowManager,
 ) : ViewModel() {
 
     data class UiState(
@@ -107,6 +110,10 @@ class MapSettingsViewModel(
 
     fun onIsAlwaysShowingSystemsChange(enabled: Boolean) {
         settings.intelMap = settings.intelMap.copy(isAlwaysShowingSystems = enabled)
+    }
+
+    fun onMapNotesClick() {
+        windowManager.onWindowOpen(RiftWindow.MapMarkers)
     }
 
     fun onIsUsingRiftAutopilotRouteChange(enabled: Boolean) {

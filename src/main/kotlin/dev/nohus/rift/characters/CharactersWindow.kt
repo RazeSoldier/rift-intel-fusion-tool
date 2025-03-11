@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -51,7 +50,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.characters.CharactersViewModel.AuthenticationStatus
 import dev.nohus.rift.characters.CharactersViewModel.CharacterItem
 import dev.nohus.rift.characters.CharactersViewModel.UiState
@@ -60,12 +61,14 @@ import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
+import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ClickableLocation
 import dev.nohus.rift.compose.ClickableShip
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftButton
+import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftIconButton
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftTooltipArea
@@ -81,12 +84,14 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.buttoniconminus
 import dev.nohus.rift.generated.resources.buttoniconplus
 import dev.nohus.rift.generated.resources.clone
+import dev.nohus.rift.generated.resources.delete
 import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.sso
 import dev.nohus.rift.generated.resources.sso_dark
 import dev.nohus.rift.generated.resources.status_warning_orange
 import dev.nohus.rift.generated.resources.status_warning_red
 import dev.nohus.rift.generated.resources.window_characters
+import dev.nohus.rift.generated.resources.window_delete_character
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
@@ -130,6 +135,7 @@ fun CharactersWindow(
             onChooseDisabledClick = viewModel::onChooseDisabledClick,
             onDisableCharacterClick = viewModel::onDisableCharacterClick,
             onEnableCharacterClick = viewModel::onEnableCharacterClick,
+            onDeleteCharacterClick = viewModel::onDeleteCharacterClick,
         )
 
         if (state.isSsoDialogOpen) {
@@ -137,6 +143,46 @@ fun CharactersWindow(
                 inputModel = SsoAuthority.Eve,
                 parentWindowState = windowState,
                 onDismiss = viewModel::onCloseSso,
+            )
+        } else if (state.deletingCharacter != null) {
+            val name = state.deletingCharacter?.info?.success?.name ?: "character ID ${state.deletingCharacter?.characterId}"
+            RiftDialog(
+                title = "Delete $name?",
+                icon = Res.drawable.window_delete_character,
+                parentState = windowState,
+                state = rememberWindowState(width = 380.dp, height = Dp.Unspecified),
+                onCloseClick = viewModel::onDeleteCharacterCancel,
+            ) {
+                DeleteCharacterDialogContent(viewModel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeleteCharacterDialogContent(viewModel: CharactersViewModel) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
+        Text(
+            text = "The settings file for this character will be deleted from your installation of EVE Online.",
+            style = RiftTheme.typography.bodyPrimary,
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            RiftButton(
+                text = "Cancel",
+                cornerCut = ButtonCornerCut.BottomLeft,
+                type = ButtonType.Secondary,
+                onClick = viewModel::onDeleteCharacterCancel,
+                modifier = Modifier.weight(1f),
+            )
+            RiftButton(
+                text = "Delete",
+                type = ButtonType.Negative,
+                onClick = viewModel::onDeleteCharacterConfirm,
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -150,6 +196,7 @@ private fun CharactersWindowContent(
     onChooseDisabledClick: () -> Unit,
     onDisableCharacterClick: (characterId: Int) -> Unit,
     onEnableCharacterClick: (characterId: Int) -> Unit,
+    onDeleteCharacterClick: (characterId: Int) -> Unit,
 ) {
     if (state.characters.isNotEmpty()) {
         Column {
@@ -164,6 +211,7 @@ private fun CharactersWindowContent(
                 onDisableCharacterClick = onDisableCharacterClick,
                 onChooseDisabledClick = onChooseDisabledClick,
                 onEnableCharacterClick = onEnableCharacterClick,
+                onDeleteCharacterClick = onDeleteCharacterClick,
             )
         }
     } else {
@@ -183,6 +231,7 @@ private fun ColumnScope.CharactersList(
     onDisableCharacterClick: (characterId: Int) -> Unit,
     onChooseDisabledClick: () -> Unit,
     onEnableCharacterClick: (characterId: Int) -> Unit,
+    onDeleteCharacterClick: (characterId: Int) -> Unit,
 ) {
     ScrollbarLazyColumn(
         modifier = Modifier.Companion.weight(1f),
@@ -234,6 +283,7 @@ private fun ColumnScope.CharactersList(
                     character = character,
                     isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
                     onEnableCharacterClick = onEnableCharacterClick,
+                    onDeleteCharacterClick = onDeleteCharacterClick,
                 )
             }
         }
@@ -559,7 +609,6 @@ fun AuthenticationStatusIcon(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Clone(clone: Clone) {
     Row(
@@ -614,6 +663,7 @@ private fun HiddenCharacterRow(
     character: CharacterItem,
     isChoosingDisabledCharacters: Boolean,
     onEnableCharacterClick: (characterId: Int) -> Unit,
+    onDeleteCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -668,10 +718,20 @@ private fun HiddenCharacterRow(
         }
         Spacer(Modifier.weight(1f))
         AnimatedVisibility(isChoosingDisabledCharacters) {
-            RiftIconButton(
-                icon = Res.drawable.buttoniconplus,
-                onClick = { onEnableCharacterClick(character.characterId) },
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+            ) {
+                RiftIconButton(
+                    icon = Res.drawable.delete,
+                    type = ButtonType.Negative,
+                    cornerCut = ButtonCornerCut.None,
+                    onClick = { onDeleteCharacterClick(character.characterId) },
+                )
+                RiftIconButton(
+                    icon = Res.drawable.buttoniconplus,
+                    onClick = { onEnableCharacterClick(character.characterId) },
+                )
+            }
         }
     }
 }

@@ -1,12 +1,15 @@
 package dev.nohus.rift.settings.persistence
 
+import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.alerts.Alert
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Assets
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Clones
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Colonies
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Incursions
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.JoveObservatories
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.MetaliminalStorms
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Security
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.Wormholes
 import dev.nohus.rift.standings.StandingsRepository.Standings
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.Size
@@ -71,6 +74,7 @@ data class SettingsModel(
     val isWindowTransparencyEnabled: Boolean = false,
     val windowTransparencyModifier: Float = 1f,
     val isSmartAlwaysAbove: Boolean = false,
+    val mapMarkers: List<MapMarker> = emptyList(),
 )
 
 @Serializable
@@ -81,7 +85,7 @@ enum class MapType {
 @Serializable
 enum class MapSystemInfoType {
     StarColor, Security, NullSecurity, IntelHostiles, Jumps, Kills, NpcKills, Assets, Clones, Incursions, Stations,
-    FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Colonies, Standings,
+    FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Wormholes, Colonies, Standings,
     RatsType, Region, Constellation, IndustryIndexCopying, IndustryIndexInvention, IndustryIndexManufacturing, IndustryIndexReaction,
     IndustryIndexMaterialEfficiency, IndustryIndexTimeEfficiency,
 }
@@ -96,8 +100,8 @@ data class IntelMap(
         MapType.Region to listOf(Assets, Clones, Incursions, MetaliminalStorms, Colonies),
     ),
     val mapTypeInfoBoxInfoTypes: Map<MapType, List<MapSystemInfoType>> = mapOf(
-        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, Colonies),
-        MapType.Region to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, Colonies),
+        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, JoveObservatories, Wormholes, Colonies),
+        MapType.Region to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, JoveObservatories, Wormholes, Colonies),
     ),
     val intelPopupTimeoutSeconds: Int = 60,
     val isCharacterFollowing: Boolean = true,
@@ -298,4 +302,15 @@ data class Pushover(
 @Serializable
 data class Ntfy(
     val topic: String? = null,
+)
+
+@Serializable
+data class MapMarker(
+    @Serializable(with = UuidSerializer::class)
+    val id: UUID,
+    val systemId: Int,
+    val label: String,
+    @Serializable(with = ColorSerializer::class)
+    val color: Color?,
+    val icon: String,
 )
