@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
@@ -100,6 +101,7 @@ fun RiftButton(
     type: ButtonType = ButtonType.Primary,
     cornerCut: ButtonCornerCut = ButtonCornerCut.BottomRight,
     isCompact: Boolean = false,
+    isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -132,6 +134,7 @@ fun RiftButton(
         type = type,
         cornerCut = cornerCut,
         isCompact = isCompact,
+        isEnabled = isEnabled,
         modifier = modifier,
         onClick = onClick,
     )
@@ -144,6 +147,7 @@ private fun RiftButton(
     type: ButtonType = ButtonType.Primary,
     cornerCut: ButtonCornerCut = ButtonCornerCut.BottomRight,
     isCompact: Boolean = false,
+    isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -182,7 +186,7 @@ private fun RiftButton(
     }
 
     val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
-    val transition = updateTransition(pointerInteractionStateHolder.current)
+    val transition = updateTransition(if (isEnabled) pointerInteractionStateHolder.current else Normal)
     val colorTransitionSpec = getButtonTransitionSpec<Color>()
     val floatTransitionSpec = getButtonTransitionSpec<Float>()
     val backgroundColor by transition.animateColor(colorTransitionSpec) {
@@ -223,6 +227,7 @@ private fun RiftButton(
 
     Box(
         modifier = modifier
+            .modifyIf(!isEnabled) { greyScale().alpha(0.4f) }
             .width(IntrinsicSize.Max)
             .height(IntrinsicSize.Max),
     ) {
@@ -232,9 +237,11 @@ private fun RiftButton(
             border = BorderStroke(1.dp, borderColor),
             modifier = Modifier
                 .fillMaxWidth()
-                .pointerInteraction(pointerInteractionStateHolder)
-                .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-                .onClick(onClick = onClick),
+                .modifyIf(isEnabled) {
+                    pointerInteraction(pointerInteractionStateHolder)
+                        .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+                        .onClick(onClick = onClick)
+                },
         ) {
             Box(
                 contentAlignment = Alignment.Center,

@@ -31,6 +31,7 @@ import dev.nohus.rift.about.UpdateController.UpdateAvailability.NO_UPDATE
 import dev.nohus.rift.about.UpdateController.UpdateAvailability.UNKNOWN
 import dev.nohus.rift.about.UpdateController.UpdateAvailability.UPDATE_AUTOMATIC
 import dev.nohus.rift.about.UpdateController.UpdateAvailability.UPDATE_MANUAL
+import dev.nohus.rift.compose.AffiliateCode
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.CreatorCode
@@ -166,15 +167,17 @@ private fun AboutWindowContent(
     onCreditsClick: () -> Unit,
     onWhatsNewClick: () -> Unit,
 ) {
-    Column {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.large),
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                modifier = Modifier.width(200.dp).padding(bottom = Spacing.large),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                modifier = Modifier.width(200.dp),
             ) {
                 Image(
                     painter = painterResource(Res.drawable.partner_400),
@@ -182,12 +185,12 @@ private fun AboutWindowContent(
                     modifier = Modifier
                         .width(200.dp),
                 )
+                AffiliateCode()
                 CreatorCode()
-                Patrons(state.patrons)
             }
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(bottom = Spacing.large).weight(1f),
+                modifier = Modifier.weight(1f),
             ) {
                 Column {
                     RiftAppName(RiftTheme.typography.headlineHighlighted)
@@ -287,6 +290,7 @@ private fun AboutWindowContent(
                 }
             }
         }
+        Patrons(state.patrons)
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
             modifier = Modifier.align(Alignment.End),
@@ -392,16 +396,13 @@ private fun getLegalText(): AnnotatedString {
                 "and all related logos and images are trademarks or registered trademarks of CCP hf.",
         )
         appendLine()
-        append("RIFT collects anonymous statistics, like the number of people using it and popularity of features. This ")
+        append("RIFT collects anonymous statistics, like the number of people using it. This ")
         withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
             append("does not")
         }
         appendLine(" include any personal data.")
         appendLine()
-        appendLine(
-            "These metrics are required by CCP for the EVE Online Partnership Program, as well as helping " +
-                "improve RIFT by focusing work on features used the most.",
-        )
+        appendLine("These metrics are required by CCP for the EVE Online Partnership Program.")
     }
 }
 

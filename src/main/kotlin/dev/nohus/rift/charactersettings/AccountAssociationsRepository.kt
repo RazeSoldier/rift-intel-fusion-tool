@@ -26,7 +26,7 @@ class AccountAssociationsRepository(
     fun onCharacterLogin(characterId: Int) {
         val now = Instant.now()
         val character = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId } ?: return
-        val accountId = getAccounts().map { it.path }
+        val accountId = getAccounts().flatMap { it.paths.values }
             .map { accountSettingsFile ->
                 val accountLastModified = accountSettingsFile.getLastModifiedTime().toInstant()
                 accountSettingsFile to Duration.between(accountLastModified, now)

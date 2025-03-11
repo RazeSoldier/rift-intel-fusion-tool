@@ -59,8 +59,16 @@ class AssetsViewModel(
         Distance, Name, Count, Price
     }
 
+    data class AssetTotals(
+        val locations: Int,
+        val items: Int,
+        val price: Double,
+        val volume: Double,
+    )
+
     data class UiState(
         val assets: List<Pair<AssetLocation, List<Asset>>> = emptyList(),
+        val assetTotals: AssetTotals? = null,
         val characters: List<LocalCharacter> = emptyList(),
         val filterCharacter: LocalCharacter? = null,
         val search: String = "",
@@ -89,8 +97,8 @@ class AssetsViewModel(
                 processedAssets to isLoading
             }.collect { (assets, isLoading) ->
                 allAssets = assets
-                val filteredAssets = getFilteredAssets()
-                _state.value = _state.value.copy(assets = filteredAssets, isLoading = isLoading)
+                updateFilteredAssets()
+                _state.value = _state.value.copy(isLoading = isLoading)
             }
         }
         viewModelScope.launch {
@@ -108,17 +116,17 @@ class AssetsViewModel(
 
     fun onCharacterSelected(character: LocalCharacter?) {
         _state.update { it.copy(filterCharacter = character) }
-        _state.update { it.copy(assets = getFilteredAssets()) }
+        updateFilteredAssets()
     }
 
     fun onSortSelected(sort: SortType) {
         _state.update { it.copy(sort = sort) }
-        _state.update { it.copy(assets = getFilteredAssets()) }
+        updateFilteredAssets()
     }
 
     fun onSearchChange(text: String) {
         _state.update { it.copy(search = text) }
-        _state.update { it.copy(assets = getFilteredAssets()) }
+        updateFilteredAssets()
     }
 
     fun onFitAction(fitting: Fitting, action: FitAction) {
@@ -127,6 +135,21 @@ class AssetsViewModel(
             FitAction.CopyWithCargo -> Clipboard.copy(fitting.eft)
             FitAction.Open -> fittingController.getEveShipFitUri(fitting.eft)?.openBrowser()
         }
+    }
+
+    private fun updateFilteredAssets() {
+        val filteredAssets = getFilteredAssets()
+        val totals = getAssetTotals(filteredAssets)
+        _state.update { it.copy(assets = filteredAssets, assetTotals = totals) }
+    }
+
+    private fun getAssetTotals(filteredAssets: List<Pair<AssetLocation, List<Asset>>>): AssetTotals? {
+        if (filteredAssets.isEmpty()) return null
+        val totalLocations = filteredAssets.size
+        val totalItems = filteredAssets.sumOf { (_, assets) -> assets.sumOf { asset -> asset.getTotalItems() } }
+        val totalPrice = filteredAssets.sumOf { (_, assets) -> assets.sumOf { asset -> asset.getTotalPrice() } }
+        val totalVolume = filteredAssets.sumOf { (_, assets) -> assets.sumOf { asset -> asset.getTotalVolume() } }
+        return AssetTotals(totalLocations, totalItems, totalPrice, totalVolume)
     }
 
     private fun getFilteredAssets(): List<Pair<AssetLocation, List<Asset>>> {
@@ -182,17 +205,11 @@ class AssetsViewModel(
             SortType.Price -> filtered.sortedWith(
                 compareBy(
                     { it.first.systemId == null },
-                    { -it.second.sumOf { getTotalPrice(it) } },
+                    { -it.second.sumOf { it.getTotalPrice() } },
                 ),
             )
         }
         return sorted
-    }
-
-    private fun getTotalPrice(asset: Asset): Double {
-        val price = asset.price?.let { it * asset.asset.quantity } ?: 0.0
-        val childrenPrice = asset.children.sumOf { getTotalPrice(it) }
-        return price + childrenPrice
     }
 
     private fun getAssetsByLocation(

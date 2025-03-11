@@ -342,6 +342,7 @@ private fun CharactersPortraits(
         if (characters.size > 3) {
             InfiniteScrollingCarousel(
                 items = characters,
+                delay = 2_000,
                 modifier = Modifier.height(rowHeight).width(rowHeight * 3),
             ) { character ->
                 ClickablePlayer(character.characterId) {

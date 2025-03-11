@@ -20,6 +20,7 @@ import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
 import java.nio.file.Path
 import kotlin.io.path.getLastModifiedTime
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 @Single
@@ -31,7 +32,7 @@ class LocalCharactersRepository(
 
     data class LocalCharacter(
         val characterId: Int,
-        val settingsFile: Path?,
+        val settingsFiles: Map<String, Path>, // Launcher profile name -> File
         val scopes: List<ScopeGroup>,
         val info: AsyncResource<CharacterInfo>,
         val isHidden: Boolean,
@@ -73,7 +74,7 @@ class LocalCharactersRepository(
                         scopes = scopes[character.characterId] ?: emptyList(),
                         isHidden = character.characterId in hiddenCharacterIds,
                     )
-                    if (newCharacter.scopes.isEmpty() && newCharacter.settingsFile == null) return@mapNotNull null
+                    if (newCharacter.scopes.isEmpty() && newCharacter.settingsFiles.isEmpty()) return@mapNotNull null
                     newCharacter
                 }
             }
@@ -93,12 +94,17 @@ class LocalCharactersRepository(
         val hiddenCharacterIds = settings.hiddenCharacterIds.toSet()
         val charactersFromFiles = if (directory != null) {
             getEveCharactersSettingsUseCase(directory)
-                .mapNotNull { file ->
-                    val characterId =
-                        file.nameWithoutExtension.substringAfterLast("_").toIntOrNull() ?: return@mapNotNull null
+                .groupBy { file ->
+                    file.nameWithoutExtension.substringAfterLast("_").toIntOrNull()
+                }
+                .mapNotNull { (characterId, files) ->
+                    characterId ?: return@mapNotNull null
+                    val settingsFiles = files.associateBy { file ->
+                        file.parent.name.substringAfter("settings_")
+                    }
                     LocalCharacter(
                         characterId = characterId,
-                        settingsFile = file,
+                        settingsFiles = settingsFiles,
                         scopes = scopes[characterId] ?: emptyList(),
                         info = AsyncResource.Loading,
                         isHidden = characterId in hiddenCharacterIds,
@@ -114,7 +120,7 @@ class LocalCharactersRepository(
             .map { characterId ->
                 LocalCharacter(
                     characterId = characterId,
-                    settingsFile = null,
+                    settingsFiles = emptyMap(),
                     scopes = scopes[characterId] ?: emptyList(),
                     info = AsyncResource.Loading,
                     isHidden = characterId in hiddenCharacterIds,
@@ -126,7 +132,7 @@ class LocalCharactersRepository(
             .sortedWith(
                 compareBy(
                     { it.scopes.isEmpty() },
-                    { it.settingsFile?.getLastModifiedTime()?.toMillis()?.let { -it } ?: 0L },
+                    { it.settingsFiles.values.maxOfOrNull { it.getLastModifiedTime().toMillis() }?.let { -it } ?: 0L },
                 ),
             )
     }

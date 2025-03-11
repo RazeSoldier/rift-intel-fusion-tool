@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RequirementIcon
+import dev.nohus.rift.compose.RiftAutocompleteTextField
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftDropdown
@@ -39,6 +40,7 @@ import dev.nohus.rift.compose.RiftFileChooserButton
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
 import dev.nohus.rift.compose.RiftTextField
+import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.SectionTitle
@@ -119,6 +121,7 @@ private fun SettingsWindowContent(
             SectionContainer(inputModel, SettingsInputModel.IntelChannels) {
                 IntelChannelsSection(
                     intelChannels = state.intelChannels,
+                    autocompleteIntelChannels = state.autocompleteIntelChannels,
                     onIntelChannelDelete = viewModel::onIntelChannelDelete,
                     regions = state.regions,
                     suggestedIntelChannels = state.suggestedIntelChannels,
@@ -500,6 +503,7 @@ private fun EveInstallationSection(
 @Composable
 private fun IntelChannelsSection(
     intelChannels: List<IntelChannel>,
+    autocompleteIntelChannels: List<String>,
     onIntelChannelDelete: (IntelChannel) -> Unit,
     regions: List<String>,
     suggestedIntelChannels: SuggestedIntelChannels?,
@@ -585,8 +589,9 @@ private fun IntelChannelsSection(
         modifier = Modifier.padding(top = Spacing.medium),
     ) {
         var addChannelText by remember { mutableStateOf("") }
-        RiftTextField(
+        RiftAutocompleteTextField(
             text = addChannelText,
+            suggestions = autocompleteIntelChannels.filter { it.lowercase().startsWith(addChannelText.lowercase()) }.take(5),
             placeholder = "Channel name",
             onTextChanged = {
                 addChannelText = it
@@ -602,13 +607,30 @@ private fun IntelChannelsSection(
             getItemName = { it },
             maxItems = 5,
         )
-        RiftButton("Add channel", onClick = {
-            if (addChannelText.isNotEmpty() && selectedRegion != regionPlaceholder) {
-                onIntelChannelAdded(addChannelText, selectedRegion)
-                addChannelText = ""
-                selectedRegion = regionPlaceholder
-            }
-        })
+
+        val isNameSelected = addChannelText.isNotEmpty()
+        val isRegionSelected = selectedRegion != regionPlaceholder
+        RiftTooltipArea(
+            text = if (!isNameSelected) {
+                "Enter a channel name"
+            } else if (!isRegionSelected) {
+                "Choose a region for this channel"
+            } else {
+                null
+            },
+        ) {
+            RiftButton(
+                text = "Add channel",
+                isEnabled = isNameSelected && isRegionSelected,
+                onClick = {
+                    if (addChannelText.isNotEmpty() && selectedRegion != regionPlaceholder) {
+                        onIntelChannelAdded(addChannelText, selectedRegion)
+                        addChannelText = ""
+                        selectedRegion = regionPlaceholder
+                    }
+                },
+            )
+        }
     }
 }
 

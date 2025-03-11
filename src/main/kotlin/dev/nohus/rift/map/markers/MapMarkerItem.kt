@@ -10,7 +10,7 @@ data class MapMarkerItem(
     val systemName: String,
     val regionName: String,
     val label: String,
-    val color: Color,
+    val color: Color?,
     val iconName: String,
     val icon: DrawableResource,
 )

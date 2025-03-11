@@ -131,7 +131,7 @@ private fun MapMarkersWindowContent(
                         Image(
                             painter = painterResource(marker.icon),
                             contentDescription = null,
-                            colorFilter = ColorFilter.tint(marker.color),
+                            colorFilter = marker.color?.let { ColorFilter.tint(it) },
                             modifier = Modifier
                                 .size(16.dp),
                         )

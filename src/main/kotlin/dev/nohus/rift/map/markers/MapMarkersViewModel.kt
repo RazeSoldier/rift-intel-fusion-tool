@@ -1,6 +1,5 @@
 package dev.nohus.rift.map.markers
 
-import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
@@ -64,7 +63,7 @@ class MapMarkersViewModel(
                 systemName = solarSystemsRepository.getSystemName(it.systemId) ?: "Unknown",
                 regionName = solarSystemsRepository.getRegionBySystemId(it.systemId) ?: "Unknown",
                 label = it.label,
-                color = it.color ?: Color.White,
+                color = it.color,
                 iconName = it.icon,
                 icon = Res.allDrawableResources[it.icon] ?: Res.drawable.map_marker_place_bookmark,
             )
