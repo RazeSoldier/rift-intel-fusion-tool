@@ -2,6 +2,7 @@ package dev.nohus.rift.charactersettings
 
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository.CharacterInfo
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
 import dev.nohus.rift.compose.DialogMessage
@@ -34,8 +35,8 @@ class CharacterSettingsViewModel(
     data class CharacterItem(
         val characterId: Int,
         val accountId: Int?,
-        val settingsFile: Path?,
-        val info: AsyncResource<LocalCharactersRepository.CharacterInfo>,
+        val settingsFiles: Map<String, Path>,
+        val info: AsyncResource<CharacterInfo>,
     )
 
     data class UiState(
@@ -47,13 +48,28 @@ class CharacterSettingsViewModel(
 
     sealed interface CopyingState {
         data object SelectingSource : CopyingState
+
+        data class SelectingSourceLauncherProfile(
+            val source: CopyingCharacter,
+            val profiles: List<String>,
+        ) : CopyingState
+
         data class SelectingDestination(
-            val sourceId: Int,
+            val source: CopyingCharacter,
+            val sourceLauncherProfile: String,
         ) : CopyingState
 
         data class DestinationSelected(
             val source: CopyingCharacter,
             val destination: List<CopyingCharacter>,
+            val sourceLauncherProfile: String,
+        ) : CopyingState
+
+        data class SelectingTargetLauncherProfile(
+            val source: CopyingCharacter,
+            val destination: List<CopyingCharacter>,
+            val sourceLauncherProfile: String,
+            val profiles: List<String>,
         ) : CopyingState
     }
 
@@ -86,7 +102,7 @@ class CharacterSettingsViewModel(
                         CharacterItem(
                             characterId = localCharacter.characterId,
                             accountId = accountAssociations[localCharacter.characterId],
-                            settingsFile = localCharacter.settingsFile,
+                            settingsFiles = localCharacter.settingsFiles,
                             info = localCharacter.info,
                         )
                     }
@@ -101,33 +117,51 @@ class CharacterSettingsViewModel(
     }
 
     fun onCopySourceClick(characterId: Int) {
-        _state.update { it.copy(copying = CopyingState.SelectingDestination(characterId)) }
+        val character = _state.value.characters.firstOrNull { it.characterId == characterId } ?: return
+        val name = character.info.success?.name ?: return
+        val profiles = character.settingsFiles.keys.takeIf { it.isNotEmpty() }?.toList() ?: return
+        if (profiles.size > 1) {
+            // This character has settings in more than 1 profile, so we need to select the source profile
+            _state.update { it.copy(copying = CopyingState.SelectingSourceLauncherProfile(CopyingCharacter(characterId, name), profiles)) }
+        } else {
+            // This character has 1 profile, no need to select the source profile
+            onSourceProfileSelected(CopyingCharacter(characterId, name), profiles.single())
+        }
+    }
+
+    fun onCopySourceProfileClick(sourceProfile: String) {
+        val state = _state.value.copying
+        if (state is CopyingState.SelectingSourceLauncherProfile) {
+            onSourceProfileSelected(state.source, sourceProfile)
+        }
+    }
+
+    private fun onSourceProfileSelected(source: CopyingCharacter, profile: String) {
+        _state.update { it.copy(copying = CopyingState.SelectingDestination(source, profile)) }
     }
 
     fun onCopyDestinationClick(characterId: Int) {
         val state = _state.value.copying
         if (state is CopyingState.SelectingDestination) {
-            val sourceName =
-                _state.value.characters.firstOrNull { it.characterId == state.sourceId }?.info?.success?.name ?: return
-            val destinationName =
-                _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
+            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
             _state.update {
                 it.copy(
                     copying = CopyingState.DestinationSelected(
-                        source = CopyingCharacter(state.sourceId, sourceName),
+                        source = state.source,
                         destination = listOf(CopyingCharacter(characterId, destinationName)),
+                        sourceLauncherProfile = state.sourceLauncherProfile,
                     ),
                 )
             }
         } else if (state is CopyingState.DestinationSelected) {
-            val destinationName =
-                _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
+            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
             val destinations = state.destination + CopyingCharacter(characterId, destinationName)
             _state.update {
                 it.copy(
                     copying = CopyingState.DestinationSelected(
                         source = state.source,
                         destination = destinations,
+                        sourceLauncherProfile = state.sourceLauncherProfile,
                     ),
                 )
             }
@@ -137,26 +171,49 @@ class CharacterSettingsViewModel(
     fun onCopySettingsConfirmClick() {
         val state = _state.value.copying
         if (state is CopyingState.DestinationSelected) {
-            val success = copyEveCharacterSettingsUseCase(state.source.id, state.destination.map { it.id })
-
-            val dialogMessage = if (success) {
-                DialogMessage(
-                    title = "Settings copied",
-                    message = "EVE settings have been copied from ${state.source.name} to ${state.destination.joinToString { it.name }}.",
-                    type = MessageDialogType.Info,
-                )
+            val allProfiles = _state.value.characters.flatMap { it.settingsFiles.keys }.distinct()
+            if (allProfiles.size > 1) {
+                // There is more than 1 profile, need to select the destination profile
+                _state.update { it.copy(copying = CopyingState.SelectingTargetLauncherProfile(state.source, state.destination, state.sourceLauncherProfile, allProfiles)) }
             } else {
-                DialogMessage(
-                    title = "Copying failed",
-                    message = "There is something wrong with your character settings files.",
-                    type = MessageDialogType.Warning,
-                )
+                // There is only one profile, no need to select target profile
+                copySettings(state.source, state.destination, state.sourceLauncherProfile, allProfiles.single())
             }
-            _state.update {
-                it.copy(
-                    dialogMessage = dialogMessage,
-                )
-            }
+        }
+    }
+
+    fun onCopyTargetProfileClick(targetProfile: String) {
+        val state = _state.value.copying
+        if (state is CopyingState.SelectingTargetLauncherProfile) {
+            copySettings(state.source, state.destination, state.sourceLauncherProfile, targetProfile)
+        }
+    }
+
+    private fun copySettings(
+        source: CopyingCharacter,
+        destination: List<CopyingCharacter>,
+        sourceLauncherProfile: String,
+        targetLauncherProfile: String,
+    ) {
+        val success = copyEveCharacterSettingsUseCase(source.id, destination.map { it.id }, sourceLauncherProfile, targetLauncherProfile)
+
+        val dialogMessage = if (success) {
+            DialogMessage(
+                title = "Settings copied",
+                message = "EVE settings have been copied from ${source.name} to ${destination.joinToString { it.name }}.",
+                type = MessageDialogType.Info,
+            )
+        } else {
+            DialogMessage(
+                title = "Copying failed",
+                message = "There is something wrong with your character settings files.",
+                type = MessageDialogType.Warning,
+            )
+        }
+        _state.update {
+            it.copy(
+                dialogMessage = dialogMessage,
+            )
         }
     }
 

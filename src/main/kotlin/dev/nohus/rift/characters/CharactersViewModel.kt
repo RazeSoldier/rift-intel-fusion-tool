@@ -44,7 +44,7 @@ class CharactersViewModel(
 
     data class CharacterItem(
         val characterId: Int,
-        val settingsFile: Path?,
+        val settingsFiles: Map<String, Path>,
         val authenticationStatus: AuthenticationStatus,
         val isHidden: Boolean,
         val info: AsyncResource<LocalCharactersRepository.CharacterInfo>,
@@ -98,7 +98,7 @@ class CharactersViewModel(
                         }
                         CharacterItem(
                             characterId = localCharacter.characterId,
-                            settingsFile = localCharacter.settingsFile,
+                            settingsFiles = localCharacter.settingsFiles,
                             authenticationStatus = authenticationStatus,
                             isHidden = localCharacter.isHidden,
                             info = localCharacter.info,
@@ -156,7 +156,7 @@ class CharactersViewModel(
     fun onDeleteCharacterConfirm() {
         val item = _state.value.deletingCharacter ?: return
         try {
-            item.settingsFile?.deleteExisting()
+            item.settingsFiles.values.forEach { it.deleteExisting() }
             settings.hiddenCharacterIds -= item.characterId
             viewModelScope.launch {
                 localCharactersRepository.load()

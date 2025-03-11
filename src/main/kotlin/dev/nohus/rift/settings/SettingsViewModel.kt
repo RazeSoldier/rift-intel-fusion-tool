@@ -9,6 +9,7 @@ import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
+import dev.nohus.rift.logs.MatchChatLogFilenameUseCase
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.IntelChannel
@@ -25,6 +26,7 @@ import org.koin.core.annotation.Single
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.pathString
 
 @Single
@@ -33,6 +35,7 @@ class SettingsViewModel(
     private val detectLogsDirectoryUseCase: DetectLogsDirectoryUseCase,
     private val detectEveSettingsDirectoryUseCase: DetectEveSettingsDirectoryUseCase,
     private val getChatLogsDirectoryUseCase: GetChatLogsDirectoryUseCase,
+    private val matchChatLogFilenameUseCase: MatchChatLogFilenameUseCase,
     private val getEveCharactersSettingsUseCase: GetEveCharactersSettingsUseCase,
     private val configurationPackRepository: ConfigurationPackRepository,
     solarSystemsRepository: SolarSystemsRepository,
@@ -42,6 +45,7 @@ class SettingsViewModel(
     data class UiState(
         val intelChannels: List<IntelChannel>,
         val suggestedIntelChannels: SuggestedIntelChannels?,
+        val autocompleteIntelChannels: List<String> = emptyList(),
         val regions: List<String>,
         val isShowingSystemDistance: Boolean,
         val isUsingJumpBridgesForDistance: Boolean,
@@ -98,6 +102,7 @@ class SettingsViewModel(
 
     init {
         viewModelScope.launch {
+            updateIntelChannelAutocomplete(settings.eveLogsDirectory)
             settings.updateFlow.collect {
                 _state.update {
                     it.copy(
@@ -123,6 +128,7 @@ class SettingsViewModel(
                 }
                 val logsDirectory = settings.eveLogsDirectory
                 if (logsDirectory?.pathString != _state.value.logsDirectory) {
+                    updateIntelChannelAutocomplete(logsDirectory)
                     _state.update {
                         it.copy(
                             logsDirectory = logsDirectory?.pathString ?: "",
@@ -141,6 +147,15 @@ class SettingsViewModel(
                 }
             }
         }
+    }
+
+    private fun updateIntelChannelAutocomplete(logsDirectory: Path?) {
+        val channelNames = getChatLogsDirectoryUseCase(logsDirectory)
+            ?.listDirectoryEntries()
+            ?.mapNotNull { matchChatLogFilenameUseCase(it)?.channelName }
+            ?.distinct()
+            ?: emptyList()
+        _state.update { it.copy(autocompleteIntelChannels = channelNames) }
     }
 
     fun onSuggestedIntelChannelsClick() {

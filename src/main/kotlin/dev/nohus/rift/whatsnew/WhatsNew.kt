@@ -416,6 +416,11 @@ object WhatsNew {
                 
                 - Added New Eden Encyclopedia as an option for viewing ship details
             """.trimIndent(),
+            "4.26.0" description """
+                - The character settings copying feature now supports launcher profiles, including copying across profiles
+                - When adding an intel channel, the text field now shows autocomplete suggestions of valid channel names
+                - The Assets window now shows totals for all your assets from all locations
+            """.trimIndent(),
         ).reversed()
     }
 }

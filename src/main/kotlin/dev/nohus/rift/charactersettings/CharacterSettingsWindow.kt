@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -38,6 +38,7 @@ import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RequirementIcon
 import dev.nohus.rift.compose.RiftButton
+import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
 import dev.nohus.rift.compose.RiftTooltipArea
@@ -76,6 +77,8 @@ fun CharacterSettingsWindow(
             state = state,
             onCancelClick = viewModel::onCancelClick,
             onCopySourceClick = viewModel::onCopySourceClick,
+            onCopySourceProfileClick = viewModel::onCopySourceProfileClick,
+            onCopyTargetProfileClick = viewModel::onCopyTargetProfileClick,
             onCopyDestinationClick = viewModel::onCopyDestinationClick,
             onCopySettingsConfirmClick = viewModel::onCopySettingsConfirmClick,
             onAssignAccount = viewModel::onAssignAccount,
@@ -96,6 +99,8 @@ private fun CharacterSettingsWindowContent(
     state: UiState,
     onCancelClick: () -> Unit,
     onCopySourceClick: (Int) -> Unit,
+    onCopySourceProfileClick: (String) -> Unit,
+    onCopyTargetProfileClick: (String) -> Unit,
     onCopyDestinationClick: (Int) -> Unit,
     onCopySettingsConfirmClick: () -> Unit,
     onAssignAccount: (characterId: Int, accountId: Int) -> Unit,
@@ -104,6 +109,8 @@ private fun CharacterSettingsWindowContent(
         Column(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
+            var selectedSourceProfile: String? by remember { mutableStateOf(null) }
+            var selectedTargetProfile: String? by remember { mutableStateOf(null) }
             AnimatedContent(state.copying, contentKey = { it::class }) { copying ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -117,6 +124,35 @@ private fun CharacterSettingsWindowContent(
                                 style = RiftTheme.typography.bodyPrimary,
                                 modifier = Modifier.weight(1f),
                             )
+                        }
+
+                        is CopyingState.SelectingSourceLauncherProfile -> {
+                            LaunchedEffect(copying) {
+                                selectedSourceProfile = copying.profiles.first()
+                            }
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("Copying EVE settings from ")
+                                        withColor(RiftTheme.colors.textHighlighted) {
+                                            append(copying.source.name)
+                                        }
+                                        append(".\n\nThis character has settings in multiple launcher profiles. From which profile would you like to copy?")
+                                    },
+                                    style = RiftTheme.typography.bodyPrimary,
+                                )
+                                Row {
+                                    RiftDropdownWithLabel(
+                                        label = "Source profile:",
+                                        items = copying.profiles,
+                                        selectedItem = selectedSourceProfile,
+                                        onItemSelected = { selectedSourceProfile = it },
+                                        getItemName = { it ?: "" },
+                                    )
+                                }
+                            }
                         }
 
                         is CopyingState.SelectingDestination -> {
@@ -172,6 +208,40 @@ private fun CharacterSettingsWindowContent(
                                 )
                             }
                         }
+
+                        is CopyingState.SelectingTargetLauncherProfile -> Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                        ) {
+                            LaunchedEffect(copying) {
+                                selectedTargetProfile = copying.profiles.first()
+                            }
+                            Text(
+                                text = buildAnnotatedString {
+                                    append("Copying EVE settings from ")
+                                    withColor(RiftTheme.colors.textHighlighted) {
+                                        append(copying.source.name)
+                                    }
+                                    append(" to ")
+                                    copying.destination.forEachIndexed { index, character ->
+                                        if (index != 0) append(", ")
+                                        withColor(RiftTheme.colors.textHighlighted) {
+                                            append(character.name)
+                                        }
+                                    }
+                                    append(".\n\nYou have multiple launcher profiles. To which profile would you like to paste settings?")
+                                },
+                                style = RiftTheme.typography.bodyPrimary,
+                            )
+                            Row {
+                                RiftDropdownWithLabel(
+                                    label = "Target profile:",
+                                    items = copying.profiles,
+                                    selectedItem = selectedTargetProfile,
+                                    onItemSelected = { selectedTargetProfile = it },
+                                    getItemName = { it ?: "" },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -202,7 +272,7 @@ private fun CharacterSettingsWindowContent(
                             modifier = Modifier.padding(bottom = Spacing.small),
                         ) {
                             val accountName = account?.let { "Account ${accountOrdinals[it]}" } ?: "Unassigned characters"
-                            val tooltip = account?.let { "Settings file: ${account.path}" } ?: "RIFT doesn't know which account these characters belong to"
+                            val tooltip = account?.let { "Settings files: ${account.paths.values.joinToString()}" } ?: "RIFT doesn't know which account these characters belong to"
                             RiftTooltipArea(tooltip) {
                                 Text(
                                     text = accountName.uppercase(),
@@ -239,8 +309,10 @@ private fun CharacterSettingsWindowContent(
                         if (account == null) {
                             val text = when (state.copying) {
                                 CopyingState.SelectingSource -> "Assign these characters to accounts to be able to copy settings from them. Log in to assign automatically."
+                                is CopyingState.SelectingSourceLauncherProfile -> null
                                 is CopyingState.SelectingDestination -> "Assign these characters to accounts to be able to copy settings to them. Log in to assign automatically."
-                                is CopyingState.DestinationSelected -> null
+                                is CopyingState.DestinationSelected -> "Assign these characters to accounts to be able to copy settings to them. Log in to assign automatically."
+                                is CopyingState.SelectingTargetLauncherProfile -> null
                             }
                             AnimatedContent(text) {
                                 if (it != null) {
@@ -291,6 +363,21 @@ private fun CharacterSettingsWindowContent(
                                 modifier = Modifier.weight(1f),
                             )
                         }
+                        is CopyingState.SelectingSourceLauncherProfile -> {
+                            RiftButton(
+                                text = "Cancel",
+                                type = ButtonType.Secondary,
+                                cornerCut = ButtonCornerCut.BottomLeft,
+                                onClick = onCancelClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                            RiftButton(
+                                text = "Confirm profile",
+                                cornerCut = ButtonCornerCut.BottomRight,
+                                onClick = { selectedSourceProfile?.let(onCopySourceProfileClick) },
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
                         is CopyingState.SelectingDestination -> {
                             RiftButton(
                                 text = "Cancel",
@@ -309,9 +396,24 @@ private fun CharacterSettingsWindowContent(
                                 modifier = Modifier.weight(1f),
                             )
                             RiftButton(
-                                text = "Confirm",
+                                text = "Confirm characters",
                                 cornerCut = ButtonCornerCut.BottomRight,
                                 onClick = onCopySettingsConfirmClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        is CopyingState.SelectingTargetLauncherProfile -> {
+                            RiftButton(
+                                text = "Cancel",
+                                type = ButtonType.Secondary,
+                                cornerCut = ButtonCornerCut.BottomLeft,
+                                onClick = onCancelClick,
+                                modifier = Modifier.weight(1f),
+                            )
+                            RiftButton(
+                                text = "Confirm profile",
+                                cornerCut = ButtonCornerCut.BottomRight,
+                                onClick = { selectedTargetProfile?.let(onCopyTargetProfileClick) },
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -330,7 +432,6 @@ private fun CharacterSettingsWindowContent(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CharacterRow(
     character: CharacterItem,
@@ -395,7 +496,7 @@ private fun CharacterRow(
             if (account != null) {
                 when (copying) {
                     CopyingState.SelectingSource -> {
-                        if (character.settingsFile != null) {
+                        if (character.settingsFiles.isNotEmpty()) {
                             RiftButton(
                                 text = "Copy",
                                 icon = Res.drawable.copy_16px,
@@ -405,36 +506,34 @@ private fun CharacterRow(
                             NoSettingsFileIcon()
                         }
                     }
-                    is CopyingState.SelectingDestination -> {
-                        if (character.settingsFile != null) {
-                            if (copying.sourceId == character.characterId) {
-                                CopyingIcon()
-                            } else {
-                                RiftButton(
-                                    text = "Paste",
-                                    icon = Res.drawable.recall_drones_16px,
-                                    onClick = onPasteClick,
-                                )
-                            }
-                        } else {
-                            NoSettingsFileIcon()
+                    is CopyingState.SelectingSourceLauncherProfile -> {
+                        if (copying.source.id == character.characterId) {
+                            CopyingIcon()
                         }
                     }
+                    is CopyingState.SelectingDestination -> {
+                        RiftButton(
+                            text = "Paste",
+                            icon = Res.drawable.recall_drones_16px,
+                            onClick = onPasteClick,
+                        )
+                    }
                     is CopyingState.DestinationSelected -> {
-                        if (character.settingsFile != null) {
-                            if (copying.source.id == character.characterId) {
-                                CopyingIcon()
-                            } else if (copying.destination.any { it.id == character.characterId }) {
-                                PastingIcon()
-                            } else {
-                                RiftButton(
-                                    text = "Paste",
-                                    icon = Res.drawable.recall_drones_16px,
-                                    onClick = onPasteClick,
-                                )
-                            }
+                        if (copying.destination.any { it.id == character.characterId }) {
+                            PastingIcon()
                         } else {
-                            NoSettingsFileIcon()
+                            RiftButton(
+                                text = "Paste",
+                                icon = Res.drawable.recall_drones_16px,
+                                onClick = onPasteClick,
+                            )
+                        }
+                    }
+                    is CopyingState.SelectingTargetLauncherProfile -> {
+                        if (copying.source.id == character.characterId) {
+                            CopyingIcon()
+                        } else if (copying.destination.any { it.id == character.characterId }) {
+                            PastingIcon()
                         }
                     }
                 }

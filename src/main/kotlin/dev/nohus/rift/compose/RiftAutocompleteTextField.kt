@@ -79,7 +79,7 @@ fun RiftAutocompleteTextField(
         val fieldHeightPixels = LocalDensity.current.run { height.toPx().roundToInt() }
         var isExpanded by remember { mutableStateOf(false) }
         var lastAcceptedSuggestion: String? by remember { mutableStateOf(null) }
-        LaunchedEffect(suggestions) {
+        LaunchedEffect(suggestions, text) {
             isExpanded = suggestions.isNotEmpty() && text != lastAcceptedSuggestion && text.isNotEmpty()
         }
         if (isExpanded) {

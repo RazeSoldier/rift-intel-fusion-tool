@@ -68,6 +68,7 @@ import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.formatNumberCompact
+import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -148,6 +149,36 @@ private fun AssetsWindowContent(
         var expandedLocations by remember { mutableStateOf<Set<AssetLocation>>(emptySet()) }
         var expandedItems by remember { mutableStateOf<Set<Long>>(emptySet()) }
         ScrollbarLazyColumn {
+            state.assetTotals?.let { totals ->
+                item(key = "totals") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(RiftTheme.colors.windowBackgroundSecondary)
+                            .padding(start = 24.dp)
+                            .padding(vertical = Spacing.small),
+                    ) {
+                        val text = buildAnnotatedString {
+                            append("Total: ")
+                            append("${totals.locations} Location${totals.locations.plural}")
+                            append(" - ")
+                            append("${totals.items} Item${totals.items.plural}")
+                            append(" - ")
+                            append(formatIsk(totals.price))
+                            append(" - ")
+                            append(formatNumberCompact(totals.volume) + " m3")
+                        }
+                        Text(
+                            text = text,
+                            style = RiftTheme.typography.bodySecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Visible,
+                            softWrap = false,
+                            modifier = Modifier.clipToBounds(),
+                        )
+                    }
+                }
+            }
             val characterNames: Map<Int, String>? = if (state.filterCharacter == null) {
                 state.characters.mapNotNull { it.characterId to (it.info.success?.name ?: return@mapNotNull null) }.toMap()
             } else {
@@ -272,10 +303,10 @@ private fun LocationHeader(
                     append(" - ")
                     append("${assets.size} Item${if (assets.size != 1) "s" else ""}")
                     append(" - ")
-                    val totalPrice = assets.sumOf { getTotalPrice(it) }
+                    val totalPrice = assets.sumOf { it.getTotalPrice() }
                     append(formatIsk(totalPrice))
                     append(" - ")
-                    val totalVolume = assets.sumOf { getTotalVolume(it) }
+                    val totalVolume = assets.sumOf { it.getTotalVolume() }
                     append(formatNumberCompact(totalVolume) + " m3")
                     location.distance?.let {
                         append(" - ")
@@ -399,7 +430,7 @@ private fun AssetRow(
                             val formatted = NumberFormat.getNumberInstance().apply { maximumFractionDigits = 1 }.format(volume)
                             add("$formatted m3")
 
-                            val totalPrice = asset.children.sumOf { getTotalPrice(it) }
+                            val totalPrice = asset.children.sumOf { it.getTotalPrice() }
                             add(formatIsk(totalPrice))
                         }
                     }.joinToString(" - ")
@@ -455,17 +486,4 @@ private fun AssetRow(
             }
         }
     }
-}
-
-private fun getTotalPrice(asset: Asset): Double {
-    val price = asset.price?.let { it * asset.asset.quantity } ?: 0.0
-    val childrenPrice = asset.children.sumOf { getTotalPrice(it) }
-    return price + childrenPrice
-}
-
-private fun getTotalVolume(asset: Asset): Double {
-    val volume = asset.type?.repackagedVolume?.toFloat() ?: asset.type?.volume
-    val totalVolume = volume?.let { it * asset.asset.quantity } ?: 0f
-    val childrenVolume = asset.children.sumOf { getTotalVolume(it) }
-    return totalVolume + childrenVolume
 }
