@@ -57,7 +57,9 @@ fun RiftAutocompleteTextField(
     onDeleteClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    Box {
+    Box(
+        modifier = modifier,
+    ) {
         var size by remember { mutableStateOf(IntSize.Zero) }
         val focusRequester = remember { FocusRequester() }
 
@@ -68,7 +70,7 @@ fun RiftAutocompleteTextField(
             onTextChanged = onTextChanged,
             height = height,
             onDeleteClick = onDeleteClick,
-            modifier = modifier
+            modifier = Modifier
                 .focusRequester(focusRequester)
                 .focusable()
                 .onSizeChanged { size = it },

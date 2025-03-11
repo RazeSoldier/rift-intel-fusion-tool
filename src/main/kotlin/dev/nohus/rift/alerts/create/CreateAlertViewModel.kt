@@ -324,6 +324,9 @@ class CreateAlertViewModel(
                     if (GAME_ACTION_TYPE_COMBAT_STOPPED.id in GAME_ACTION_TYPE_QUESTION.answer!!.ids) {
                         GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_QUESTION.answer ?: return GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_QUESTION
                     }
+                    if (GAME_ACTION_TYPE_CUSTOM.id in GAME_ACTION_TYPE_QUESTION.answer!!.ids) {
+                        GAME_ACTION_TYPE_CUSTOM_MESSAGE_QUESTION.answer ?: return GAME_ACTION_TYPE_CUSTOM_MESSAGE_QUESTION
+                    }
                 }
 
                 ALERT_TRIGGER_PLANETARY_INDUSTRY.id -> {
@@ -424,6 +427,8 @@ class CreateAlertViewModel(
                                 INTEL_REPORT_TYPE_WORMHOLE.id -> IntelReportType.Wormhole
                                 INTEL_REPORT_TYPE_GATE_CAMP.id -> IntelReportType.GateCamp
                                 INTEL_REPORT_TYPE_BUBBLES.id -> IntelReportType.Bubbles
+                                INTEL_REPORT_TYPE_ESS.id -> IntelReportType.Ess
+                                INTEL_REPORT_TYPE_SKYHOOK.id -> IntelReportType.Skyhook
                                 else -> throw IllegalStateException()
                             }
                         }
@@ -495,6 +500,13 @@ class CreateAlertViewModel(
                                         else -> throw IllegalStateException()
                                     }
                                     GameActionType.CombatStopped(target.text.takeIf { it.isNotBlank() }, durationSeconds)
+                                }
+                                GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES.id -> {
+                                    GameActionType.RanOutOfCharges
+                                }
+                                GAME_ACTION_TYPE_CUSTOM.id -> {
+                                    val message = GAME_ACTION_TYPE_CUSTOM_MESSAGE_QUESTION.answer ?: return null
+                                    GameActionType.Custom(message.text, message.isRegex)
                                 }
                                 else -> throw IllegalStateException()
                             }

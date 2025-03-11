@@ -584,7 +584,6 @@ private fun SystemColorPills(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SystemIndicatorsPills(
     hidden: Set<MapSystemInfoType>,
@@ -638,6 +637,7 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.JumpRange -> "Jump Range" to "Colored according to\njump range"
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for colors")
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Colored when a\nJove Observatory is present"
+        MapSystemInfoType.Wormholes -> "Wormholes" to "Colored when a\nThera or Turnur wormhole is present"
         MapSystemInfoType.Colonies -> "PI Colonies" to "Colored when you have a\nPI colony present"
         MapSystemInfoType.Clones -> "Clones" to "Colored when you have\njump clones present"
         MapSystemInfoType.Standings -> "Standings" to "Colored based on standings\ntowards the sovereignty holder.\nLow and high sec are always yellow and green."
@@ -675,6 +675,7 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.JumpRange -> "Jump Range" to "Indicator for systems in jump range"
         MapSystemInfoType.Planets -> "Planets" to "Indicators for planets"
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Indicators for Jove Observatories"
+        MapSystemInfoType.Wormholes -> "Wormholes" to "Indicators for Thera and Turnur wormholes"
         MapSystemInfoType.Colonies -> "PI Colonies" to "Indicators for PI colonies"
         MapSystemInfoType.Clones -> "Clones" to "Indicators for jump clones"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
@@ -712,6 +713,7 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.JumpRange -> "Jump Range" to "Jump distance to system"
         MapSystemInfoType.Planets -> "Planets" to "Planets information"
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Jove Observatory presence information"
+        MapSystemInfoType.Wormholes -> "Wormholes" to "Thera and Turnur wormholes information"
         MapSystemInfoType.Colonies -> "PI Colonies" to "PI colonies information"
         MapSystemInfoType.Clones -> "Clones" to "Jump clones information"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"

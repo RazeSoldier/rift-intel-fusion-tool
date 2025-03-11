@@ -159,6 +159,22 @@ class AlertsTriggerController(
                             }
                             false // Alert will be triggered after duration
                         }
+                        GameActionType.RanOutOfCharges -> {
+                            action is GameLogAction.RanOutOfCharges
+                        }
+                        is GameActionType.Custom -> {
+                            if (action is GameLogAction.Generic) {
+                                val containing = trigger.messageContaining
+                                if (trigger.isRegex) {
+                                    val regex = containing.toRegexOrNull(RegexOption.IGNORE_CASE)
+                                    regex?.find(action.message) != null
+                                } else {
+                                    action.message.lowercase().containsNonNull(containing)
+                                }
+                            } else {
+                                false
+                            }
+                        }
                     }
                 }
                 if (hasTriggered) {
@@ -414,6 +430,8 @@ class AlertsTriggerController(
                             }
                         }
                 }
+                IntelReportType.Ess -> understanding.entities.filterIsInstance<SystemEntity.Ess>()
+                IntelReportType.Skyhook -> understanding.entities.filterIsInstance<SystemEntity.Skyhook>()
             }
         }.filter { it.second.isNotEmpty() }
     }

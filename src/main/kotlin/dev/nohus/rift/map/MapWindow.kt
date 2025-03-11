@@ -111,6 +111,7 @@ import dev.nohus.rift.map.systemcolor.strategies.SovereigntySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StandingsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StarColorSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StationsSystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.WormholesSystemColorStrategy
 import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -353,6 +354,7 @@ private fun Map(
             factionWarfare = FactionWarfareSystemColorStrategy(state.mapState.systemStatus),
             sovereignty = koin.get { parametersOf(state.mapState.systemStatus) },
             storms = MetaliminalStormsSystemColorStrategy(state.mapState.systemStatus),
+            wormholes = WormholesSystemColorStrategy(state.mapState.systemStatus),
             jumpRange = JumpRangeSystemColorStrategy(state.mapState.systemStatus),
             colonies = ColoniesSystemColorStrategy(state.mapState.systemStatus),
             clones = ClonesSystemColorStrategy(state.mapState.systemStatus),
@@ -575,6 +577,7 @@ data class SystemStatusColorStrategies(
     val factionWarfare: FactionWarfareSystemColorStrategy,
     val sovereignty: SovereigntySystemColorStrategy,
     val storms: MetaliminalStormsSystemColorStrategy,
+    val wormholes: WormholesSystemColorStrategy,
     val jumpRange: JumpRangeSystemColorStrategy,
     val colonies: ColoniesSystemColorStrategy,
     val clones: ClonesSystemColorStrategy,
@@ -616,6 +619,7 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.JumpRange -> systemStatusColorStrategies.jumpRange
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for coloring")
         MapSystemInfoType.JoveObservatories -> koin.get<JoveObservatorySystemColorStrategy>()
+        MapSystemInfoType.Wormholes -> systemStatusColorStrategies.wormholes
         MapSystemInfoType.Colonies -> systemStatusColorStrategies.colonies
         MapSystemInfoType.Clones -> systemStatusColorStrategies.clones
         MapSystemInfoType.Standings -> systemStatusColorStrategies.standings

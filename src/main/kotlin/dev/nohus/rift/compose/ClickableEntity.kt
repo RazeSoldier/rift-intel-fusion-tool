@@ -18,21 +18,26 @@ import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.map_marker_place_bookmark
 import dev.nohus.rift.generated.resources.menu_add
 import dev.nohus.rift.generated.resources.menu_anoikis
 import dev.nohus.rift.generated.resources.menu_dotlan
 import dev.nohus.rift.generated.resources.menu_everef
 import dev.nohus.rift.generated.resources.menu_evewho
+import dev.nohus.rift.generated.resources.menu_newedenencyclopedia
 import dev.nohus.rift.generated.resources.menu_set_destination
 import dev.nohus.rift.generated.resources.menu_uniwiki
 import dev.nohus.rift.generated.resources.menu_zkillboard
 import dev.nohus.rift.map.MapExternalControl
 import dev.nohus.rift.map.MapViewModel.MapType
+import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
+import dev.nohus.rift.windowing.WindowManager
+import dev.nohus.rift.windowing.WindowManager.RiftWindow
 
 @Composable
 fun ClickableLocation(
@@ -111,6 +116,7 @@ fun GetSystemContextMenuItems(
     val autopilotController: AutopilotController = remember { koin.get() }
     val mapExternalControl: MapExternalControl = remember { koin.get() }
     val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+    val windowManager: WindowManager = remember { koin.get() }
     val settings: Settings = remember { koin.get() }
     val system = solarSystemsRepository.getSystemName(systemId) ?: return emptyList()
     val isKnownSpace = solarSystemsRepository.isKnownSpace(systemId)
@@ -161,6 +167,16 @@ fun GetSystemContextMenuItems(
                 text = "Copy Name",
                 onClick = {
                     Clipboard.copy(system)
+                },
+            ),
+        )
+        add(
+            ContextMenuItem.TextItem(
+                text = "Add Marker",
+                iconResource = Res.drawable.map_marker_place_bookmark,
+                onClick = {
+                    val inputModel = MapMarkersInputModel.AddToSystem(systemId)
+                    windowManager.onWindowOpen(RiftWindow.MapMarkers, inputModel)
                 },
             ),
         )
@@ -320,12 +336,14 @@ fun ClickableShip(
 ) {
     val uniWikiUrl = "https://wiki.eveuniversity.org/${name.replace(' ', '_')}"
     val eveRefUrl = "https://everef.net/type/$typeId"
-    val zKillboard = "https://zkillboard.com/ship/$typeId/"
+    val zKillboardUrl = "https://zkillboard.com/ship/$typeId/"
+    val newEdenEncyclopediaUrl = "https://newedenencyclopedia.net/type/$typeId"
     RiftContextMenuArea(
         listOf(
             ContextMenuItem.TextItem("UniWiki", Res.drawable.menu_uniwiki, onClick = { uniWikiUrl.toURIOrNull()?.openBrowser() }),
             ContextMenuItem.TextItem("EVE Ref", Res.drawable.menu_everef, onClick = { eveRefUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboard.toURIOrNull()?.openBrowser() }),
+            ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
+            ContextMenuItem.TextItem("New Eden Encyclopedia", Res.drawable.menu_newedenencyclopedia, onClick = { newEdenEncyclopediaUrl.toURIOrNull()?.openBrowser() }),
         ),
     ) {
         ClickableEntity(
