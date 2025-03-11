@@ -75,6 +75,7 @@ data class SettingsModel(
     val windowTransparencyModifier: Float = 1f,
     val isSmartAlwaysAbove: Boolean = false,
     val mapMarkers: List<MapMarker> = emptyList(),
+    val assetLocationPins: Map<Long, LocationPinStatus> = emptyMap(),
 )
 
 @Serializable
@@ -314,3 +315,8 @@ data class MapMarker(
     val color: Color?,
     val icon: String,
 )
+
+@Serializable
+enum class LocationPinStatus {
+    Pinned, None, Hidden
+}

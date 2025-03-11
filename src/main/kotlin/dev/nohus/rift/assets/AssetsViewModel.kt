@@ -13,12 +13,16 @@ import dev.nohus.rift.repositories.PricesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.settings.persistence.LocationPinStatus
+import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
@@ -34,6 +38,7 @@ class AssetsViewModel(
     private val typesRepository: TypesRepository,
     private val fittingController: FittingController,
     private val pricesRepository: PricesRepository,
+    private val settings: Settings,
 ) : ViewModel() {
 
     data class AssetLocation(
@@ -73,6 +78,7 @@ class AssetsViewModel(
         val filterCharacter: LocalCharacter? = null,
         val search: String = "",
         val sort: SortType = SortType.Distance,
+        val pins: Map<Long, LocationPinStatus> = emptyMap(),
         val isLoading: Boolean = false,
     )
 
@@ -81,7 +87,11 @@ class AssetsViewModel(
     }
 
     private var allAssets: List<Pair<AssetLocation, List<Asset>>> = emptyList()
-    private val _state = MutableStateFlow(UiState())
+    private val _state = MutableStateFlow(
+        UiState(
+            pins = settings.assetLocationPins,
+        ),
+    )
     val state = _state.asStateFlow()
 
     init {
@@ -137,6 +147,12 @@ class AssetsViewModel(
         }
     }
 
+    fun onPinChange(locationId: Long, pinStatus: LocationPinStatus) {
+        settings.assetLocationPins += locationId to pinStatus
+        _state.update { it.copy(pins = it.pins + (locationId to pinStatus)) }
+        updateFilteredAssets()
+    }
+
     private fun updateFilteredAssets() {
         val filteredAssets = getFilteredAssets()
         val totals = getAssetTotals(filteredAssets)
@@ -182,9 +198,12 @@ class AssetsViewModel(
                     if (matchingAssets.isNotEmpty()) location to matchingAssets else null
                 }
         }
+        val pins = _state.value.pins
         val sorted = when (_state.value.sort) {
             SortType.Distance -> filtered.sortedWith(
                 compareBy(
+                    { pins[it.first.locationId] != LocationPinStatus.Pinned },
+                    { pins[it.first.locationId] == LocationPinStatus.Hidden },
                     { it.first.systemId == null },
                     { it.first.distance ?: Int.MAX_VALUE },
                     { it.first.name },
@@ -192,18 +211,24 @@ class AssetsViewModel(
             )
             SortType.Name -> filtered.sortedWith(
                 compareBy(
+                    { pins[it.first.locationId] != LocationPinStatus.Pinned },
+                    { pins[it.first.locationId] == LocationPinStatus.Hidden },
                     { it.first.systemId == null },
                     { it.first.name },
                 ),
             )
             SortType.Count -> filtered.sortedWith(
                 compareBy(
+                    { pins[it.first.locationId] != LocationPinStatus.Pinned },
+                    { pins[it.first.locationId] == LocationPinStatus.Hidden },
                     { it.first.systemId == null },
                     { -it.second.size },
                 ),
             )
             SortType.Price -> filtered.sortedWith(
                 compareBy(
+                    { pins[it.first.locationId] != LocationPinStatus.Pinned },
+                    { pins[it.first.locationId] == LocationPinStatus.Hidden },
                     { it.first.systemId == null },
                     { -it.second.sumOf { it.getTotalPrice() } },
                 ),

@@ -48,6 +48,7 @@ import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.ExpandChevron
 import dev.nohus.rift.compose.GetSystemContextMenuItems
 import dev.nohus.rift.compose.LoadingSpinner
@@ -64,8 +65,13 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.menu_eye
+import dev.nohus.rift.generated.resources.menu_favorite
+import dev.nohus.rift.generated.resources.menu_uneye
+import dev.nohus.rift.generated.resources.menu_unfavorite
 import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.map.SecurityColors
+import dev.nohus.rift.settings.persistence.LocationPinStatus
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.plural
@@ -93,6 +99,7 @@ fun AssetsWindow(
             onSortSelected = viewModel::onSortSelected,
             onSearchChange = viewModel::onSearchChange,
             onFitAction = viewModel::onFitAction,
+            onPinChange = viewModel::onPinChange,
             onReloadClick = viewModel::onReloadClick,
         )
     }
@@ -105,6 +112,7 @@ private fun AssetsWindowContent(
     onSortSelected: (SortType) -> Unit,
     onSearchChange: (String) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,
+    onPinChange: (Long, LocationPinStatus) -> Unit,
     onReloadClick: () -> Unit,
 ) {
     Column {
@@ -184,7 +192,22 @@ private fun AssetsWindowContent(
             } else {
                 null
             }
+            var previousPinStatus: LocationPinStatus? = null
             state.assets.forEach { (location, assets) ->
+                val pinStatus = state.pins[location.locationId] ?: LocationPinStatus.None
+                if (previousPinStatus != pinStatus) {
+                    item(key = "pin-divider-$previousPinStatus") {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 24.dp)
+                                .padding(vertical = Spacing.small),
+                        ) {
+                        }
+                    }
+                }
+                previousPinStatus = pinStatus
+
                 val isLocationExpanded = location in expandedLocations
                 item(key = location.locationId) {
                     LocationHeader(
@@ -193,6 +216,7 @@ private fun AssetsWindowContent(
                         isExpanded = isLocationExpanded,
                         expandedItems = expandedItems,
                         characterNames = characterNames,
+                        pinStatus = pinStatus,
                         onClick = {
                             if (isLocationExpanded) expandedLocations -= location else expandedLocations += location
                         },
@@ -200,6 +224,7 @@ private fun AssetsWindowContent(
                             if (itemId in expandedItems) expandedItems -= itemId else expandedItems += itemId
                         },
                         onFitAction = onFitAction,
+                        onPinChange = { onPinChange(location.locationId, it) },
                         modifier = Modifier.animateItem(),
                     )
                 }
@@ -268,19 +293,58 @@ private fun LocationHeader(
     isExpanded: Boolean,
     expandedItems: Set<Long>,
     characterNames: Map<Int, String>?,
+    pinStatus: LocationPinStatus,
     onClick: () -> Unit,
     onItemClick: (itemId: Long) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,
+    onPinChange: (LocationPinStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
     ) {
+        val contextMenuItems = buildList {
+            add(ContextMenuItem.DividerItem)
+            if (pinStatus == LocationPinStatus.Pinned) {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Unpin in Assets",
+                        iconResource = Res.drawable.menu_unfavorite,
+                        onClick = { onPinChange(LocationPinStatus.None) },
+                    ),
+                )
+            } else {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Pin in Assets",
+                        iconResource = Res.drawable.menu_favorite,
+                        onClick = { onPinChange(LocationPinStatus.Pinned) },
+                    ),
+                )
+            }
+            if (pinStatus == LocationPinStatus.Hidden) {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Unhide in Assets",
+                        iconResource = Res.drawable.menu_uneye,
+                        onClick = { onPinChange(LocationPinStatus.None) },
+                    ),
+                )
+            } else {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Hide in Assets",
+                        iconResource = Res.drawable.menu_eye,
+                        onClick = { onPinChange(LocationPinStatus.Hidden) },
+                    ),
+                )
+            }
+        }
         RiftContextMenuArea(
             items = GetSystemContextMenuItems(
                 systemId = location.systemId,
                 locationId = location.locationId,
-            ),
+            ) + contextMenuItems,
             modifier = Modifier.pointerHoverIcon(PointerIcon(Cursors.pointerInteractive)),
         ) {
             Row(

@@ -249,4 +249,8 @@ class Settings(
     var mapMarkers: List<MapMarker>
         get() = model.mapMarkers
         set(value) = update { copy(mapMarkers = value) }
+
+    var assetLocationPins: Map<Long, LocationPinStatus>
+        get() = model.assetLocationPins
+        set(value) = update { copy(assetLocationPins = value) }
 }

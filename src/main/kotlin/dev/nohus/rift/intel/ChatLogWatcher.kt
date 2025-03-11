@@ -85,8 +85,9 @@ class ChatLogWatcher(
         chatLogsObserver.observe(directory) { channelChatMessage ->
             launch {
                 getMutex(channelChatMessage.metadata.channelName).withLock {
-                    val duration = Duration.between(channelChatMessage.chatMessage.timestamp, Instant.now())
-                    if (duration < Duration.ofMinutes(2)) {
+                    val age = Duration.between(channelChatMessage.chatMessage.timestamp, Instant.now())
+                    val isFresh = age < Duration.ofMinutes(2)
+                    if (isFresh) {
                         alertsTriggerController.onNewChatMessage(channelChatMessage)
                     }
 
@@ -107,7 +108,7 @@ class ChatLogWatcher(
                                     )
 
                                     val context = getMessageContext(parsed)
-                                    intelStateController.submitMessage(parsed, context)
+                                    intelStateController.submitMessage(parsed, context, isFresh)
                                     _channelChatMessages.update { previous ->
                                         (previous + parsed).sortedBy { it.chatMessage.timestamp }
                                     }

@@ -421,6 +421,10 @@ object WhatsNew {
                 - When adding an intel channel, the text field now shows autocomplete suggestions of valid channel names
                 - The Assets window now shows totals for all your assets from all locations
             """.trimIndent(),
+            "4.27.0" description """
+                - Asset locations can now be pinned in the Assets window to always appear on top
+                - They can also be hidden, which will put them below the main list
+            """.trimIndent(),
         ).reversed()
     }
 }

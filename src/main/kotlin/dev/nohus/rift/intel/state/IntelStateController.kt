@@ -64,12 +64,13 @@ class IntelStateController(
     suspend fun submitMessage(
         message: ParsedChannelChatMessage,
         context: List<ParsedChannelChatMessage>,
+        isFresh: Boolean,
     ) = mutex.withLock {
         if (!isIntelChannel(message.metadata.channelName)) return
 
         val timestamp = message.chatMessage.timestamp
         val understanding = intelConversationMerger.merge(message, context)
-        if (Duration.between(timestamp, Instant.now()) < Duration.ofMinutes(2)) {
+        if (isFresh) {
             alertsTriggerController.onNewIntel(message, understanding)
             alertsTriggerController.onNewIntelMessage(message)
         }
