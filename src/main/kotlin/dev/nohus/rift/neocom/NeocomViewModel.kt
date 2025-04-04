@@ -57,7 +57,7 @@ class NeocomViewModel(
     }
 
     private fun updateJukeboxEnabledState() {
-        val isFeatureFlagEnabled = postHogClient.isFeatureFlagEnabled(FeatureFlag.Jukebox)
+        val isFeatureFlagEnabled = true
         _state.update { it.copy(isJukeboxEnabled = isFeatureFlagEnabled) }
     }
 }

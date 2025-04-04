@@ -82,7 +82,10 @@ class ChatLogsObserver(
                         }
                     }
                 }
-                OverflowEvent -> reloadLogFiles(directory)
+                OverflowEvent -> {
+                    logger.debug { "Chat log overflow event" }
+                    reloadLogFiles(directory)
+                }
             }
         }
         logger.info { "Stopped observing" }

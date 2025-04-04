@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dev.nohus.rift.generated.resources.Res
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 
@@ -15,7 +14,7 @@ fun AnimatedImage(
 ) {
     KamelImage(
         resource = {
-            asyncPainterResource(Res.getUri(resource))
+            asyncPainterResource(resource)
         },
         contentDescription = null,
         modifier = modifier,
