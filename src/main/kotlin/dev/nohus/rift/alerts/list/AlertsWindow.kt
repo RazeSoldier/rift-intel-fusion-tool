@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -50,6 +51,7 @@ import dev.nohus.rift.alerts.list.AlertsViewModel.UiState
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.ExpandChevron
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCheckbox
@@ -74,6 +76,7 @@ import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import java.nio.file.Path
 import java.time.Duration
@@ -95,6 +98,7 @@ fun AlertsWindow(
         AlertsWindowContent(
             state = state,
             onAlertClick = viewModel::onAlertClick,
+            onGroupClick = viewModel::onGroupClick,
             onToggleAlert = viewModel::onToggleAlert,
             onGroupChange = viewModel::onGroupChange,
             onTestAlertSound = viewModel::onTestAlertSound,
@@ -132,6 +136,7 @@ fun AlertsWindow(
 private fun AlertsWindowContent(
     state: UiState,
     onAlertClick: (id: String) -> Unit,
+    onGroupClick: (name: String?) -> Unit,
     onToggleAlert: (id: String, isEnabled: Boolean) -> Unit,
     onGroupChange: (id: String, group: String?) -> Unit,
     onTestAlertSound: (id: String) -> Unit,
@@ -158,35 +163,55 @@ private fun AlertsWindowContent(
                     .entries
                     .sortedWith(compareBy({ it.key == null }, { it.key }))
                     .forEach { (group, alertsInGroup) ->
+                        val isExpanded = group !in state.collapsedGroups
                         stickyHeader {
+                            val text = buildAnnotatedString {
+                                withColor(RiftTheme.colors.textPrimary) {
+                                    append(group ?: "Default")
+                                }
+                                val total = alertsInGroup.size
+                                val enabled = alertsInGroup.count { it.isEnabled }
+                                append(" - ")
+                                append(total.toString())
+                                append(" alert${total.plural}")
+                                if (enabled < total) {
+                                    append(" - ")
+                                    append(enabled.toString())
+                                    append(" enabled")
+                                }
+                            }
                             AlertGroupHeader(
-                                name = group,
+                                name = text,
                                 isEmpty = alertsInGroup.isEmpty(),
+                                isExpanded = isExpanded,
                                 hasEnabledAlerts = alertsInGroup.any { it.isEnabled },
+                                onClick = { onGroupClick(group) },
                                 onGroupToggleAlerts = { onGroupToggleAlerts(group) },
                                 onGroupRenameClick = { onGroupRenameClick(group!!) },
                                 onGroupDeleteClick = { onGroupDeleteClick(group!!) },
                             )
                         }
-                        if (group in emptyGroups) {
-                            item {
-                                EmptyGroup()
+                        if (isExpanded) {
+                            if (group in emptyGroups) {
+                                item {
+                                    EmptyGroup()
+                                }
                             }
-                        }
-                        items(alertsInGroup, key = { it.id }) { alert ->
-                            val isExpanded = alert.id == state.expandedAlert
-                            AlertItem(
-                                onAlertClick = onAlertClick,
-                                alert = alert,
-                                onToggleAlert = onToggleAlert,
-                                state = state,
-                                isExpanded = isExpanded,
-                                groups = state.groups,
-                                onGroupChange = { onGroupChange(alert.id, it) },
-                                onTestAlertSound = onTestAlertSound,
-                                onEditAlertAction = onEditAlertAction,
-                                onDeleteAlert = onDeleteAlert,
-                            )
+                            items(alertsInGroup, key = { it.id }) { alert ->
+                                val isExpanded = alert.id == state.expandedAlert
+                                AlertItem(
+                                    onAlertClick = onAlertClick,
+                                    alert = alert,
+                                    onToggleAlert = onToggleAlert,
+                                    state = state,
+                                    isExpanded = isExpanded,
+                                    groups = state.groups,
+                                    onGroupChange = { onGroupChange(alert.id, it) },
+                                    onTestAlertSound = onTestAlertSound,
+                                    onEditAlertAction = onEditAlertAction,
+                                    onDeleteAlert = onDeleteAlert,
+                                )
+                            }
                         }
                     }
             }
@@ -225,11 +250,14 @@ private fun AlertsWindowContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun LazyItemScope.AlertGroupHeader(
-    name: String?,
+    name: AnnotatedString,
     isEmpty: Boolean,
+    isExpanded: Boolean,
     hasEnabledAlerts: Boolean,
+    onClick: () -> Unit,
     onGroupToggleAlerts: () -> Unit,
     onGroupRenameClick: () -> Unit,
     onGroupDeleteClick: () -> Unit,
@@ -237,17 +265,22 @@ private fun LazyItemScope.AlertGroupHeader(
     val pointerState = remember { PointerInteractionStateHolder() }
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .pointerInteraction(pointerState)
             .background(RiftTheme.colors.backgroundPrimary)
-            .padding(horizontal = Spacing.medium, vertical = Spacing.small)
+            .padding(vertical = Spacing.small)
+            .padding(end = Spacing.medium)
             .fillMaxWidth()
             .animateItem()
-            .animateContentSize(),
+            .animateContentSize()
+            .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+            .onClick { onClick() },
     ) {
+        ExpandChevron(isExpanded = isExpanded)
         Text(
-            text = name ?: "Default",
-            style = RiftTheme.typography.titlePrimary,
+            text = name,
+            style = RiftTheme.typography.titleSecondary,
         )
         Spacer(Modifier.weight(1f))
 

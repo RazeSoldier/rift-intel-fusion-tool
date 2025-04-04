@@ -100,8 +100,12 @@ class MapSettingsViewModel(
         settings.intelMap = settings.intelMap.copy(isUsingCompactMode = enabled)
     }
 
-    fun onIsCharacterFollowingChange(enabled: Boolean) {
-        settings.intelMap = settings.intelMap.copy(isCharacterFollowing = enabled)
+    fun onIsFollowingCharacterWithinLayoutsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isFollowingCharacterWithinLayouts = enabled)
+    }
+
+    fun onIsFollowingCharacterAcrossLayoutsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isFollowingCharacterAcrossLayouts = enabled)
     }
 
     fun onIsScrollZoomInvertedChange(enabled: Boolean) {
@@ -110,6 +114,10 @@ class MapSettingsViewModel(
 
     fun onIsAlwaysShowingSystemsChange(enabled: Boolean) {
         settings.intelMap = settings.intelMap.copy(isAlwaysShowingSystems = enabled)
+    }
+
+    fun onIsPreferringRegionMapsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isPreferringRegionMaps = enabled)
     }
 
     fun onMapNotesClick() {

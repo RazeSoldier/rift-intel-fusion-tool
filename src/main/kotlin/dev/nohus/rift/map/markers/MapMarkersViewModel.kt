@@ -123,7 +123,7 @@ class MapMarkersViewModel(
 
     fun onMarkerClick(id: UUID) {
         val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
-        mapExternalControl.showSystemOnRegionMap(marker.systemId)
+        mapExternalControl.showSystemOnMap(marker.systemId)
     }
 
     fun onEditMarkerClick(id: UUID) {

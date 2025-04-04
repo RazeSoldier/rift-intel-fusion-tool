@@ -92,3 +92,7 @@ fun AnnotatedString.Builder.withColor(color: Color, block: AnnotatedString.Build
 fun <T> List<T>.toggle(element: T): List<T> {
     return if (element in this) this - element else this + element
 }
+
+fun <T> Set<T>.toggle(element: T): Set<T> {
+    return if (element in this) this - element else this + element
+}

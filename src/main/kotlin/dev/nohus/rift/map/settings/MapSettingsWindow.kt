@@ -64,9 +64,11 @@ fun MapSettingsWindow(
             state = state,
             onIntelPopupTimeoutSecondsChange = viewModel::onIntelPopupTimeoutSecondsChange,
             onIsUsingCompactModeChange = viewModel::onIsUsingCompactModeChange,
-            onIsCharacterFollowingChange = viewModel::onIsCharacterFollowingChange,
+            onIsFollowingCharacterWithinLayoutsChange = viewModel::onIsFollowingCharacterWithinLayoutsChange,
+            onIsFollowingCharacterAcrossLayoutsChange = viewModel::onIsFollowingCharacterAcrossLayoutsChange,
             onIsScrollZoomInvertedChange = viewModel::onIsScrollZoomInvertedChange,
             onIsAlwaysShowingSystemsChange = viewModel::onIsAlwaysShowingSystemsChange,
+            onIsPreferringRegionMapsChange = viewModel::onIsPreferringRegionMapsChange,
             onMapNotesClick = viewModel::onMapNotesClick,
             onIsUsingRiftAutopilotRouteChange = viewModel::onIsUsingRiftAutopilotRouteChange,
             onIsJumpBridgeNetworkShownChange = viewModel::onIsJumpBridgeNetworkShownChange,
@@ -127,9 +129,11 @@ private fun MapSettingsWindowContent(
     state: UiState,
     onIntelPopupTimeoutSecondsChange: (Int) -> Unit,
     onIsUsingCompactModeChange: (Boolean) -> Unit,
-    onIsCharacterFollowingChange: (Boolean) -> Unit,
+    onIsFollowingCharacterWithinLayoutsChange: (Boolean) -> Unit,
+    onIsFollowingCharacterAcrossLayoutsChange: (Boolean) -> Unit,
     onIsScrollZoomInvertedChange: (Boolean) -> Unit,
     onIsAlwaysShowingSystemsChange: (Boolean) -> Unit,
+    onIsPreferringRegionMapsChange: (Boolean) -> Unit,
     onMapNotesClick: () -> Unit,
     onIsUsingRiftAutopilotRouteChange: (Boolean) -> Unit,
     onIsJumpBridgeNetworkShownChange: (Boolean) -> Unit,
@@ -149,10 +153,16 @@ private fun MapSettingsWindowContent(
                 onCheckedChange = onIsUsingCompactModeChange,
             )
             RiftCheckboxWithLabel(
-                label = "Move with character",
-                tooltip = "When you jump to another system\nthe map will follow",
-                isChecked = intelMap.isCharacterFollowing,
-                onCheckedChange = { onIsCharacterFollowingChange(it) },
+                label = "Move map to follow character",
+                tooltip = "When you jump to another system visible\non your current map, the map will move\nto center on the new system",
+                isChecked = intelMap.isFollowingCharacterWithinLayouts,
+                onCheckedChange = { onIsFollowingCharacterWithinLayoutsChange(it) },
+            )
+            RiftCheckboxWithLabel(
+                label = "Switch maps to follow character",
+                tooltip = "When you jump to another system not visible\non the current map, the map will switch\nto a region showing that system",
+                isChecked = intelMap.isFollowingCharacterAcrossLayouts,
+                onCheckedChange = { onIsFollowingCharacterAcrossLayoutsChange(it) },
             )
             RiftCheckboxWithLabel(
                 label = "Invert scroll wheel zoom",
@@ -165,6 +175,12 @@ private fun MapSettingsWindowContent(
                 tooltip = "System labels won't hide when zooming out",
                 isChecked = intelMap.isAlwaysShowingSystems,
                 onCheckedChange = { onIsAlwaysShowingSystemsChange(it) },
+            )
+            RiftCheckboxWithLabel(
+                label = "Prefer showing systems on region maps",
+                tooltip = "When clicking a system somewhere in RIFT, it will\nopen on a region map instead of the New Eden map",
+                isChecked = intelMap.isPreferringRegionMaps,
+                onCheckedChange = { onIsPreferringRegionMapsChange(it) },
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,

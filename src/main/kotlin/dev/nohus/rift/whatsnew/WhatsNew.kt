@@ -437,6 +437,23 @@ object WhatsNew {
                 - Updated the Character Settings Copy feature to support users with an extreme number of characters
                 - Updated window management on Linux so that dragging RIFT windows participates in window snapping and other native window features
             """.trimIndent(),
+            "4.30.0" description """
+                -! New feature: Jukebox!
+                - In 2012, the in-game MP3 player was removed, which many consider an egregious error. After over a decade of silence, RIFT is bringing back the most essential feature EVE has ever lost – the legendary Jukebox!
+                - Enjoy the original EVE soundtrack, with the ability to switch tracks at will
+                - Blast Below the Asteroids on repeat while mining
+                - Create and manage your own custom playlists, because space is better with your own MP3s
+                - Relive the True EVE Jukebox Experience, just as CCP intended
+            """.trimIndent(),
+            "4.31.0" description """
+                -! New options in Map Settings
+                - You can now choose if you prefer to show systems on region maps or the New Eden map. This is taken into account when clicking a system anywhere in RIFT, showing a system on the map from right-click menus, or searching for systems on the map.
+                - You can now choose separately if you want the map to follow your character by moving within the opened map, switch the opened map if you left the currently visible regions, or both
+                
+                -! Alerts window
+                - Alert groups can now be collapsed
+                - Alert group headers now show the number of alerts and enabled alerts within the group
+            """.trimIndent(),
         ).reversed()
     }
 }

@@ -16,7 +16,7 @@ fun FpsCounter() {
     Text("FPS: $fps")
     LaunchedEffect(Unit) {
         val fpsCounter = FPSCounter(logOnTick = false)
-        while(true) {
+        while (true) {
             withFrameNanos {
                 fps = fpsCounter.average
                 fpsCounter.tick()

@@ -603,7 +603,7 @@ private fun WormholesInfo(systemStatus: SolarSystemStatus?, isFull: Boolean) {
                 horizontalArrangement = Arrangement.spacedBy(Spacing.verySmall),
                 modifier = Modifier
                     .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-                    .onClick { mapExternalControl.showSystemOnRegionMap(wormhole.outSystemId) },
+                    .onClick { mapExternalControl.showSystemOnMap(wormhole.outSystemId) },
             ) {
                 Image(
                     painter = painterResource(Res.drawable.indicator_wormhole),

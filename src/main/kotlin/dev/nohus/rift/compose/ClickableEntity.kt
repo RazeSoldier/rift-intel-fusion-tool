@@ -58,7 +58,7 @@ fun ClickableLocation(
         ClickableEntity(
             onClick = {
                 if (isKnownSpace) {
-                    mapExternalControl.showSystemOnRegionMap(systemId)
+                    mapExternalControl.showSystemOnMap(systemId)
                 }
             },
             content = content,
@@ -97,7 +97,7 @@ fun ClickableSystem(
         ClickableEntity(
             onClick = {
                 if (isKnownSpace) {
-                    mapExternalControl.showSystemOnRegionMap(systemId)
+                    mapExternalControl.showSystemOnMap(systemId)
                 }
             },
             content = content,
@@ -180,25 +180,38 @@ fun GetSystemContextMenuItems(
                 },
             ),
         )
-        if (mapType !is MapType.ClusterSystemsMap && isKnownSpace) {
-            add(
-                ContextMenuItem.TextItem(
-                    text = if (mapType == null) "Show on Map" else "Show in New Eden",
-                    onClick = {
-                        mapExternalControl.showSystem(systemId)
-                    },
-                ),
-            )
-        }
-        if (mapType !is MapType.RegionMap && isKnownSpace) {
-            add(
-                ContextMenuItem.TextItem(
-                    text = if (mapType == null) "Show on Region Map" else "Show in Region",
-                    onClick = {
-                        mapExternalControl.showSystemOnRegionMap(systemId)
-                    },
-                ),
-            )
+        if (isKnownSpace) {
+            if (mapType == null) {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Show on Map",
+                        onClick = {
+                            mapExternalControl.showSystemOnMap(systemId)
+                        },
+                    ),
+                )
+            } else {
+                if (mapType !is MapType.ClusterSystemsMap) {
+                    add(
+                        ContextMenuItem.TextItem(
+                            text = "Show in New Eden",
+                            onClick = {
+                                mapExternalControl.showSystemOnNewEdenMap(systemId)
+                            },
+                        ),
+                    )
+                }
+                if (mapType !is MapType.RegionMap) {
+                    add(
+                        ContextMenuItem.TextItem(
+                            text = "Show in Region",
+                            onClick = {
+                                mapExternalControl.showSystemOnRegionMap(systemId)
+                            },
+                        ),
+                    )
+                }
+            }
         }
         add(ContextMenuItem.DividerItem)
         if (isWormholeSpace) {
