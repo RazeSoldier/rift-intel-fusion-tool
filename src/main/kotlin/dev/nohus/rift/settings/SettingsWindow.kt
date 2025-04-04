@@ -663,6 +663,7 @@ private fun IntelSection(
         "1 minute" to 60,
         "2 minutes" to 60 * 2,
         "5 minutes" to 60 * 5,
+        "10 minutes" to 60 * 10,
         "15 minutes" to 60 * 15,
         "30 minutes" to 60 * 30,
         "1 hour" to 60 * 60,

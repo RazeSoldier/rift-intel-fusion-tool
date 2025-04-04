@@ -10,7 +10,7 @@ class UserAgentInterceptor : Interceptor {
 
     companion object {
         const val USER_AGENT_KEY = "User-Agent"
-        val USER_AGENT = "RIFT/${BuildConfig.version}-source (developer@riftforeve.online)"
+        val USER_AGENT = "RIFT/${BuildConfig.version}-source (developer@riftforeve.online; discord:nohus)"
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {

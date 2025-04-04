@@ -119,7 +119,7 @@ private fun WizardWindowContent(
                 .padding(end = Spacing.large),
         ) {
             AnimatedImage(
-                resource = "files/aura.gif",
+                resource = "aura.gif",
                 modifier = Modifier
                     .size(200.dp)
                     .border(2.dp, RiftTheme.colors.borderPrimary),

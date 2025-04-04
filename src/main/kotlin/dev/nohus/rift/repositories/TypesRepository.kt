@@ -115,7 +115,7 @@ class TypesRepository(
         val words = message.split(" ")
         val punctuation = listOf(",", ".", ";")
         for (startIndex in words.indices) {
-            val longest = words.drop(startIndex).takeWhile { !it[0].isLowerCase() }
+            val longest = words.drop(startIndex).takeWhile { it.isNotEmpty() && !it[0].isLowerCase() }
             if (longest.isEmpty()) continue
             for (length in longest.size downTo 1) {
                 val candidate = longest.take(length).joinToString(" ")
