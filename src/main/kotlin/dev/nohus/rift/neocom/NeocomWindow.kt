@@ -44,6 +44,7 @@ import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.generated.resources.window_contacts
 import dev.nohus.rift.generated.resources.window_evemailtag
+import dev.nohus.rift.generated.resources.window_jukebox
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.generated.resources.window_map
 import dev.nohus.rift.generated.resources.window_planets
@@ -93,6 +94,9 @@ fun NeocomWindow(
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })
                 add(ButtonModel(icon = Res.drawable.window_chatchannels, name = "Jabber") { viewModel.onButtonClick(RiftWindow.Jabber) })
+            }
+            if (state.isJukeboxEnabled) {
+                add(ButtonModel(icon = Res.drawable.window_jukebox, name = "Jukebox") { viewModel.onButtonClick(RiftWindow.Jukebox) })
             }
             add(ButtonModel(icon = Res.drawable.window_settings, name = "Settings") { viewModel.onButtonClick(RiftWindow.Settings) })
             add(ButtonModel(icon = Res.drawable.window_evemailtag, name = "About") { viewModel.onButtonClick(RiftWindow.About) })

@@ -14,13 +14,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.Cursors
-import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_buttonglow
 import dev.nohus.rift.windowing.LocalRiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -32,6 +36,7 @@ fun RiftImageButton(
     size: Dp,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    tint: Color? = null,
     iconPadding: Dp = 0.dp,
     highlightModifier: Float = 1f,
 ) {
@@ -60,16 +65,22 @@ fun RiftImageButton(
                 .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
                 .onClick(onClick = onClick),
         ) {
-            Image(
-                painter = painterResource(Res.drawable.window_buttonglow),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(size + iconPadding * 2)
-                    .alpha(highlightAlpha),
-            )
+            val blur = LocalDensity.current.run { size.toPx() } * 0.35f
+            repeat(3) {
+                Image(
+                    painter = painterResource(resource),
+                    contentDescription = null,
+                    colorFilter = tint?.let { ColorFilter.tint(tint) },
+                    modifier = Modifier
+                        .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
+                        .size(size + iconPadding * 2)
+                        .alpha(highlightAlpha),
+                )
+            }
             Image(
                 painter = painterResource(resource),
                 contentDescription = null,
+                colorFilter = tint?.let { ColorFilter.tint(tint) },
                 modifier = Modifier
                     .size(size)
                     .alpha(iconAlpha),

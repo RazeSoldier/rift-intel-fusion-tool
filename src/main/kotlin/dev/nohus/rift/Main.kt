@@ -27,9 +27,9 @@ import io.kamel.image.config.LocalKamelConfig
 
 fun main() {
     try {
-        application(exitProcessOnExit = true) {
-            initializeLogging()
-            startKoin()
+        initializeLogging()
+        startKoin()
+        application {
             riftApplication()
         }
     } catch (e: Throwable) {
@@ -57,7 +57,7 @@ private fun ApplicationScope.riftApplication() {
                     onCloseRequest = viewModel::onQuit,
                 )
             } else {
-                RiftTray(viewModel, windowManager, state.isTrayIconShown)
+                RiftTray(state.isTrayIconShown)
                 windowManager.composeWindows()
                 SplashWindowWrapper(
                     isVisible = state.isSplashScreenShown,

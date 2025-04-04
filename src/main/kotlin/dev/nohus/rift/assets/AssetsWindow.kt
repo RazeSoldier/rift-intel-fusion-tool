@@ -3,6 +3,7 @@ package dev.nohus.rift.assets
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -60,15 +62,16 @@ import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
+import dev.nohus.rift.compose.fadingRightEdge
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.menu_eye
-import dev.nohus.rift.generated.resources.menu_favorite
-import dev.nohus.rift.generated.resources.menu_uneye
-import dev.nohus.rift.generated.resources.menu_unfavorite
+import dev.nohus.rift.generated.resources.menu_hide
+import dev.nohus.rift.generated.resources.menu_pinned
+import dev.nohus.rift.generated.resources.menu_unhide
+import dev.nohus.rift.generated.resources.menu_unpin
 import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.settings.persistence.LocationPinStatus
@@ -78,6 +81,7 @@ import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.painterResource
 import java.text.NumberFormat
 
 @Composable
@@ -156,6 +160,7 @@ private fun AssetsWindowContent(
         }
         var expandedLocations by remember { mutableStateOf<Set<AssetLocation>>(emptySet()) }
         var expandedItems by remember { mutableStateOf<Set<Long>>(emptySet()) }
+        var isHiddenExpanded by remember { mutableStateOf(false) }
         ScrollbarLazyColumn {
             state.assetTotals?.let { totals ->
                 item(key = "totals") {
@@ -195,38 +200,40 @@ private fun AssetsWindowContent(
             var previousPinStatus: LocationPinStatus? = null
             state.assets.forEach { (location, assets) ->
                 val pinStatus = state.pins[location.locationId] ?: LocationPinStatus.None
-                if (previousPinStatus != pinStatus) {
-                    item(key = "pin-divider-$previousPinStatus") {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 24.dp)
-                                .padding(vertical = Spacing.small),
-                        ) {
-                        }
+                if (previousPinStatus != pinStatus && pinStatus == LocationPinStatus.Hidden) {
+                    item(key = "hidden-location") {
+                        HiddenLocationsHeader(
+                            isExpanded = isHiddenExpanded,
+                            hiddenCount = state.assets.count { state.pins[it.first.locationId] == LocationPinStatus.Hidden },
+                            onClick = { isHiddenExpanded = !isHiddenExpanded },
+                            modifier = Modifier.animateItem(),
+                        )
                     }
                 }
                 previousPinStatus = pinStatus
 
-                val isLocationExpanded = location in expandedLocations
-                item(key = location.locationId) {
-                    LocationHeader(
-                        location = location,
-                        assets = assets,
-                        isExpanded = isLocationExpanded,
-                        expandedItems = expandedItems,
-                        characterNames = characterNames,
-                        pinStatus = pinStatus,
-                        onClick = {
-                            if (isLocationExpanded) expandedLocations -= location else expandedLocations += location
-                        },
-                        onItemClick = { itemId ->
-                            if (itemId in expandedItems) expandedItems -= itemId else expandedItems += itemId
-                        },
-                        onFitAction = onFitAction,
-                        onPinChange = { onPinChange(location.locationId, it) },
-                        modifier = Modifier.animateItem(),
-                    )
+                if (isHiddenExpanded || pinStatus != LocationPinStatus.Hidden) {
+                    val isLocationExpanded = location in expandedLocations
+                    item(key = location.locationId) {
+                        LocationHeader(
+                            location = location,
+                            assets = assets,
+                            isExpanded = isLocationExpanded,
+                            expandedItems = expandedItems,
+                            depth = if (pinStatus == LocationPinStatus.Hidden) 1 else 0,
+                            characterNames = characterNames,
+                            pinStatus = pinStatus,
+                            onClick = {
+                                if (isLocationExpanded) expandedLocations -= location else expandedLocations += location
+                            },
+                            onItemClick = { itemId ->
+                                if (itemId in expandedItems) expandedItems -= itemId else expandedItems += itemId
+                            },
+                            onFitAction = onFitAction,
+                            onPinChange = { onPinChange(location.locationId, it) },
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
                 }
             }
             item(key = { "footer" }) {
@@ -287,11 +294,50 @@ private fun AssetsWindowContent(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+private fun HiddenLocationsHeader(
+    isExpanded: Boolean,
+    hiddenCount: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(RiftTheme.colors.windowBackgroundSecondary)
+            .hoverBackground()
+            .padding(vertical = Spacing.small)
+            .onClick { onClick() },
+    ) {
+        ExpandChevron(isExpanded = isExpanded)
+        Image(
+            painter = painterResource(Res.drawable.menu_unhide),
+            contentDescription = null,
+            modifier = Modifier
+                .padding(end = Spacing.small)
+                .size(16.dp),
+        )
+        Text(
+            text = "Hidden [$hiddenCount]",
+            style = RiftTheme.typography.bodyPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Visible,
+            softWrap = false,
+            modifier = Modifier
+                .weight(1f)
+                .clipToBounds()
+                .fadingRightEdge(),
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
 private fun LocationHeader(
     location: AssetLocation,
     assets: List<Asset>,
     isExpanded: Boolean,
     expandedItems: Set<Long>,
+    depth: Int,
     characterNames: Map<Int, String>?,
     pinStatus: LocationPinStatus,
     onClick: () -> Unit,
@@ -309,7 +355,15 @@ private fun LocationHeader(
                 add(
                     ContextMenuItem.TextItem(
                         text = "Unpin in Assets",
-                        iconResource = Res.drawable.menu_unfavorite,
+                        iconResource = Res.drawable.menu_unpin,
+                        onClick = { onPinChange(LocationPinStatus.None) },
+                    ),
+                )
+            } else if (pinStatus == LocationPinStatus.Hidden) {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Unhide in Assets",
+                        iconResource = Res.drawable.menu_unhide,
                         onClick = { onPinChange(LocationPinStatus.None) },
                     ),
                 )
@@ -317,24 +371,14 @@ private fun LocationHeader(
                 add(
                     ContextMenuItem.TextItem(
                         text = "Pin in Assets",
-                        iconResource = Res.drawable.menu_favorite,
+                        iconResource = Res.drawable.menu_pinned,
                         onClick = { onPinChange(LocationPinStatus.Pinned) },
                     ),
                 )
-            }
-            if (pinStatus == LocationPinStatus.Hidden) {
-                add(
-                    ContextMenuItem.TextItem(
-                        text = "Unhide in Assets",
-                        iconResource = Res.drawable.menu_uneye,
-                        onClick = { onPinChange(LocationPinStatus.None) },
-                    ),
-                )
-            } else {
                 add(
                     ContextMenuItem.TextItem(
                         text = "Hide in Assets",
-                        iconResource = Res.drawable.menu_eye,
+                        iconResource = Res.drawable.menu_hide,
                         onClick = { onPinChange(LocationPinStatus.Hidden) },
                     ),
                 )
@@ -347,12 +391,14 @@ private fun LocationHeader(
             ) + contextMenuItems,
             modifier = Modifier.pointerHoverIcon(PointerIcon(Cursors.pointerInteractive)),
         ) {
+            val depthOffset = 16.dp * depth
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(RiftTheme.colors.windowBackgroundSecondary)
                     .hoverBackground()
                     .padding(vertical = Spacing.small)
+                    .padding(start = depthOffset)
                     .onClick { onClick() },
             ) {
                 ExpandChevron(isExpanded = isExpanded)
@@ -383,8 +429,20 @@ private fun LocationHeader(
                     maxLines = 1,
                     overflow = TextOverflow.Visible,
                     softWrap = false,
-                    modifier = Modifier.clipToBounds(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clipToBounds()
+                        .fadingRightEdge(),
                 )
+                if (pinStatus == LocationPinStatus.Pinned) {
+                    Image(
+                        painter = painterResource(Res.drawable.menu_pinned),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .alpha(0.75f)
+                            .size(16.dp),
+                    )
+                }
             }
         }
         AnimatedVisibility(isExpanded) {
@@ -394,6 +452,7 @@ private fun LocationHeader(
                         AssetRow(
                             asset = asset,
                             expandedItems = expandedItems,
+                            depth = depth + 1,
                             characterNames = characterNames,
                             onClick = onItemClick,
                             onFitAction = onFitAction,
@@ -410,7 +469,7 @@ private fun LocationHeader(
 private fun AssetRow(
     asset: Asset,
     expandedItems: Set<Long>,
-    depth: Int = 1,
+    depth: Int,
     characterNames: Map<Int, String>?,
     onClick: (Long) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,

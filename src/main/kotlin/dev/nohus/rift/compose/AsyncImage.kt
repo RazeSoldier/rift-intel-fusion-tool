@@ -43,7 +43,7 @@ fun AsyncImage(
         }
     }
     KamelImage(
-        resource = painter,
+        resource = { painter },
         contentDescription = null,
         contentScale = contentScale,
         onFailure = {

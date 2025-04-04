@@ -5,7 +5,7 @@ import dev.nohus.rift.database.static.StaticDatabase
 import org.jetbrains.exposed.sql.selectAll
 import org.koin.core.annotation.Single
 
-@Single(createdAtStart = true)
+@Single
 class StarGatesRepository(
     staticDatabase: StaticDatabase,
     private val solarSystemsRepository: SolarSystemsRepository,

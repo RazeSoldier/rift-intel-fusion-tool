@@ -1,3 +1,5 @@
+import org.jetbrains.compose.reload.ComposeHotRun
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Instant
 
@@ -6,6 +8,7 @@ plugins {
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.compose")
+    id("org.jetbrains.compose.hot-reload")
     id("com.diffplug.spotless")
     id("com.google.devtools.ksp")
     id("com.github.gmazzo.buildconfig")
@@ -43,9 +46,14 @@ dependencies {
     macAarch64(compose.desktop.macos_arm64)
     windowsAmd64(compose.desktop.windows_x64)
     @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-    implementation(compose.desktop.components.animatedImage)
     implementation(compose.components.resources)
-    implementation("media.kamel:kamel-image:0.9.5")
+
+    // Kamel
+    val kamelVersion = "1.0.3"
+    implementation("media.kamel:kamel-image:${kamelVersion}")
+    implementation("media.kamel:kamel-decoder-image-bitmap:${kamelVersion}")
+    implementation("media.kamel:kamel-decoder-animated-image:${kamelVersion}")
+    implementation("media.kamel:kamel-fetcher-resources-jvm:${kamelVersion}")
 
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
@@ -75,6 +83,8 @@ dependencies {
     // OpenAL Audio
     implementation("org.jogamp.joal:joal-main:2.5.0")
     implementation("org.jogamp.gluegen:gluegen-rt-main:2.5.0")
+
+    implementation("javazoom:jlayer:1.0.1")
 
     // Smack (XMPP)
     implementation("org.igniterealtime.smack:smack-java8:4.4.8")
@@ -109,12 +119,13 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
 
     // Ktor
-    implementation("io.ktor:ktor-server-core-jvm:2.3.10")
-    implementation("io.ktor:ktor-server-netty-jvm:2.3.10")
-    implementation("io.ktor:ktor-client-core:2.3.10")
-    implementation("io.ktor:ktor-client-cio:2.3.10")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.10")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.10")
+    val ktorVersion = "3.1.1"
+    implementation("io.ktor:ktor-server-core-jvm:${ktorVersion}")
+    implementation("io.ktor:ktor-server-netty-jvm:${ktorVersion}")
+    implementation("io.ktor:ktor-client-core:${ktorVersion}")
+    implementation("io.ktor:ktor-client-cio:${ktorVersion}")
+    implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:${ktorVersion}")
 
     // Sentry
     implementation(platform("io.sentry:sentry-bom:7.8.0"))
@@ -140,6 +151,19 @@ compose.desktop {
     }
 }
 
+composeCompiler {
+    featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
+}
+
+tasks.register<ComposeHotRun>("runHot") {
+    mainClass.set("dev.nohus.rift.MainKt")
+    jvmArgs("--add-opens=java.desktop/java.awt=ALL-UNNAMED", "--add-exports=java.desktop/java.awt.peer=ALL-UNNAMED")
+}
+
+tasks.reloadMainClasspath.configure {
+    tasks.getByName("kspKotlin").enabled = false
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
@@ -151,7 +175,7 @@ tasks.withType<KotlinCompile>().configureEach {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
         vendor = JvmVendorSpec.JETBRAINS
         implementation = JvmImplementation.VENDOR_SPECIFIC
     }

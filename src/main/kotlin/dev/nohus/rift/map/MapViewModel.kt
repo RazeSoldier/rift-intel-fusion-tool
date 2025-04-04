@@ -5,8 +5,8 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.autopilot.AutopilotController
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.region
-import dev.nohus.rift.generated.resources.sun
+import dev.nohus.rift.generated.resources.map_region
+import dev.nohus.rift.generated.resources.map_universe
 import dev.nohus.rift.get
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
@@ -579,8 +579,8 @@ class MapViewModel(
 
     private fun createTabs(): List<Tab> {
         return listOf(
-            Tab(id = 0, title = "New Eden", isCloseable = false, icon = Res.drawable.sun, payload = ClusterSystemsMap),
-            Tab(id = 1, title = "Regions", isCloseable = false, icon = Res.drawable.region, payload = ClusterRegionsMap),
+            Tab(id = 0, title = "New Eden", isCloseable = false, icon = Res.drawable.map_universe, payload = ClusterSystemsMap),
+            Tab(id = 1, title = "Regions", isCloseable = false, icon = Res.drawable.map_region, payload = ClusterRegionsMap),
         ) + openLayouts.mapIndexed { index, layoutId ->
             val layout = layoutRepository.getLayout(layoutId)
             val name = layout?.name ?: "$layoutId"

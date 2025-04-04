@@ -4,6 +4,12 @@ import dev.nohus.rift.database.static.StaticDatabase
 import dev.nohus.rift.database.static.Types
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.selectAll
 import org.koin.core.annotation.Single
 
@@ -23,37 +29,59 @@ class TypesRepository(
         val iconId: Int,
     )
 
+    private val scope = CoroutineScope(Job())
+
     /**
      * Names resolved from ESI for types not in the SDE
      */
     private val resolvedTypeNames = mutableMapOf<Int, String>()
-    private val types: Map<Int, Type>
-    private val typeIds: Map<String, Int>
+    private lateinit var types: Map<Int, Type>
+    private lateinit var typeIds: Map<String, Int>
+    private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
-        val rows = staticDatabase.transaction {
-            Types.selectAll().toList()
+        scope.launch(Dispatchers.IO) {
+            val rows = staticDatabase.transaction {
+                Types.selectAll().toList()
+            }
+            types = rows.associate {
+                it[Types.typeId] to Type(
+                    id = it[Types.typeId],
+                    groupId = it[Types.groupId],
+                    name = it[Types.typeName],
+                    volume = it[Types.volume],
+                    radius = it[Types.radius],
+                    repackagedVolume = it[Types.repackagedVolume],
+                    iconId = it[Types.iconId] ?: it[Types.typeId],
+                )
+            }
+            typeIds = rows.associate { it[Types.typeName] to it[Types.typeId] }
+            hasLoaded.complete(Unit)
         }
-        types = rows.associate {
-            it[Types.typeId] to Type(
-                id = it[Types.typeId],
-                groupId = it[Types.groupId],
-                name = it[Types.typeName],
-                volume = it[Types.volume],
-                radius = it[Types.radius],
-                repackagedVolume = it[Types.repackagedVolume],
-                iconId = it[Types.iconId] ?: it[Types.typeId],
-            )
+    }
+
+    private fun blockUntilLoaded() {
+        runBlocking {
+            hasLoaded.await()
         }
-        typeIds = rows.associate { it[Types.typeName] to it[Types.typeId] }
+    }
+
+    private fun getTypes(): Map<Int, Type> {
+        blockUntilLoaded()
+        return types
+    }
+
+    private fun getTypeIds(): Map<String, Int> {
+        blockUntilLoaded()
+        return typeIds
     }
 
     fun getAllTypeNames(): List<String> {
-        return types.values.map { it.name }
+        return getTypes().values.map { it.name }
     }
 
     fun getTypeId(name: String): Int? {
-        return typeIds[name]
+        return getTypeIds()[name]
     }
 
     fun getTypeName(id: Int): String? {
@@ -65,7 +93,7 @@ class TypesRepository(
     }
 
     fun getType(id: Int): Type? {
-        return types[id]
+        return getTypes()[id]
     }
 
     fun getTypeOrPlaceholder(id: Int): Type {

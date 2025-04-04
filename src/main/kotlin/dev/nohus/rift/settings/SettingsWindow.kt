@@ -39,6 +39,7 @@ import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftFileChooserButton
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
+import dev.nohus.rift.compose.RiftSliderWithLabel
 import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
@@ -339,12 +340,12 @@ private fun AlertsSection(
             onClick = onEditNotificationClick,
         )
     }
-    RiftDropdownWithLabel(
+    RiftSliderWithLabel(
         label = "Alert volume:",
-        items = (0..100 step 10).reversed().toList(),
-        selectedItem = soundsVolume,
-        onItemSelected = onSoundsVolumeChange,
-        getItemName = { "$it%" },
+        width = 100.dp,
+        range = 0..100,
+        currentValue = soundsVolume,
+        onValueChange = onSoundsVolumeChange,
     )
     Row(
         verticalAlignment = Alignment.CenterVertically,

@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ fun ScrollbarColumn(
     isScrollbarConditional: Boolean = false,
     hasScrollbarBackground: Boolean = false,
     isFillWidth: Boolean = true,
+    onHasScrollbarChange: (Boolean) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Row(
@@ -56,7 +58,11 @@ fun ScrollbarColumn(
             content()
         }
         val canScroll = scrollState.canScrollBackward || scrollState.canScrollForward
-        if (!isScrollbarConditional || canScroll && scrollbarHeight > 0.dp) {
+        val hasScrollbar = !isScrollbarConditional || canScroll && scrollbarHeight > 0.dp
+        LaunchedEffect(hasScrollbar) {
+            onHasScrollbarChange(hasScrollbar)
+        }
+        if (hasScrollbar) {
             RiftVerticalScrollbar(
                 hasBackground = hasScrollbarBackground,
                 scrollState = scrollState,
