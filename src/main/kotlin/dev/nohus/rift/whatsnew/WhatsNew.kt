@@ -433,6 +433,10 @@ object WhatsNew {
                 - Replaced some dropdowns with a new slider component where relevant, like for volume in Settings
                 - Performance improvements to startup time
             """.trimIndent(),
+            "4.29.0" description """
+                - Updated the Character Settings Copy feature to support users with an extreme number of characters
+                - Updated window management on Linux so that dragging RIFT windows participates in window snapping and other native window features
+            """.trimIndent(),
         ).reversed()
     }
 }

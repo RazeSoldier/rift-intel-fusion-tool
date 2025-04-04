@@ -3,7 +3,7 @@ package dev.nohus.rift.charactersettings
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,9 +44,10 @@ import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
-import dev.nohus.rift.compose.ScrollbarColumn
+import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.getRelativeTime
+import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
@@ -246,104 +248,113 @@ private fun CharacterSettingsWindowContent(
                 }
             }
 
-            ScrollbarColumn(
-                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            var accountEditingCharacter by remember { mutableStateOf<Int?>(null) }
+            val accounts = state.accounts
+                .sortedByDescending { it.lastModified }
+            val accountOrdinals = accounts
+                .mapIndexed { index, account -> account to index + 1 }
+                .toMap()
+            ScrollbarLazyColumn(
                 modifier = Modifier.weight(1f),
             ) {
-                var accountEditingCharacter by remember { mutableStateOf<Int?>(null) }
-                val accounts = state.accounts
-                    .sortedByDescending { it.lastModified }
-                val accountOrdinals = accounts
-                    .mapIndexed { index, account -> account to index + 1 }
-                    .toMap()
-
-                (accounts + listOf(null)).forEach { account ->
+                (accounts + listOf(null)).forEachIndexed { index, account ->
                     val characters = state.characters.filter { it.accountId == account?.id }
-                    if (account == null && characters.isEmpty()) return@forEach
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                        modifier = Modifier
-                            .padding(end = Spacing.small)
-                            .border(1.dp, RiftTheme.colors.borderGreyLight)
-                            .padding(Spacing.medium)
-                            .fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(bottom = Spacing.small),
+                    item(key = account) {
+                        if (account == null && characters.isEmpty()) return@item
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                            modifier = Modifier
+                                .modifyIf(index != 0) { padding(top = Spacing.medium) }
+                                .background(RiftTheme.colors.windowBackgroundSecondary)
+                                .padding(Spacing.medium)
+                                .fillMaxWidth(),
                         ) {
-                            val accountName = account?.let { "Account ${accountOrdinals[it]}" } ?: "Unassigned characters"
-                            val tooltip = account?.let { "Settings files: ${account.paths.values.joinToString()}" } ?: "RIFT doesn't know which account these characters belong to"
-                            RiftTooltipArea(tooltip) {
-                                Text(
-                                    text = accountName.uppercase(),
-                                    style = RiftTheme.typography.titlePrimary,
-                                )
-                            }
-                            Spacer(Modifier.weight(1f))
-                            val lastUsed = account?.lastModified
-                            if (lastUsed != null) {
-                                val now = getNow()
-                                val age = key(now) { getRelativeTime(lastUsed, ZoneId.systemDefault(), now) }
-                                Text(
-                                    text = "Last used: $age",
-                                    style = RiftTheme.typography.bodySecondary,
-                                )
-                            }
-                        }
-
-                        if (characters.isEmpty()) {
-                            Text(
-                                text = "No characters assigned",
-                                style = RiftTheme.typography.bodySecondary,
-                            )
-                        }
-
-                        if (characters.size > 3) {
-                            Text(
-                                text = "Warning: This account has more than 3 characters, which is not possible. Correct the assignment.",
-                                style = RiftTheme.typography.bodySecondary,
+                            Row(
                                 modifier = Modifier.padding(bottom = Spacing.small),
-                            )
-                        }
-
-                        if (account == null) {
-                            val text = when (state.copying) {
-                                CopyingState.SelectingSource -> "Assign these characters to accounts to be able to copy settings from them. Log in to assign automatically."
-                                is CopyingState.SelectingSourceLauncherProfile -> null
-                                is CopyingState.SelectingDestination -> "Assign these characters to accounts to be able to copy settings to them. Log in to assign automatically."
-                                is CopyingState.DestinationSelected -> "Assign these characters to accounts to be able to copy settings to them. Log in to assign automatically."
-                                is CopyingState.SelectingTargetLauncherProfile -> null
-                            }
-                            AnimatedContent(text) {
-                                if (it != null) {
+                            ) {
+                                val accountName = account?.let { "Account ${accountOrdinals[it]}" } ?: "Unassigned characters"
+                                val tooltip = account?.let { "Settings files: ${account.paths.values.joinToString()}" } ?: "RIFT doesn't know which account these characters belong to"
+                                RiftTooltipArea(tooltip) {
                                     Text(
-                                        text = it,
+                                        text = accountName.uppercase(),
+                                        style = RiftTheme.typography.titlePrimary,
+                                    )
+                                }
+                                Spacer(Modifier.weight(1f))
+                                val lastUsed = account?.lastModified
+                                if (lastUsed != null) {
+                                    val now = getNow()
+                                    val age = key(now) { getRelativeTime(lastUsed, ZoneId.systemDefault(), now) }
+                                    Text(
+                                        text = "Last used: $age",
                                         style = RiftTheme.typography.bodySecondary,
-                                        modifier = Modifier.padding(bottom = Spacing.small),
                                     )
                                 }
                             }
-                        }
 
-                        characters.sortedBy { it.characterId }.forEach { character ->
-                            val isEditingAccount = accountEditingCharacter == character.characterId
-                            CharacterRow(
-                                character = character,
-                                copying = state.copying,
-                                account = account,
-                                accounts = accounts,
-                                isEditingAccount = accountEditingCharacter == character.characterId,
-                                onUpdateAccountClick = {
-                                    accountEditingCharacter = if (!isEditingAccount) character.characterId else null
-                                },
-                                accountOrdinals = accountOrdinals,
-                                onAssignAccount = { characterId, accountId ->
-                                    onAssignAccount(characterId, accountId)
-                                    accountEditingCharacter = null
-                                },
-                                onCopyClick = { onCopySourceClick(character.characterId) },
-                                onPasteClick = { onCopyDestinationClick(character.characterId) },
-                            )
+                            if (characters.isEmpty()) {
+                                Text(
+                                    text = "No characters assigned",
+                                    style = RiftTheme.typography.bodySecondary,
+                                )
+                            }
+
+                            if (characters.size > 3 && account != null) {
+                                Text(
+                                    text = "Warning: This account has more than 3 characters, which is not possible. Correct the assignment.",
+                                    style = RiftTheme.typography.bodySecondary,
+                                    modifier = Modifier.padding(bottom = Spacing.small),
+                                )
+                            }
+
+                            if (account == null) {
+                                val text = when (state.copying) {
+                                    CopyingState.SelectingSource -> "Assign these characters to accounts to be able to copy settings from them. Log in to assign automatically."
+                                    is CopyingState.SelectingSourceLauncherProfile -> null
+                                    is CopyingState.SelectingDestination -> "Assign these characters to accounts to be able to copy settings to them. Log in to assign automatically."
+                                    is CopyingState.DestinationSelected -> "Assign these characters to accounts to be able to copy settings to them. Log in to assign automatically."
+                                    is CopyingState.SelectingTargetLauncherProfile -> null
+                                }
+                                AnimatedContent(text) {
+                                    if (it != null) {
+                                        Text(
+                                            text = it,
+                                            style = RiftTheme.typography.bodySecondary,
+                                            modifier = Modifier.padding(bottom = Spacing.small),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    characters.sortedBy { it.characterId }.forEach { character ->
+                        item(key = character) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                modifier = Modifier
+                                    .background(RiftTheme.colors.windowBackgroundSecondary)
+                                    .padding(Spacing.medium)
+                                    .fillMaxWidth(),
+                            ) {
+                                val isEditingAccount = accountEditingCharacter == character.characterId
+                                CharacterRow(
+                                    character = character,
+                                    copying = state.copying,
+                                    account = account,
+                                    accounts = accounts,
+                                    isEditingAccount = accountEditingCharacter == character.characterId,
+                                    onUpdateAccountClick = {
+                                        accountEditingCharacter = if (!isEditingAccount) character.characterId else null
+                                    },
+                                    accountOrdinals = accountOrdinals,
+                                    onAssignAccount = { characterId, accountId ->
+                                        onAssignAccount(characterId, accountId)
+                                        accountEditingCharacter = null
+                                    },
+                                    onCopyClick = { onCopySourceClick(character.characterId) },
+                                    onPasteClick = { onCopyDestinationClick(character.characterId) },
+                                )
+                            }
                         }
                     }
                 }

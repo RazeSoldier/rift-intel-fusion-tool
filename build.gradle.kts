@@ -34,6 +34,7 @@ buildConfig {
 repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://jogamp.org/deployment/maven")
     google()
@@ -79,6 +80,7 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:0.7.2")
     implementation("dev.hydraulic.conveyor:conveyor-control:1.1")
     implementation("androidx.collection:collection:1.4.3")
+    implementation("com.jetbrains:jbr-api:1.4.0")
 
     // OpenAL Audio
     implementation("org.jogamp.joal:joal-main:2.5.0")
