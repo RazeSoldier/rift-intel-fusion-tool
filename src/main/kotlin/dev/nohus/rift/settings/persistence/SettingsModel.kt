@@ -106,7 +106,8 @@ data class IntelMap(
         MapType.Region to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, JoveObservatories, Wormholes, Colonies),
     ),
     val intelPopupTimeoutSeconds: Int = 60,
-    val isCharacterFollowing: Boolean = true,
+    val isFollowingCharacterAcrossLayouts: Boolean = true,
+    val isFollowingCharacterWithinLayouts: Boolean = true,
     val isInvertZoom: Boolean = false,
     val isJumpBridgeNetworkShown: Boolean = true,
     val jumpBridgeNetworkOpacity: Int = 100,
@@ -116,6 +117,7 @@ data class IntelMap(
         Int,
         > = emptyMap(),
     val isAlwaysShowingSystems: Boolean = false,
+    val isPreferringRegionMaps: Boolean = true,
 )
 
 @Serializable

@@ -18,6 +18,7 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.sound.SoundPlayer
 import dev.nohus.rift.utils.sound.SoundsRepository
+import dev.nohus.rift.utils.toggle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -38,6 +39,7 @@ class AlertsViewModel(
     data class UiState(
         val alerts: List<Alert> = emptyList(),
         val expandedAlert: String? = null,
+        val collapsedGroups: Set<String?> = emptySet(),
         val characters: List<LocalCharacter> = emptyList(),
         val sounds: List<Sound> = emptyList(),
         val isCreateAlertDialogOpen: CreateAlertInputModel? = null,
@@ -94,6 +96,10 @@ class AlertsViewModel(
         val alert = _state.value.alerts.firstOrNull { it.id == id } ?: return
         val expandedAlert = if (_state.value.expandedAlert != alert.id) alert.id else null
         _state.update { it.copy(expandedAlert = expandedAlert) }
+    }
+
+    fun onGroupClick(name: String?) {
+        _state.update { it.copy(collapsedGroups = it.collapsedGroups.toggle(name)) }
     }
 
     fun onToggleAlert(id: String, isEnabled: Boolean) {
@@ -155,6 +161,7 @@ class AlertsViewModel(
             }
             is CreateGroupInputModel.Rename -> {
                 if (name.isNotBlank()) {
+                    _state.update { it.copy(collapsedGroups = it.collapsedGroups - inputModel.name) }
                     settings.alertGroups = settings.alertGroups.map {
                         if (it == inputModel.name) name else it
                     }.toSet()
@@ -173,6 +180,7 @@ class AlertsViewModel(
     }
 
     fun onGroupDeleteClick(group: String) {
+        _state.update { it.copy(collapsedGroups = it.collapsedGroups - group) }
         settings.alerts = settings.alerts.map { alert ->
             if (alert.group == group) alert.copy(group = null) else alert
         }

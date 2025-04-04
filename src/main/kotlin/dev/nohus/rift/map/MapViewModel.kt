@@ -209,14 +209,11 @@ class MapViewModel(
                 if (it?.value?.let { event -> event.windowUuid == windowUuid || event.windowUuid == null } == true) {
                     delay(50) // If this event comes from a context menu, let the menu disappear
                     when (val event = it.get()) {
-                        is MapExternalControlEvent.ShowSystem -> {
-                            openTab(0, event.solarSystemId)
+                        is MapExternalControlEvent.ShowSystemOnNewEdenMap -> {
+                            showSystemOnNewEdenMap(event.solarSystemId)
                         }
                         is MapExternalControlEvent.ShowSystemOnRegionMap -> {
-                            val regionId = solarSystemsRepository.getRegionIdBySystemId(event.solarSystemId) ?: return@collect
-                            if (regionId in solarSystemsRepository.getKnownSpaceRegions().map { it.id }) {
-                                openRegionMap(regionId, event.solarSystemId)
-                            }
+                            showSystemOnRegionMap(event.solarSystemId)
                         }
                         null -> {}
                     }
@@ -350,8 +347,11 @@ class MapViewModel(
         val visibleResultIds = resultIds.intersect(visibleIds).toList()
         if (visibleResultIds.isEmpty()) {
             if (resultIds.isNotEmpty()) {
-                // Result system is not on this layout, change tab to New Eden
-                openTab(0, resultIds.first())
+                if (settings.intelMap.isPreferringRegionMaps) {
+                    showSystemOnRegionMap(resultIds.first())
+                } else {
+                    showSystemOnNewEdenMap(resultIds.first())
+                }
             }
             return
         }
@@ -544,7 +544,9 @@ class MapViewModel(
     }
 
     private fun onOnlineCharacterLocationsUpdated(onlineCharacterLocations: List<OnlineCharacterLocation>) {
-        if (settings.intelMap.isCharacterFollowing) {
+        val isPanning = settings.intelMap.isFollowingCharacterWithinLayouts
+        val isSwitching = settings.intelMap.isFollowingCharacterAcrossLayouts
+        if (isPanning || isSwitching) {
             val current = _state.value.mapState.onlineCharacterLocations.values.flatten()
             onlineCharacterLocations.forEach { onlineCharacterLocation ->
                 val previous = current.firstOrNull { it.id == onlineCharacterLocation.id }
@@ -555,17 +557,23 @@ class MapViewModel(
 
                 when (val mapType = _state.value.mapType) {
                     ClusterRegionsMap -> {
-                        updateMapState { copy(centeredSystem = regionId) }
+                        if (isPanning) {
+                            updateMapState { copy(centeredSystem = regionId) }
+                        }
                     }
                     ClusterSystemsMap -> {
-                        updateMapState { copy(centeredSystem = systemId) }
+                        if (isPanning) {
+                            updateMapState { copy(centeredSystem = systemId) }
+                        }
                     }
                     is RegionMap -> {
                         if (regionId in mapType.regionIds) {
-                            updateMapState { copy(centeredSystem = systemId) }
+                            if (isPanning) {
+                                updateMapState { copy(centeredSystem = systemId) }
+                            }
                         } else {
-                            if (layoutRepository.getLayouts(regionId).isNotEmpty()) {
-                                openRegionMap(regionId, systemId)
+                            if (isSwitching && layoutRepository.getLayouts(regionId).isNotEmpty()) {
+                                openRegionMap(regionId, systemId.takeIf { isPanning })
                             }
                         }
                     }
@@ -611,5 +619,16 @@ class MapViewModel(
         }
 
         updateMapState { copy(intel = filtered, intelPopupSystems = popupSystems) }
+    }
+
+    private fun showSystemOnNewEdenMap(solarSystemId: Int) {
+        openTab(0, solarSystemId)
+    }
+
+    private fun showSystemOnRegionMap(solarSystemId: Int) {
+        val regionId = solarSystemsRepository.getRegionIdBySystemId(solarSystemId) ?: return
+        if (regionId in solarSystemsRepository.getKnownSpaceRegions().map { it.id }) {
+            openRegionMap(regionId, solarSystemId)
+        }
     }
 }
