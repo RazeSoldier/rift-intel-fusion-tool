@@ -27,6 +27,7 @@ import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftRadioButtonWithLabel
+import dev.nohus.rift.compose.RiftSliderWithLabel
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
@@ -367,19 +368,13 @@ private fun MapSettingsWindowContent(
                         isChecked = intelMap.isJumpBridgeNetworkShown,
                         onCheckedChange = onIsJumpBridgeNetworkShownChange,
                     )
-                    val jumpBridgeOpacityItems = mapOf(
-                        "10%" to 10,
-                        "25%" to 25,
-                        "50%" to 50,
-                        "75%" to 75,
-                        "100%" to 100,
-                    )
-                    RiftDropdownWithLabel(
+                    RiftSliderWithLabel(
                         label = "Connection opacity:",
-                        items = jumpBridgeOpacityItems.values.toList(),
-                        selectedItem = intelMap.jumpBridgeNetworkOpacity,
-                        onItemSelected = onJumpBridgeNetworkOpacityChange,
-                        getItemName = { item -> jumpBridgeOpacityItems.entries.firstOrNull { it.value == item }?.key ?: "$item" },
+                        width = 100.dp,
+                        range = 10..100,
+                        currentValue = intelMap.jumpBridgeNetworkOpacity,
+                        onValueChange = onJumpBridgeNetworkOpacityChange,
+                        getValueName = { "$it%" },
                         tooltip = """
                     Visibility of the jump bridge
                     connection lines.

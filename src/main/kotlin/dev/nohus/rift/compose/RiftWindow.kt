@@ -82,6 +82,7 @@ import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import dev.nohus.rift.windowing.WindowStatesController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.reload.DevelopmentEntryPoint
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
@@ -125,57 +126,59 @@ fun RiftWindow(
         alwaysOnTop = effectiveAlwaysOnTop,
         transparent = isComposeWindowTransparent,
     ) {
-        uiScaleController.withScale {
-            transparentWindowController.setTransparency(window, isTransparent)
-            smartAlwaysAboveRepository.registerWindow(state)
-            MinimumSizeHandler(state)
-            BringToFrontHandler(state.bringToFrontEvent)
-            BringToBackHandler(bringToBackEvent)
-            CompositionLocalProvider(
-                LocalRiftWindow provides window,
-                LocalRiftWindowState provides state,
-                LocalRiftColors provides getRiftColors(isTransparent && isComposeWindowTransparent),
-            ) {
-                RiftWindowContent(
-                    title = title,
-                    icon = icon,
-                    isAlwaysOnTop = isAlwaysOnTop,
-                    isLocked = isLocked,
-                    isTransparent = isTransparent,
-                    isMaximized = isMaximized,
-                    isResizable = isResizable,
-                    isMaximizeButtonShown = isMaximizeButtonShown,
-                    onTuneClick = onTuneClick,
-                    tuneContextMenuItems = tuneContextMenuItems,
-                    onAlwaysOnTopClick = if (state.window != null) {
-                        { windowStatesController.toggleAlwaysOnTop(state.window, state.uuid) }
-                    } else {
-                        null
-                    },
-                    onLockClick = if (state.window != null) {
-                        { windowStatesController.toggleLocked(state.window, state.uuid) }
-                    } else {
-                        null
-                    },
-                    onTransparentClick = if (state.window != null && transparentWindowController.isEnabled) {
-                        { windowStatesController.toggleTransparent(state.window, state.uuid) }
-                    } else {
-                        null
-                    },
-                    onMaximizeClick = if (state.window != null && isResizable) {
-                        { scope.launch { window.placement = windowStatesController.toggleMaximized(state.window, state.uuid) } }
-                    } else {
-                        null
-                    },
-                    onMinimizeClick = { state.windowState.isMinimized = true },
-                    onCloseClick = onCloseClick,
-                    width = state.windowState.size.width / uiScaleController.uiScale,
-                    height = state.windowState.size.height / uiScaleController.uiScale,
-                    titleBarStyle = titleBarStyle,
-                    titleBarContent = titleBarContent,
-                    withContentPadding = withContentPadding,
-                    content = content,
-                )
+        DevelopmentEntryPoint {
+            uiScaleController.withScale {
+                transparentWindowController.setTransparency(window, isTransparent)
+                smartAlwaysAboveRepository.registerWindow(state)
+                MinimumSizeHandler(state)
+                BringToFrontHandler(state.bringToFrontEvent)
+                BringToBackHandler(bringToBackEvent)
+                CompositionLocalProvider(
+                    LocalRiftWindow provides window,
+                    LocalRiftWindowState provides state,
+                    LocalRiftColors provides getRiftColors(isTransparent && isComposeWindowTransparent),
+                ) {
+                    RiftWindowContent(
+                        title = title,
+                        icon = icon,
+                        isAlwaysOnTop = isAlwaysOnTop,
+                        isLocked = isLocked,
+                        isTransparent = isTransparent,
+                        isMaximized = isMaximized,
+                        isResizable = isResizable,
+                        isMaximizeButtonShown = isMaximizeButtonShown,
+                        onTuneClick = onTuneClick,
+                        tuneContextMenuItems = tuneContextMenuItems,
+                        onAlwaysOnTopClick = if (state.window != null) {
+                            { windowStatesController.toggleAlwaysOnTop(state.window, state.uuid) }
+                        } else {
+                            null
+                        },
+                        onLockClick = if (state.window != null) {
+                            { windowStatesController.toggleLocked(state.window, state.uuid) }
+                        } else {
+                            null
+                        },
+                        onTransparentClick = if (state.window != null && transparentWindowController.isEnabled) {
+                            { windowStatesController.toggleTransparent(state.window, state.uuid) }
+                        } else {
+                            null
+                        },
+                        onMaximizeClick = if (state.window != null && isResizable) {
+                            { scope.launch { window.placement = windowStatesController.toggleMaximized(state.window, state.uuid) } }
+                        } else {
+                            null
+                        },
+                        onMinimizeClick = { state.windowState.isMinimized = true },
+                        onCloseClick = onCloseClick,
+                        width = state.windowState.size.width / uiScaleController.uiScale,
+                        height = state.windowState.size.height / uiScaleController.uiScale,
+                        titleBarStyle = titleBarStyle,
+                        titleBarContent = titleBarContent,
+                        withContentPadding = withContentPadding,
+                        content = content,
+                    )
+                }
             }
         }
     }

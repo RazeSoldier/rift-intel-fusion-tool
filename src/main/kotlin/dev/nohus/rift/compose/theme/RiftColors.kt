@@ -51,6 +51,10 @@ data class RiftColors(
     val dropdownSelected: Color,
     val dropdownHighlighted: Color,
 
+    val sliderThumb: Color,
+    val sliderThumbSelected: Color,
+    val sliderThumbHighlighted: Color,
+
     val onlineGreen: Color,
     val awayYellow: Color,
     val extendedAwayOrange: Color,
@@ -111,6 +115,10 @@ val LocalRiftColors = staticCompositionLocalOf {
         dropdownHovered = Color.Unspecified,
         dropdownSelected = Color.Unspecified,
         dropdownHighlighted = Color.Unspecified,
+
+        sliderThumb = Color.Unspecified,
+        sliderThumbSelected = Color.Unspecified,
+        sliderThumbHighlighted = Color.Unspecified,
 
         onlineGreen = Color.Unspecified,
         awayYellow = Color.Unspecified,
@@ -201,6 +209,10 @@ private fun getRiftColors() = RiftColors(
     dropdownHovered = Color(0xFF18262D),
     dropdownSelected = Color(0xFF16272E),
     dropdownHighlighted = Color(0xFF273E47),
+
+    sliderThumb = Color(0xFF58A7BF),
+    sliderThumbSelected = Color(0xFF99E5EE),
+    sliderThumbHighlighted = Color(0xFFFFFFFF),
 
     onlineGreen = Color(0xFF75D25A),
     awayYellow = Color(0xFFFFD25A),

@@ -425,6 +425,14 @@ object WhatsNew {
                 - Asset locations can now be pinned in the Assets window to always appear on top
                 - They can also be hidden, which will put them below the main list
             """.trimIndent(),
+            "4.28.0" description """
+                - Updated assets location pinning to work like in-game and show a pin icon
+                - Updated assets location hiding to be grouped into a "Hidden" category like in-game
+                - Updated many icons
+                - Updated the look of map tabs
+                - Replaced some dropdowns with a new slider component where relevant, like for volume in Settings
+                - Performance improvements to startup time
+            """.trimIndent(),
         ).reversed()
     }
 }

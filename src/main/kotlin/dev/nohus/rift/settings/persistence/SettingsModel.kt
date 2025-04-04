@@ -76,6 +76,7 @@ data class SettingsModel(
     val isSmartAlwaysAbove: Boolean = false,
     val mapMarkers: List<MapMarker> = emptyList(),
     val assetLocationPins: Map<Long, LocationPinStatus> = emptyMap(),
+    val isJukeboxRevealed: Boolean = false,
 )
 
 @Serializable

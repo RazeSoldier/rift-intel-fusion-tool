@@ -30,6 +30,7 @@ import dev.nohus.rift.intel.reports.IntelReportsWindow
 import dev.nohus.rift.intel.reports.settings.IntelReportsSettingsWindow
 import dev.nohus.rift.jabber.JabberInputModel
 import dev.nohus.rift.jabber.JabberWindow
+import dev.nohus.rift.jukebox.JukeboxWindow
 import dev.nohus.rift.loglite.LogLiteWindow
 import dev.nohus.rift.map.MapWindow
 import dev.nohus.rift.map.markers.MapMarkersInputModel
@@ -145,6 +146,12 @@ class WindowManager(
         @SerialName("CharacterSettings")
         CharacterSettings,
 
+        @SerialName("Jukebox")
+        Jukebox,
+
+        @SerialName("JukeboxCollapsed")
+        JukeboxCollapsed,
+
         @Deprecated("Removed")
         @SerialName("NonEnglishEveClientWarning")
         NonEnglishEveClientWarning,
@@ -250,6 +257,8 @@ class WindowManager(
                             RiftWindow.Push -> PushWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Push, state.uuid) })
                             RiftWindow.Contacts -> ContactsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Contacts, state.uuid) })
                             RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings, state.uuid) })
+                            RiftWindow.Jukebox -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Jukebox, state.uuid) })
+                            RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
                         }
@@ -355,7 +364,7 @@ class WindowManager(
         }
         return savedPlacements.map { saved ->
             val sizing = getWindowOpenSizing(window, saved)
-            val position = getWindowOpenPosition(saved)
+            val position = getWindowOpenPosition(window, saved)
             val geometry = WindowGeometry(sizing, position)
             WindowInfo(
                 uuid = saved?.uuid ?: UUID.randomUUID(),
@@ -392,6 +401,8 @@ class WindowManager(
             RiftWindow.Push -> WindowSizing(defaultSize = (350 to 435), minimumSize = 350 to 435)
             RiftWindow.Contacts -> WindowSizing(defaultSize = saved ?: (650 to 600), minimumSize = 650 to 600)
             RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
+            RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
+            RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
         }
@@ -405,7 +416,13 @@ class WindowManager(
         )
     }
 
-    private fun getWindowOpenPosition(savedPlacement: WindowSettings?): WindowPosition {
+    private fun getWindowOpenPosition(window: RiftWindow, savedPlacement: WindowSettings?): WindowPosition {
+        val position = when (window) {
+            RiftWindow.Jukebox -> { states.value[RiftWindow.JukeboxCollapsed]?.singleOrNull()?.windowState?.position }
+            RiftWindow.JukeboxCollapsed -> { states.value[RiftWindow.Jukebox]?.singleOrNull()?.windowState?.position }
+            else -> null
+        }
+        if (position != null) return position
         val saved = savedPlacement?.position ?: return WindowPosition.PlatformDefault
         return WindowPosition(saved.x.dp, saved.y.dp)
     }

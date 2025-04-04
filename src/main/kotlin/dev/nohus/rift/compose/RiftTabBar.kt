@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -255,6 +256,7 @@ private fun TabBarTab(
                 Image(
                     painter = painterResource(tab.icon),
                     contentDescription = null,
+                    colorFilter = ColorFilter.tint(effectiveTextColor),
                     modifier = Modifier
                         .padding(horizontal = Spacing.medium)
                         .size(16.dp),

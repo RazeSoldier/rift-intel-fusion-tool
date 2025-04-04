@@ -88,7 +88,7 @@ import dev.nohus.rift.generated.resources.contact_faction
 import dev.nohus.rift.generated.resources.contact_standings
 import dev.nohus.rift.generated.resources.contact_tag
 import dev.nohus.rift.generated.resources.contact_watched
-import dev.nohus.rift.generated.resources.region
+import dev.nohus.rift.generated.resources.map_region
 import dev.nohus.rift.generated.resources.window_contacts
 import dev.nohus.rift.generated.resources.window_titlebar_tune
 import dev.nohus.rift.network.AsyncResource
@@ -894,7 +894,7 @@ private fun SearchResultRow(
             )
             SearchCategory.Regions -> {
                 Image(
-                    painter = painterResource(Res.drawable.region),
+                    painter = painterResource(Res.drawable.map_region),
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                 )

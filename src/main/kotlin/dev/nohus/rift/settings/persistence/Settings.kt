@@ -253,4 +253,8 @@ class Settings(
     var assetLocationPins: Map<Long, LocationPinStatus>
         get() = model.assetLocationPins
         set(value) = update { copy(assetLocationPins = value) }
+
+    var isJukeboxRevealed: Boolean
+        get() = model.isJukeboxRevealed
+        set(value) = update { copy(isJukeboxRevealed = value) }
 }

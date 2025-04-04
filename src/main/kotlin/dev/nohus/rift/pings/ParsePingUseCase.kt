@@ -190,6 +190,7 @@ class ParsePingUseCase(
             "Redeem" to "https://goonfleet.com/index.php/topic/358839-active-war-goof-redeemers/",
             "TOMAHAWK" to "https://goonfleet.com/index.php/topic/355156-active-strat-tomahawks-raven-navy-issues/",
             "Raven" to "https://goonfleet.com/index.php/topic/355156-active-strat-tomahawks-raven-navy-issues/",
+            "Snail" to "https://goonfleet.com/index.php/topic/366187-active-strat-snail-fleet/",
         )
         if (text.contains("(")) {
             val name = text.substringBefore("(")

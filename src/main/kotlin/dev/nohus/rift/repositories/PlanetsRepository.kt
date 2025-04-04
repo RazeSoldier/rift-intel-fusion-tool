@@ -12,6 +12,12 @@ import dev.nohus.rift.generated.resources.planet_plasma
 import dev.nohus.rift.generated.resources.planet_storm
 import dev.nohus.rift.generated.resources.planet_temperate
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.exposed.sql.selectAll
 import org.koin.core.annotation.Single
@@ -29,31 +35,44 @@ class PlanetsRepository(
         val radius: Float,
     )
 
-    private val planetsBySystemId: Map<Int, List<Planet>>
-    private val planetsById: Map<Int, Planet>
+    private val scope = CoroutineScope(Job())
+    private lateinit var planetsBySystemId: Map<Int, List<Planet>>
+    private lateinit var planetsById: Map<Int, Planet>
+    private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
-        val typesById = PlanetTypes.types.associateBy { it.typeId }
-        val planets = staticDatabase.transaction {
-            Planets.selectAll().toList()
-        }.map {
-            Planet(
-                id = it[Planets.id],
-                systemId = it[Planets.systemId],
-                type = typesById[it[Planets.typeId]]!!,
-                name = it[Planets.name],
-                radius = it[Planets.radius],
-            )
+        scope.launch(Dispatchers.IO) {
+            val typesById = PlanetTypes.types.associateBy { it.typeId }
+            val planets = staticDatabase.transaction {
+                Planets.selectAll().toList()
+            }.map {
+                Planet(
+                    id = it[Planets.id],
+                    systemId = it[Planets.systemId],
+                    type = typesById[it[Planets.typeId]]!!,
+                    name = it[Planets.name],
+                    radius = it[Planets.radius],
+                )
+            }
+            planetsBySystemId = planets.groupBy { it.systemId }
+            planetsById = planets.associateBy { it.id }
+            hasLoaded.complete(Unit)
         }
-        planetsBySystemId = planets.groupBy { it.systemId }
-        planetsById = planets.associateBy { it.id }
+    }
+
+    private fun blockUntilLoaded() {
+        runBlocking {
+            hasLoaded.await()
+        }
     }
 
     fun getPlanets(): Map<Int, List<Planet>> {
+        blockUntilLoaded()
         return planetsBySystemId
     }
 
     fun getPlanetById(id: Int): Planet? {
+        blockUntilLoaded()
         return planetsById[id]
     }
 }
