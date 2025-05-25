@@ -84,7 +84,7 @@ class GetStartupWarningsUseCase(
                         id = "missing x11-utils",
                         title = "Missing dependency",
                         description = """
-                            You don't have "xwininfo" or "xprop" installed. Usually they are in a "x11-utils" package or similar. Without them, RIFT won't be able to check the online status of your characters.
+                            You don't have "xwininfo", "xprop", or "wmctrl" installed. Usually they are in a "x11-utils" package, "wmctrl" package, or similar. Without them, RIFT won't be able to check the online status of your characters.
                         """.trimIndent(),
                     ),
                 )

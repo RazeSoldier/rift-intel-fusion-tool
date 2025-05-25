@@ -51,6 +51,7 @@ class RegionsMapPainter(
         zoom: Float,
         systemColorStrategy: SystemColorStrategy,
         cellColorStrategy: SystemColorStrategy?,
+        jumpBands: Int,
     ) = with(scope) {
         connectionsInLayout.forEach { connection ->
             drawRegionConnection(connection, center, scale)

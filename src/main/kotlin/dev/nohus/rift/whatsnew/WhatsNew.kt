@@ -460,6 +460,15 @@ object WhatsNew {
                 - Added a warning when running the EVE client in fullscreen mode, to let you know it can interfere with always-on-top windows
                 - The character settings copying feature now shows account IDs instead of giving accounts ordinal numbers that can change
             """.trimIndent(),
+            "4.33.0" description """
+                ! New feature: Distance Map
+                - This new map type shows nearby systems in bands grouped by distance from a central system
+                - Monitor your neighborhood and see how far away are any hostiles
+                - You can either choose a system as the origin, or have it automatically follow a character to always see what's around you
+                - As with all maps, you can open multiple copies to show different systems at the same time
+                - Keep it simple, or customize it to show any information you want
+                - It also works great at small sizes, and with the transparent mode you can have it be a seamless part of your in-game layout
+            """.trimIndent(),
         ).reversed()
     }
 }

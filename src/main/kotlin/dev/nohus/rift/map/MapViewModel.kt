@@ -5,6 +5,7 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.autopilot.AutopilotController
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.map_constellation
 import dev.nohus.rift.generated.resources.map_region
 import dev.nohus.rift.generated.resources.map_universe
 import dev.nohus.rift.get
@@ -12,6 +13,7 @@ import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase.OnlineCharacterLocation
+import dev.nohus.rift.map.DistanceMapController.DistanceMapState
 import dev.nohus.rift.map.MapExternalControl.MapExternalControlEvent
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
@@ -19,6 +21,7 @@ import dev.nohus.rift.map.MapLayoutRepository.Position
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
+import dev.nohus.rift.map.MapViewModel.MapType.DistanceMap
 import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
 import dev.nohus.rift.repositories.JumpBridgesRepository
 import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
@@ -32,6 +35,7 @@ import dev.nohus.rift.repositories.SolarSystemsRepository.MapConstellation
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapRegion
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.IntelMap
+import dev.nohus.rift.settings.persistence.MapOpenedTab
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
@@ -63,6 +67,7 @@ class MapViewModel(
     private val solarSystemsRepository: SolarSystemsRepository,
     private val gateConnectionsRepository: MapGateConnectionsRepository,
     private val layoutRepository: MapLayoutRepository,
+    private val distanceMapController: DistanceMapController,
     private val getOnlineCharactersLocationUseCase: GetOnlineCharactersLocationUseCase,
     private val intelStateController: IntelStateController,
     private val mapExternalControl: MapExternalControl,
@@ -101,6 +106,7 @@ class MapViewModel(
         data object ClusterSystemsMap : MapType
         data object ClusterRegionsMap : MapType
         data class RegionMap(val layoutId: Int, val regionIds: List<Int>) : MapType
+        data object DistanceMap : MapType
     }
 
     data class VoronoiLayout(
@@ -124,6 +130,7 @@ class MapViewModel(
         val systemInfoTypes: SystemInfoTypes,
         val mapJumpRangeState: MapJumpRangeState,
         val mapPlanetsState: MapPlanetsState,
+        val distanceMapState: DistanceMapState,
         val cluster: Cluster,
         val mapType: MapType,
         val layout: Map<Int, VoronoiLayout>,
@@ -146,6 +153,7 @@ class MapViewModel(
             systemInfoTypes = getColorModes(),
             mapJumpRangeState = mapJumpRangeController.state.value,
             mapPlanetsState = mapPlanetsController.state.value,
+            distanceMapState = distanceMapController.state.value,
             cluster = Cluster(
                 systems = solarSystemsRepository.getSystems(knownSpace = true),
                 constellations = solarSystemsRepository.mapConstellations,
@@ -177,6 +185,15 @@ class MapViewModel(
         }
         viewModelScope.launch {
             mapPlanetsController.state.collect { state -> _state.update { it.copy(mapPlanetsState = state) } }
+        }
+        viewModelScope.launch {
+            distanceMapController.state.collect { state ->
+                _state.update { it.copy(distanceMapState = state) }
+                if (_state.value.mapType == DistanceMap) {
+                    // Distance map is open, so update it with the new state
+                    openMap(DistanceMap, null)
+                }
+            }
         }
         viewModelScope.launch {
             settings.updateFlow.collect {
@@ -220,29 +237,40 @@ class MapViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            distanceMapController.start()
+        }
 
-        openInitialTab()
+        initialize()
     }
 
-    private fun openInitialTab() {
-        val openedLayoutId = settings.intelMap.openedLayoutIds[windowUuid]
-        if (openedLayoutId != null) {
-            openLayoutMap(openedLayoutId, focusedId = null)
+    private fun initialize() {
+        val openedTab = settings.intelMap.openedTabs[windowUuid]
+        if (openedTab is MapOpenedTab.DistanceMap) {
+            distanceMapController.setSettings(openedTab.centerSystemId, openedTab.followingCharacterId, openedTab.distance)
+        }
+        openInitialTab(openedTab)
+    }
+
+    private fun openInitialTab(openedTab: MapOpenedTab?) {
+        if (openedTab != null) {
+            when (openedTab) {
+                MapOpenedTab.ClusterSystemsMap -> openTab(0, focusedId = null)
+                MapOpenedTab.ClusterRegionsMap -> openTab(1, focusedId = null)
+                is MapOpenedTab.DistanceMap -> openTab(2, focusedId = null)
+                is MapOpenedTab.RegionMap -> openLayoutMap(openedTab.layoutId, focusedId = null)
+            }
         } else {
             openTab(_state.value.selectedTab, focusedId = null)
         }
     }
 
     private fun getColorModes(): SystemInfoTypes {
-        val star = mapOf(
-            SettingsMapType.NewEden to MapSystemInfoType.Security,
-            SettingsMapType.Region to MapSystemInfoType.Security,
-        ) + settings.intelMap.mapTypeStarInfoTypes
         return SystemInfoTypes(
-            starSelected = star,
-            starApplied = star,
-            cellSelected = settings.intelMap.mapTypeCellInfoTypes,
-            cellApplied = settings.intelMap.mapTypeCellInfoTypes,
+            starSelected = settings.intelMap.mapTypeSystemColor,
+            starApplied = settings.intelMap.mapTypeSystemColor,
+            cellSelected = settings.intelMap.mapTypeBackgroundColor,
+            cellApplied = settings.intelMap.mapTypeBackgroundColor,
             indicators = settings.intelMap.mapTypeIndicatorInfoTypes,
             infoBox = settings.intelMap.mapTypeInfoBoxInfoTypes,
         )
@@ -364,8 +392,8 @@ class MapViewModel(
     }
 
     fun onSystemColorChange(mapType: SettingsMapType, selected: MapSystemInfoType) {
-        val new = settings.intelMap.mapTypeStarInfoTypes + (mapType to selected)
-        settings.intelMap = settings.intelMap.copy(mapTypeStarInfoTypes = new)
+        val new = settings.intelMap.mapTypeSystemColor + (mapType to selected)
+        settings.intelMap = settings.intelMap.copy(mapTypeSystemColor = new)
     }
 
     fun onSystemColorHover(mapType: SettingsMapType, selected: MapSystemInfoType, isHovered: Boolean) {
@@ -374,8 +402,8 @@ class MapViewModel(
     }
 
     fun onCellColorChange(mapType: SettingsMapType, selected: MapSystemInfoType?) {
-        val new = settings.intelMap.mapTypeCellInfoTypes + (mapType to selected)
-        settings.intelMap = settings.intelMap.copy(mapTypeCellInfoTypes = new)
+        val new = settings.intelMap.mapTypeBackgroundColor + (mapType to selected)
+        settings.intelMap = settings.intelMap.copy(mapTypeBackgroundColor = new)
     }
 
     fun onCellColorHover(mapType: SettingsMapType, selected: MapSystemInfoType?, isHovered: Boolean) {
@@ -415,9 +443,28 @@ class MapViewModel(
         openLayoutMap(layoutId, _state.value.mapState.centeredSystem)
     }
 
+    fun onDistanceMapCenterUpdate(target: String) {
+        distanceMapController.setCenterTarget(target)
+    }
+
+    fun onDistanceMapRangeUpdate(range: Int) {
+        distanceMapController.setDistance(range)
+    }
+
+    /**
+     * Open the given map tab, and the map inside it
+     */
     private fun openTab(id: Int, focusedId: Int?) {
         val tab = _state.value.tabs.firstOrNull { it.id == id } ?: return
         val mapType = tab.payload as? MapType ?: return
+        _state.update { it.copy(selectedTab = id) }
+        openMap(mapType, focusedId)
+    }
+
+    /**
+     * Open the given map type. The correct tab should already be open.
+     */
+    private fun openMap(mapType: MapType, focusedId: Int?) {
         rememberOpenedLayout(mapType)
         mapExternalControl.setOpenedRegions(windowUuid, (mapType as? RegionMap)?.regionIds ?: emptyList())
 
@@ -425,6 +472,7 @@ class MapViewModel(
             ClusterSystemsMap -> layoutRepository.getNewEdenSystemPosition()
             ClusterRegionsMap -> layoutRepository.getRegionsPositions()
             is RegionMap -> layoutRepository.getLayoutSystemPositions(mapType.layoutId) ?: throw IllegalArgumentException("No such layout: ${mapType.layoutId}")
+            is DistanceMap -> distanceMapController.state.value.layout
         }
         val jumpBridgeAdditionalSystemsLayout = if (mapType is RegionMap) getJumpBridgeDestinationsLayout(layout) else emptyMap()
         val combined = calculateVoronoi(layout + jumpBridgeAdditionalSystemsLayout)
@@ -439,7 +487,6 @@ class MapViewModel(
         updateMapState { copy(hoveredSystem = null, centeredSystem = centeredId, contextMenuSystem = null, initialTransform = initialTransform) }
         _state.update {
             it.copy(
-                selectedTab = id,
                 mapType = mapType,
                 layout = combined,
                 jumpBridgeAdditionalSystems = jumpBridgeAdditionalSystemsLayout.keys,
@@ -455,19 +502,40 @@ class MapViewModel(
             is RegionMap -> {
                 mapType.regionIds.flatMap { layoutRepository.getLayouts(it) }.distinct()
             }
+            is DistanceMap -> emptyList()
         }
     }
 
     private fun rememberOpenedLayout(mapType: MapType) {
-        val openedLayoutId = if (mapType is RegionMap) mapType.layoutId else null
-        if (openedLayoutId != null) {
-            val openWindowUuids = windowManager.getOpenWindowUuids(RiftWindow.Map)
-            val openedLayoutIds = settings.intelMap.openedLayoutIds.filter { it.key in openWindowUuids } + (windowUuid to openedLayoutId)
-            settings.intelMap = settings.intelMap.copy(openedLayoutIds = openedLayoutIds)
+        val openedMapTab = when (mapType) {
+            ClusterRegionsMap -> MapOpenedTab.ClusterRegionsMap
+            ClusterSystemsMap -> MapOpenedTab.ClusterSystemsMap
+            is DistanceMap -> {
+                val state = distanceMapController.state.value
+                MapOpenedTab.DistanceMap(state.centerSystemId, state.followingCharacterId, state.distance)
+            }
+            is RegionMap -> MapOpenedTab.RegionMap(mapType.layoutId)
         }
+        val openWindowUuids = windowManager.getOpenWindowUuids(RiftWindow.Map)
+        val openedTabs = settings.intelMap.openedTabs.filter { it.key in openWindowUuids } + (windowUuid to openedMapTab)
+        settings.intelMap = settings.intelMap.copy(openedTabs = openedTabs)
     }
 
     private fun calculateVoronoi(systems: Map<Int, Position>): Map<Int, VoronoiLayout> {
+        if (systems.size == 1) {
+            return systems.map { (systemId, position) ->
+                systemId to VoronoiLayout(
+                    position,
+                    listOf(
+                        position.copy(position.x - 100, position.y - 100),
+                        position.copy(position.x + 100, position.y - 100),
+                        position.copy(position.x + 100, position.y + 100),
+                        position.copy(position.x - 100, position.y + 100),
+                    ),
+                )
+            }.toMap()
+        }
+
         val coordinates = systems.map { (system, position) ->
             Coordinate(position.x.toDouble(), position.y.toDouble()) to system
         }.toMap()
@@ -531,14 +599,14 @@ class MapViewModel(
             .flatten()
             .filter {
                 when (mapType) {
-                    ClusterRegionsMap, ClusterSystemsMap -> true
+                    ClusterRegionsMap, ClusterSystemsMap, is DistanceMap -> true
                     is RegionMap -> it.location.regionId in mapType.regionIds
                 }
             }
             .map {
                 when (mapType) {
                     ClusterRegionsMap -> it.location.regionId
-                    ClusterSystemsMap, is RegionMap -> it.location.solarSystemId
+                    ClusterSystemsMap, is RegionMap, is DistanceMap -> it.location.solarSystemId
                 }
             }
             .firstOrNull()
@@ -578,6 +646,7 @@ class MapViewModel(
                             }
                         }
                     }
+                    is DistanceMap -> {}
                 }
             }
         }
@@ -590,11 +659,12 @@ class MapViewModel(
         return listOf(
             Tab(id = 0, title = "New Eden", isCloseable = false, icon = Res.drawable.map_universe, payload = ClusterSystemsMap),
             Tab(id = 1, title = "Regions", isCloseable = false, icon = Res.drawable.map_region, payload = ClusterRegionsMap),
+            Tab(id = 2, title = "Distance", isCloseable = false, icon = Res.drawable.map_constellation, payload = DistanceMap),
         ) + openLayouts.mapIndexed { index, layoutId ->
             val layout = layoutRepository.getLayout(layoutId)
             val name = layout?.name ?: "$layoutId"
             val regionIds = layout?.regionIds ?: emptyList()
-            Tab(id = 2 + index, title = name, isCloseable = true, payload = RegionMap(layoutId, regionIds))
+            Tab(id = 3 + index, title = name, isCloseable = true, payload = RegionMap(layoutId, regionIds))
         }
     }
 
@@ -614,7 +684,7 @@ class MapViewModel(
         }
         val popupSystems = filtered.mapNotNull { (systemId, datedEntities) ->
             val showPopup =
-                datedEntities.any { it.timestamp >= popupMinTimestamp } || // Only show system if within popup timeout setting
+                datedEntities.any { it.timestamp >= popupMinTimestamp } || // Only show on a system if within the popup timeout setting
                     systemId == _state.value.mapState.hoveredSystem // Or is hovered
             systemId.takeIf { showPopup }
         }
