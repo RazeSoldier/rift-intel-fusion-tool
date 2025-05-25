@@ -1,4 +1,5 @@
 import org.jetbrains.compose.reload.ComposeHotRun
+import org.jetbrains.compose.reload.isHotReloadBuild
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Instant
@@ -47,6 +48,11 @@ dependencies {
     macAarch64(compose.desktop.macos_arm64)
     windowsAmd64(compose.desktop.windows_x64)
     implementation(compose.components.resources)
+
+    implementation(compose.desktop.currentOs) { // also for .common if u use it
+        exclude("org.jetbrains.compose.material")
+        exclude("org.jetbrains.compose.material3")
+    }
 
     // Kamel
     val kamelVersion = "1.0.3"
@@ -156,13 +162,9 @@ composeCompiler {
     featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
 }
 
-tasks.register<ComposeHotRun>("runHot") {
+tasks.withType<ComposeHotRun>().configureEach {
     mainClass.set("dev.nohus.rift.MainKt")
     jvmArgs("--add-opens=java.desktop/java.awt=ALL-UNNAMED", "--add-exports=java.desktop/java.awt.peer=ALL-UNNAMED")
-}
-
-tasks.reloadMainClasspath.configure {
-    tasks.getByName("kspKotlin").enabled = false
 }
 
 tasks.withType<Test>().configureEach {

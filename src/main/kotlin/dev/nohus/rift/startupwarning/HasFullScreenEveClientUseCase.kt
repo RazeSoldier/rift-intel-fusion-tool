@@ -17,17 +17,17 @@ import kotlin.io.path.readText
 private val logger = KotlinLogging.logger {}
 
 @Single
-class HasNonEnglishEveClientUseCase(
+class HasFullScreenEveClientUseCase(
     private val settings: Settings,
 ) {
 
     suspend operator fun invoke(): Boolean {
         return withContext(Dispatchers.IO) {
-            hasNonEnglishEveClient()
+            hasFullScreenEveClient()
         }
     }
 
-    private fun hasNonEnglishEveClient(): Boolean {
+    private fun hasFullScreenEveClient(): Boolean {
         if (!settings.isSetupWizardFinished) return false
         val dir = settings.eveSettingsDirectory ?: return false
         return try {
@@ -36,14 +36,15 @@ class HasNonEnglishEveClientUseCase(
                     file.isDirectory() && file.name.startsWith("settings_")
                 }.flatMap { directory ->
                     directory.listDirectoryEntries()
-                        .filter { file -> file.isRegularFile() && file.name == "prefs.ini" }
+                        .filter { file -> file.isRegularFile() && file.name == "core_public__.yaml" }
                 }.mapNotNull { prefsFile ->
                     try {
                         prefsFile.readText().lines().forEach {
-                            if (it.startsWith("languageID=")) {
-                                val language = it.substringAfter("=")
-                                if (language != "EN") {
-                                    logger.warn { "Client language is $language" }
+                            if (it.startsWith("  WindowMode")) {
+                                val mode = it.substringAfter("[").substringBefore("]")
+                                    .substringAfter(", ").toIntOrNull()
+                                if (mode == 0) {
+                                    logger.warn { "Client is in fullscreen mode" }
                                     return true
                                 } else {
                                     return false
@@ -51,7 +52,7 @@ class HasNonEnglishEveClientUseCase(
                             }
                         }
                         return false
-                    } catch (e: IOException) {
+                    } catch (_: IOException) {
                         logger.info { "Could not read preferences file: ${prefsFile.absolutePathString()}" }
                         return@mapNotNull null
                     }

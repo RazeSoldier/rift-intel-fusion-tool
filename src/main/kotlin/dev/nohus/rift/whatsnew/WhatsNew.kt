@@ -454,6 +454,12 @@ object WhatsNew {
                 - Alert groups can now be collapsed
                 - Alert group headers now show the number of alerts and enabled alerts within the group
             """.trimIndent(),
+            "4.32.0" description """
+                - Systems on the map that have some intel associated, but no characters or ships, are now highlighted with a grey circle. For example you can now easily see systems with bubbles reported.
+                - The map no longer centers on the online character location whenever you open a map tab, if you have character following disabled
+                - Added a warning when running the EVE client in fullscreen mode, to let you know it can interfere with always-on-top windows
+                - The character settings copying feature now shows account IDs instead of giving accounts ordinal numbers that can change
+            """.trimIndent(),
         ).reversed()
     }
 }

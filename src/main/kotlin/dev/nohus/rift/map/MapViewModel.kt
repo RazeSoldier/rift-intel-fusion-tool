@@ -431,7 +431,8 @@ class MapViewModel(
 
         val alternativeLayouts = getAlternativeLayouts(mapType)
 
-        var centeredId = focusedId ?: getOnlineCharacterLocationId(mapType)
+        val isPanning = settings.intelMap.isFollowingCharacterWithinLayouts
+        var centeredId = focusedId ?: if (isPanning) getOnlineCharacterLocationId(mapType) else null
         if (centeredId !in layout.keys) centeredId = null
         val initialTransform = mapTransforms[mapType]
 
