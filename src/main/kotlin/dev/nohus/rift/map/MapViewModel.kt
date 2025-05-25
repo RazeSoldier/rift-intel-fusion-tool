@@ -278,10 +278,10 @@ class MapViewModel(
 
     fun onMapHover(offset: Offset, mapScale: Float) {
         if (_state.value.mapType == ClusterRegionsMap) return
-        val (closestSystemId, closestSystemLayout) = _state.value.layout.minBy { (_, layout) ->
+        val (closestSystemId, closestSystemLayout) = _state.value.layout.minByOrNull { (_, layout) ->
             val position = layout.position
             (offset.x - position.x).pow(2) + (offset.y - position.y).pow(2)
-        }
+        } ?: return
         val closestSystem = solarSystemsRepository.getSystems(knownSpace = true).first { it.id == closestSystemId }
         val closestSystemLayoutPosition = closestSystemLayout.position
         val distanceInPixels = sqrt((offset.x - closestSystemLayoutPosition.x).pow(2) + (offset.y - closestSystemLayoutPosition.y).pow(2)) / mapScale

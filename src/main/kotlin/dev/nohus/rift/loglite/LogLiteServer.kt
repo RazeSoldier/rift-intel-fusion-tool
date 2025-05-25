@@ -49,16 +49,20 @@ class LogLiteServer(
     }
 
     private fun addShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(
-            Thread {
-                runBlocking(Dispatchers.IO) {
-                    sessions.toList().forEach {
-                        launch {
-                            it.stop()
+        try {
+            Runtime.getRuntime().addShutdownHook(
+                Thread {
+                    runBlocking(Dispatchers.IO) {
+                        sessions.toList().forEach {
+                            launch {
+                                it.stop()
+                            }
                         }
                     }
-                }
-            },
-        )
+                },
+            )
+        } catch (e: IllegalStateException) {
+            logger.warn { "Could not add shutdown hook for LogLite: ${e.message}" }
+        }
     }
 }

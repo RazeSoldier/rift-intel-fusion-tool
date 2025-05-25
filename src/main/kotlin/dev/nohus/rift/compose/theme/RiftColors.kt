@@ -55,6 +55,9 @@ data class RiftColors(
     val sliderThumbSelected: Color,
     val sliderThumbHighlighted: Color,
 
+    val warningBackground: Color,
+    val warningColor: Color,
+
     val onlineGreen: Color,
     val awayYellow: Color,
     val extendedAwayOrange: Color,
@@ -119,6 +122,9 @@ val LocalRiftColors = staticCompositionLocalOf {
         sliderThumb = Color.Unspecified,
         sliderThumbSelected = Color.Unspecified,
         sliderThumbHighlighted = Color.Unspecified,
+
+        warningBackground = Color.Unspecified,
+        warningColor = Color.Unspecified,
 
         onlineGreen = Color.Unspecified,
         awayYellow = Color.Unspecified,
@@ -213,6 +219,9 @@ private fun getRiftColors() = RiftColors(
     sliderThumb = Color(0xFF58A7BF),
     sliderThumbSelected = Color(0xFF99E5EE),
     sliderThumbHighlighted = Color(0xFFFFFFFF),
+
+    warningBackground = Color(0xFF180F09),
+    warningColor = Color(0xFFF39058),
 
     onlineGreen = Color(0xFF75D25A),
     awayYellow = Color(0xFFFFD25A),

@@ -42,6 +42,7 @@ import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
 import dev.nohus.rift.compose.RiftTooltipArea
+import dev.nohus.rift.compose.RiftWarningBanner
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.getNow
@@ -110,6 +111,11 @@ private fun CharacterSettingsWindowContent(
         Column(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
+            AnimatedVisibility(state.isOnline) {
+                RiftWarningBanner(
+                    text = "You are online. Settings can't be copied while the game is open. Make sure to close EVE first.",
+                )
+            }
             var selectedSourceProfile: String? by remember { mutableStateOf(null) }
             var selectedTargetProfile: String? by remember { mutableStateOf(null) }
             AnimatedContent(state.copying, contentKey = { it::class }) { copying ->

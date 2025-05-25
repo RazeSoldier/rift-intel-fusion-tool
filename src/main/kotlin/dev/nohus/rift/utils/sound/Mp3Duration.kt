@@ -3,6 +3,7 @@ package dev.nohus.rift.utils.sound
 import javazoom.jl.decoder.Bitstream
 import javazoom.jl.decoder.BitstreamException
 import java.io.IOException
+import java.lang.NullPointerException
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.fileSize
@@ -17,6 +18,8 @@ fun getMp3FileDuration(path: Path): Duration {
     } catch (e: IOException) {
         return Duration.ZERO
     } catch (ex: BitstreamException) {
+        return Duration.ZERO
+    } catch (e: NullPointerException) {
         return Duration.ZERO
     }
 }

@@ -188,7 +188,7 @@ class SettingsViewModel(
     fun onLogsDirectoryChanged(text: String) {
         val directory = try {
             Path.of(text)
-        } catch (e: InvalidPathException) {
+        } catch (_: InvalidPathException) {
             null
         }
         settings.eveLogsDirectory = directory
@@ -211,7 +211,11 @@ class SettingsViewModel(
     }
 
     fun onSettingsDirectoryChanged(text: String) {
-        val directory = Path.of(text)
+        val directory = try {
+            Path.of(text)
+        } catch (_: InvalidPathException) {
+            null
+        }
         settings.eveSettingsDirectory = directory
         _state.update {
             it.copy(

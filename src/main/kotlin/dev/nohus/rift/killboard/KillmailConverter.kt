@@ -16,7 +16,7 @@ class KillmailConverter {
             killmailId = killmail.killmailId,
             killmailTime = killmail.killmailTime,
             solarSystemId = killmail.solarSystemId,
-            url = zkb.url,
+            url = "https://zkillboard.com/kill/${killmail.killmailId}/",
             victim = Victim(
                 characterId = killmail.victim.characterId,
                 corporationId = killmail.victim.corporationId,
