@@ -1,7 +1,21 @@
-package dev.nohus.rift.network.killboard
+package dev.nohus.rift.network.zkillboardqueue
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
+
+@Serializable
+data class ZkillboardQueueResponse(
+    @SerialName("package")
+    val payload: Package?,
+)
+
+@Serializable
+data class Package(
+    @SerialName("killID") val killmailId: Int,
+    @SerialName("killmail") val killmail: ZkillboardKillmail,
+    @SerialName("zkb") val zkb: Zkb,
+)
 
 @Serializable
 data class ZkillboardKillmail(
@@ -20,8 +34,6 @@ data class ZkillboardKillmail(
     val victim: ZkillboardVictim,
     @SerialName("war_id")
     val warId: Int? = null,
-    @SerialName("zkb")
-    val zkb: Zkb,
 )
 
 @Serializable
@@ -100,8 +112,6 @@ data class Zkb(
     val destroyedValue: Double,
     @SerialName("droppedValue")
     val droppedValue: Double,
-    @SerialName("esi")
-    val esi: String,
     @SerialName("fittedValue")
     val fittedValue: Double,
     @SerialName("hash")
@@ -116,6 +126,8 @@ data class Zkb(
     val solo: Boolean,
     @SerialName("totalValue")
     val totalValue: Double,
-    @SerialName("url")
+    @SerialName("labels")
+    val labels: List<String>,
+    @SerialName("href")
     val url: String,
 )

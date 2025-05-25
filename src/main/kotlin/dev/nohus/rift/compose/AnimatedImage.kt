@@ -1,8 +1,6 @@
 package dev.nohus.rift.compose
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource

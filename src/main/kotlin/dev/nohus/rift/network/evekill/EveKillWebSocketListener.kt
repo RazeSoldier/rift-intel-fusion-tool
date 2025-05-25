@@ -1,10 +1,10 @@
-package dev.nohus.rift.network.killboard
+package dev.nohus.rift.network.evekill
 
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-class KillboardWebSocketListener(
+class EveKillWebSocketListener(
     private val onMessage: (String) -> Unit,
     private val onConnection: (Boolean) -> Unit,
 ) : WebSocketListener() {

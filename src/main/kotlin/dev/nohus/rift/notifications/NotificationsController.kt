@@ -18,7 +18,6 @@ import dev.nohus.rift.standings.Standing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import org.jetbrains.exposed.sql.not
 import org.koin.core.annotation.Single
 
 @Single

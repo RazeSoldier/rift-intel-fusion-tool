@@ -41,7 +41,7 @@ class GetStartupWarningsUseCase(
                         title = "Fullscreen EVE Client",
                         description = """
                             Your EVE client is set to run in fullscreen mode.
-                            You might not be able to put RIFT window on top of it.
+                            You might not be able to put RIFT windows on top of it.
                             
                             It's recommended to use Fixed Window or Window mode.
                         """.trimIndent(),

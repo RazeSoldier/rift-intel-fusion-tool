@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -31,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -67,8 +65,8 @@ fun SplashWindow(
         onCloseRequest = onCloseRequest,
         state = rememberWindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            width = 529.dp,
-            height = 300.dp,
+            width = 640.dp,
+            height = 360.dp,
         ),
         title = "RIFT Intel Fusion Tool",
         icon = painterResource(Res.drawable.window_rift_64),
@@ -94,13 +92,12 @@ private fun SplashWindowContent(state: UiState) {
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
         )
-        val isDarkBackground = true
+        val isDarkBackground = false
         Column {
-            Spacer(Modifier.weight(1f))
             val shadeColor = if (isDarkBackground) {
                 Color.White.copy(alpha = 0.15f)
             } else {
-                Color.Black.copy(alpha = 0.75f)
+                Color.Black.copy(alpha = 0.5f)
             }
             Column(
                 modifier = Modifier
@@ -116,9 +113,9 @@ private fun SplashWindowContent(state: UiState) {
                     style = RiftTheme.typography.headlinePrimary.copy(color = Color.White),
                 )
             }
-
+            Spacer(Modifier.weight(1f))
             if (state.patrons.isNotEmpty()) {
-                Patrons(isDarkBackground, state.patrons)
+                VerticalPatrons(isDarkBackground, state.patrons)
             }
         }
     }
@@ -174,6 +171,43 @@ fun RiftAppName() {
 }
 
 @Composable
+private fun VerticalPatrons(
+    isDarkBackground: Boolean,
+    patrons: List<Patron>,
+) {
+    var isVisible by remember { mutableStateOf(false) }
+    AnimatedVisibility(visible = isVisible, enter = fadeIn(tween(delayMillis = 500))) {
+        val shadeColor = if (isDarkBackground) {
+            Color.White.copy(alpha = 0.15f)
+        } else {
+            Color.Black.copy(alpha = 0.5f)
+        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            modifier = Modifier
+                .clip(RoundedCornerShape(topEnd = 48.dp))
+                .background(shadeColor)
+                .padding(horizontal = Spacing.large)
+                .padding(vertical = Spacing.large),
+        ) {
+            Text(
+                text = "PATRONS",
+                style = RiftTheme.typography.headlineHighlighted.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+
+            val shuffledPatrons = remember(patrons) { patrons.shuffled().take(4) }
+            shuffledPatrons.forEach {
+                Patron(it)
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+}
+
+@Composable
 private fun Patrons(
     isDarkBackground: Boolean,
     patrons: List<Patron>,
@@ -204,7 +238,7 @@ private fun Patrons(
             Layout(
                 content = {
                     shuffledPatrons.forEach {
-                        Patron(it)
+                        Patron(it, Modifier.padding(horizontal = Spacing.medium))
                     }
                 },
             ) { measurables, constraints ->
@@ -230,12 +264,11 @@ private fun Patrons(
 }
 
 @Composable
-private fun Patron(patron: Patron) {
+private fun Patron(patron: Patron, modifier: Modifier = Modifier) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(horizontal = Spacing.medium),
+        modifier = modifier,
     ) {
         Box(
             modifier = Modifier

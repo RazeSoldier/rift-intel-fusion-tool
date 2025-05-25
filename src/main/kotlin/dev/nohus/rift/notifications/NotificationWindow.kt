@@ -67,7 +67,6 @@ import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.exposed.sql.not
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

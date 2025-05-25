@@ -1,4 +1,5 @@
-package dev.nohus.rift.network.killboard
+package dev.nohus.rift.network.evekill
+import dev.nohus.rift.network.zkillboardqueue.IsoDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant

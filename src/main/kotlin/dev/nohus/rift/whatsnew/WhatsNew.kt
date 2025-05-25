@@ -469,6 +469,11 @@ object WhatsNew {
                 - Keep it simple, or customize it to show any information you want
                 - It also works great at small sizes, and with the transparent mode you can have it be a seamless part of your in-game layout
             """.trimIndent(),
+            "4.34.0" description """
+                - New Legion splash screen
+                - Intel from killmails now triggers alerts. Previously you could see ships and characters known from killmails on the map, but they wouldn't trigger alerts even when matching. Now they do.
+                - The New Eden cluster map now highlights systems with intel even when zoomed out, so you can easily see where things are going on on a wider scale.
+            """.trimIndent(),
         ).reversed()
     }
 }

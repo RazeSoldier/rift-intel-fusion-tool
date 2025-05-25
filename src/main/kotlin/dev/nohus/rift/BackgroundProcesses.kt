@@ -20,7 +20,7 @@ import dev.nohus.rift.logging.analytics.Analytics
 import dev.nohus.rift.loglite.LogLiteParser
 import dev.nohus.rift.loglite.LogLiteServer
 import dev.nohus.rift.map.MapJumpRangeController
-import dev.nohus.rift.network.killboard.KillboardObserver
+import dev.nohus.rift.network.zkillboardqueue.ZkillboardObserver
 import dev.nohus.rift.pings.PingsRepository
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.MapStatusRepository
@@ -47,7 +47,7 @@ class BackgroundProcesses(
     private val resetSparkleUpdateCheckUseCase: ResetSparkleUpdateCheckUseCase,
     private val startJabberUseCase: StartJabberUseCase,
     private val pingsRepository: PingsRepository,
-    private val killboardObserver: KillboardObserver,
+    private val zkillboardObserver: ZkillboardObserver,
     private val soundPlayer: SoundPlayer,
     private val clipboard: Clipboard,
     private val autopilotController: AutopilotController,
@@ -105,7 +105,7 @@ class BackgroundProcesses(
                 startJabberUseCase()
             }
             launch {
-                killboardObserver.start()
+                zkillboardObserver.start()
             }
             launch {
                 soundPlayer.start()
