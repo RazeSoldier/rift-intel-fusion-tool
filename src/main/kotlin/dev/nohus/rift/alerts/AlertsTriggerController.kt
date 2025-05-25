@@ -13,6 +13,7 @@ import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository
 import dev.nohus.rift.intel.state.IntelUnderstanding
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.killboard.KillmailProcessor.ProcessedKillmail
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.pings.FormupLocation
@@ -77,6 +78,43 @@ class AlertsTriggerController(
         val locationMatch: AlertLocationMatch,
         val solarSystem: String,
     )
+
+    fun onNewKillmail(killmail: ProcessedKillmail) {
+        val triggeredIntelAlerts = enabledAlerts.mapNotNull { alert ->
+            if (alert.trigger is IntelReported) {
+                val matchingEntities = getMatchingEntities(alert.trigger.reportTypes, killmail)
+                if (matchingEntities.isNotEmpty()) {
+                    val systemId = solarSystemsRepository.getSystemId(killmail.system) ?: throw IllegalArgumentException("No system ${killmail.system}")
+                    getMatchingAlertLocation(alert.trigger.reportLocation, systemId)?.let { alertLocationMatch ->
+                        withCooldown(alert) {
+                            return@mapNotNull TriggeredIntelAlert(
+                                alert = alert,
+                                matchingEntities = matchingEntities,
+                                entities = killmail.entities,
+                                locationMatch = alertLocationMatch,
+                                solarSystem = killmail.system,
+                            )
+                        }
+                    }
+                }
+            }
+            null
+        }.sortedBy { triggeredIntelAlert ->
+            when (val locationMatch = triggeredIntelAlert.locationMatch) {
+                is AlertLocationMatch.Character -> locationMatch.distance
+                is AlertLocationMatch.System -> locationMatch.distance
+            }
+        }
+        triggeredIntelAlerts.forEach {
+            alertsActionController.triggerIntelAlert(
+                alert = it.alert,
+                matchingEntities = it.matchingEntities,
+                entities = it.entities,
+                locationMatch = it.locationMatch,
+                solarSystem = it.solarSystem,
+            )
+        }
+    }
 
     fun onNewIntel(message: ParsedChannelChatMessage, understanding: IntelUnderstanding) {
         logger.debug { "Checking alerts for new intel: $understanding" }
@@ -395,6 +433,30 @@ class AlertsTriggerController(
 
     private fun getMatchingEntities(
         types: List<IntelReportType>,
+        killmail: ProcessedKillmail,
+    ): List<Pair<IntelReportType, List<SystemEntity>>> {
+        return types.map { type ->
+            type to when (type) {
+                IntelReportType.AnyCharacter -> killmail.attackers
+                is IntelReportType.SpecificCharacters -> killmail.attackers.filter { it.name in type.characters }
+                IntelReportType.AnyShip -> killmail.ships
+                is IntelReportType.SpecificShipClasses ->
+                    killmail.ships.filter { shipTypesRepository.getShipClass(it.name) in type.classes }
+                IntelReportType.Bubbles -> emptyList()
+                IntelReportType.GateCamp -> emptyList()
+                IntelReportType.Wormhole -> emptyList()
+                is IntelReportType.LabeledContacts -> {
+                    killmail.attackers
+                        .filter { character -> isMatchingLabeledContact(character, type) }
+                }
+                IntelReportType.Ess -> emptyList()
+                IntelReportType.Skyhook -> emptyList()
+            }
+        }.filter { it.second.isNotEmpty() }
+    }
+
+    private fun getMatchingEntities(
+        types: List<IntelReportType>,
         understanding: IntelUnderstanding,
     ): List<Pair<IntelReportType, List<SystemEntity>>> {
         return types.map { type ->
@@ -419,21 +481,26 @@ class AlertsTriggerController(
                 is IntelReportType.LabeledContacts -> {
                     understanding.entities
                         .filterIsInstance<SystemEntity.Character>()
-                        .filter { character ->
-                            val ids = listOfNotNull(character.characterId, character.details.corporationId, character.details.allianceId)
-                            val labels = contactsRepository.getLabels(ids)
-                            if (labels.isEmpty()) return@filter false
-                            type.labels.any { expectedLabel ->
-                                labels.any { label ->
-                                    label.owner.id == expectedLabel.ownerId && label.id == expectedLabel.id
-                                }
-                            }
-                        }
+                        .filter { character -> isMatchingLabeledContact(character, type) }
                 }
                 IntelReportType.Ess -> understanding.entities.filterIsInstance<SystemEntity.Ess>()
                 IntelReportType.Skyhook -> understanding.entities.filterIsInstance<SystemEntity.Skyhook>()
             }
         }.filter { it.second.isNotEmpty() }
+    }
+
+    private fun isMatchingLabeledContact(
+        character: SystemEntity.Character,
+        type: IntelReportType.LabeledContacts,
+    ): Boolean {
+        val ids = listOfNotNull(character.characterId, character.details.corporationId, character.details.allianceId)
+        val labels = contactsRepository.getLabels(ids)
+        if (labels.isEmpty()) return false
+        return type.labels.any { expectedLabel ->
+            labels.any { label ->
+                label.owner.id == expectedLabel.ownerId && label.id == expectedLabel.id
+            }
+        }
     }
 
     sealed interface AlertLocationMatch {

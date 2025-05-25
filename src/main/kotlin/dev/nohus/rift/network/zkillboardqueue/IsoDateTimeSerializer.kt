@@ -1,4 +1,4 @@
-package dev.nohus.rift.network.killboard
+package dev.nohus.rift.network.zkillboardqueue
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

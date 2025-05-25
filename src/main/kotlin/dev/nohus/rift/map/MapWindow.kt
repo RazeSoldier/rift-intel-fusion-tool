@@ -666,7 +666,7 @@ private fun SolarSystemsLayer(
     val scaledNodeSizes = remember {
         mutableMapOf<Pair<NodeSizes, Float>, NodeSizes>()
     }
-    ForEachSystem(state, animatedCenter, mapScale, canvasSize) { isHighlightedOrHovered, dpCoordinates, nodeScale, system ->
+    ForEachSystem(state, animatedCenter, mapScale, canvasSize, forceDrawWithIntel = true) { isHighlightedOrHovered, dpCoordinates, nodeScale, system ->
         val hasIntelPopup = system.id in state.mapState.intelPopupSystems
         val zIndex = if (hasIntelPopup || isHighlightedOrHovered) 1f else 0f
 
@@ -712,7 +712,7 @@ private fun SystemInfoBoxesLayer(
 ) {
     val indicatorsInfoTypes = getIndicatorsInfoTypes(state)
     val infoBoxInfoTypes = getInfoBoxInfoTypes(state)
-    ForEachSystem(state, animatedCenter, mapScale, canvasSize) { isHighlightedOrHovered, dpCoordinates, _, system ->
+    ForEachSystem(state, animatedCenter, mapScale, canvasSize, forceDrawWithIntel = false) { isHighlightedOrHovered, dpCoordinates, _, system ->
         val hasIntelPopup = system.id in state.mapState.intelPopupSystems
         val zIndex = if (hasIntelPopup || isHighlightedOrHovered) 1f else 0f
         val isRegionNameForced = state.mapType is RegionMap && system.regionId !in state.mapType.regionIds
@@ -772,6 +772,7 @@ private fun ForEachSystem(
     animatedCenter: Offset,
     mapScale: Float,
     canvasSize: Size,
+    forceDrawWithIntel: Boolean,
     content: @Composable (
         isHighlightedOrHovered: Boolean,
         dpCoordinates: Pair<Dp, Dp>,
@@ -792,7 +793,7 @@ private fun ForEachSystem(
 
         val isDrawn = when (state.mapType) {
             ClusterRegionsMap -> false // N/A
-            ClusterSystemsMap -> mapScale <= 0.5 || isHighlightedOrHovered
+            ClusterSystemsMap -> mapScale <= 0.5 || isHighlightedOrHovered || forceDrawWithIntel && state.mapState.intel[systemId] != null
             is DistanceMap -> true // Always draw
             is RegionMap -> true // Always draw
         }

@@ -1,9 +1,9 @@
 package dev.nohus.rift.killboard
 
+import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.repositories.CelestialsRepository
-import dev.nohus.rift.repositories.CelestialsRepository.Celestial
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.StarGatesRepository
@@ -36,6 +36,7 @@ class KillmailProcessor(
     private val standingsRepository: StandingsRepository,
     private val celestialsRepository: CelestialsRepository,
     private val starGatesRepository: StarGatesRepository,
+    private val alertsTriggerController: AlertsTriggerController,
 ) {
 
     data class ProcessedKillmail(
@@ -46,7 +47,9 @@ class KillmailProcessor(
         val killmail: SystemEntity.Killmail,
         val celestial: SystemEntity?,
         val timestamp: Instant,
-    )
+    ) {
+        val entities get() = listOf(killmail) + ships + attackers + listOfNotNull(celestial)
+    }
 
     private val seenKillmails = mutableMapOf<Int, Killboard>()
     private val mutex = Mutex()
@@ -54,13 +57,12 @@ class KillmailProcessor(
     fun submit(message: Killmail) {
         runBlocking(Dispatchers.Default) {
             val ago = Duration.between(message.killmailTime, Instant.now())
-            val system = solarSystemsRepository.getSystemName(message.solarSystemId)
-                ?: return@runBlocking // Not in K-space
+            val system = solarSystemsRepository.getSystemName(message.solarSystemId) ?: return@runBlocking
 
             val deferredVictim = message.victim.characterId
                 ?.let { async { characterDetailsRepository.getCharacterDetails(it) } }
 
-            // Corporation and alliance is only loaded if there is no character, otherwise they are included with the character
+            // Corporation and alliance are only loaded if there is no character, otherwise they are included with the character
             val deferredVictimCorporation = if (message.victim.characterId == null) {
                 message.victim.corporationId?.let {
                     async { characterDetailsRepository.getCorporationName(it).success }
@@ -137,6 +139,7 @@ class KillmailProcessor(
                     seenKillmails[message.killmailId] = message.killboard
                     logger.debug { "Kill from ${message.killboard}: ${killmail.ship} killed by ${ships.joinToString { it.name }} in ${processedKillmail.system}, ${ago.toSeconds()}s ago" }
                     intelStateController.submitKillmail(processedKillmail)
+                    alertsTriggerController.onNewKillmail(processedKillmail)
                 } else {
                     val killboard = seenKillmails[message.killmailId]
                     logger.debug { "Kill from ${message.killboard}, ignoring, already seen from $killboard" }
