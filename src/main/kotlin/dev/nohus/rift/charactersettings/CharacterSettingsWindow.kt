@@ -251,9 +251,6 @@ private fun CharacterSettingsWindowContent(
             var accountEditingCharacter by remember { mutableStateOf<Int?>(null) }
             val accounts = state.accounts
                 .sortedByDescending { it.lastModified }
-            val accountOrdinals = accounts
-                .mapIndexed { index, account -> account to index + 1 }
-                .toMap()
             ScrollbarLazyColumn(
                 modifier = Modifier.weight(1f),
             ) {
@@ -272,7 +269,7 @@ private fun CharacterSettingsWindowContent(
                             Row(
                                 modifier = Modifier.padding(bottom = Spacing.small),
                             ) {
-                                val accountName = account?.let { "Account ${accountOrdinals[it]}" } ?: "Unassigned characters"
+                                val accountName = account?.let { "Account ${account.id}" } ?: "Unassigned characters"
                                 val tooltip = account?.let { "Settings files: ${account.paths.values.joinToString()}" } ?: "RIFT doesn't know which account these characters belong to"
                                 RiftTooltipArea(tooltip) {
                                     Text(
@@ -346,7 +343,6 @@ private fun CharacterSettingsWindowContent(
                                     onUpdateAccountClick = {
                                         accountEditingCharacter = if (!isEditingAccount) character.characterId else null
                                     },
-                                    accountOrdinals = accountOrdinals,
                                     onAssignAccount = { characterId, accountId ->
                                         onAssignAccount(characterId, accountId)
                                         accountEditingCharacter = null
@@ -451,7 +447,6 @@ private fun CharacterRow(
     accounts: List<Account>,
     isEditingAccount: Boolean,
     onUpdateAccountClick: () -> Unit,
-    accountOrdinals: Map<Account, Int>,
     onAssignAccount: (characterId: Int, accountId: Int) -> Unit,
     onCopyClick: () -> Unit,
     onPasteClick: () -> Unit,
@@ -565,9 +560,9 @@ private fun CharacterRow(
                         style = RiftTheme.typography.bodyPrimary,
                     )
                 }
-                accountOrdinals.filter { it.key != account }.forEach { (account, accountName) ->
+                accounts.filter { it != account }.forEach { account ->
                     RiftButton(
-                        text = accountName.toString(),
+                        text = account.id.toString(),
                         isCompact = true,
                         onClick = {
                             onAssignAccount(character.characterId, account.id)

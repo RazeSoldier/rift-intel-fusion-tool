@@ -94,6 +94,7 @@ fun SolarSystemNode(
         hostileOrbitPainter.updateComposition()
         val hasOnlineCharacter = onlineCharacters.any { it.location.solarSystemId == system.id }
 
+        val hasIntel = !intel.isNullOrEmpty()
         val hostileCount = hostileOrbitPainter.getTotalCount(intel)
         val entityIcons = hostileOrbitPainter.getEntityIcons(intel)
         val nodeBackgroundCircleMaxScale = SOLAR_SYSTEM_NODE_BACKGROUND_CIRCLE_MAX_SCALE / LocalDensity.current.density
@@ -105,7 +106,7 @@ fun SolarSystemNode(
                 drawCircle(mapBackground, radius = nodeSizes.radiusWithMarginPx, center = Offset.Zero)
             }
             drawCircle(brush, radius = nodeSizes.radiusPx, center = Offset.Zero)
-            hostileOrbitPainter.draw(this, nodeSizes, hostileCount, entityIcons.takeIf { !isScaled } ?: emptyList())
+            hostileOrbitPainter.draw(this, nodeSizes, hasIntel, hostileCount, entityIcons.takeIf { !isScaled } ?: emptyList())
             characterLocationPainter.draw(this, nodeSizes, hasOnlineCharacter)
         }
     }
@@ -173,14 +174,15 @@ class HostileOrbitPainter {
     fun draw(
         scope: DrawScope,
         nodeSizes: NodeSizes,
+        hasIntel: Boolean,
         hostileCount: Int,
         entityIcons: List<EntityIcon>,
     ) = with(scope) {
-        if (hostileCount > 0) {
+        if (hostileCount > 0 || hasIntel) {
             val endRadius = nodeSizes.radiusWithMarginPx
             val startRadius = nodeSizes.radiusPx
             val centerRadius = (startRadius + endRadius) / 2
-            val color = getColor(hostileCount / 5f)
+            val color = if (hostileCount > 0) getColor(hostileCount / 5f) else Color(0xFF7D7E7E)
             val brush = orbitBrushForColorNodeSizes.getOrPut(color to nodeSizes) {
                 Brush.radialGradient(
                     0.0f to color.copy(alpha = 0.0f),

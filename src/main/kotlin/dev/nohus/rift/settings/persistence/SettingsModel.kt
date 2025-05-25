@@ -289,6 +289,7 @@ sealed interface ColonySortingFilter {
 enum class ConfigurationPack {
     Imperium,
     TheInitiative,
+    PhoenixCoalition,
 }
 
 @Serializable

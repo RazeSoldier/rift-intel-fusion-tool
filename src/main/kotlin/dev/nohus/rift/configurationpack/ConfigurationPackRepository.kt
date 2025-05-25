@@ -3,6 +3,7 @@ package dev.nohus.rift.configurationpack
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.ConfigurationPack.Imperium
+import dev.nohus.rift.settings.persistence.ConfigurationPack.PhoenixCoalition
 import dev.nohus.rift.settings.persistence.ConfigurationPack.TheInitiative
 import dev.nohus.rift.settings.persistence.IntelChannel
 import dev.nohus.rift.settings.persistence.Settings
@@ -54,6 +55,23 @@ class ConfigurationPackRepository(
             TheInitiative -> listOf(
                 1900696668, // The Initiative.
             )
+            PhoenixCoalition -> listOf(
+                99002685, // Synergy of Steel
+                741557221, // Razor Alliance
+                99001317, // Banderlogs Alliance
+                99010281, // GameTheory
+                99012770, // Black Rose.
+                99005274, // La Ligue des mondes libres
+                99012040, // Regnum Astera
+                99013231, // Blood Drive
+                99013216, // Nomad Alliance
+                154104258, // Apocalypse Now.
+                99010896, // Caldari Alliance
+                99013539, // The Disciples of Space Piracy
+                99013456, // Northern Frontier Group
+                99013759, // Imurukka Conglomerate
+                99012410, // DECOY
+            )
             null -> emptyList()
         }
     }
@@ -61,7 +79,7 @@ class ConfigurationPackRepository(
     fun getSuggestedIntelChannels(): SuggestedIntelChannels? {
         return when (settings.configurationPack) {
             Imperium -> SuggestedIntelChannels(
-                promptTitleText = "Would you like intel channels of The Imperium to be configured automatically?",
+                promptTitleText = "Would you like intel channels of the Imperium to be configured automatically?",
                 promptButtonText = "Add Imperium channels",
                 channels = listOf(
                     IntelChannel("aridia.imperium", "Aridia"),
@@ -93,6 +111,15 @@ class ConfigurationPackRepository(
                     IntelChannel("I. C Ring Intel", "Cloud Ring"),
                 ),
             )
+            PhoenixCoalition -> SuggestedIntelChannels(
+                promptTitleText = "Would you like intel channels of the Phoenix Coalition to be configured automatically?",
+                promptButtonText = "Add Phoenix Coalition channels",
+                channels = listOf(
+                    IntelChannel("Phoenix_Intel", "Fade"),
+                    IntelChannel("Phoenix_Intel", "Cloud Ring"),
+                    IntelChannel("Phoenix_Intel", "Pure Blind"),
+                ),
+            )
             null -> null
         }
     }
@@ -101,6 +128,7 @@ class ConfigurationPackRepository(
         return when (settings.configurationPack) {
             Imperium -> true
             TheInitiative -> false
+            PhoenixCoalition -> false
             null -> false
         }
     }
@@ -109,6 +137,7 @@ class ConfigurationPackRepository(
         return when (settings.configurationPack) {
             Imperium -> "https://wiki.goonswarm.org/w/Alliance:Stargate"
             TheInitiative -> null
+            PhoenixCoalition -> "https://auth.synergyofsteel.de/wiki/willkommen/"
             null -> null
         }
     }

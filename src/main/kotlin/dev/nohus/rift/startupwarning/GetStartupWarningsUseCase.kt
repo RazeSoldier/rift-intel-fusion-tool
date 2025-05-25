@@ -6,6 +6,7 @@ import org.koin.core.annotation.Single
 @Single
 class GetStartupWarningsUseCase(
     private val hasNonEnglishEveClient: HasNonEnglishEveClientUseCase,
+    private val hasFullScreenEveClient: HasFullScreenEveClientUseCase,
     private val isRunningMsiAfterburner: IsRunningMsiAfterburnerUseCase,
     private val getAccountsWithDisabledChatLogs: GetAccountsWithDisabledChatLogsUseCase,
     private val isMissingXWinInfo: IsMissingXWinInfoUseCase,
@@ -29,6 +30,20 @@ class GetStartupWarningsUseCase(
                         description = """
                             Your EVE client is set to a language other than English.
                             RIFT features based on reading game logs won't work.
+                        """.trimIndent(),
+                    ),
+                )
+            }
+            if (hasFullScreenEveClient()) {
+                add(
+                    StartupWarning(
+                        id = "fullscreen client",
+                        title = "Fullscreen EVE Client",
+                        description = """
+                            Your EVE client is set to run in fullscreen mode.
+                            You might not be able to put RIFT window on top of it.
+                            
+                            It's recommended to use Fixed Window or Window mode.
                         """.trimIndent(),
                     ),
                 )
