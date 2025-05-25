@@ -83,6 +83,7 @@ import dev.nohus.rift.generated.resources.window_map
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
+import dev.nohus.rift.map.MapViewModel.MapType.DistanceMap
 import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
 import dev.nohus.rift.map.MapViewModel.Transform
 import dev.nohus.rift.map.MapViewModel.UiState
@@ -170,6 +171,8 @@ fun MapWindow(
             onJumpRangeDistanceUpdate = viewModel::onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = viewModel::onPlanetTypesUpdate,
             onLayoutSelected = viewModel::onLayoutSelected,
+            onDistanceMapCenterUpdate = viewModel::onDistanceMapCenterUpdate,
+            onDistanceMapRangeUpdate = viewModel::onDistanceMapRangeUpdate,
         )
     }
 }
@@ -198,6 +201,8 @@ private fun MapWindowContent(
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
     onLayoutSelected: (Int) -> Unit,
+    onDistanceMapCenterUpdate: (String) -> Unit,
+    onDistanceMapRangeUpdate: (Int) -> Unit,
 ) {
     Box {
         val hazeState = remember { HazeState() }
@@ -227,6 +232,7 @@ private fun MapWindowContent(
             systemInfoTypes = state.systemInfoTypes,
             mapJumpRangeState = state.mapJumpRangeState,
             mapPlanetsState = state.mapPlanetsState,
+            distanceMapState = state.distanceMapState,
             alternativeLayouts = state.alternativeLayouts,
             onSystemColorChange = onSystemColorChange,
             onSystemColorHover = onSystemColorHover,
@@ -238,6 +244,8 @@ private fun MapWindowContent(
             onJumpRangeDistanceUpdate = onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = onPlanetTypesUpdate,
             onLayoutSelected = onLayoutSelected,
+            onDistanceMapCenterUpdate = onDistanceMapCenterUpdate,
+            onDistanceMapRangeUpdate = onDistanceMapRangeUpdate,
         )
     }
 }
@@ -298,12 +306,13 @@ private fun Map(
     onContextMenuDismiss: () -> Unit,
     onMapTransformChanged: (Transform) -> Unit,
 ) {
-    val layoutBounds by remember { mutableStateOf(getMapLayoutBounds(state.layout)) }
+    val layoutBounds by remember(state.layout) { mutableStateOf(getMapLayoutBounds(state.layout)) }
     val zoomRange = remember(state.mapType) {
         when (state.mapType) {
             ClusterRegionsMap -> 1.0..2.0
             ClusterSystemsMap -> 0.2..8.0
             is RegionMap -> 0.12..2.0
+            is DistanceMap -> 0.2..2.0
         }
     }
     var zoom by remember {
@@ -401,7 +410,7 @@ private fun Map(
     val density = LocalDensity.current.density
     fun fitMap() {
         center = getMapLayoutCenter(layoutBounds)
-        zoom = (zoom * getIdealZoomMultiplier(layoutBounds, canvasSize, mapScale, density)).coerceIn(zoomRange)
+        zoom = (zoom * getIdealZoomMultiplier(state.mapType, layoutBounds, canvasSize, mapScale, density)).coerceIn(zoomRange)
     }
 
     val transition = rememberInfiniteTransition()
@@ -443,6 +452,7 @@ private fun Map(
                 ClusterRegionsMap -> 0.7f
                 ClusterSystemsMap -> 2.0f
                 is RegionMap -> 0.6f
+                is DistanceMap -> 0.6f
             }
             Canvas(
                 modifier = Modifier.fillMaxSize(),
@@ -457,6 +467,7 @@ private fun Map(
                     zoom = animatedZoom,
                     systemColorStrategy = solarSystemColorStrategy,
                     cellColorStrategy = cellColorStrategy,
+                    jumpBands = state.distanceMapState.distance + 1,
                 )
             }
             Canvas(
@@ -534,7 +545,7 @@ private fun Map(
                             onClick = { onMapClick(LEFT_BUTTON) },
                         )
                     }
-                    ClusterSystemsMap, is RegionMap -> {
+                    ClusterSystemsMap, is RegionMap, is DistanceMap -> {
                         val nodeSizes = NodeSizes(
                             margin = 16.dp,
                             marginPx = LocalDensity.current.run { 12.dp.toPx() },
@@ -555,12 +566,16 @@ private fun Map(
  * Returns a value by which the zoom level needs to be multiplied to fit the map layout perfectly on canvas
  */
 private fun getIdealZoomMultiplier(
+    mapType: MapType,
     layoutBounds: MapLayoutBounds,
     canvasSize: Size,
     mapScale: Float,
     density: Float,
 ): Float {
-    val margin = 50 * density
+    val margin = when (mapType) {
+        ClusterRegionsMap, ClusterSystemsMap, is RegionMap -> 50
+        DistanceMap -> 120
+    } * density
     val idealMapScaleX = (layoutBounds.maxX - layoutBounds.minX) / (canvasSize.width - margin)
     val idealMapScaleY = (layoutBounds.maxY - layoutBounds.minY) / (canvasSize.height - margin)
     val idealMapScale = maxOf(idealMapScaleX, idealMapScaleY)
@@ -601,6 +616,7 @@ fun getSolarSystemColorStrategy(
         is ClusterSystemsMap -> color[SettingsMapType.NewEden]
         is ClusterRegionsMap -> color[SettingsMapType.NewEden]
         is RegionMap -> color[SettingsMapType.Region]
+        is DistanceMap -> color[SettingsMapType.Distance]
     } ?: return null
     return when (color) {
         MapSystemInfoType.StarColor -> koin.get<StarColorSystemColorStrategy>()
@@ -702,9 +718,12 @@ private fun SystemInfoBoxesLayer(
         val isRegionNameForced = state.mapType is RegionMap && system.regionId !in state.mapType.regionIds
 
         val isZoomEnough = (state.settings.isAlwaysShowingSystems || mapScale <= (0.9f / LocalDensity.current.density))
-        val isShowingSystemInfoBox = (state.mapType is RegionMap && isZoomEnough) ||
-            (state.mapType is ClusterSystemsMap) ||
-            isHighlightedOrHovered
+        val isShowingSystemInfoBox = isHighlightedOrHovered || when (state.mapType) {
+            ClusterRegionsMap -> false
+            ClusterSystemsMap -> true
+            is DistanceMap -> isZoomEnough
+            is RegionMap -> isZoomEnough
+        }
         if (isShowingSystemInfoBox) {
             val maxHeight = with(LocalDensity.current) { canvasSize.height.toDp() } - (dpCoordinates.second + nodeSizes.radius) - Spacing.medium
             SystemInfoBox(
@@ -743,6 +762,7 @@ private fun getSettingsMapType(mapType: MapType): SettingsMapType {
         ClusterRegionsMap -> SettingsMapType.NewEden
         ClusterSystemsMap -> SettingsMapType.NewEden
         is RegionMap -> SettingsMapType.Region
+        is DistanceMap -> SettingsMapType.Distance
     }
 }
 
@@ -769,7 +789,15 @@ private fun ForEachSystem(
             systemId == state.mapState.selectedSystem ||
             systemId in state.mapState.searchResults
         val nodeScale = getNodeScale(mapScale)
-        if (state.mapType is RegionMap || mapScale <= 0.5 || isHighlightedOrHovered) {
+
+        val isDrawn = when (state.mapType) {
+            ClusterRegionsMap -> false // N/A
+            ClusterSystemsMap -> mapScale <= 0.5 || isHighlightedOrHovered
+            is DistanceMap -> true // Always draw
+            is RegionMap -> true // Always draw
+        }
+
+        if (isDrawn) {
             val coordinates = getCanvasCoordinates(layout.position.x, layout.position.y, animatedCenter, mapScale, canvasSize)
             if (!isOnCanvas(coordinates, canvasSize, 100)) return@forEach
             val dpCoordinates = with(LocalDensity.current) { coordinates.x.toDp() to coordinates.y.toDp() }

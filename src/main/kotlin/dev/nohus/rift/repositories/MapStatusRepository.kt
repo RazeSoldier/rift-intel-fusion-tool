@@ -121,11 +121,11 @@ class MapStatusRepository(
                     clones.mapNotNull { clone ->
                         val system = clone.structure?.solarSystemId ?: clone.station?.solarSystemId ?: return@mapNotNull null
                         system to characterId
-                    }.groupBy { it.first }.map { (system, clones) ->
-                        system to clones.groupBy { it.second }.map { (characterId, clones) ->
-                            characterId to clones.size
-                        }.toMap()
                     }
+                }.groupBy { it.first }.map { (system, clones) ->
+                    system to clones.groupBy { it.second }.map { (characterId, clones) ->
+                        characterId to clones.size
+                    }.toMap()
                 }.toMap()
                 systems.associateWith { systemId ->
                     SolarSystemStatus(

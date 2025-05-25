@@ -48,16 +48,19 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.backicon
 import dev.nohus.rift.generated.resources.expand_more_16px
+import dev.nohus.rift.map.DistanceMapController.DistanceMapState
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
+import dev.nohus.rift.map.MapViewModel.MapType.DistanceMap
 import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
 import dev.nohus.rift.map.MapViewModel.SystemInfoTypes
 import dev.nohus.rift.map.PanelState.CellColor
 import dev.nohus.rift.map.PanelState.Collapsed
+import dev.nohus.rift.map.PanelState.DistanceMapCenter
 import dev.nohus.rift.map.PanelState.Expanded
 import dev.nohus.rift.map.PanelState.Indicators
 import dev.nohus.rift.map.PanelState.InfoBox
@@ -68,13 +71,15 @@ import dev.nohus.rift.repositories.PlanetTypes
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
+import dev.nohus.rift.utils.plural
 import org.jetbrains.compose.resources.painterResource
 import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 
 enum class PanelState {
     Collapsed, Expanded,
     StarColor, CellColor, Indicators, InfoBox,
-    JumpRange, Planets
+    JumpRange, Planets,
+    DistanceMapCenter,
 }
 
 private val editableInfoTypes = mapOf(
@@ -90,6 +95,7 @@ fun MapSettingsPanel(
     systemInfoTypes: SystemInfoTypes,
     mapJumpRangeState: MapJumpRangeState,
     mapPlanetsState: MapPlanetsState,
+    distanceMapState: DistanceMapState,
     alternativeLayouts: List<Layout>,
     onSystemColorChange: (SettingsMapType, MapSystemInfoType) -> Unit,
     onSystemColorHover: (SettingsMapType, MapSystemInfoType, Boolean) -> Unit,
@@ -101,11 +107,14 @@ fun MapSettingsPanel(
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
     onLayoutSelected: (Int) -> Unit,
+    onDistanceMapCenterUpdate: (String) -> Unit,
+    onDistanceMapRangeUpdate: (Int) -> Unit,
 ) {
     val settingsMapType = when (mapType) {
         ClusterRegionsMap -> null
         ClusterSystemsMap -> SettingsMapType.NewEden
         is RegionMap -> SettingsMapType.Region
+        is DistanceMap -> SettingsMapType.Distance
     } ?: return
     Column(
         modifier = Modifier.padding(1.dp),
@@ -157,7 +166,6 @@ fun MapSettingsPanel(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-
                                 ) {
                                     Text(
                                         text = "System:",
@@ -239,6 +247,16 @@ fun MapSettingsPanel(
                                     alternativeLayouts = alternativeLayouts,
                                     selectedLayoutId = mapType.layoutId,
                                     onLayoutSelected = onLayoutSelected,
+                                )
+                            } else if (mapType is DistanceMap) {
+                                DistanceMapPills(
+                                    state = distanceMapState,
+                                    onDistanceMapCenterClick = {
+                                        panelState = DistanceMapCenter
+                                    },
+                                    onDistanceMapRangeClick = {
+                                        panelState = DistanceMapCenter
+                                    },
                                 )
                             }
                         }
@@ -364,6 +382,14 @@ fun MapSettingsPanel(
                             onPlanetTypesUpdate = onPlanetTypesUpdate,
                         )
                     }
+                    DistanceMapCenter -> {
+                        DistanceMapPanel(
+                            state = distanceMapState,
+                            onBack = { panelState = Expanded },
+                            onDistanceMapCenterUpdate = onDistanceMapCenterUpdate,
+                            onDistanceMapRangeUpdate = onDistanceMapRangeUpdate,
+                        )
+                    }
                 }
             }
         }
@@ -385,7 +411,7 @@ private fun JumpRangePanel(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         SettingsPanelTitle(
-            title = "Jump Range",
+            title = "Jump range",
             onBack = onBack,
         )
         Row(
@@ -403,6 +429,7 @@ private fun JumpRangePanel(
                     .map { it.name }
                 (possibleCharacters + possibleSystems)
                     .filter { it.lowercase().startsWith(targetText.lowercase()) }
+                    .filter { it.lowercase() != targetText.lowercase() }
             }
 
             LaunchedEffect(mapJumpRangeState.target) {
@@ -496,6 +523,89 @@ private fun PlanetsPanel(
     }
 }
 
+@Composable
+private fun DistanceMapPanel(
+    state: DistanceMapState,
+    onBack: () -> Unit,
+    onDistanceMapCenterUpdate: (String) -> Unit,
+    onDistanceMapRangeUpdate: (Int) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        modifier = Modifier.padding(Spacing.medium),
+    ) {
+        SettingsPanelTitle(
+            title = "Distance map",
+            onBack = onBack,
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.heightIn(min = 36.dp),
+        ) {
+            val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+            val charactersRepository: LocalCharactersRepository = remember { koin.get() }
+            var targetText by remember { mutableStateOf("") }
+            var isEdited by remember { mutableStateOf(false) }
+
+            val suggestions by derivedStateOf {
+                val possibleCharacters = charactersRepository.characters.value
+                    .mapNotNull { it.info.success?.name }
+                val possibleSystems = solarSystemsRepository.getSystems()
+                    .map { it.name }
+                (possibleCharacters + possibleSystems)
+                    .filter { it.lowercase().startsWith(targetText.lowercase()) }
+                    .filter { it.lowercase() != targetText.lowercase() }
+            }
+
+            LaunchedEffect(state.followingCharacterId, state.followingCharacterName, state.centerSystemId, state.centerSystemName) {
+                targetText = when {
+                    state.followingCharacterId != null -> state.followingCharacterName ?: state.followingCharacterId.toString()
+                    else -> state.centerSystemName ?: state.centerSystemId.toString()
+                }
+            }
+
+            Text(
+                text = "Centered on:",
+                style = RiftTheme.typography.bodyPrimary,
+                modifier = Modifier.padding(end = Spacing.small),
+            )
+            RiftAutocompleteTextField(
+                text = targetText,
+                suggestions = suggestions.take(5),
+                placeholder = "System or character",
+                onTextChanged = {
+                    targetText = it
+                    isEdited = true
+                    onDistanceMapCenterUpdate(it)
+                },
+                modifier = Modifier
+                    .width(150.dp),
+            )
+            AnimatedVisibility(targetText.isNotBlank()) {
+                RequirementIcon(
+                    isFulfilled = state.isEditedCenterValid || !isEdited,
+                    fulfilledTooltip = when {
+                        state.followingCharacterId != null -> "Valid character"
+                        else -> "Valid system"
+                    },
+                    notFulfilledTooltip = "No such system or character",
+                )
+            }
+        }
+        val ranges = List(5) {
+            val range = it + 1
+            "$range jump${range.plural}" to range
+        }
+        RiftDropdownWithLabel(
+            label = "Range:",
+            items = ranges,
+            selectedItem = ranges.firstOrNull { it.second == state.distance } ?: ranges.first(),
+            onItemSelected = { onDistanceMapRangeUpdate(it.second) },
+            getItemName = { it.first },
+        )
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SettingsPanelTitle(
@@ -541,6 +651,52 @@ private fun AlternativeLayoutsPills(
                 onClick = {
                     onLayoutSelected(layout.layoutId)
                 },
+            )
+        }
+    }
+}
+
+@Composable
+private fun DistanceMapPills(
+    state: DistanceMapState,
+    onDistanceMapCenterClick: () -> Unit,
+    onDistanceMapRangeClick: () -> Unit,
+) {
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            Text(
+                text = "Centered on:",
+                style = RiftTheme.typography.titlePrimary,
+            )
+            if (state.followingCharacterId != null) {
+                RiftPill(
+                    text = state.followingCharacterName ?: state.followingCharacterId.toString(),
+                    onClick = onDistanceMapCenterClick,
+                )
+            } else {
+                RiftPill(
+                    text = state.centerSystemName ?: state.centerSystemId.toString(),
+                    onClick = onDistanceMapCenterClick,
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            Text(
+                text = "Range:",
+                style = RiftTheme.typography.titlePrimary,
+            )
+            RiftPill(
+                text = "${state.distance} jump${state.distance.plural}",
+                onClick = onDistanceMapRangeClick,
             )
         }
     }

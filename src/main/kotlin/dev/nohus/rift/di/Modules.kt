@@ -56,7 +56,7 @@ val platformModule = module {
     }
     single<GetOpenEveClientsUseCase> {
         when (get<OperatingSystem>()) {
-            Linux -> LinuxGetOpenEveClientsUseCase(get())
+            Linux -> LinuxGetOpenEveClientsUseCase(get(), get())
             Windows -> WindowsGetOpenEveClientsUseCase(get())
             MacOs -> MacGetOpenEveClientsUseCase()
         }

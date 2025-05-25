@@ -682,7 +682,7 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
             contentDescription = null,
             modifier = Modifier.size(16.dp),
         )
-        clones?.forEach { (characterId, count) ->
+        clones.forEach { (characterId, count) ->
             RiftTooltipArea(
                 text = "$count clone${count.plural}".takeIf { withDetails },
             ) {
@@ -700,7 +700,7 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
             }
         }
         if (withDetails) {
-            val totalCount = clones?.entries?.sumOf { it.value } ?: 0
+            val totalCount = clones.entries.sumOf { it.value }
             Text(
                 text = "$totalCount jump clone${totalCount.plural}",
                 style = RiftTheme.typography.bodyPrimary,

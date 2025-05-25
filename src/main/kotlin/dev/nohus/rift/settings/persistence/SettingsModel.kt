@@ -6,9 +6,12 @@ import dev.nohus.rift.settings.persistence.MapSystemInfoType.Assets
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Clones
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Colonies
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Incursions
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.IntelHostiles
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.JoveObservatories
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.MetaliminalStorms
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Security
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.Sovereignty
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.Standings
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Wormholes
 import dev.nohus.rift.standings.StandingsRepository.Standings
 import dev.nohus.rift.utils.Pos
@@ -81,7 +84,26 @@ data class SettingsModel(
 
 @Serializable
 enum class MapType {
-    NewEden, Region
+    NewEden, Region, Distance
+}
+
+@Serializable
+sealed interface MapOpenedTab {
+    @Serializable
+    @SerialName("ClusterSystemsMap")
+    data object ClusterSystemsMap : MapOpenedTab
+
+    @Serializable
+    @SerialName("ClusterRegionsMap")
+    data object ClusterRegionsMap : MapOpenedTab
+
+    @Serializable
+    @SerialName("RegionMap")
+    data class RegionMap(val layoutId: Int) : MapOpenedTab
+
+    @Serializable
+    @SerialName("DistanceMap")
+    data class DistanceMap(val centerSystemId: Int, val followingCharacterId: Int?, val distance: Int) : MapOpenedTab
 }
 
 @Serializable
@@ -95,15 +117,25 @@ enum class MapSystemInfoType {
 @Serializable
 data class IntelMap(
     val isUsingCompactMode: Boolean = false,
-    val mapTypeStarInfoTypes: Map<MapType, MapSystemInfoType> = emptyMap(),
-    val mapTypeCellInfoTypes: Map<MapType, MapSystemInfoType?> = emptyMap(),
+    val mapTypeSystemColor: Map<MapType, MapSystemInfoType> = mapOf(
+        MapType.NewEden to Security,
+        MapType.Region to Security,
+        MapType.Distance to IntelHostiles,
+    ),
+    val mapTypeBackgroundColor: Map<MapType, MapSystemInfoType?> = mapOf(
+        MapType.NewEden to null,
+        MapType.Region to null,
+        MapType.Distance to null,
+    ),
     val mapTypeIndicatorInfoTypes: Map<MapType, List<MapSystemInfoType>> = mapOf(
         MapType.NewEden to listOf(Assets, Clones, Incursions, MetaliminalStorms, Colonies),
         MapType.Region to listOf(Assets, Clones, Incursions, MetaliminalStorms, Colonies),
+        MapType.Distance to listOf(),
     ),
     val mapTypeInfoBoxInfoTypes: Map<MapType, List<MapSystemInfoType>> = mapOf(
-        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, JoveObservatories, Wormholes, Colonies),
-        MapType.Region to listOf(Security, Assets, Clones, Incursions, MetaliminalStorms, JoveObservatories, Wormholes, Colonies),
+        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, Sovereignty, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.Region to listOf(Security, Assets, Clones, Incursions, Sovereignty, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.Distance to listOf(Security, Assets, Clones, Incursions, Sovereignty, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
     ),
     val intelPopupTimeoutSeconds: Int = 60,
     val isFollowingCharacterAcrossLayouts: Boolean = true,
@@ -111,10 +143,10 @@ data class IntelMap(
     val isInvertZoom: Boolean = false,
     val isJumpBridgeNetworkShown: Boolean = true,
     val jumpBridgeNetworkOpacity: Int = 100,
-    val openedLayoutIds: Map<
+    val openedTabs: Map<
         @Serializable(with = UuidSerializer::class)
         UUID,
-        Int,
+        MapOpenedTab,
         > = emptyMap(),
     val isAlwaysShowingSystems: Boolean = false,
     val isPreferringRegionMaps: Boolean = true,
