@@ -43,6 +43,7 @@ class CharacterSettingsViewModel(
         val characters: List<CharacterItem> = emptyList(),
         val accounts: List<Account> = emptyList(),
         val copying: CopyingState = CopyingState.SelectingSource,
+        val isOnline: Boolean,
         val dialogMessage: DialogMessage? = null,
     )
 
@@ -79,7 +80,9 @@ class CharacterSettingsViewModel(
     )
 
     private val _state = MutableStateFlow(
-        UiState(),
+        UiState(
+            isOnline = onlineCharactersRepository.onlineCharacters.value.isNotEmpty(),
+        ),
     )
     val state = _state.asStateFlow()
 
@@ -113,6 +116,11 @@ class CharacterSettingsViewModel(
                     )
                 }
             }.collect()
+        }
+        viewModelScope.launch {
+            onlineCharactersRepository.onlineCharacters.collect { onlineCharacters ->
+                _state.update { it.copy(isOnline = onlineCharacters.isNotEmpty()) }
+            }
         }
     }
 

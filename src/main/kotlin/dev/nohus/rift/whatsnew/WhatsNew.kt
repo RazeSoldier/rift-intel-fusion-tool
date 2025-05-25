@@ -474,6 +474,10 @@ object WhatsNew {
                 - Intel from killmails now triggers alerts. Previously you could see ships and characters known from killmails on the map, but they wouldn't trigger alerts even when matching. Now they do.
                 - The New Eden cluster map now highlights systems with intel even when zoomed out, so you can easily see where things are going on on a wider scale.
             """.trimIndent(),
+            "4.35.0" description """
+                - The character settings copying feature now shows a warning if you have the game open
+                - RIFT will now warn you on startup if your system clock is incorrect, which is a common cause of inaccurate intel timestamps and missing alerts
+            """.trimIndent(),
         ).reversed()
     }
 }

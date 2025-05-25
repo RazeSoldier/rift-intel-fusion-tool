@@ -2,6 +2,7 @@ package dev.nohus.rift.repositories
 
 import dev.nohus.rift.settings.persistence.Settings
 import org.koin.core.annotation.Single
+import java.util.Collections
 
 @Single
 class GetSystemDistanceUseCase(
@@ -19,7 +20,7 @@ class GetSystemDistanceUseCase(
         data object NoRoute : CacheValue
         data class Distance(val distance: Int) : CacheValue
     }
-    private val cache: MutableMap<CacheKey, CacheValue> = mutableMapOf()
+    private val cache: MutableMap<CacheKey, CacheValue> = Collections.synchronizedMap<CacheKey, CacheValue>(mutableMapOf())
 
     private var jumpBridgesHashCode = settings.jumpBridgeNetwork?.hashCode()
 
@@ -28,9 +29,9 @@ class GetSystemDistanceUseCase(
         updateJumpBridgesCode()
         val key = CacheKey(from, to, maxDistance, withJumpBridges)
         cache[key]?.let {
-            when (it) {
-                is CacheValue.Distance -> return it.distance
-                CacheValue.NoRoute -> return null
+            return when (it) {
+                is CacheValue.Distance -> it.distance
+                CacheValue.NoRoute -> null
             }
         }
         val route = getRouteUseCase(from, to, maxDistance, withJumpBridges)?.let { it.size - 1 }

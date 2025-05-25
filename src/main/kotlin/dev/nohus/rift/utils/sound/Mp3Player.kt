@@ -92,7 +92,11 @@ class Mp3Player {
     }
 
     fun resume() {
-        session?.semaphore?.release()
+        try {
+            session?.semaphore?.release()
+        } catch (e: IllegalStateException) {
+            logger.warn { "Could not resume playing (already resumed?): ${e.message}" }
+        }
     }
 
     fun pause() {

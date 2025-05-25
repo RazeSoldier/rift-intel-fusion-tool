@@ -1,7 +1,12 @@
 package dev.nohus.rift.startupwarning
 
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.startupwarning.HasIncorrectSystemTimeUseCase.SystemTimeStatus.Incorrect
+import dev.nohus.rift.utils.plural
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
+
+private val logger = KotlinLogging.logger {}
 
 @Single
 class GetStartupWarningsUseCase(
@@ -10,6 +15,7 @@ class GetStartupWarningsUseCase(
     private val isRunningMsiAfterburner: IsRunningMsiAfterburnerUseCase,
     private val getAccountsWithDisabledChatLogs: GetAccountsWithDisabledChatLogsUseCase,
     private val isMissingXWinInfo: IsMissingXWinInfoUseCase,
+    private val hasIncorrectSystemTimeUseCase: HasIncorrectSystemTimeUseCase,
     private val settings: Settings,
 ) {
 
@@ -22,6 +28,29 @@ class GetStartupWarningsUseCase(
 
     suspend operator fun invoke(): List<StartupWarning> {
         return buildList {
+            val systemTimeStatus = hasIncorrectSystemTimeUseCase()
+            if (systemTimeStatus is Incorrect) {
+                val text = buildString {
+                    append("The clock on your computer is ")
+                    val absoluteOffset = systemTimeStatus.offset.abs()
+                    val minutes = absoluteOffset.toMinutes()
+                    val seconds = absoluteOffset.toSecondsPart()
+                    append("$minutes minute${minutes.plural} and $seconds second${seconds.plural} ")
+                    if (systemTimeStatus.offset.isNegative) {
+                        append("behind the real time. ")
+                    } else {
+                        append("ahead of the real time. ")
+                    }
+                    append("You need to set your clock to the correct time to prevent issues like not receiving alerts.")
+                }
+                add(
+                    StartupWarning(
+                        id = "incorrect system time",
+                        title = "Incorrect system time",
+                        description = text,
+                    ),
+                )
+            }
             if (hasNonEnglishEveClient()) {
                 add(
                     StartupWarning(
@@ -89,6 +118,10 @@ class GetStartupWarningsUseCase(
                     ),
                 )
             }
-        }.filter { it.id !in settings.dismissedWarnings }
+        }
+            .also {
+                logger.warn { "Startup warnings: ${it.joinToString { warning -> warning.id }}" }
+            }
+            .filter { it.id !in settings.dismissedWarnings }
     }
 }

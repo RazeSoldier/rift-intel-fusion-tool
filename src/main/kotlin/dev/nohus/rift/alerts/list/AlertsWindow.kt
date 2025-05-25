@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -183,6 +184,7 @@ private fun AlertsWindowContent(
                                 name = text,
                                 isEmpty = alertsInGroup.isEmpty(),
                                 isExpanded = isExpanded,
+                                isDefault = group == null,
                                 hasEnabledAlerts = alertsInGroup.any { it.isEnabled },
                                 onClick = { onGroupClick(group) },
                                 onGroupToggleAlerts = { onGroupToggleAlerts(group) },
@@ -255,6 +257,7 @@ private fun LazyItemScope.AlertGroupHeader(
     name: AnnotatedString,
     isEmpty: Boolean,
     isExpanded: Boolean,
+    isDefault: Boolean,
     hasEnabledAlerts: Boolean,
     onClick: () -> Unit,
     onGroupToggleAlerts: () -> Unit,
@@ -268,8 +271,6 @@ private fun LazyItemScope.AlertGroupHeader(
         modifier = Modifier
             .pointerInteraction(pointerState)
             .background(RiftTheme.colors.backgroundPrimary)
-            .padding(vertical = Spacing.small)
-            .padding(end = Spacing.medium)
             .fillMaxWidth()
             .animateItem()
             .animateContentSize()
@@ -280,6 +281,7 @@ private fun LazyItemScope.AlertGroupHeader(
         Text(
             text = name,
             style = RiftTheme.typography.titleSecondary,
+            modifier = Modifier.padding(vertical = Spacing.small),
         )
         Spacer(Modifier.weight(1f))
 
@@ -296,7 +298,7 @@ private fun LazyItemScope.AlertGroupHeader(
                 )
             }
         }
-        if (name != null) { // Don't show actions for the default group
+        if (!isDefault) {
             RiftTooltipArea(
                 text = "Rename group",
             ) {
@@ -318,6 +320,7 @@ private fun LazyItemScope.AlertGroupHeader(
                 )
             }
         }
+        Spacer(Modifier.width(Spacing.small))
     }
 }
 
