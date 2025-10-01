@@ -21,6 +21,8 @@ import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapRegion
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.repositories.WordsRepository
 import dev.nohus.rift.repositories.character.CharacterStatus
 import dev.nohus.rift.repositories.character.CharactersRepository
@@ -53,7 +55,7 @@ class ChatMessageParserTest : FreeSpec({
         characterNameValidator,
     )
     every { mockSolarSystemsRepository.getFuzzySystem(any(), eq(listOf("Delve"))) } returns null
-    every { mockShipTypesRepository.getShip(any()) } returns null
+    every { mockShipTypesRepository.getFuzzyShip(any()) } returns null
     coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns emptyMap()
     every { mockWordsRepository.isWord(any()) } returns false
     every { mockWordsRepository.isTypeName(any()) } returns false
@@ -73,14 +75,15 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "player, ship" {
-        every { mockShipTypesRepository.getShip("malediction") } returns "Malediction"
+        val ship: Type = mockk()
+        every { mockShipTypesRepository.getFuzzyShip("malediction") } returns ship
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("S-Killer").existing()
 
         val actual = target.parse("S-Killer malediction", listOf("Delve"))
 
         actual shouldContain listOf(
             "S-Killer".token(Character(0)),
-            "malediction".token(Ship("Malediction")),
+            "malediction".token(Ship(ship)),
         )
     }
 
@@ -150,14 +153,15 @@ class ChatMessageParserTest : FreeSpec({
 
     "ship with star, player, system with star" {
         val system: MapSolarSystem = mockk()
+        val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("NOL-M9", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("Caldari Shuttle") } returns "Caldari Shuttle"
+        every { mockShipTypesRepository.getFuzzyShip("Caldari Shuttle") } returns ship
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Keeppley TT").existing()
 
         val actual = target.parse("Caldari Shuttle*  Keeppley TT  NOL-M9*", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Caldari Shuttle".token(Ship("Caldari Shuttle"), isLink = true),
+            "Caldari Shuttle".token(Ship(ship), isLink = true),
             "Keeppley TT".token(Character(0), isLink = true),
             "NOL-M9".token(System(system), isLink = true),
         )
@@ -165,8 +169,9 @@ class ChatMessageParserTest : FreeSpec({
 
     "player, system, ship" {
         val system: MapSolarSystem = mockk()
+        val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("SVM-3K", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("eris") } returns "Eris"
+        every { mockShipTypesRepository.getFuzzyShip("eris") } returns ship
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("M2002M").existing()
 
         val actual = target.parse("M2002M  SVM-3K eris", listOf("Delve"))
@@ -174,14 +179,15 @@ class ChatMessageParserTest : FreeSpec({
         actual shouldContain listOf(
             "M2002M".token(Character(0), isLink = true),
             "SVM-3K".token(System(system)),
-            "eris".token(Ship("Eris")),
+            "eris".token(Ship(ship)),
         )
     }
 
     "player link, player, count, ship link, system" {
         val system: MapSolarSystem = mockk()
+        val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("319-3D", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("capsule") } returns "Capsule"
+        every { mockShipTypesRepository.getFuzzyShip("capsule") } returns ship
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("ssllss1", "Yaakov Y2").existing()
 
         val actual = target.parse("ssllss1  Yaakov Y2 2x capsule  319-3D", listOf("Delve"))
@@ -189,18 +195,19 @@ class ChatMessageParserTest : FreeSpec({
         actual shouldContain listOf(
             "ssllss1".token(Character(0), isLink = true),
             "Yaakov Y2".token(Character(0)),
-            "2x capsule".token(Ship("Capsule", count = 2), isLink = true),
+            "2x capsule".token(Ship(ship, count = 2), isLink = true),
             "319-3D".token(System(system)),
         )
     }
 
     "plural ships" {
-        every { mockShipTypesRepository.getShip("capsule") } returns "Capsule"
+        val ship: Type = mockk()
+        every { mockShipTypesRepository.getFuzzyShip("capsule") } returns ship
 
         val actual = target.parse("both capsules", listOf("Delve"))
 
         actual shouldContain listOf(
-            "both capsules".token(Ship("Capsule", count = 2, isPlural = true)),
+            "both capsules".token(Ship(ship, count = 2, isPlural = true)),
         )
     }
 
@@ -252,26 +259,29 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "ship count, changing capital text" {
-        every { mockShipTypesRepository.getShip("wreaTH") } returns "Wreath"
-        every { mockShipTypesRepository.getShip("LOKI") } returns "Loki"
+        val ship1: Type = mockk()
+        val ship2: Type = mockk()
+        every { mockShipTypesRepository.getFuzzyShip("wreaTH") } returns ship1
+        every { mockShipTypesRepository.getFuzzyShip("LOKI") } returns ship2
 
         val actual = target.parse("2 wreaTH AND A LOKI", listOf("Delve"))
 
         actual shouldContain listOf(
-            "2 wreaTH".token(Ship("Wreath", count = 2)),
+            "2 wreaTH".token(Ship(ship1, count = 2)),
             "AND A".token(),
-            "LOKI".token(Ship("Loki")),
+            "LOKI".token(Ship(ship2)),
         )
     }
 
     "negative ship count" {
-        every { mockShipTypesRepository.getShip("loki") } returns "Loki"
+        val ship: Type = mockk()
+        every { mockShipTypesRepository.getFuzzyShip("loki") } returns ship
 
         val actual = target.parse("-3 loki", listOf("Delve"))
 
         actual shouldContain listOf(
             "-3".token(),
-            "loki".token(Ship("Loki")),
+            "loki".token(Ship(ship)),
         )
     }
 
@@ -291,29 +301,31 @@ class ChatMessageParserTest : FreeSpec({
 
     "plus count, system, ship" {
         val system: MapSolarSystem = mockk()
+        val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("ZXB-VC", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("hecate") } returns "Hecate"
+        every { mockShipTypesRepository.getFuzzyShip("hecate") } returns ship
 
         val actual = target.parse("+5  ZXB-VC hecate", listOf("Delve"))
 
         actual shouldContain listOf(
             "+5".token(Count(5, isPlus = true), isLink = true),
             "ZXB-VC".token(System(system)),
-            "hecate".token(Ship("Hecate")),
+            "hecate".token(Ship(ship)),
         )
     }
 
     "plus count with space, system, ship" {
         val system: MapSolarSystem = mockk()
+        val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("ZXB-VC", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("hecate") } returns "Hecate"
+        every { mockShipTypesRepository.getFuzzyShip("hecate") } returns ship
 
         val actual = target.parse("+ 5  ZXB-VC hecate", listOf("Delve"))
 
         actual shouldContain listOf(
             "+ 5".token(Count(5, isPlus = true), isLink = true),
             "ZXB-VC".token(System(system)),
-            "hecate".token(Ship("Hecate")),
+            "hecate".token(Ship(ship)),
         )
     }
 
@@ -334,16 +346,18 @@ class ChatMessageParserTest : FreeSpec({
 
     "comment" {
         // TODO: More complexity here
-        every { mockShipTypesRepository.getShip("shuttle") } returns "Shuttle"
-        every { mockShipTypesRepository.getShip("pod") } returns "Capsule"
+        val ship1: Type = mockk()
+        val ship2: Type = mockk()
+        every { mockShipTypesRepository.getFuzzyShip("shuttle") } returns ship1
+        every { mockShipTypesRepository.getFuzzyShip("pod") } returns ship2
 
         val actual = target.parse("we have a lot of shuttle and pod movement of fraand mohiz in npc today", listOf("Delve"))
 
         actual shouldContain listOf(
             "we have a lot of".token(),
-            "shuttle".token(Ship("Shuttle")),
+            "shuttle".token(Ship(ship1)),
             "and".token(),
-            "pod".token(Ship("Capsule")),
+            "pod".token(Ship(ship2)),
             "movement of fraand mohiz in npc today".token(),
         )
     }
@@ -358,8 +372,9 @@ class ChatMessageParserTest : FreeSpec({
 
     "system link, player, plus count, count, ship, comma, count, keyword" {
         val system: MapSolarSystem = mockk()
+        val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("319-3D", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("hecate") } returns "Hecate"
+        every { mockShipTypesRepository.getFuzzyShip("hecate") } returns ship
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("RB Charlote").existing()
 
         val actual = target.parse("319-3D  RB Charlote +3 1x hecate, 3x nv", listOf("Delve"))
@@ -368,7 +383,7 @@ class ChatMessageParserTest : FreeSpec({
             "319-3D".token(System(system), isLink = true),
             "RB Charlote".token(Character(0)),
             "+3".token(Count(3, isPlus = true)),
-            "1x hecate".token(Ship("Hecate", count = 1)),
+            "1x hecate".token(Ship(ship, count = 1)),
             "3x".token(Count(3)),
             "nv".token(Keyword(NoVisual)),
         )
@@ -376,9 +391,11 @@ class ChatMessageParserTest : FreeSpec({
 
     "player link, player, text, system, ship names" {
         val system: MapSolarSystem = mockk()
+        val ship1: Type = mockk()
+        val ship2: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("1-2J4P", listOf("Delve")) } returns system
-        every { mockShipTypesRepository.getShip("purifier") } returns "Purifier"
-        every { mockShipTypesRepository.getShip("sabre") } returns "Sabre"
+        every { mockShipTypesRepository.getFuzzyShip("purifier") } returns ship1
+        every { mockShipTypesRepository.getFuzzyShip("sabre") } returns ship2
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("FeiShi", "iT0p").existing()
 
         val actual = target.parse("FeiShi  iT0p camping in 1-2J4P purifier + sabre", listOf("Delve"))
@@ -388,9 +405,9 @@ class ChatMessageParserTest : FreeSpec({
             "iT0p".token(Character(0)),
             "camping in".token(),
             "1-2J4P".token(System(system)),
-            "purifier".token(Ship("Purifier")),
+            "purifier".token(Ship(ship1)),
             "+".token(),
-            "sabre".token(Ship("Sabre")),
+            "sabre".token(Ship(ship2)),
         )
     }
 
@@ -501,8 +518,9 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "system gate" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Ruthy").existing()
-        every { mockShipTypesRepository.getShip("stabber") } returns "Stabber"
+        every { mockShipTypesRepository.getFuzzyShip("stabber") } returns ship
         val system: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("uvho", listOf("Delve")) } returns system
 
@@ -510,7 +528,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "Ruthy".token(Character(0)),
-            "stabber".token(Ship("Stabber")),
+            "stabber".token(Ship(ship)),
             "uvho gate".token(Gate(system)),
         )
     }
@@ -532,8 +550,9 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "gate system" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("CrystalWater").existing()
-        every { mockShipTypesRepository.getShip("Retribution") } returns "Retribution"
+        every { mockShipTypesRepository.getFuzzyShip("Retribution") } returns ship
         val fmjk5: MapSolarSystem = mockk()
         val jp4: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("FM-JK5", listOf("Delve")) } returns fmjk5
@@ -546,13 +565,14 @@ class ChatMessageParserTest : FreeSpec({
             "CrystalWater".token(Character(0)),
             "+10".token(Count(10, isPlus = true)),
             "gate JP4".token(Gate(jp4), isLink = true),
-            "Retribution".token(Ship("Retribution")),
+            "Retribution".token(Ship(ship)),
         )
     }
 
     "going system" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("CrystalWater").existing()
-        every { mockShipTypesRepository.getShip("Retribution") } returns "Retribution"
+        every { mockShipTypesRepository.getFuzzyShip("Retribution") } returns ship
         val fmjk5: MapSolarSystem = mockk()
         val jp4: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("FM-JK5", listOf("Delve")) } returns fmjk5
@@ -568,8 +588,9 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "jumped system" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("CrystalWater").existing()
-        every { mockShipTypesRepository.getShip("Retribution") } returns "Retribution"
+        every { mockShipTypesRepository.getFuzzyShip("Retribution") } returns ship
         val fmjk5: MapSolarSystem = mockk()
         val jp4: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("FM-JK5", listOf("Delve")) } returns fmjk5
@@ -585,8 +606,9 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "jumped gate" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("CrystalWater").existing()
-        every { mockShipTypesRepository.getShip("Retribution") } returns "Retribution"
+        every { mockShipTypesRepository.getFuzzyShip("Retribution") } returns ship
         val fmjk5: MapSolarSystem = mockk()
         val jp4: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("FM-JK5", listOf("Delve")) } returns fmjk5
@@ -691,32 +713,34 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "inactive player name matching a type name" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Drake", "Fortizar", "Festival Launcher").existing(CharacterStatus.Inactive(0))
         every { mockWordsRepository.isTypeName("Drake") } returns true
         every { mockWordsRepository.isTypeName("Fortizar") } returns true
         every { mockWordsRepository.isTypeName("Festival Launcher") } returns true
-        every { mockShipTypesRepository.getShip("Drake") } returns "Drake"
+        every { mockShipTypesRepository.getFuzzyShip("Drake") } returns ship
 
         val actual = target.parse("Drake at a Fortizar with a Festival Launcher", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Drake".token(Ship("Drake")),
+            "Drake".token(Ship(ship)),
             "at a Fortizar with a Festival Launcher".token(),
         )
         actual shouldHaveSize 2
     }
 
     "active player name matching a type name" {
+        val ship: Type = mockk()
         coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Drake", "Fortizar", "Festival Launcher").existing(CharacterStatus.Active(0))
         every { mockWordsRepository.isTypeName("Drake") } returns true
         every { mockWordsRepository.isTypeName("Fortizar") } returns true
         every { mockWordsRepository.isTypeName("Festival Launcher") } returns true
-        every { mockShipTypesRepository.getShip("Drake") } returns "Drake"
+        every { mockShipTypesRepository.getFuzzyShip("Drake") } returns ship
 
         val actual = target.parse("Drake at a Fortizar with a Festival Launcher", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Drake".token(Ship("Drake")),
+            "Drake".token(Ship(ship)),
             "at a".token(),
             "Fortizar".token(Character(0)),
             "with a".token(),
@@ -750,18 +774,22 @@ class ChatMessageParserTest : FreeSpec({
     }
 
     "successive navy ships" {
-        every { mockShipTypesRepository.getShip("caracal navy") } returns "Caracal Navy Issue"
-        every { mockShipTypesRepository.getShip("osprey navy") } returns "Osprey Navy Issue"
-        every { mockShipTypesRepository.getShip("navy caracal") } returns "Caracal Navy Issue"
-        every { mockShipTypesRepository.getShip("navy osprey") } returns "Osprey Navy Issue"
-        every { mockShipTypesRepository.getShip("caracal") } returns "Caracal"
-        every { mockShipTypesRepository.getShip("osprey") } returns "Osprey"
+        val ship1: Type = mockk()
+        val ship2: Type = mockk()
+        val ship3: Type = mockk()
+        val ship4: Type = mockk()
+        every { mockShipTypesRepository.getFuzzyShip("caracal navy") } returns ship1
+        every { mockShipTypesRepository.getFuzzyShip("osprey navy") } returns ship2
+        every { mockShipTypesRepository.getFuzzyShip("navy caracal") } returns ship1
+        every { mockShipTypesRepository.getFuzzyShip("navy osprey") } returns ship2
+        every { mockShipTypesRepository.getFuzzyShip("caracal") } returns ship3
+        every { mockShipTypesRepository.getFuzzyShip("osprey") } returns ship4
 
         val actual = target.parse("caracal navy osprey navy", listOf("Delve"))
 
         actual shouldContain listOf(
-            "caracal navy".token(Ship("Caracal Navy Issue")),
-            "osprey navy".token(Ship("Osprey Navy Issue")),
+            "caracal navy".token(Ship(ship1)),
+            "osprey navy".token(Ship(ship2)),
         )
     }
 })

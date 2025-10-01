@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ContextMenuItem
-import dev.nohus.rift.compose.LoadingSpinner
+import dev.nohus.rift.compose.LoadingSpinnerAmbient
 import dev.nohus.rift.compose.OnVisibilityChange
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuPopup
@@ -162,7 +162,7 @@ private fun PlanetaryIndustryWindowContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth().padding(Spacing.large),
             ) {
-                LoadingSpinner()
+                LoadingSpinnerAmbient()
                 Text(
                     text = "Loading colonies…",
                     style = RiftTheme.typography.headerPrimary,

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.multicolor_circlebg
+import dev.nohus.rift.generated.resources.multicolor_exclamationmark
 import dev.nohus.rift.generated.resources.multicolor_info
 import dev.nohus.rift.windowing.LocalRiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
@@ -43,12 +44,20 @@ sealed class MulticolorIconType(
         backgroundTint = Color(0xFFADDEEB),
         foregroundTint = null,
     )
+
+    data object Warning : MulticolorIconType(
+        backgroundResource = Res.drawable.multicolor_circlebg,
+        foregroundResource = Res.drawable.multicolor_exclamationmark,
+        backgroundTint = Color(0xFFF39058),
+        foregroundTint = null,
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RiftMulticolorIcon(
     type: MulticolorIconType,
+    parentPointerInteractionStateHolder: PointerInteractionStateHolder? = null,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -57,7 +66,7 @@ fun RiftMulticolorIcon(
     val windowOpenTimestamp = LocalRiftWindowState.current?.openTimestamp
     // This is to clear hover / press states and animations when window is reopened
     key(windowOpenTimestamp) {
-        val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
+        val pointerInteractionStateHolder = parentPointerInteractionStateHolder ?: remember { PointerInteractionStateHolder() }
         val transition = updateTransition(pointerInteractionStateHolder.current)
         val highlightAlpha by transition.animateFloat {
             when (it) {
@@ -69,7 +78,9 @@ fun RiftMulticolorIcon(
         Box(
             contentAlignment = Alignment.Center,
             modifier = modifier
-                .pointerInteraction(pointerInteractionStateHolder)
+                .modifyIf(parentPointerInteractionStateHolder == null) {
+                    pointerInteraction(pointerInteractionStateHolder)
+                }
                 .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
                 .modifyIfNotNull(onClick) {
                     onClick(onClick = it)

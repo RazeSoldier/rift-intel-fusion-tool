@@ -1,10 +1,17 @@
 package dev.nohus.rift.compose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -130,15 +137,18 @@ sealed interface RiftOpportunityCardTopRight {
 
 data class RiftOpportunityCardButton(
     val resource: DrawableResource,
+    val isAlwaysVisible: Boolean = true,
     val tooltipContent: @Composable (() -> Unit)? = null,
     val action: (() -> Unit)?,
 ) {
     constructor(
         resource: DrawableResource,
+        isAlwaysVisible: Boolean = true,
         tooltip: String,
         action: (() -> Unit)?,
     ) : this(
         resource = resource,
+        isAlwaysVisible = isAlwaysVisible,
         tooltipContent = {
             Text(
                 text = tooltip,
@@ -359,21 +369,30 @@ fun RiftOpportunityCard(
                         }
 
                         if (buttons.isNotEmpty()) {
-                            buttons.forEach { button ->
-                                RiftTooltipArea(
-                                    tooltip = button.tooltipContent,
-                                ) {
-                                    RiftImageButton(
-                                        resource = button.resource,
-                                        size = 16.dp,
-                                        iconPadding = 8.dp,
-                                        onClick = button.action,
-                                        tint = if (button.action == null) RiftTheme.colors.textSecondary else null,
-                                    )
+                            Row {
+                                buttons.forEach { button ->
+                                    AnimatedVisibility(
+                                        visible = button.isAlwaysVisible || pointerInteractionStateHolder.isHovered,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(),
+                                    ) {
+                                        RiftTooltipArea(
+                                            tooltip = button.tooltipContent,
+                                        ) {
+                                            RiftImageButton(
+                                                resource = button.resource,
+                                                size = 16.dp,
+                                                iconPadding = 8.dp,
+                                                onClick = button.action,
+                                                tint = if (button.action == null) RiftTheme.colors.textSecondary else null,
+                                                modifier = Modifier.size(24.dp),
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
-                        Spacer(Modifier.width(Spacing.medium))
+                        Spacer(Modifier.width(Spacing.veryLarge))
                     }
                 }
             }

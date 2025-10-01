@@ -58,7 +58,6 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.compose.theme.getRiftColors
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.menu_close
 import dev.nohus.rift.generated.resources.window_background_dots
 import dev.nohus.rift.generated.resources.window_background_dots_light
 import dev.nohus.rift.generated.resources.window_light_background_off_16px
@@ -94,7 +93,7 @@ fun RiftWindow(
     onTuneClick: (() -> Unit)? = null,
     tuneContextMenuItems: List<ContextMenuItem>? = null,
     onCloseClick: () -> Unit,
-    titleBarStyle: TitleBarStyle = TitleBarStyle.Full,
+    titleBarStyle: TitleBarStyle? = TitleBarStyle.Full,
     titleBarContent: @Composable ((height: Dp) -> Unit)? = null,
     withContentPadding: Boolean = true,
     isResizable: Boolean = true,
@@ -313,7 +312,7 @@ private fun WindowScope.RiftWindowContent(
     onCloseClick: () -> Unit,
     width: Dp,
     height: Dp,
-    titleBarStyle: TitleBarStyle,
+    titleBarStyle: TitleBarStyle?,
     titleBarContent: @Composable ((height: Dp) -> Unit)? = null,
     withContentPadding: Boolean,
     content: @Composable WindowScope.() -> Unit,
@@ -333,27 +332,29 @@ private fun WindowScope.RiftWindowContent(
         Column(
             modifier = Modifier.padding(1.dp),
         ) {
-            TitleBar(
-                style = titleBarStyle,
-                title = title,
-                icon = icon,
-                titleBarContent = titleBarContent,
-                isAlwaysOnTop = isAlwaysOnTop,
-                isLocked = isLocked,
-                isTransparent = isTransparent,
-                isMaximized = isMaximized,
-                isResizable = isResizable,
-                isMaximizeButtonShown = isMaximizeButtonShown,
-                onTuneClick = onTuneClick,
-                tuneContextMenuItems = tuneContextMenuItems,
-                onAlwaysOnTopClick = onAlwaysOnTopClick,
-                onLockClick = onLockClick,
-                onTransparentClick = onTransparentClick,
-                onMaximizeClick = onMaximizeClick,
-                onMinimizeClick = onMinimizeClick,
-                onCloseClick = onCloseClick,
-                width = width,
-            )
+            if (titleBarStyle != null) {
+                TitleBar(
+                    style = titleBarStyle,
+                    title = title,
+                    icon = icon,
+                    titleBarContent = titleBarContent,
+                    isAlwaysOnTop = isAlwaysOnTop,
+                    isLocked = isLocked,
+                    isTransparent = isTransparent,
+                    isMaximized = isMaximized,
+                    isResizable = isResizable,
+                    isMaximizeButtonShown = isMaximizeButtonShown,
+                    onTuneClick = onTuneClick,
+                    tuneContextMenuItems = tuneContextMenuItems,
+                    onAlwaysOnTopClick = onAlwaysOnTopClick,
+                    onLockClick = onLockClick,
+                    onTransparentClick = onTransparentClick,
+                    onMaximizeClick = onMaximizeClick,
+                    onMinimizeClick = onMinimizeClick,
+                    onCloseClick = onCloseClick,
+                    width = width,
+                )
+            }
             Box(
                 modifier = Modifier
                     .zIndex(-1f)
@@ -719,7 +720,7 @@ private fun getTitleBarContextMenuItems(
             }
         }
         add(ContextMenuItem.TextItem("Minimize", onClick = onMinimizeClick))
-        add(ContextMenuItem.TextItem("Close", Res.drawable.menu_close, onClick = onCloseClick))
+        add(ContextMenuItem.TextItem("Close", iconContent = { RiftMulticolorIcon(MulticolorIconType.Warning, it) }, onClick = onCloseClick))
     }
 }
 

@@ -32,7 +32,6 @@ class KillmailProcessor(
     private val solarSystemsRepository: SolarSystemsRepository,
     private val intelStateController: IntelStateController,
     private val typeRepository: TypesRepository,
-    private val shipTypesRepository: ShipTypesRepository,
     private val characterDetailsRepository: CharacterDetailsRepository,
     private val standingsRepository: StandingsRepository,
     private val celestialsRepository: CelestialsRepository,
@@ -58,6 +57,11 @@ class KillmailProcessor(
     fun submit(message: Killmail) {
         runBlocking(Dispatchers.Default) {
             val ago = Duration.between(message.killmailTime, Instant.now())
+            if (ago > Duration.ofMinutes(15)) {
+                logger.debug { "Ignoring old killmail from ${message.killboard}, ${ago.toSeconds()}s ago" }
+                return@runBlocking
+            }
+
             val system = solarSystemsRepository.getSystem(message.solarSystemId) ?: return@runBlocking
 
             val deferredVictim = message.victim.characterId
@@ -91,16 +95,16 @@ class KillmailProcessor(
             }
             val ships = message.attackers
                 .mapNotNull { attacker ->
-                    val shipName = shipTypesRepository.getShipName(attacker.shipTypeId) ?: return@mapNotNull null
+                    val ship = attacker.shipTypeId?.let { typeRepository.getType(it) } ?: return@mapNotNull null
                     val standing = attackers.firstOrNull { it.characterId == attacker.characterId }?.details?.standingLevel ?: Standing.Neutral
-                    standing to shipName
+                    standing to ship
                 }
                 .groupBy { it.first }
                 .mapValues { (standing, ships) ->
                     ships
                         .map { it.second }
                         .groupBy { it }
-                        .map { (name, ships) -> SystemEntity.Ship(name, ships.size, standing = standing) }
+                        .map { (ship, ships) -> SystemEntity.Ship(ship, ships.size, standing = standing) }
                 }
                 .flatMap { it.value }
             val standingLevel = standingsRepository.getStandingLevel(message.victim.allianceId, message.victim.corporationId, message.victim.characterId)
@@ -119,7 +123,7 @@ class KillmailProcessor(
             val victimShipType = message.victim.shipTypeId?.let { typeRepository.getType(it) }
             val killmail = SystemEntity.Killmail(
                 url = message.url,
-                ship = shipTypesRepository.getShipName(message.victim.shipTypeId),
+                ship = message.victim.shipTypeId?.let { typeRepository.getType(it) },
                 typeName = victimShipType?.name,
                 victim = killmailVictim,
             )
@@ -138,7 +142,7 @@ class KillmailProcessor(
             mutex.withLock {
                 if (message.killmailId !in seenKillmails) {
                     seenKillmails[message.killmailId] = message.killboard
-                    logger.debug { "Kill from ${message.killboard}: ${killmail.ship} killed by ${ships.joinToString { it.name }} in ${processedKillmail.system}, ${ago.toSeconds()}s ago" }
+                    logger.debug { "Kill from ${message.killboard}: ${killmail.ship} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
                     intelStateController.submitKillmail(processedKillmail)
                     alertsTriggerController.onNewKillmail(processedKillmail)
                 } else {

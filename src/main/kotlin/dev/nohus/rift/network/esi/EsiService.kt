@@ -29,6 +29,7 @@ import dev.nohus.rift.network.esi.models.FleetsId
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.MarketsPrice
+import dev.nohus.rift.network.esi.models.NewMailRequest
 import dev.nohus.rift.network.esi.models.SovereigntySystem
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
 import dev.nohus.rift.network.esi.models.UniverseName
@@ -318,4 +319,22 @@ interface EsiService {
         @Path("character_id") characterId: Int,
         @Header("Authorization") authorization: String,
     ): CharactersIdRoles
+
+    @POST("/ui/openwindow/information")
+    suspend fun postUiOpenWindowInformation(
+        @Query("target_id") id: Long,
+        @Header("Authorization") authorization: String,
+    )
+
+    @POST("/ui/openwindow/marketdetails")
+    suspend fun postUiOpenWindowMarketDetails(
+        @Query("type_id") typeId: Long,
+        @Header("Authorization") authorization: String,
+    )
+
+    @POST("/ui/openwindow/newmail")
+    suspend fun postUiOpenWindowNewMail(
+        @Body request: NewMailRequest,
+        @Header("Authorization") authorization: String,
+    )
 }

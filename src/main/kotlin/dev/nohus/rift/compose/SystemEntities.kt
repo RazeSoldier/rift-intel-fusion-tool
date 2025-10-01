@@ -79,14 +79,12 @@ fun SystemEntities(
                 )
             }
             if (killmail.ship != null) {
-                val repository: ShipTypesRepository by koin.inject()
-                val shipTypeId = repository.getShipTypeId(killmail.ship)
-                ClickableShip(killmail.ship, shipTypeId) {
+                ClickableShip(killmail.ship) {
                     RiftTooltipArea(
-                        text = killmail.ship,
+                        text = killmail.ship.name,
                     ) {
                         AsyncTypeIcon(
-                            typeId = shipTypeId,
+                            typeId = killmail.ship.id,
                             modifier = Modifier.size(rowHeight),
                         )
                     }
@@ -150,12 +148,10 @@ fun SystemEntities(
         }
     }
     entities.filterIsInstance<SystemEntity.Ship>().forEach { ship ->
-        val repository: ShipTypesRepository by koin.inject()
-        val shipTypeId = repository.getShipTypeId(ship.name)
-        ClickableShip(ship.name, shipTypeId) {
+        ClickableShip(ship.type) {
             SystemEntityInfoRow(rowHeight, isHorizontal) {
                 AsyncTypeIcon(
-                    typeId = shipTypeId,
+                    typeId = ship.type.id,
                     modifier = Modifier.size(rowHeight),
                 )
 
@@ -163,9 +159,9 @@ fun SystemEntities(
                 ship.standing?.getColor()?.let { nameStyle = nameStyle.copy(color = it) }
 
                 val text = if (ship.count > 1) {
-                    "${ship.count}x ${ship.name}"
+                    "${ship.count}x ${ship.type.name}"
                 } else {
-                    ship.name
+                    ship.type.name
                 }
                 Text(
                     text = text,

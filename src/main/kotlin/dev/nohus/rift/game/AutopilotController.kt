@@ -1,4 +1,4 @@
-package dev.nohus.rift.autopilot
+package dev.nohus.rift.game
 
 import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository

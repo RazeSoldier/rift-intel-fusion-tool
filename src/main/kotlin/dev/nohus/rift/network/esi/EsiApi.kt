@@ -32,6 +32,7 @@ import dev.nohus.rift.network.esi.models.FleetsId
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.MarketsPrice
+import dev.nohus.rift.network.esi.models.NewMailRequest
 import dev.nohus.rift.network.esi.models.SovereigntySystem
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
 import dev.nohus.rift.network.esi.models.UniverseName
@@ -361,6 +362,33 @@ class EsiApi(
     ): Result<CharactersIdRoles> {
         return executeEveAuthorized(characterId, EsiScope.Characters.ReadCorporationRoles) { authorization ->
             service.getCharactersIdRoles(characterId, authorization)
+        }
+    }
+
+    suspend fun postUiOpenWindowInformation(
+        characterId: Int,
+        id: Long,
+    ): Result<Unit> {
+        return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
+            service.postUiOpenWindowInformation(id, authorization)
+        }
+    }
+
+    suspend fun postUiOpenWindowMarketDetails(
+        characterId: Int,
+        typeId: Long,
+    ): Result<Unit> {
+        return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
+            service.postUiOpenWindowMarketDetails(typeId, authorization)
+        }
+    }
+
+    suspend fun postUiOpenWindowNewMail(
+        characterId: Int,
+        request: NewMailRequest,
+    ): Result<Unit> {
+        return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
+            service.postUiOpenWindowNewMail(request, authorization)
         }
     }
 }

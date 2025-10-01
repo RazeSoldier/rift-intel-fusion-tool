@@ -44,7 +44,6 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.dropdown_chevron
-import dev.nohus.rift.generated.resources.menu_close
 import dev.nohus.rift.generated.resources.window_buttonglow
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -228,7 +227,7 @@ private fun TabBarTab(
         }
     }
     val items = if (tab.isCloseable) {
-        listOf(ContextMenuItem.TextItem("Close", Res.drawable.menu_close, onClick = { onTabClosed(tab.id) }))
+        listOf(ContextMenuItem.TextItem("Close", iconContent = { RiftMulticolorIcon(MulticolorIconType.Warning, it) }, onClick = { onTabClosed(tab.id) }))
     } else {
         emptyList()
     }

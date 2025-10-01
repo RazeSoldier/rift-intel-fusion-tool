@@ -121,7 +121,7 @@ class IntelReportsViewModel(
                 is ChatMessageParser.TokenType.Movement -> term in token.toSystem.name.lowercase() || term in token.verb.lowercase()
                 is ChatMessageParser.TokenType.Character -> false
                 is ChatMessageParser.TokenType.Question -> term in token.type.name.lowercase()
-                is ChatMessageParser.TokenType.Ship -> term in token.name.lowercase()
+                is ChatMessageParser.TokenType.Ship -> term in token.type.name.lowercase()
                 is ChatMessageParser.TokenType.System -> term in token.system.name.lowercase()
                 ChatMessageParser.TokenType.Url -> false
             }

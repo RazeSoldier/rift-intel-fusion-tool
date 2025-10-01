@@ -288,7 +288,7 @@ class HostileOrbitPainter {
     private fun getIcons(items: List<Dated<SystemEntity>>): List<DrawableResource> {
         return items.mapNotNull {
             val ship = it.item as SystemEntity.Ship
-            val icon = shipTypesRepository.getShipBracketIcon(ship.name) ?: return@mapNotNull null
+            val icon = shipTypesRepository.getShipBracketIcon(ship.type.id) ?: return@mapNotNull null
             List(it.item.count) { icon }
         }.flatten()
     }

@@ -666,3 +666,17 @@ data class CharactersIdRoles(
     @SerialName("roles")
     val roles: List<String>,
 )
+
+@Serializable
+data class NewMailRequest(
+    @SerialName("body")
+    val body: String,
+    @SerialName("recipients")
+    val recipients: List<Long>,
+    @SerialName("subject")
+    val subject: String,
+    @SerialName("to_corp_or_alliance_id")
+    val corporationOrAllianceId: Int? = null,
+    @SerialName("to_mailing_list_id")
+    val mailingListId: Long? = null,
+)

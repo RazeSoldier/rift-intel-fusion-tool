@@ -107,6 +107,15 @@ object ScopeGroups {
             EsiScope.Ui.WriteWaypoint,
         ),
     )
+    val openWindow = ScopeGroup(
+        name = "Open in-game windows",
+        reasons = listOf(
+            "Needed to open Show Info windows and similar when you request it",
+        ),
+        scopes = listOf(
+            EsiScope.Ui.OpenWindow,
+        ),
+    )
     val readAssets = ScopeGroup(
         name = "Read assets",
         reasons = listOf(
@@ -147,6 +156,7 @@ object ScopeGroups {
         readPlanetaryIndustryColonies,
         readStructures,
         updateAutopilot,
+        openWindow,
         readAssets,
         readProjects,
         readRoles,

@@ -922,7 +922,7 @@ fun groupIntelByTime(intel: List<Dated<SystemEntity>>): Map<Instant, List<System
     // Group entities by when they were reported, so they can be displayed with a single timer by group
     val groups = mutableMapOf<Instant, List<SystemEntity>>()
     intel.forEach { item ->
-        val group = groups.keys.firstOrNull { Duration.between(item.timestamp, it).abs() < Duration.ofSeconds(10) }
+        val group = groups.keys.firstOrNull { Duration.between(item.timestamp, it).abs() < Duration.ofSeconds(30) }
         if (group != null) {
             groups[group] = groups.getValue(group) + item.item
         } else {

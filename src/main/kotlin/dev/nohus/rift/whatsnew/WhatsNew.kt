@@ -21,7 +21,7 @@ object WhatsNew {
         )
     }
 
-    fun getVersions(isCorpProjectsEnabled: Boolean): List<Version> {
+    fun getVersions(): List<Version> {
         return buildList {
             add(
                 "2.2.0" description """
@@ -32,7 +32,7 @@ object WhatsNew {
                 - Added button to the About screen to open the app data directory
                 - Fixed some issues with the tray icon
                 - Fixed some startup issues
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.3.0" description """
@@ -43,13 +43,13 @@ object WhatsNew {
                 - Fixed scaling issues with the map on macOS
                 - Added warning to the jump bridge search feature
                 - Various smaller UI improvements
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.4.0" description """
                 - As you travel along your route on the map, previous systems are now removed from the route
                 - Decloaking notification now has an option of ignoring objects you don't want a notification for (like gates)
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.5.0" description """
@@ -60,7 +60,7 @@ object WhatsNew {
 
                 - Added reminder to select configuration pack if you are in a supported alliance but haven't done so
                 - Fixed a bunch of bugs
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.6.0" description """
@@ -73,7 +73,7 @@ object WhatsNew {
 
                 -! What's new window
                 - Added this window, which pops up when the app is updated to let you know of changes
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.7.0" description """
@@ -88,7 +88,7 @@ object WhatsNew {
                 - Mumble is now opened immediately from pings, without going through the web browser
                 - When there are multiple EVE installations, the newer character settings directory will be detected
                 - Blueprints and skins in the assets window no longer show incorrect icons
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.8.0" description """
@@ -101,7 +101,7 @@ object WhatsNew {
                 - The total price of items in a location is now visible on the location header
                 - Asset location can now be sorted by total price
                 - Viewing fits from the assets window now includes the cargo contents
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.9.0" description """
@@ -111,19 +111,19 @@ object WhatsNew {
                 - You can view the distance in light years for each system
 
                 - The assets window will now show the character owning the asset when viewing assets from all characters
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.10.0" description """
                 - Added the ability to lock windows in place
                 - Optimized jump bridge search
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.11.0" description """
                 - You can now disable characters that you don't want to use for anything in RIFT
                 - The opened region map is now remembered across restarts
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.12.0" description """
@@ -133,7 +133,7 @@ object WhatsNew {
 
                 - Made it possible to set up combat alerts with no target filters
                 - Added a warning if your EVE client is set to a language other than English
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.13.0" description """
@@ -144,7 +144,7 @@ object WhatsNew {
                 - Added configuration pack with intel channels for The Initiative.
                 - Added support for jump bridge list parsing when copying from Firefox
                 - Updated assets browser with new hangar types
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.14.0" description """
@@ -152,19 +152,19 @@ object WhatsNew {
                 - Added new alert type for when you are no longer in combat. Useful for ratting when AFK.
 
                 - Updated settings file saving to be more resilient to filesystem failures
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.15.0" description """
                 - Added Debug window to view logs, accessible from the About window
                 - Added option to skip selecting the EVE installation during the setup wizard
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.16.0" description """
                 -! Jove Observatories
                 - You can now enable map indicators for Jove Observatories, to see systems where Unidentified Wormholes can spawn
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.17.0" description """
@@ -173,7 +173,7 @@ object WhatsNew {
                 - Pings are now remembered for 48 hours and won't disappear when restarting
                 - Added the EVE-KILL.com killmail stream to populate kills on the map along with the existing zKillboard integration
                 - The Debug window now shows zKillboard, EVE-KILL, and Jabber connection status
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "2.18.0" description """
@@ -184,7 +184,7 @@ object WhatsNew {
 
                 -! Autopilot for all
                 - When setting the autopilot route, you can now set it for all your online characters at once
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "3.0.0" description """
@@ -201,7 +201,7 @@ object WhatsNew {
                 - System names now also show the region. Wormhole systems show the wormhole class instead. Abyssal system names (triglavian) are now also supported.
                 - Clicking a system will now navigate to it on the map
                 - Intel in map info boxes will now group characters and switch to a compact mode if there are many items to show
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "3.1.0" description """
@@ -213,7 +213,7 @@ object WhatsNew {
                 - Added icons and updated the layout of information in the map system info boxes
                 - Updated alerts with distance ranges to use jump bridge distances if enabled in settings
                 - Added option to open wormhole systems on anoik.is in their context menu 
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.0.0" description """
@@ -238,14 +238,14 @@ object WhatsNew {
                 - Updated logs directory detection to handle Windows installations with non-standard Documents directory location
                 - Updated Dotlan icon in solar system context menu
                 - Some of the new feature require new ESI scopes, so you will need to reauthenticate your characters
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.1.0" description """
                 - New view in Planetary Industry to show planets grouped into rows by character
                 - Active clones with no implants are no longer shown in the Characters window
                 - Jump clones display in the Characters window can now be toggled on and off
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.2.0" description """
@@ -259,7 +259,7 @@ object WhatsNew {
 
                 - The New Eden map view now shows system backgrounds at lesser zoom, allowing for a better overview
                 - Updated About window with Creator Code and Patreon info
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.3.0" description """
@@ -267,14 +267,14 @@ object WhatsNew {
                 - You can now press Space to automatically resize the map view to fit the window size
                 - Startup warnings now have a "don't show again" checkbox.
                 - Improved PI alerts to show how much time is left to the triggering event
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.4.0" description """
                 - New Null-Sec system coloring mode on the map. Unlike the normal security status colors that show all of Null-Sec in a single color, this one uses a color scale to show different levels of negative security status.
                 - Crash window will now tell you if you are not running the latest version of RIFT, in case the problem is already fixed
                 - Updated editing alert actions to allow choosing special actions like showing the PI window for PI alerts
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.5.0" description """
@@ -284,20 +284,20 @@ object WhatsNew {
 
                 - Added support for intel channels spanning multiple regions. Add the same channel multiple times with each region it's for.
                 - Added a UI scale setting, enabling you to make everything in RIFT bigger or smaller.
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.6.0" description """
                 - Tabs, like map regions, can now be closed with the middle mouse button
                 - Added additional protection against settings corruption in case of power loss
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.7.0" description """
                 - Added parsing "clr du" as an intel clear message
                 - Added wrapping implants in the Characters window into multiple lines when there is not enough space to show all on one line
                 - Added ellipsis when a context menu entry is too long to fit
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.8.0" description """
@@ -316,7 +316,7 @@ object WhatsNew {
                 - View on the map and set destination to found structures, stations and systems
 
                 - Added a warning if you have chat logs disabled in EVE settings
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.9.0" description """
@@ -325,7 +325,7 @@ object WhatsNew {
                 - Alerts can now be created for intel up to 15 jumps away, up from the previous limit of 5 jumps
                 - Updated map setting for showing automatic intel popups to allow disabling the popups completely
                 - Updated default intel channel list for users of The Imperium configuration pack. If you'd like to use it, remove all intel channels from your list to return to the updated defaults.
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.10.0" description """
@@ -337,21 +337,21 @@ object WhatsNew {
                 - Maximized windows now always show the unmaximize button on the toolbar for easy access
                 - If you never interacted with the tray icon, then the Neocom window now always shows on startup and quits the app completely when closed
                 - The Neocom window is now resizeable and the buttons adapt to the window size
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.11.0" description """
                 - Message alerts now highlight the keyword that the alert was looking for
                 - Characters that failed to load can now be added to the disabled characters list
                 - The Jabber window now has an option for a bigger font size in the chats
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.12.0" description """
                 -! New feature: Combined Region Maps
                 - 14 new maps are now available showing related areas across multiple regions
                 - You can switch between alternative maps from the map settings panel, when you are viewing regions that have alternative maps available
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.13.0" description """
@@ -359,19 +359,19 @@ object WhatsNew {
                 - zKillboard activity is also taken into account, so that if a character appears on any killmail within the last few months, it will never be ignored
                 - Added integration with ntfy.sh for push notifications, in addition to the existing Pushover integration.
                 - All dropdowns can now be quickly navigated with the keyboard by typing, which scrolls it to the matching item. Arrows keys and the Enter key can now also be used.
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.14.0" description """
                 - Updated splash screen
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.15.0" description """
                 - Solar system distances in intel now have a hover tooltip to show which of your characters is closest
                 - Updated jump bridge parsing to work with an updated alliance wiki page
                 - Account settings files backed up by other third party tools no longer interfere with RIFT
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.16.0" description """
@@ -379,7 +379,7 @@ object WhatsNew {
                 - New indicators for Copying, Invention, Manufacturing, Reactions, Material Efficiency Research and Time Efficiency Research Cost Indices
                 - Each index can be shown or hidden separately
                 - New system and background coloring modes for each index to see the relative values at a glance
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.17.0" description """
@@ -396,7 +396,7 @@ object WhatsNew {
                 - This also works for labeled corporations and alliances, so you can create an alert for all characters from a specific corporation or alliance
 
                 - Region names and constellation names can now be enabled to show for systems on the map, either always or on hover
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.18.0" description """
@@ -412,7 +412,7 @@ object WhatsNew {
                 - Structure details failing to be loaded from ESI for the Assets window will no longer prevent you from seeing all assets. Instead, the relevant assets will just show to be in an unknown structure.
                 - Updated Steam library detection on Linux to cover more installation types
                 - Context menus will now scroll if there is not enough space to display all items
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.19.0" description """
@@ -426,7 +426,7 @@ object WhatsNew {
 
                 - The window transparency feature now has a global toggle in settings. It defaults to disabled, so enable it to use it again.
                 - Window transparency strength can now be controlled, so you can choose how much transparency you want
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.20.0" description """
@@ -442,7 +442,7 @@ object WhatsNew {
                 - Optimized reading game logs to be much faster, especially in longer game sessions
                 - Updated duplicate chat message handling to work better when multiboxed chat logs that have inconsistent timestamps
                 - Associating characters with accounts for the settings copying feature was improved to work in more cases
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.21.0" description """
@@ -450,7 +450,7 @@ object WhatsNew {
                 - Intel coming from killmails now includes the location in system where it happened. Campers on a stargate or station? Someone got ganked in an asteroid belt? See exactly where it happened.
 
                 - Push notifications for fleet pings now show details of the ping
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.22.0" description """
@@ -466,14 +466,14 @@ object WhatsNew {
                 - Killmail locations showing up in intel feeds now show the distance to the celestial's warp-in point, if applicable. For example, if when someone is killed near a planet, you will see the planet along with how far away it happened from that planet's warp-in point.
                 - Updated the setup wizard to be clearer about what intel channels are and that adding them is optional
                 - Your old chat and game log files are now moved to an "old" subdirectory as an optimization.
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.23.0" description """
                 - When using the "move with character" map option, the system info box won't be expanded anymore
                 - When clicking a system on the map, the map won't center on the system anymore, so you can click systems without ruining your map layout
                 - Dragging the map won't hide the expanded system info boxes anymore, so you can look around without hiding information you want open
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.24.0" description """
@@ -481,7 +481,7 @@ object WhatsNew {
                 - Map search now has autocomplete for system names
                 - Map search now works for systems that aren't visible on the current map layout, and will automatically switch the map tab to show the result
                 - Chat message alerts now support regular expressions for precise control of matching messages
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.25.0" description """
@@ -504,20 +504,20 @@ object WhatsNew {
                 - Do you have unused or biomassed characters whose data you no longer want to keep? You can now delete them from your EVE installation and RIFT's character list.
 
                 - Added New Eden Encyclopedia as an option for viewing ship details
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.26.0" description """
                 - The character settings copying feature now supports launcher profiles, including copying across profiles
                 - When adding an intel channel, the text field now shows autocomplete suggestions of valid channel names
                 - The Assets window now shows totals for all your assets from all locations
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.27.0" description """
                 - Asset locations can now be pinned in the Assets window to always appear on top
                 - They can also be hidden, which will put them below the main list
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.28.0" description """
@@ -527,13 +527,13 @@ object WhatsNew {
                 - Updated the look of map tabs
                 - Replaced some dropdowns with a new slider component where relevant, like for volume in Settings
                 - Performance improvements to startup time
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.29.0" description """
                 - Updated the Character Settings Copy feature to support users with an extreme number of characters
                 - Updated window management on Linux so that dragging RIFT windows participates in window snapping and other native window features
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.30.0" description """
@@ -543,7 +543,7 @@ object WhatsNew {
                 - Blast Below the Asteroids on repeat while mining
                 - Create and manage your own custom playlists, because space is better with your own MP3s
                 - Relive the True EVE Jukebox Experience, just as CCP intended
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.31.0" description """
@@ -554,7 +554,7 @@ object WhatsNew {
                 -! Alerts window
                 - Alert groups can now be collapsed
                 - Alert group headers now show the number of alerts and enabled alerts within the group
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.32.0" description """
@@ -562,35 +562,35 @@ object WhatsNew {
                 - The map no longer centers on the online character location whenever you open a map tab, if you have character following disabled
                 - Added a warning when running the EVE client in fullscreen mode, to let you know it can interfere with always-on-top windows
                 - The character settings copying feature now shows account IDs instead of giving accounts ordinal numbers that can change
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.33.0" description """
-                ! New feature: Distance Map
+                -! New feature: Distance Map
                 - This new map type shows nearby systems in bands grouped by distance from a central system
                 - Monitor your neighborhood and see how far away are any hostiles
                 - You can either choose a system as the origin, or have it automatically follow a character to always see what's around you
                 - As with all maps, you can open multiple copies to show different systems at the same time
                 - Keep it simple, or customize it to show any information you want
                 - It also works great at small sizes, and with the transparent mode you can have it be a seamless part of your in-game layout
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.34.0" description """
                 - New Legion splash screen
                 - Intel from killmails now triggers alerts. Previously you could see ships and characters known from killmails on the map, but they wouldn't trigger alerts even when matching. Now they do.
                 - The New Eden cluster map now highlights systems with intel even when zoomed out, so you can easily see where things are going on on a wider scale.
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.35.0" description """
                 - The character settings copying feature now shows a warning if you have the game open
                 - RIFT will now warn you on startup if your system clock is incorrect, which is a common cause of inaccurate intel timestamps and missing alerts
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.36.0" description """
-                ! New feature: Sovereignty Upgrades
+                -! New feature: Sovereignty Upgrades
                 - You can now import a list of Sovereignty Upgrades improving your solar systems
                 - Your list can be exported out of RIFT as well
                 - The upgrades are then shown on the map. As usual, you can choose to always display them, only display them on hover, or use their presence to color systems or their backgrounds on the map.
@@ -602,23 +602,23 @@ object WhatsNew {
                 - Jump Bridge Network settings have been redesigned, and you can now see a list of your imported jump bridge connections
                 - You can now export your jump bridges out of RIFT
                 - The Map Settings window has been removed. Map settings now have their own tab in the main Settings window.
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.37.0" description """
                 - The map now shows active clones in addition to jump clones. This means you can now see your offline characters on the map.
                 - Multiple killmails happening in the same system in quick succession will no longer trigger multiple alerts
                 - The Assets feature now tells blueprint copies apart from originals for price calculation
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.38.0" description """
-                ! New feature: Sovereignty Hub hacking import
+                -! New feature: Sovereignty Hub hacking import
                 - When hacking a Sovereignty Hub in-game, you can now click the Copy Hacked Data button to instantly import the list of Sovereignty Upgrades into RIFT
                 - This allows you to easily fill out your map with the information from the Hub you just hacked, and later copy and share the complete list of upgrades from all systems if needed
 
                 - Updated intel channels and sovereignty upgrades link in a configuration pack
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.39.0" description """
@@ -628,7 +628,7 @@ object WhatsNew {
                 - Added EVE-KILL as option in the right-click menus of characters, corporations, alliances, ships, and systems
                 - When you left-click on a character, corporation, alliance, or ship, it will open in the last used website, instead of being hardcoded to zKillboard
                 - Systems in the Intel Feed window that contain only a single character now show the full character name instead of "1 hostile"
-            """.trimIndent()
+                """.trimIndent(),
             )
             add(
                 "4.40.0" description """
@@ -637,23 +637,26 @@ object WhatsNew {
 
                 - You can now sort by character name in the Planetary Industry window
                 - Viewing and copying fittings with charges is now supported in the Assets window, where supported by ESI
-            """.trimIndent()
+                """.trimIndent(),
             )
-            if (isCorpProjectsEnabled) {
-                add(
-                    "5.0.0" description """
-                    ! New feature: Corporation Projects
-                    - View active and historical projects from all your characters and corporations
-                    - Easily filter, sort, and search for projects
-                    - See all the details for all types of projects
-                    - Check your contribution progress from all characters at once
-                    - If you have the Project Manager role in your corporation, you can also see all the participants in a project and information about them
-                    
-                    - New system, constellation, and region icons for every individual location that match in-game. These are now used for systems instead of the old sun icons.
-                    - Updated font sizes in the app to better match in-game. Some text is now slightly bigger.
-                """.trimIndent()
-                )
-            }
+            add(
+                "5.1.0" description """
+                -! New feature: Corporation Projects
+                - View active and historical projects from all your characters and corporations
+                - Easily filter, sort, and search for projects
+                - See all the details for all types of projects
+                - Check your contribution progress from all characters at once
+                - If you have the Project Manager role in your corporation, you can also see all the participants in a project and information about them
+                
+                -! New feature: Show Info
+                - The familiar "Show Info" button from in-game context menus is now available in RIFT context menus
+                - It shows when right-clicking on any character, corporation, alliance, ship, or system
+                - Clicking it will open the info window in-game
+                
+                - New system, constellation, and region icons for every individual location that match in-game. These are now used for systems instead of the old sun icons.
+                - Updated font sizes in the app to better match in-game. Some text is now slightly bigger.
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

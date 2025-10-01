@@ -10,6 +10,7 @@ import dev.nohus.rift.generated.resources.menu_evewho
 import dev.nohus.rift.generated.resources.menu_newedenencyclopedia
 import dev.nohus.rift.generated.resources.menu_uniwiki
 import dev.nohus.rift.generated.resources.menu_zkillboard
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.ExternalService
 import dev.nohus.rift.settings.persistence.ExternalService.Anoikis
 import dev.nohus.rift.settings.persistence.ExternalService.Dotlan
@@ -88,23 +89,23 @@ class ExternalServiceRepository(
         )
     }
 
-    fun getShipMenuItems(name: String, typeId: Int): List<ContextMenuItem.TextItem> {
-        return getShipItems(name, typeId).toMenuItems()
+    fun getShipMenuItems(type: Type): List<ContextMenuItem.TextItem> {
+        return getShipItems(type).toMenuItems()
     }
 
-    fun openShipPreferredService(name: String, typeId: Int) {
-        val items = getShipItems(name, typeId)
+    fun openShipPreferredService(type: Type) {
+        val items = getShipItems(type)
         val preferredService = getPreferredService(listOf(UniWiki, EveRef, ZKillboard, EveKill, NewEdenEncyclopedia))
         items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
     }
 
-    private fun getShipItems(name: String, typeId: Int): List<ServiceItem> {
+    private fun getShipItems(type: Type): List<ServiceItem> {
         return listOf(
-            ServiceItem(UniWiki, "https://wiki.eveuniversity.org/${name.replace(' ', '_')}"),
-            ServiceItem(EveRef, "https://everef.net/types/$typeId"),
-            ServiceItem(ZKillboard, "https://zkillboard.com/ship/$typeId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/item/$typeId"),
-            ServiceItem(NewEdenEncyclopedia, "https://newedenencyclopedia.net/type/$typeId"),
+            ServiceItem(UniWiki, "https://wiki.eveuniversity.org/${type.name.replace(' ', '_')}"),
+            ServiceItem(EveRef, "https://everef.net/types/${type.id}"),
+            ServiceItem(ZKillboard, "https://zkillboard.com/ship/${type.id}/"),
+            ServiceItem(EveKill, "https://eve-kill.com/item/${type.id}"),
+            ServiceItem(NewEdenEncyclopedia, "https://newedenencyclopedia.net/type/${type.id}"),
         )
     }
 

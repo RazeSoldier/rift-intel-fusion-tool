@@ -91,9 +91,7 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_characters, name = "Characters", "Chars") { viewModel.onButtonClick(RiftWindow.Characters) })
             add(ButtonModel(icon = Res.drawable.window_assets, name = "Assets") { viewModel.onButtonClick(RiftWindow.Assets) })
             add(ButtonModel(icon = Res.drawable.window_planets, name = "Planetary Industry", "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
-            if (state.isCorpProjectsEnabled) {
-                add(ButtonModel(icon = Res.drawable.window_corporation, name = "Corporation Projects", "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
-            }
+            add(ButtonModel(icon = Res.drawable.window_corporation, name = "Corporation Projects", "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
             add(ButtonModel(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) })
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })
