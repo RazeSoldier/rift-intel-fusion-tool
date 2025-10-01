@@ -537,7 +537,11 @@ private fun LocationText(location: Location?) {
                                 }
                             }
                         } else {
-                            append(" in space")
+                            if (shipName != null) {
+                                append(" in space")
+                            } else {
+                                append("In space")
+                            }
                         }
                     },
                     style = RiftTheme.typography.bodyPrimary,

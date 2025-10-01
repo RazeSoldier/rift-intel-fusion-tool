@@ -1,6 +1,7 @@
 package dev.nohus.rift.planetaryindustry
 
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.network.AsyncResource
@@ -25,6 +26,7 @@ class PlanetaryIndustryViewModel(
     private val planetaryIndustryRepository: PlanetaryIndustryRepository,
     private val accountAssociationsRepository: AccountAssociationsRepository,
     private val settings: Settings,
+    private val localCharactersRepository: LocalCharactersRepository,
 ) : ViewModel() {
 
     data class UiState(
@@ -123,7 +125,11 @@ class PlanetaryIndustryViewModel(
         val accountSelector: (ColonyItem) -> Comparable<*> = {
             accountAssociationsRepository.getAssociations()[it.colony.characterId] ?: 0
         }
-        val characterSelector: (ColonyItem) -> Comparable<*> = { it.colony.characterId }
+        val characterAgeSelector: (ColonyItem) -> Comparable<*> = { it.colony.characterId }
+        val characterAlphabeticalSelector: (ColonyItem) -> Comparable<*> = {
+            val characterId = it.colony.characterId
+            localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: ""
+        }
         val statusSelector: (ColonyItem) -> Comparable<*> = { it.colony.status.order }
         val expiryTimeSelector: (ColonyItem) -> Comparable<*> = { item ->
             item.ffwdColony.currentSimTime.takeIf { it.isAfter(item.colony.currentSimTime) } ?: Instant.MAX
@@ -131,15 +137,19 @@ class PlanetaryIndustryViewModel(
         val planetSelector: (ColonyItem) -> Comparable<*> = { it.colony.planet.id }
         return when (sorting) {
             ColonySortingFilter.Character -> {
-                sortedWith(compareBy(accountSelector, characterSelector, planetSelector))
+                sortedWith(compareBy(accountSelector, characterAgeSelector, planetSelector))
+            }
+
+            ColonySortingFilter.CharacterAlphabetical -> {
+                sortedWith(compareBy(characterAlphabeticalSelector, planetSelector))
             }
 
             ColonySortingFilter.Status -> {
-                sortedWith(compareBy(statusSelector, expiryTimeSelector, characterSelector))
+                sortedWith(compareBy(statusSelector, expiryTimeSelector, characterAgeSelector))
             }
 
             ColonySortingFilter.ExpiryTime -> {
-                sortedWith(compareBy(expiryTimeSelector, statusSelector, characterSelector))
+                sortedWith(compareBy(expiryTimeSelector, statusSelector, characterAgeSelector))
             }
         }
     }

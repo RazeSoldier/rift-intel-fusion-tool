@@ -57,8 +57,10 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.indicator_assets
+import dev.nohus.rift.generated.resources.indicator_asteroid_belt
 import dev.nohus.rift.generated.resources.indicator_clones
 import dev.nohus.rift.generated.resources.indicator_colony
+import dev.nohus.rift.generated.resources.indicator_ice_field
 import dev.nohus.rift.generated.resources.indicator_incursion
 import dev.nohus.rift.generated.resources.indicator_jove
 import dev.nohus.rift.generated.resources.indicator_jump_drive
@@ -293,6 +295,20 @@ private fun ColumnScope.SystemInfoTypes(
                     MapSystemInfoType.Clones -> {} // In column
                     MapSystemInfoType.Standings -> {} // In system name row
                     MapSystemInfoType.RatsType -> {} // In column
+                    MapSystemInfoType.AsteroidBelts -> {
+                        InfoTypeIndicator(
+                            text = system.asteroidBeltCount.takeIf { it > 0 }?.toString(),
+                            icon = Res.drawable.indicator_asteroid_belt,
+                            tooltip = "Asteroid belt${system.asteroidBeltCount.plural}: ${system.asteroidBeltCount}",
+                        )
+                    }
+                    MapSystemInfoType.IceFields -> {
+                        InfoTypeIndicator(
+                            text = "".takeIf { system.iceFieldCount > 0 },
+                            icon = Res.drawable.indicator_ice_field,
+                            tooltip = "Ice field system",
+                        )
+                    }
                     MapSystemInfoType.Region -> {} // With system name
                     MapSystemInfoType.Constellation -> {} // With system name
                     MapSystemInfoType.IndustryIndexCopying -> {} // In column
@@ -428,6 +444,8 @@ private fun ColumnScope.SystemInfoTypes(
                         )
                     }
                 }
+                MapSystemInfoType.AsteroidBelts -> {} // In icon row
+                MapSystemInfoType.IceFields -> {} // In icon row
                 MapSystemInfoType.Region -> {} // With system name
                 MapSystemInfoType.Constellation -> {} // With system name
                 MapSystemInfoType.IndustryIndexCopying -> IndustryActivityIndex(systemStatus, IndustryActivity.Copying, "Copying")
@@ -511,8 +529,16 @@ private fun SystemInfoTypesIndicators(
                     }
                 }
                 MapSystemInfoType.MetaliminalStorms -> {
-                    systemStatus?.storms?.takeIf { it.isNotEmpty() }?.let {
-                        InfoTypeIndicator("", Res.drawable.indicator_storm)
+                    systemStatus?.storms?.takeIf { it.isNotEmpty() }?.let { storms ->
+                        InfoTypeIndicator(
+                            text = "",
+                            icon = Res.drawable.indicator_storm,
+                            tooltip = buildString {
+                                storms.forEach { storm ->
+                                    appendLine("Storm: ${storm.strength.name} ${storm.type.name}")
+                                }
+                            }.trim(),
+                        )
                     }
                 }
                 MapSystemInfoType.JumpRange ->
@@ -563,6 +589,20 @@ private fun SystemInfoTypesIndicators(
                 }
                 MapSystemInfoType.Standings -> {} // In system name row
                 MapSystemInfoType.RatsType -> {}
+                MapSystemInfoType.AsteroidBelts -> {
+                    InfoTypeIndicator(
+                        text = "".takeIf { system.asteroidBeltCount > 0 },
+                        icon = Res.drawable.indicator_asteroid_belt,
+                        tooltip = "Asteroid belt${system.asteroidBeltCount.plural}: ${system.asteroidBeltCount}",
+                    )
+                }
+                MapSystemInfoType.IceFields -> {
+                    InfoTypeIndicator(
+                        text = "".takeIf { system.iceFieldCount > 0 },
+                        icon = Res.drawable.indicator_ice_field,
+                        tooltip = "Ice field system",
+                    )
+                }
                 MapSystemInfoType.Region -> {} // With system name
                 MapSystemInfoType.Constellation -> {} // With system name
                 MapSystemInfoType.IndustryIndexCopying -> IndustryActivityIndex(systemStatus, IndustryActivity.Copying, "Copying")

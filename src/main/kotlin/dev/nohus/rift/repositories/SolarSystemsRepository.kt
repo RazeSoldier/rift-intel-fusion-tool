@@ -48,6 +48,8 @@ class SolarSystemsRepository(
         val security: Double,
         val sunTypeId: Int,
         val hasJoveObservatory: Boolean,
+        val asteroidBeltCount: Int,
+        val iceFieldCount: Int,
     )
 
     data class MapConstellation(
@@ -100,6 +102,8 @@ class SolarSystemsRepository(
                 security = it[SolarSystems.security],
                 sunTypeId = it[SolarSystems.sunTypeId],
                 hasJoveObservatory = it[SolarSystems.hasJoveObservatory],
+                asteroidBeltCount = it[SolarSystems.asteroidBeltCount],
+                iceFieldCount = it[SolarSystems.iceFieldCount],
             )
         }
         systemsById = mapSolarSystems.associateBy { it.id }

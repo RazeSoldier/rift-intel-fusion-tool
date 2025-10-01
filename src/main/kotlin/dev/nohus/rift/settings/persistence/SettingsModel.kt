@@ -137,6 +137,8 @@ enum class MapSystemInfoType {
     Colonies,
     Standings,
     RatsType,
+    AsteroidBelts,
+    IceFields,
     Region,
     Constellation,
     IndustryIndexCopying,
@@ -344,6 +346,10 @@ sealed interface ColonySortingFilter {
     @Serializable
     @SerialName("Character")
     data object Character : ColonySortingFilter
+
+    @Serializable
+    @SerialName("CharacterAlphabetical")
+    data object CharacterAlphabetical : ColonySortingFilter
 
     @Serializable
     @SerialName("ExpiryTime")
