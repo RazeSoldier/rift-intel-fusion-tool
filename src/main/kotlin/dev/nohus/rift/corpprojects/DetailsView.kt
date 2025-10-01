@@ -3,7 +3,6 @@ package dev.nohus.rift.corpprojects
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.compose.AnimatedImage
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ClickableCharacter

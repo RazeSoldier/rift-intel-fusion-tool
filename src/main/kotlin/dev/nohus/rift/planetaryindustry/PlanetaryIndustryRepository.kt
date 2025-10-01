@@ -18,6 +18,7 @@ import dev.nohus.rift.planetaryindustry.models.getCpuPowerUsage
 import dev.nohus.rift.planetaryindustry.models.getStatus
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilNow
+import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilTimestamp
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilWorkEnds
 import dev.nohus.rift.repositories.GetSolarSystemChipStateUseCase
 import dev.nohus.rift.repositories.PlanetsRepository
@@ -64,9 +65,15 @@ class PlanetaryIndustryRepository(
 
     data class ColonyItem(
         val colony: Colony,
+        val seekColony: Colony?,
         val ffwdColony: Colony,
         val characterName: String?,
         val location: SolarSystemChipState,
+    )
+
+    data class SeekingColony(
+        val colonyId: String,
+        val seekTimestamp: Instant,
     )
 
     private val _colonies = MutableStateFlow<AsyncResource<Map<String, ColonyItem>>>(AsyncResource.Loading)
@@ -77,6 +84,7 @@ class PlanetaryIndustryRepository(
     private val loadingMutex = Mutex()
     private val simulatingMutex = Mutex()
     private var isRealtime = false
+    private var seekingColony: SeekingColony? = null
 
     @OptIn(FlowPreview::class)
     suspend fun start() = coroutineScope {
@@ -145,6 +153,11 @@ class PlanetaryIndustryRepository(
         this.isRealtime = isRealtime
     }
 
+    suspend fun setSeekingColony(seekingColony: SeekingColony?) {
+        this.seekingColony = seekingColony
+        requestSimulation()
+    }
+
     private suspend fun simulateColonies() {
         simulatingMutex.withLock {
             val entries = _colonies.value.success ?: return
@@ -156,12 +169,23 @@ class PlanetaryIndustryRepository(
                         val ffwdColony = if (!colony.status.isWorking) {
                             colony // Colony is not working, nothing to fast-forward
                         } else if (item.ffwdColony.status.isWorking || item.ffwdColony.currentSimTime.isBefore(colony.currentSimTime)) {
-                            ColonySimulation(colony).simulate(UntilWorkEnds) // Fast-forwarded colony is not simulated yet
+                            // Fast-forwarded colony is not simulated yet
+                            ColonySimulation(colony).simulate(UntilWorkEnds)
                         } else {
                             item.ffwdColony // Fast-forwarded colony already simulated
                         }
 
-                        colony.id to item.copy(colony = colony, ffwdColony = ffwdColony)
+                        val seekColony = seekingColony?.let {
+                            if (item.colony.id != it.colonyId) return@let null
+                            if (item.seekColony?.currentSimTime != it.seekTimestamp) {
+                                // Seeked colony is not simulated yet
+                                ColonySimulation(colony).simulate(UntilTimestamp(it.seekTimestamp))
+                            } else {
+                                item.seekColony // Seeked colony already simulated
+                            }
+                        }
+
+                        colony.id to item.copy(colony = colony, seekColony = seekColony, ffwdColony = ffwdColony)
                     }
                 }.awaitAll().toMap()
             }
@@ -181,7 +205,7 @@ class PlanetaryIndustryRepository(
                             if (old != null && old.colony.checkpointSimTime >= new.checkpointSimTime && old.characterName != null) {
                                 new.id to old
                             } else {
-                                new.id to toItem(new, new)
+                                new.id to toItem(new)
                             }
                         }.toMap()
                         _colonies.value = AsyncResource.Ready(updatedColonies)
@@ -198,11 +222,12 @@ class PlanetaryIndustryRepository(
         }
     }
 
-    private fun toItem(colony: Colony, ffwdColony: Colony): ColonyItem {
+    private fun toItem(colony: Colony): ColonyItem {
         val character = localCharactersRepository.characters.value.firstOrNull { it.characterId == colony.characterId }
         return ColonyItem(
             colony = colony,
-            ffwdColony = ffwdColony,
+            seekColony = null,
+            ffwdColony = colony,
             characterName = character?.info?.success?.name,
             location = getLocation(colony),
         )

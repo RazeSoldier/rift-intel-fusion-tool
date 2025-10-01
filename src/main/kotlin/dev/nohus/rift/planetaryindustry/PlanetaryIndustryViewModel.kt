@@ -6,6 +6,7 @@ import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
+import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.SeekingColony
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.View.DetailsView
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.View.GridView
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.View.ListView
@@ -39,7 +40,7 @@ class PlanetaryIndustryViewModel(
         data object ListView : View
         data object GridView : View
         data object RowsView : View
-        data class DetailsView(val item: ColonyItem) : View
+        data class DetailsView(val colonyId: String) : View
     }
 
     private var featureSettings: PlanetaryIndustry
@@ -94,8 +95,7 @@ class PlanetaryIndustryViewModel(
     }
 
     fun onDetailsClick(id: String) {
-        val item = _state.value.colonies.success?.firstOrNull { it.colony.id == id } ?: return
-        _state.update { it.copy(view = DetailsView(item)) }
+        _state.update { it.copy(view = DetailsView(id)) }
     }
 
     fun onBackClick() {
@@ -118,6 +118,12 @@ class PlanetaryIndustryViewModel(
         _state.value.colonies.success?.let { colonies ->
             val text = SpreadsheetFormatter.format(type, colonies)
             Clipboard.copy(text)
+        }
+    }
+
+    fun setSeekingColony(seekingColony: SeekingColony?) {
+        viewModelScope.launch {
+            planetaryIndustryRepository.setSeekingColony(seekingColony)
         }
     }
 

@@ -10,6 +10,7 @@ import dev.nohus.rift.planetaryindustry.models.getColonyOverview
 import dev.nohus.rift.planetaryindustry.models.getColonyStatus
 import dev.nohus.rift.planetaryindustry.models.getStatus
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilNow
+import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilTimestamp
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilWorkEnds
 import dev.nohus.rift.planetaryindustry.simulation.ExtractionSimulation.Companion.getProgramOutput
 import dev.nohus.rift.repositories.TypesRepository.Type
@@ -32,12 +33,14 @@ class ColonySimulation(colony: Colony) {
     sealed interface SimulationEndCondition {
         data object UntilNow : SimulationEndCondition
         data object UntilWorkEnds : SimulationEndCondition
+        data class UntilTimestamp(val timestamp: Instant) : SimulationEndCondition
     }
 
     private val SimulationEndCondition.simEndTime: Instant
         get() = when (this) {
             UntilNow -> currentRealTime
             UntilWorkEnds -> Instant.MAX
+            is UntilTimestamp -> timestamp
         }
 
     fun simulate(until: SimulationEndCondition): Colony {
@@ -85,6 +88,7 @@ class ColonySimulation(colony: Colony) {
         return when (until) {
             UntilNow -> currentRealTime
             UntilWorkEnds -> currentSimTime
+            is UntilTimestamp -> until.timestamp
         }
     }
 
@@ -257,7 +261,7 @@ class ColonySimulation(colony: Colony) {
             if (destinationPin is Pin.Factory) {
                 processorRoutes.add(SortedRoute(destinationPin.getInputBufferState(), route.destinationPinId, route.type, route.quantity))
             } else {
-                processorRoutes.add(SortedRoute(destinationPin.getFreeSpace(), route.destinationPinId, route.type, route.quantity))
+                storageRoutes.add(SortedRoute(destinationPin.getFreeSpace(), route.destinationPinId, route.type, route.quantity))
             }
         }
         return processorRoutes to storageRoutes

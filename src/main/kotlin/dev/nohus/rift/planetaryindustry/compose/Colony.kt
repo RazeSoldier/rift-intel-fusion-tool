@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -24,8 +25,13 @@ import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,8 +41,10 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncPlayerPortrait
+import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
+import dev.nohus.rift.compose.RiftSlider
 import dev.nohus.rift.compose.RiftSolarSystemChip
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.getNow
@@ -50,6 +58,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.clock_16
 import dev.nohus.rift.generated.resources.fastforward
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
+import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.SeekingColony
 import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Extracting
@@ -79,6 +88,7 @@ fun ColonyTitle(
     isExpanded: Boolean,
     isViewingFastForward: Boolean,
     onViewFastForwardChange: (Boolean) -> Unit,
+    onSetSeekingColony: (SeekingColony?) -> Unit,
     scrollState: ScrollState? = null,
     colonyIconModifier: Modifier = Modifier,
     onDetailsClick: () -> Unit,
@@ -108,7 +118,7 @@ fun ColonyTitle(
             )
         }
         AnimatedVisibility(isViewingFastForward) {
-            ViewingFastForward(item, onReturnClick = { onViewFastForwardChange(false) })
+            ViewingFastForward(item, onSetSeekingColony, onReturnClick = { onViewFastForwardChange(false) })
         }
         AnimatedVisibility(scrollState != null) {
             Box(
@@ -125,33 +135,94 @@ fun ColonyTitle(
 @Composable
 private fun ViewingFastForward(
     item: ColonyItem,
+    onSetSeekingColony: (SeekingColony?) -> Unit,
     onReturnClick: () -> Unit,
 ) {
+    val maxSeekHours = Duration.between(item.colony.currentSimTime, item.ffwdColony.currentSimTime).toHours().toInt() + 1
+    var seekHours by remember { mutableStateOf(maxSeekHours) }
+
     Row(
-        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = Spacing.medium),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.mediumLarge),
+        modifier = Modifier
+            .padding(top = Spacing.small)
+            .background(RiftTheme.colors.windowBackgroundSecondary)
+            .padding(vertical = Spacing.medium),
     ) {
+        RiftButton(
+            text = "Now",
+            icon = Res.drawable.clock_16,
+            type = ButtonType.Primary,
+            cornerCut = ButtonCornerCut.BottomLeft,
+            isCompact = false,
+            onClick = onReturnClick,
+        )
+
         Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = formatDateTime(item.ffwdColony.currentSimTime),
+                text = "Time fast-forward",
                 style = RiftTheme.typography.headerPrimary,
             )
-            getFutureColonyStatusDescription(item.ffwdColony.status)?.let {
-                Text(
-                    text = it,
-                    style = RiftTheme.typography.bodyPrimary,
+
+            LaunchedEffect(seekHours) {
+                val seekTimestamp = item.colony.currentSimTime + Duration.ofHours(seekHours.toLong())
+                if (seekTimestamp >= item.ffwdColony.currentSimTime) {
+                    // Seeked to the expiry time, stop seeking, which will show the expired colony
+                    onSetSeekingColony(null)
+                } else {
+                    onSetSeekingColony(SeekingColony(item.colony.id, seekTimestamp))
+                }
+            }
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                RiftSlider(
+                    width = maxWidth,
+                    range = 0..maxSeekHours,
+                    currentValue = seekHours,
+                    onValueChange = { seekHours = it },
+                    getValueName = { null },
+                    isPreciseScroll = true,
+                    isImmediate = true,
                 )
             }
+            DisposableEffect(Unit) {
+                onDispose {
+                    onSetSeekingColony(null)
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.mediumLarge),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(top = Spacing.medium),
+            ) {
+                val colony = item.seekColony ?: item.ffwdColony
+                Text(
+                    text = formatDateTime(colony.currentSimTime),
+                    style = RiftTheme.typography.headerPrimary,
+                )
+                getFutureColonyStatusDescription(colony.status)?.let {
+                    Text(
+                        text = it,
+                        style = RiftTheme.typography.bodyPrimary,
+                    )
+                }
+            }
         }
+
         RiftButton(
-            text = "Present time",
-            icon = Res.drawable.clock_16,
-            type = ButtonType.Secondary,
+            text = "Expires",
+            icon = Res.drawable.fastforward,
+            type = ButtonType.Primary,
+            cornerCut = ButtonCornerCut.BottomRight,
             isCompact = false,
-            onClick = onReturnClick,
+            isEnabled = seekHours < maxSeekHours,
+            onClick = { seekHours = maxSeekHours },
         )
     }
 }
@@ -163,13 +234,15 @@ private fun getFutureColonyStatusDescription(status: ColonyStatus): String? {
             val inactive = status.pins.count { it.status == ExtractorInactive }
             val full = status.pins.filter { it.status == StorageFull }
             buildList {
-                if (expired > 0) add("Extractor${expired.plural} expire${inactive.invertedPlural}")
+                if (expired > 0) add("Extractor${expired.plural} expire${expired.invertedPlural}")
                 if (inactive > 0) add("Extractor${inactive.plural} become${inactive.invertedPlural} inactive")
                 full.forEach { add("${it.getName()} becomes full") }
             }.joinToString()
         }
         is Idle -> "All production stops"
-        is NotSetup, is Producing, is Extracting -> return null // Should never happen
+        is NotSetup -> "Not setup"
+        is Producing -> "Producing"
+        is Extracting -> "Extracting"
     }
     return state
 }
