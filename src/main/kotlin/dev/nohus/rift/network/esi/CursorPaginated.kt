@@ -28,16 +28,28 @@ abstract class CursorPaginated<T> {
     abstract val items: List<T>
 }
 
+/**
+ * Fetches cursor-paginated data.
+ * If after is null, all data will be fetched.
+ * If after is not null, only data after this cursor will be fetched.
+ *
+ * Returns the results and an after cursor for fetching future data.
+ */
 suspend fun <T> fetchCursorPaginated(
+    after: String?,
     request: suspend (before: String?, after: String?) -> Result<CursorPaginated<T>>,
-): Result<List<T>> {
-    when (val initialResponse = request(null, null)) {
+): Result<Pair<List<T>, String?>> {
+    when (val initialResponse = request(null, after)) {
         is Failure -> return initialResponse
         is Success -> {
             return coroutineScope {
                 val items = initialResponse.data.items.toMutableList()
 
                 val beforeItemsDeferred = async {
+                    if (after != null) {
+                        // We are only going forward, so no need to fetch before items
+                        return@async Success(emptyList())
+                    }
                     val beforeItems = mutableListOf<T>()
                     var before = initialResponse.data.cursor?.before
                     while (before != null) {
@@ -45,11 +57,11 @@ suspend fun <T> fetchCursorPaginated(
                             is Failure -> return@async response
                             is Success -> {
                                 beforeItems.addAll(0, response.data.items)
-                                before = response.data.cursor?.before
+                                before = response.data.cursor?.before ?: break
                             }
                         }
                     }
-                    Success(beforeItems)
+                    Success(beforeItems.toList())
                 }
 
                 val afterItemsDeferred = async {
@@ -60,23 +72,23 @@ suspend fun <T> fetchCursorPaginated(
                             is Failure -> return@async response
                             is Success -> {
                                 afterItems.addAll(response.data.items)
-                                after = response.data.cursor?.after
+                                after = response.data.cursor?.after ?: break
                             }
                         }
                     }
-                    Success(afterItems)
+                    Success(afterItems.toList() to after)
                 }
 
                 val beforeItems = when (val result = beforeItemsDeferred.await()) {
                     is Failure -> return@coroutineScope result
                     is Success -> result.data
                 }
-                val afterItems = when (val result = afterItemsDeferred.await()) {
+                val (afterItems, newAfter) = when (val result = afterItemsDeferred.await()) {
                     is Failure -> return@coroutineScope result
                     is Success -> result.data
                 }
 
-                Success(beforeItems + items + afterItems)
+                Success((beforeItems + items + afterItems) to (newAfter ?: after))
             }
         }
     }

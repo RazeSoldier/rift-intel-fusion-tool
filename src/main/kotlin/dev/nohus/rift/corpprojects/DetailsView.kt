@@ -405,6 +405,7 @@ fun DetailsView(
                                     TextTableCell(String.format("%.1f%%", percent * 100), sortingAmount = percent.toDouble()),
                                     TextTableCell(formatIsk(payout, withCents = false), sortingAmount = payout),
                                 ),
+                                characterId = contributor.characterId,
                             )
                         }
                         RiftTable(

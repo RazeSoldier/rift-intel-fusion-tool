@@ -33,4 +33,12 @@ sealed class Result<out T : Any?> {
             is Failure -> Failure(cause)
         }
     }
+
+    inline fun onFailure(action: (Exception?) -> Unit): Result<T> = apply {
+        if (this is Failure) action(cause)
+    }
+
+    inline fun onSuccess(action: (T) -> Unit): Result<T> = apply {
+        if (this is Success) action(data)
+    }
 }

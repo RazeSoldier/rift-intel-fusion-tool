@@ -57,6 +57,7 @@ class CorporationProjectsRepository(
     data class CorporationProjects(
         val corporation: Corporation,
         val projects: List<Project> = emptyList(),
+        val deletedProjects: Set<String> = emptySet(),
         val failedProjects: List<Exception?> = emptyList(),
         val failureCause: Exception? = null,
     )
@@ -78,6 +79,7 @@ class CorporationProjectsRepository(
     private val reloadFlow = MutableSharedFlow<Unit>()
     private val loadingMutex = Mutex()
     private var isRealtime = false
+    private val afterCursors = mutableMapOf<Int, String?>() // Corporation ID -> cursor
 
     @OptIn(FlowPreview::class)
     suspend fun start() = coroutineScope {
@@ -120,17 +122,51 @@ class CorporationProjectsRepository(
     private suspend fun updateProjects() {
         loadingMutex.withLock {
             updateLoading { LoadingState(isLoading = true) }
-            val corporationProjects = getAllCorporationProjects()
+            val existingProjects = _projects.value.corporationProjects
+            val updatedProjects = getAllCorporationProjects()
             _projects.update {
                 it.copy(
-                    corporationProjects = corporationProjects,
+                    corporationProjects = mergeUpdatedCorporationProjects(existingProjects, updatedProjects),
                 )
             }
             updateLoading { LoadingState(isLoading = false) }
         }
     }
 
-    private suspend fun getAllCorporationProjects(): List<CorporationProjects> {
+    /**
+     * Merges updated projects into existing projects
+     */
+    private fun mergeUpdatedCorporationProjects(
+        existing: List<CorporationProjects>,
+        updated: List<CorporationProjects>,
+    ): List<CorporationProjects> {
+        val existingByCorporation = existing.associateBy { it.corporation }
+        val updatedByCorporation = updated.associateBy { it.corporation }
+        val corporations = existingByCorporation.keys + updatedByCorporation.keys
+        return corporations.mapNotNull { corporation ->
+            val existing = existingByCorporation[corporation]
+            val updated = updatedByCorporation[corporation]
+            if (existing != null && updated != null) {
+                val existingProjects = existing.projects.associateBy { it.id } - updated.deletedProjects
+                val updatedProjects = updated.projects.associateBy { it.id }
+                val mergedProjects = existingProjects + updatedProjects
+                CorporationProjects(
+                    corporation = corporation,
+                    projects = mergedProjects.values.toList(),
+                    failedProjects = updated.failedProjects,
+                    failureCause = updated.failureCause,
+                )
+            } else {
+                existing ?: updated
+            }
+        }
+    }
+
+    /**
+     * Returns a map of all corporations from local characters and the characters that belong to them,
+     * only considering characters that have the read projects scope
+     */
+    private fun getCorporations(): Map<Corporation, List<LocalCharacter>> {
         return localCharactersRepository.characters.value
             .filter { ScopeGroups.readProjects in it.scopes }
             .mapNotNull { character ->
@@ -141,16 +177,28 @@ class CorporationProjectsRepository(
             }
             .filterNot { IdRanges.isNpcCorporation(it.first.id) }
             .groupBy({ it.first }, { it.second })
+    }
+
+    private suspend fun getAllCorporationProjects(): List<CorporationProjects> {
+        return getCorporations()
             .entries
             .also {
                 updateLoading { copy(corporations = it.map { LoadingCorporation(it.key) }) }
             }
             .mapAsync { (corporation, characters) ->
-                getCorporationProjects(corporation, characters)
+                val after = afterCursors[corporation.id]
+                getCorporationProjects(corporation, characters, after)
             }
     }
 
-    private suspend fun getCorporationProjects(corporation: Corporation, characters: List<LocalCharacter>): CorporationProjects = coroutineScope {
+    /**
+     * Returns all projects from the given corporation, updated after the given cursor, or all if null
+     */
+    private suspend fun getCorporationProjects(
+        corporation: Corporation,
+        characters: List<LocalCharacter>,
+        after: String?,
+    ): CorporationProjects = coroutineScope {
         val characterIds = characters.map { it.characterId }
         val projectManagersDeferred = async {
             characterIds.mapAsync { characterId ->
@@ -158,10 +206,14 @@ class CorporationProjectsRepository(
             }.filter { it.second.success == true }.map { it.first }
         }
 
-        val projects = fetchCursorPaginated { before, after ->
+        var deletedProjects: Set<String> = emptySet()
+        val projects = fetchCursorPaginated(after) { before, after ->
             esiApi.getCorporationsIdProjects(characterIds.first(), corporation.id, before, after, state = CorporationProjectsQueryState.All)
-        }.map { projects ->
-            updateLoading { copy(corporations = corporations.map { if (it.corporation == corporation) it.copy(projectsCount = projects.size) else it }) }
+        }.map { (projects, newAfter) ->
+            if (after == null) {
+                updateLoading { copy(corporations = corporations.map { if (it.corporation == corporation) it.copy(projectsCount = projects.size) else it }) }
+            }
+            deletedProjects = projects.filter { it.state == CorporationProjectState.Deleted }.map { it.id }.toSet()
             projects
                 .filter { it.state != CorporationProjectState.Deleted }
                 .map { project ->
@@ -172,16 +224,25 @@ class CorporationProjectsRepository(
                             project = project,
                             projectManagersDeferred = projectManagersDeferred,
                         ).also {
-                            updateLoading { copy(corporations = corporations.map { if (it.corporation == corporation) it.copy(loadedProjectsCount = it.loadedProjectsCount + 1) else it }) }
+                            if (after == null) {
+                                updateLoading { copy(corporations = corporations.map { if (it.corporation == corporation) it.copy(loadedProjectsCount = it.loadedProjectsCount + 1) else it }) }
+                            }
                         }
                     }
-                }
-        }.map { it.awaitAll() }
+                } to newAfter
+        }
+            .map { (projects, newAfter) -> projects.awaitAll() to newAfter }
+            .onFailure { afterCursors -= corporation.id }
+            .onSuccess { (projects, newAfter) ->
+                afterCursors[corporation.id] = newAfter.takeIf { projects.all { it.isSuccess } }
+            }
+            .map { it.first }
 
         when (projects) {
             is Success -> CorporationProjects(
                 corporation = corporation,
                 projects = projects.data.filterIsInstance<Success<Project>>().map { it.data },
+                deletedProjects = deletedProjects,
                 failedProjects = projects.data.filterIsInstance<Failure>().map { it.cause },
             )
             is Failure -> CorporationProjects(
@@ -214,9 +275,9 @@ class CorporationProjectsRepository(
         }
         val contributorsDeferred: Deferred<Contributors> = async {
             projectManagersDeferred.await().firstOrNull()?.let { projectManager ->
-                fetchCursorPaginated { before, after ->
+                fetchCursorPaginated(null) { before, after ->
                     esiApi.getCorporationsIdProjectsIdContributors(projectManager, corporation.id, project.id, before, after)
-                }.map { contributors ->
+                }.map { (contributors, newAfter) ->
                     val list = contributors.mapAsync {
                         Contributor(
                             characterId = it.id.toInt(),

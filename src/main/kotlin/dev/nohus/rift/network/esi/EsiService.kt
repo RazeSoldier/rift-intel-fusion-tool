@@ -42,6 +42,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -290,6 +291,7 @@ interface EsiService {
     ): CorporationsIdProjects
 
     @GET("/corporations/{corporation_id}/projects/{project_id}")
+    @Headers("Cache-Control: no-cache")
     suspend fun getCorporationsIdProjectsId(
         @Path("corporation_id") corporationId: Int,
         @Path("project_id") projectId: String,
@@ -297,6 +299,7 @@ interface EsiService {
     ): CorporationsIdProjectsId
 
     @GET("/corporations/{corporation_id}/projects/{project_id}/contribution/{character_id}")
+    @Headers("Cache-Control: no-cache")
     suspend fun getCorporationsIdProjectsIdContribution(
         @Path("corporation_id") corporationId: Int,
         @Path("project_id") projectId: String,
