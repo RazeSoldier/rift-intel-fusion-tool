@@ -147,7 +147,7 @@ private fun Sidebar(
             ) {
                 Text(
                     text = "Modules",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                 )
                 RiftButton(
                     text = "Toggle all",
@@ -183,7 +183,7 @@ private fun Sidebar(
             ) {
                 Text(
                     text = "Channels",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                 )
                 RiftButton(
                     text = "Toggle all",

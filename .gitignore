@@ -12,6 +12,7 @@ build/
 .idea/uiDesigner.xml
 .idea/dataSources**
 .idea/dictionaries/
+.idea/csv-editor.xml
 *.iws
 *.iml
 *.ipr

@@ -18,7 +18,6 @@ class SolarSystemsRepository(
     private val shortened4: Map<String, List<String>>
     private val shortened3: Map<String, List<String>>
     private val shortened2: Map<String, List<String>>
-    private val sunTypes: Map<String, Int>
     private val systemIdsByName: Map<String, Int>
     private val systemNamesById: Map<Int, String>
     private val systemsById: Map<Int, MapSolarSystem>
@@ -27,15 +26,12 @@ class SolarSystemsRepository(
     val mapRegions: List<MapRegion>
     private val mapSystemConstellation: Map<Int, Int> // System ID -> Constellation ID
     private val mapConstellationSystems: Map<Int, List<Int>> // Constellation ID -> System IDs
-    private val regionNamesById: Map<Int, String> // Region ID -> Region name
-    private val regionNamesBySystemName: Map<String, String> // System name -> Region name
+    private val mapRegionSystems: Map<Int, List<Int>> // Region ID -> System IDs
+    private val regionsById: Map<Int, MapRegion> // Region ID -> Region
+    private val regionsBySystemName: Map<String, MapRegion> // System name -> Region
     private val regionIdBySystemId: Map<Int, Int> // System ID -> Region ID
     private val regionIdsByName: Map<String, Int> // Region name -> Region ID
-    private val constellationNamesById: Map<Int, String> // Constellation ID -> Constellation name
-
-    companion object {
-        private const val DEFAULT_SUN_TYPE = 8
-    }
+    private val constellationsById: Map<Int, MapConstellation> // Constellation ID -> Constellation
 
     data class MapSolarSystem(
         val id: Int,
@@ -55,6 +51,7 @@ class SolarSystemsRepository(
     data class MapConstellation(
         val id: Int,
         val name: String,
+        val regionId: Int,
         val x: Double,
         val y: Double,
         val z: Double,
@@ -79,7 +76,6 @@ class SolarSystemsRepository(
             Regions.selectAll().toList()
         }
         systemNames = systemRows.map { it[SolarSystems.solarSystemName] }.toSet()
-        sunTypes = systemRows.associate { it[SolarSystems.solarSystemName] to it[SolarSystems.sunTypeId] }
         systemIdsByName = systemRows.associate { it[SolarSystems.solarSystemName] to it[SolarSystems.solarSystemId] }
         systemNamesById = systemIdsByName.map { (name, id) -> id to name }.toMap()
         lowercaseSystemNames = systemNames.associateBy { it.lowercase() }
@@ -111,6 +107,7 @@ class SolarSystemsRepository(
             MapConstellation(
                 id = it[Constellations.constellationId],
                 name = it[Constellations.constellationName],
+                regionId = it[Constellations.regionId],
                 x = it[Constellations.x],
                 y = it[Constellations.y],
                 z = -it[Constellations.z],
@@ -133,11 +130,16 @@ class SolarSystemsRepository(
         }.entries.associate { (constellationId, rows) ->
             constellationId to rows.map { it[SolarSystems.solarSystemId] }
         }
-        regionNamesById = mapRegions.associate { it.id to it.name }
-        regionNamesBySystemName = mapSolarSystems.associate { it.name to regionNamesById[it.regionId]!! }
+        mapRegionSystems = systemRows.groupBy {
+            it[SolarSystems.regionId]
+        }.entries.associate { (regionId, rows) ->
+            regionId to rows.map { it[SolarSystems.solarSystemId] }
+        }
+        regionsById = mapRegions.associateBy { it.id }
+        regionsBySystemName = mapSolarSystems.associate { it.name to regionsById[it.regionId]!! }
         regionIdBySystemId = mapSolarSystems.associate { it.id to it.regionId }
         regionIdsByName = mapRegions.associate { it.name to it.id }
-        constellationNamesById = mapConstellations.associate { it.id to it.name }
+        constellationsById = mapConstellations.associateBy { it.id }
     }
 
     fun getSystems(knownSpace: Boolean = true): List<MapSolarSystem> {
@@ -152,16 +154,16 @@ class SolarSystemsRepository(
      * @param name Potential system name
      * @param regionsHint Regions the system is expected to be in, to prioritise ambiguous names
      * @param systemHints System IDs to prioritise for ambiguous names
-     * @return Full name of the system or null if it's not a system name
+     * @return System or null if it's not a system name
      */
-    fun getSystemName(
+    fun getFuzzySystem(
         name: String,
         regionsHint: List<String>,
         systemHints: List<Int> = emptyList(),
-    ): String? {
-        getSystemWithoutTypos(name, regionsHint, systemHints)?.let { return it }
-        if ('0' in name) getSystemWithoutTypos(name.replace('0', 'O'), regionsHint, systemHints)?.let { return it }
-        if ('O' in name) getSystemWithoutTypos(name.replace('O', '0'), regionsHint, systemHints)?.let { return it }
+    ): MapSolarSystem? {
+        getSystemWithoutTypos(name, regionsHint, systemHints)?.let { return getSystem(it) }
+        if ('0' in name) getSystemWithoutTypos(name.replace('0', 'O'), regionsHint, systemHints)?.let { return getSystem(it) }
+        if ('O' in name) getSystemWithoutTypos(name.replace('O', '0'), regionsHint, systemHints)?.let { return getSystem(it) }
         return null
     }
 
@@ -180,7 +182,7 @@ class SolarSystemsRepository(
         }
         return if (candidates.size > 1) {
             candidates.singleOrNull { candidate ->
-                regionNamesBySystemName[candidate] in regionsHint
+                getRegionBySystem(candidate)?.name in regionsHint
             } ?: candidates.singleOrNull { candidate ->
                 val systemId = systemIdsByName[candidate]
                 systemId in systemHints
@@ -188,10 +190,6 @@ class SolarSystemsRepository(
         } else {
             candidates.firstOrNull()
         }
-    }
-
-    fun getSystemSunTypeId(name: String): Int {
-        return sunTypes[name] ?: DEFAULT_SUN_TYPE
     }
 
     fun getSystemId(name: String): Int? {
@@ -211,8 +209,20 @@ class SolarSystemsRepository(
         return systemsById[id]
     }
 
+    fun getSystemsInConstellation(constellationId: Int): List<Int> {
+        return mapConstellationSystems[constellationId] ?: emptyList()
+    }
+
+    fun getSystemsInRegion(regionId: Int): List<Int> {
+        return mapRegionSystems[regionId] ?: emptyList()
+    }
+
     fun getSystemSecurity(id: Int): Double? {
         return mapSolarSystems.firstOrNull { it.id == id }?.security
+    }
+
+    fun getRegion(regionId: Int): MapRegion? {
+        return regionsById[regionId]
     }
 
     fun getKnownSpaceRegions(): List<MapRegion> {
@@ -227,8 +237,8 @@ class SolarSystemsRepository(
         return mapRegions.filter { it.id in 12000001..14000005 }
     }
 
-    fun getRegionBySystem(systemName: String): String? {
-        return regionNamesBySystemName[systemName]
+    fun getRegionBySystem(systemName: String): MapRegion? {
+        return regionsBySystemName[systemName]
     }
 
     fun getRegionIdBySystemId(systemId: Int): Int? {
@@ -239,12 +249,16 @@ class SolarSystemsRepository(
         return regionIdsByName[name]
     }
 
-    fun getRegionBySystemId(systemId: Int): String? {
-        return systemsById[systemId]?.regionId?.let { regionNamesById[it] }
+    fun getRegionBySystemId(systemId: Int): MapRegion? {
+        return systemsById[systemId]?.regionId?.let { regionsById[it] }
     }
 
-    fun getConstellationBySystemId(systemId: Int): String? {
-        return systemsById[systemId]?.constellationId?.let { constellationNamesById[it] }
+    fun getConstellation(constellationId: Int): MapConstellation? {
+        return constellationsById[constellationId]
+    }
+
+    fun getConstellationBySystemId(systemId: Int): MapConstellation? {
+        return systemsById[systemId]?.constellationId?.let { constellationsById[it] }
     }
 
     fun getSystems() = mapSolarSystems

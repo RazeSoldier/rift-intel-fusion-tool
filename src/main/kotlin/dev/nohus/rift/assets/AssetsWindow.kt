@@ -75,7 +75,7 @@ import dev.nohus.rift.generated.resources.menu_unpin
 import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.settings.persistence.LocationPinStatus
-import dev.nohus.rift.utils.formatIsk
+import dev.nohus.rift.utils.formatIskCompact
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
@@ -177,7 +177,7 @@ private fun AssetsWindowContent(
                             append(" - ")
                             append("${totals.items} Item${totals.items.plural}")
                             append(" - ")
-                            append(formatIsk(totals.price))
+                            append(formatIskCompact(totals.price))
                             append(" - ")
                             append(formatNumberCompact(totals.volume) + " m3")
                         }
@@ -414,7 +414,7 @@ private fun LocationHeader(
                     append("${assets.size} Item${if (assets.size != 1) "s" else ""}")
                     append(" - ")
                     val totalPrice = assets.sumOf { it.getTotalPrice() }
-                    append(formatIsk(totalPrice))
+                    append(formatIskCompact(totalPrice))
                     append(" - ")
                     val totalVolume = assets.sumOf { it.getTotalVolume() }
                     append(formatNumberCompact(totalVolume) + " m3")
@@ -511,7 +511,7 @@ private fun AssetRow(
                         }
                         if (asset.price != null) {
                             withStyle(style = SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                                append(" - ${formatIsk(asset.price * asset.asset.quantity)}")
+                                append(" - ${formatIskCompact(asset.price * asset.asset.quantity)}")
                             }
                         }
                     }
@@ -554,7 +554,7 @@ private fun AssetRow(
                             add("$formatted m3")
 
                             val totalPrice = asset.children.sumOf { it.getTotalPrice() }
-                            add(formatIsk(totalPrice))
+                            add(formatIskCompact(totalPrice))
                         }
                     }.joinToString(" - ")
                     if (secondaryText.isNotEmpty()) {

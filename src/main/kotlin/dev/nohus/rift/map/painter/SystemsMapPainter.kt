@@ -86,7 +86,7 @@ class SystemsMapPainter(
     @Composable
     override fun initializeComposed() {
         textMeasurer = rememberTextMeasurer()
-        regionNameStyle = RiftTheme.typography.captionPrimary.copy(letterSpacing = 3.sp)
+        regionNameStyle = RiftTheme.typography.detailPrimary.copy(letterSpacing = 3.sp)
         jumpBandsStyle = RiftTheme.typography.bodyPrimary.copy(fontSize = 24.sp)
         jumpBandsSmallStyle = RiftTheme.typography.bodyPrimary.copy(fontSize = 16.sp)
         mapBackground = RiftTheme.colors.mapBackground

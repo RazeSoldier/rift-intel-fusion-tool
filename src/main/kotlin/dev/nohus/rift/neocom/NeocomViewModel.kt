@@ -8,7 +8,6 @@ import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import org.koin.core.annotation.Single
 
 @Single
@@ -21,19 +20,16 @@ class NeocomViewModel(
 
     data class UiState(
         val isJabberEnabled: Boolean = false,
-        val isJukeboxEnabled: Boolean = false,
+        val isCorpProjectsEnabled: Boolean = false,
     )
 
     private val _state = MutableStateFlow(
         UiState(
             isJabberEnabled = configurationPackRepository.isJabberEnabled(),
+            isCorpProjectsEnabled = true,
         ),
     )
     val state = _state.asStateFlow()
-
-    init {
-        updateJukeboxEnabledState()
-    }
 
     fun onButtonClick(window: RiftWindow) {
         if (window == RiftWindow.Jukebox && windowManager.getOpenWindowUuids(RiftWindow.JukeboxCollapsed).isNotEmpty()) {
@@ -54,10 +50,5 @@ class NeocomViewModel(
             // Close the app so it's not running in the background without the user having the ability to quit it
             applicationViewModel.onQuit()
         }
-    }
-
-    private fun updateJukeboxEnabledState() {
-        val isFeatureFlagEnabled = true
-        _state.update { it.copy(isJukeboxEnabled = isFeatureFlagEnabled) }
     }
 }

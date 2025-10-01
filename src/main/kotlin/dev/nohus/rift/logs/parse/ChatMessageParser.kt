@@ -17,6 +17,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.WordsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.character.CharacterStatus
@@ -36,7 +37,7 @@ class ChatMessageParser(
 
     sealed interface TokenType {
         data class System(
-            val name: String,
+            val system: MapSolarSystem,
         ) : TokenType
         data class Character(
             val characterId: Int,
@@ -67,12 +68,12 @@ class ChatMessageParser(
         ) : TokenType
         data object Url : TokenType
         data class Gate(
-            val system: String,
+            val system: MapSolarSystem,
             val isAnsiblex: Boolean = false,
         ) : TokenType
         data class Movement(
             val verb: String,
-            val toSystem: String,
+            val toSystem: MapSolarSystem,
             val isGate: Boolean,
         ) : TokenType
     }
@@ -329,7 +330,7 @@ class ChatMessageParser(
     private fun findGates(tokens: List<MultiTypeToken>): List<MultiTypeToken> {
         if (tokens.size >= 2) {
             val lastTokens = tokens.takeLast(2)
-            val system = lastTokens.mapNotNull { it.types.filterIsInstance<System>().firstOrNull() }.singleOrNull()?.name
+            val system = lastTokens.mapNotNull { it.types.filterIsInstance<System>().firstOrNull() }.singleOrNull()?.system
             val other = lastTokens.singleOrNull { it.types.none { it is System || it is Keyword } }?.words?.singleOrNull()?.lowercase()
             if (system != null && other != null) {
                 val isGate = other == "gate"
@@ -358,7 +359,7 @@ class ChatMessageParser(
             if (tokens.size >= 2) {
                 val lastTokens = tokens.takeLast(2)
                 if (lastTokens[1].types.filterIsInstance<System>().isNotEmpty()) {
-                    val system = lastTokens[1].types.filterIsInstance<System>().first().name
+                    val system = lastTokens[1].types.filterIsInstance<System>().first().system
                     val before = lastTokens[0].words.joinToString(" ")
                     if (before.lowercase() in keywords) {
                         return tokens.dropLast(2) + MultiTypeToken(lastTokens.flatMap { it.words }, types = listOf(Movement(before, system, isGate = false)))
@@ -369,7 +370,7 @@ class ChatMessageParser(
             if (tokens.size >= 3) {
                 val lastTokens = tokens.takeLast(3)
                 if (lastTokens[1].types.filterIsInstance<System>().isNotEmpty()) {
-                    val system = lastTokens[1].types.filterIsInstance<System>().first().name
+                    val system = lastTokens[1].types.filterIsInstance<System>().first().system
                     val before = lastTokens[0].words.joinToString(" ")
                     if (before.lowercase() in keywords) {
                         return tokens.dropLast(3) + MultiTypeToken(lastTokens.flatMap { it.words }, types = listOf(Movement(before, system, isGate = false))) + lastTokens.last()
@@ -548,7 +549,7 @@ class ChatMessageParser(
                 if (token.types.any { it is System } && token.types.any { it is Character }) {
                     // Token is both a system and a player
                     val inRegionSystem = token.types.filterIsInstance<System>()
-                        .firstOrNull { solarSystemsRepository.getRegionBySystem(it.name) in regionsHint }
+                        .firstOrNull { solarSystemsRepository.getRegion(it.system.regionId)?.name in regionsHint }
                     if (inRegionSystem != null) {
                         // If the system is in this region, choose the system
                         add(Token(token.words, type = inRegionSystem, isLink))
@@ -612,8 +613,8 @@ class ChatMessageParser(
                 return@buildList
             }
 
-            val systemName = solarSystemsRepository.getSystemName(text, regionsHint)
-            if (systemName != null) add(System(systemName))
+            val system = solarSystemsRepository.getFuzzySystem(text, regionsHint)
+            if (system != null) add(System(system))
 
             val shipText = text
                 .replace("(", "").replace(")", "").replace(".", "")

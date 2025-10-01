@@ -1,5 +1,7 @@
 package dev.nohus.rift.compose
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -62,6 +65,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Link
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.openBrowser
@@ -77,6 +81,7 @@ fun ChatMessage(
     settings: IntelReportsSettings,
     message: ParsedChannelChatMessage,
     alertTriggerTimestamp: Instant?,
+    enterAnimation: Animatable<Float, AnimationVector1D>,
     modifier: Modifier = Modifier,
 ) {
     val time = ZonedDateTime.ofInstant(message.chatMessage.timestamp, settings.displayTimezone).toLocalTime()
@@ -125,6 +130,7 @@ fun ChatMessage(
             settings = settings,
             metadata = { MessageMetadata(settings, message, formattedTime, pointerState) },
             tokens = message.parsed,
+            enterAnimation = enterAnimation,
         )
     }
 }
@@ -185,6 +191,7 @@ private fun Message(
     settings: IntelReportsSettings,
     metadata: @Composable () -> Unit,
     tokens: List<Token>,
+    enterAnimation: Animatable<Float, AnimationVector1D>,
 ) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -203,11 +210,11 @@ private fun Message(
                     is TokenType.Character -> TokenWithCharacter(settings.rowHeight, text, type)
                     is TokenType.Question -> TokenWithText(settings.rowHeight, text, "Question")
                     is TokenType.Ship -> TokenWithShip(settings.rowHeight, type)
-                    is TokenType.System -> TokenWithSystem(settings.rowHeight, settings.isShowingSystemDistance, settings.isUsingJumpBridgesForDistance, type.name)
+                    is TokenType.System -> TokenWithSystem(settings.rowHeight, settings.isShowingSystemDistance, settings.isUsingJumpBridgesForDistance, type.system, enterAnimation)
                     TokenType.Url -> TokenWithUrl(settings.rowHeight, text)
                     is TokenType.Gate -> {
-                        val fromSystem = tokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.name }
-                        TokenWithGate(settings.rowHeight, fromSystem, type.system, type.isAnsiblex)
+                        val fromSystem = tokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.system }
+                        TokenWithGate(settings.rowHeight, fromSystem, type.system, type.isAnsiblex, enterAnimation)
                     }
                     is TokenType.Movement -> TokenWithMovement(settings.rowHeight, tokens, type)
                 }
@@ -309,37 +316,44 @@ private fun TokenWithSystem(
     rowHeight: Dp,
     isShowingSystemDistance: Boolean,
     isUsingJumpBridges: Boolean,
-    system: String,
+    system: MapSolarSystem,
+    enterAnimation: Animatable<Float, AnimationVector1D>,
 ) {
     IntelSystem(
         system = system,
         rowHeight = rowHeight,
         isShowingSystemDistance = isShowingSystemDistance,
         isUsingJumpBridges = isUsingJumpBridges,
+        enterAnimation = enterAnimation,
     )
 }
 
 @Composable
-private fun TokenWithGate(rowHeight: Dp, fromSystem: String?, toSystem: String, isAnsiblex: Boolean) {
-    val systemsRepository: SolarSystemsRepository by koin.inject()
-
+private fun TokenWithGate(
+    rowHeight: Dp,
+    fromSystem: MapSolarSystem?,
+    toSystem: MapSolarSystem,
+    isAnsiblex: Boolean,
+    enterAnimation: Animatable<Float, AnimationVector1D>,
+) {
     BorderedToken(rowHeight) {
         GateIcon(
             isAnsiblex = isAnsiblex,
-            fromSystem = fromSystem,
-            toSystem = toSystem,
+            fromSystem = fromSystem?.name,
+            toSystem = toSystem.name,
             size = rowHeight,
         )
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-        val sunTypeId = systemsRepository.getSystemSunTypeId(toSystem)
-        AsyncTypeIcon(
-            typeId = sunTypeId,
-            modifier = Modifier.size(rowHeight),
+        SystemIllustrationIconSmall(
+            solarSystemId = toSystem.id,
+            size = rowHeight,
+            animation = enterAnimation,
+            modifier = Modifier.clipToBounds(),
         )
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
         val gateText = if (isAnsiblex) "Ansiblex" else "Gate"
         Text(
-            text = "$toSystem $gateText",
+            text = "${toSystem.name} $gateText",
             style = RiftTheme.typography.bodyLink,
             modifier = Modifier.padding(4.dp),
         )
@@ -348,7 +362,6 @@ private fun TokenWithGate(rowHeight: Dp, fromSystem: String?, toSystem: String, 
 
 @Composable
 private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, movement: TokenType.Movement) {
-    val systemsRepository: SolarSystemsRepository by koin.inject()
     BorderedToken(rowHeight) {
         Image(
             painter = painterResource(Res.drawable.keywords_systems),
@@ -357,19 +370,18 @@ private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, moveme
         )
         if (movement.isGate) {
             VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-            val systemFrom = previousTokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.name }
+            val systemFrom = previousTokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.system }
             GateIcon(
                 isAnsiblex = false,
-                fromSystem = systemFrom,
-                toSystem = movement.toSystem,
+                fromSystem = systemFrom?.name,
+                toSystem = movement.toSystem.name,
                 size = rowHeight,
             )
         }
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-        val sunTypeId = systemsRepository.getSystemSunTypeId(movement.toSystem)
-        AsyncTypeIcon(
-            typeId = sunTypeId,
-            modifier = Modifier.size(rowHeight),
+        SystemIllustrationIconSmall(
+            solarSystemId = movement.toSystem.id,
+            size = rowHeight,
         )
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
         Text(
@@ -377,7 +389,7 @@ private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, moveme
             modifier = Modifier.padding(vertical = 4.dp).padding(start = 4.dp),
         )
         Text(
-            text = movement.toSystem,
+            text = movement.toSystem.name,
             style = RiftTheme.typography.bodyLink,
             modifier = Modifier.padding(4.dp),
         )
@@ -566,7 +578,7 @@ private fun TokenWithCharacter(rowHeight: Dp, name: String, character: TokenType
                     )
                     Text(
                         text = ticker,
-                        style = RiftTheme.typography.bodySecondary,
+                        style = RiftTheme.typography.detailSecondary,
                     )
                 }
             }

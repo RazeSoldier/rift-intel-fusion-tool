@@ -1,4 +1,4 @@
-package dev.nohus.rift.network.esi
+package dev.nohus.rift.network.esi.models
 
 import dev.nohus.rift.network.zkillboardqueue.IsoDateTimeSerializer
 import kotlinx.serialization.SerialName
@@ -69,6 +69,18 @@ data class CharactersIdCharacter(
     val name: String,
     @SerialName("title")
     val title: String? = null,
+)
+
+@Serializable
+data class CharactersAffiliation(
+    @SerialName("character_id")
+    val characterId: Int,
+    @SerialName("corporation_id")
+    val corporationId: Int,
+    @SerialName("alliance_id")
+    val allianceId: Int? = null,
+    @SerialName("faction_id")
+    val factionId: Int? = null,
 )
 
 @Serializable
@@ -648,3 +660,9 @@ enum class IndustryActivity {
     @SerialName("reverse_engineering")
     ReverseEngineering,
 }
+
+@Serializable
+data class CharactersIdRoles(
+    @SerialName("roles")
+    val roles: List<String>,
+)

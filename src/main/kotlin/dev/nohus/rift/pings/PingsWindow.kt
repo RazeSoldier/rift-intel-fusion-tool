@@ -23,12 +23,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.RiftButton
-import dev.nohus.rift.compose.RiftOpportunityBox
-import dev.nohus.rift.compose.RiftOpportunityBoxButton
-import dev.nohus.rift.compose.RiftOpportunityBoxCategory
+import dev.nohus.rift.compose.RiftOpportunityCard
+import dev.nohus.rift.compose.RiftOpportunityCardBottomContent
+import dev.nohus.rift.compose.RiftOpportunityCardButton
+import dev.nohus.rift.compose.RiftOpportunityCardCategory
+import dev.nohus.rift.compose.RiftOpportunityCardType
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
-import dev.nohus.rift.compose.SolarSystemPillState
 import dev.nohus.rift.compose.annotateLinks
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
@@ -86,7 +87,7 @@ private fun PingsWindowContent(
             scrollbarModifier = Modifier.padding(horizontal = Spacing.small),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = Spacing.medium),
+                .padding(bottom = Spacing.large, top = Spacing.medium),
         ) {
             state.pings.forEach { ping ->
                 when (ping) {
@@ -106,7 +107,7 @@ private fun PingsWindowContent(
                 }
                 Text(
                     text = text,
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -144,20 +145,18 @@ private fun PlainTextPing(
             }
         }
     }
-    val buttons = mutableListOf<RiftOpportunityBoxButton>()
-    buttons += RiftOpportunityBoxButton(
+    val buttons = mutableListOf<RiftOpportunityCardButton>()
+    buttons += RiftOpportunityCardButton(
         resource = Res.drawable.copy_16px,
         tooltip = "Copy ping",
         action = { Clipboard.copy(ping.sourceText) },
     )
-    RiftOpportunityBox(
-        category = RiftOpportunityBoxCategory.Unclassified,
-        type = type,
-        locations = emptyList(),
-        character = null,
-        title = null,
-        timestamp = ping.timestamp,
-        displayTimezone = displayTimezone,
+    RiftOpportunityCard(
+        category = RiftOpportunityCardCategory.Unclassified,
+        type = RiftOpportunityCardType(type),
+        solarSystemChipState = null,
+        topRight = null,
+        bottomContent = RiftOpportunityCardBottomContent.Timestamp(null, ping.timestamp, displayTimezone),
         buttons = buttons,
     ) {
         val descriptionStyle = if (ping.text.length <= 50) {
@@ -200,21 +199,21 @@ private fun FleetPing(
             append(ping.fleetCommander.name)
         }
     }
-    val buttons = mutableListOf<RiftOpportunityBoxButton>()
+    val buttons = mutableListOf<RiftOpportunityCardButton>()
     if (ping.doctrine?.link != null) {
-        buttons += RiftOpportunityBoxButton(
+        buttons += RiftOpportunityCardButton(
             resource = Res.drawable.fitting_16px,
             tooltip = "Doctrine forum thread",
             action = { ping.doctrine.link.toURIOrNull()?.openBrowser() },
         )
     }
-    buttons += RiftOpportunityBoxButton(
+    buttons += RiftOpportunityCardButton(
         resource = Res.drawable.copy_16px,
         tooltip = "Copy ping",
         action = { Clipboard.copy(ping.sourceText) },
     )
     if (ping.comms is Comms.Mumble) {
-        buttons += RiftOpportunityBoxButton(
+        buttons += RiftOpportunityCardButton(
             resource = Res.drawable.microphone,
             tooltip = "Join ${ping.comms.channel} on Mumble",
             action = { onMumbleClick(ping.comms.link) },
@@ -226,14 +225,12 @@ private fun FleetPing(
         is PapType.Text -> "${ping.papType.text.replaceFirstChar { it.uppercase() }} PAP"
         null -> "No PAP"
     }
-    RiftOpportunityBox(
+    RiftOpportunityCard(
         category = ping.opportunityCategory,
-        type = type,
-        locations = ping.formupLocations.map { getSolarSystemPillState(it) },
-        character = ping.fleetCommander,
-        title = title,
-        timestamp = ping.timestamp,
-        displayTimezone = displayTimezone,
+        type = RiftOpportunityCardType(type),
+        solarSystemChipState = ping.formupLocations,
+        topRight = ping.fleetCommander,
+        bottomContent = RiftOpportunityCardBottomContent.Timestamp(title, ping.timestamp, displayTimezone),
         buttons = buttons,
     ) {
         val descriptionStyle = if (ping.description.length <= 50) {
@@ -271,14 +268,5 @@ private fun FleetPing(
                 style = RiftTheme.typography.bodyPrimary,
             )
         }
-    }
-}
-
-private fun getSolarSystemPillState(location: FormupLocationUiModel): SolarSystemPillState {
-    return when (location) {
-        is FormupLocationUiModel.System -> {
-            SolarSystemPillState(distance = location.distance, name = location.name, security = location.security)
-        }
-        is FormupLocationUiModel.Text -> SolarSystemPillState(distance = null, name = location.text, security = null)
     }
 }

@@ -1,5 +1,41 @@
 package dev.nohus.rift.network.esi
 
+import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.CharacterIdLocation
+import dev.nohus.rift.network.esi.models.CharacterIdOnline
+import dev.nohus.rift.network.esi.models.CharacterIdShip
+import dev.nohus.rift.network.esi.models.CharactersAffiliation
+import dev.nohus.rift.network.esi.models.CharactersIdAsset
+import dev.nohus.rift.network.esi.models.CharactersIdAssetsLocation
+import dev.nohus.rift.network.esi.models.CharactersIdAssetsName
+import dev.nohus.rift.network.esi.models.CharactersIdCharacter
+import dev.nohus.rift.network.esi.models.CharactersIdClones
+import dev.nohus.rift.network.esi.models.CharactersIdFleet
+import dev.nohus.rift.network.esi.models.CharactersIdPlanet
+import dev.nohus.rift.network.esi.models.CharactersIdPlanetsId
+import dev.nohus.rift.network.esi.models.CharactersIdRoles
+import dev.nohus.rift.network.esi.models.CharactersIdSearch
+import dev.nohus.rift.network.esi.models.Contact
+import dev.nohus.rift.network.esi.models.ContactsLabel
+import dev.nohus.rift.network.esi.models.CorporationProjectsQueryState
+import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
+import dev.nohus.rift.network.esi.models.CorporationsIdProjects
+import dev.nohus.rift.network.esi.models.CorporationsIdProjectsId
+import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContribution
+import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
+import dev.nohus.rift.network.esi.models.FactionWarfareSystem
+import dev.nohus.rift.network.esi.models.FleetMember
+import dev.nohus.rift.network.esi.models.FleetsId
+import dev.nohus.rift.network.esi.models.Incursion
+import dev.nohus.rift.network.esi.models.IndustrySystem
+import dev.nohus.rift.network.esi.models.MarketsPrice
+import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.UniverseIdsResponse
+import dev.nohus.rift.network.esi.models.UniverseName
+import dev.nohus.rift.network.esi.models.UniverseStationsId
+import dev.nohus.rift.network.esi.models.UniverseStructuresId
+import dev.nohus.rift.network.esi.models.UniverseSystemJumps
+import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -26,6 +62,11 @@ interface EsiService {
     suspend fun getCharactersId(
         @Path("id") characterId: Int,
     ): CharactersIdCharacter
+
+    @POST("/characters/affiliation")
+    suspend fun getCharactersAffiliation(
+        @Body characterIds: List<Int>,
+    ): List<CharactersAffiliation>
 
     @GET("/corporations/{id}")
     suspend fun getCorporationsId(
@@ -236,4 +277,45 @@ interface EsiService {
 
     @GET("/industry/systems/")
     suspend fun getIndustrySystems(): List<IndustrySystem>
+
+    @GET("/corporations/{id}/projects")
+    suspend fun getCorporationsIdProjects(
+        @Path("id") corporationId: Int,
+        @Query("before") before: String?,
+        @Query("after") after: String?,
+        @Query("limit") limit: Int?,
+        @Query("state") state: CorporationProjectsQueryState?,
+        @Header("Authorization") authorization: String,
+    ): CorporationsIdProjects
+
+    @GET("/corporations/{corporation_id}/projects/{project_id}")
+    suspend fun getCorporationsIdProjectsId(
+        @Path("corporation_id") corporationId: Int,
+        @Path("project_id") projectId: String,
+        @Header("Authorization") authorization: String,
+    ): CorporationsIdProjectsId
+
+    @GET("/corporations/{corporation_id}/projects/{project_id}/contribution/{character_id}")
+    suspend fun getCorporationsIdProjectsIdContribution(
+        @Path("corporation_id") corporationId: Int,
+        @Path("project_id") projectId: String,
+        @Path("character_id") characterId: Int,
+        @Header("Authorization") authorization: String,
+    ): CorporationsIdProjectsIdContribution
+
+    @GET("/corporations/{corporation_id}/projects/{project_id}/contributors")
+    suspend fun getCorporationsIdProjectsIdContributors(
+        @Path("corporation_id") corporationId: Int,
+        @Path("project_id") projectId: String,
+        @Query("before") before: String?,
+        @Query("after") after: String?,
+        @Query("limit") limit: Int?,
+        @Header("Authorization") authorization: String,
+    ): CorporationsIdProjectsIdContributors
+
+    @GET("/characters/{character_id}/roles")
+    suspend fun getCharactersIdRoles(
+        @Path("character_id") characterId: Int,
+        @Header("Authorization") authorization: String,
+    ): CharactersIdRoles
 }

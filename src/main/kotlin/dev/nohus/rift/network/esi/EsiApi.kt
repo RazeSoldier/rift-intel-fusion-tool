@@ -3,6 +3,42 @@ package dev.nohus.rift.network.esi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.RequestExecutor
 import dev.nohus.rift.network.Result
+import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.CharacterIdLocation
+import dev.nohus.rift.network.esi.models.CharacterIdOnline
+import dev.nohus.rift.network.esi.models.CharacterIdShip
+import dev.nohus.rift.network.esi.models.CharactersAffiliation
+import dev.nohus.rift.network.esi.models.CharactersIdAsset
+import dev.nohus.rift.network.esi.models.CharactersIdAssetsLocation
+import dev.nohus.rift.network.esi.models.CharactersIdAssetsName
+import dev.nohus.rift.network.esi.models.CharactersIdCharacter
+import dev.nohus.rift.network.esi.models.CharactersIdClones
+import dev.nohus.rift.network.esi.models.CharactersIdFleet
+import dev.nohus.rift.network.esi.models.CharactersIdPlanet
+import dev.nohus.rift.network.esi.models.CharactersIdPlanetsId
+import dev.nohus.rift.network.esi.models.CharactersIdRoles
+import dev.nohus.rift.network.esi.models.CharactersIdSearch
+import dev.nohus.rift.network.esi.models.Contact
+import dev.nohus.rift.network.esi.models.ContactsLabel
+import dev.nohus.rift.network.esi.models.CorporationProjectsQueryState
+import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
+import dev.nohus.rift.network.esi.models.CorporationsIdProjects
+import dev.nohus.rift.network.esi.models.CorporationsIdProjectsId
+import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContribution
+import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
+import dev.nohus.rift.network.esi.models.FactionWarfareSystem
+import dev.nohus.rift.network.esi.models.FleetMember
+import dev.nohus.rift.network.esi.models.FleetsId
+import dev.nohus.rift.network.esi.models.Incursion
+import dev.nohus.rift.network.esi.models.IndustrySystem
+import dev.nohus.rift.network.esi.models.MarketsPrice
+import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.UniverseIdsResponse
+import dev.nohus.rift.network.esi.models.UniverseName
+import dev.nohus.rift.network.esi.models.UniverseStationsId
+import dev.nohus.rift.network.esi.models.UniverseStructuresId
+import dev.nohus.rift.network.esi.models.UniverseSystemJumps
+import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -37,6 +73,10 @@ class EsiApi(
 
     suspend fun getCharactersId(characterId: Int): Result<CharactersIdCharacter> {
         return execute { service.getCharactersId(characterId) }
+    }
+
+    suspend fun getCharactersAffiliation(characterIds: List<Int>): Result<List<CharactersAffiliation>> {
+        return execute { service.getCharactersAffiliation(characterIds) }
     }
 
     suspend fun getCorporationsId(corporationId: Int): Result<CorporationsIdCorporation> {
@@ -76,6 +116,7 @@ class EsiApi(
             service.getCorporationsIdContactsLabels(corporationId, authorization)
         }
     }
+
     suspend fun getCharactersIdContactsLabels(characterId: Int): Result<List<ContactsLabel>> {
         return executeEveAuthorized(characterId, EsiScope.Characters.ReadContacts) { authorization ->
             service.getCharactersIdContactsLabels(characterId, authorization)
@@ -267,5 +308,59 @@ class EsiApi(
 
     suspend fun getIndustrySystems(): Result<List<IndustrySystem>> {
         return execute { service.getIndustrySystems() }
+    }
+
+    suspend fun getCorporationsIdProjects(
+        characterId: Int,
+        corporationId: Int,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+        state: CorporationProjectsQueryState?,
+    ): Result<CorporationsIdProjects> {
+        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
+            service.getCorporationsIdProjects(corporationId, before, after, limit, state, authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdProjectsId(
+        characterId: Int,
+        corporationId: Int,
+        projectId: String,
+    ): Result<CorporationsIdProjectsId> {
+        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
+            service.getCorporationsIdProjectsId(corporationId, projectId, authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdProjectsIdContribution(
+        characterId: Int,
+        corporationId: Int,
+        projectId: String,
+    ): Result<CorporationsIdProjectsIdContribution> {
+        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
+            service.getCorporationsIdProjectsIdContribution(corporationId, projectId, characterId, authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdProjectsIdContributors(
+        characterId: Int,
+        corporationId: Int,
+        projectId: String,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+    ): Result<CorporationsIdProjectsIdContributors> {
+        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
+            service.getCorporationsIdProjectsIdContributors(corporationId, projectId, before, after, limit, authorization)
+        }
+    }
+
+    suspend fun getCharactersIdRoles(
+        characterId: Int,
+    ): Result<CharactersIdRoles> {
+        return executeEveAuthorized(characterId, EsiScope.Characters.ReadCorporationRoles) { authorization ->
+            service.getCharactersIdRoles(characterId, authorization)
+        }
     }
 }

@@ -121,7 +121,7 @@ private fun SsoDialogContent(
                     LoadingSpinner()
                     Text(
                         text = "Please continue in your browser",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(vertical = Spacing.large),
                     )
@@ -149,7 +149,7 @@ private fun SsoDialogContent(
                     SuccessIcon()
                     Text(
                         text = "Authentication successful!",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(vertical = Spacing.large),
                     )
@@ -168,7 +168,7 @@ private fun SsoDialogContent(
                     FailIcon()
                     Text(
                         text = "Authentication failed",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(vertical = Spacing.large),
                     )
@@ -208,7 +208,7 @@ private fun EsiScopes(
     ) {
         Text(
             text = "Allow RIFT to:",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             modifier = Modifier.padding(bottom = Spacing.large),
         )
         ScrollbarColumn(
@@ -236,7 +236,7 @@ private fun EsiScope(
         val ids = group.scopes.joinToString("\n") { it.id }
         RiftCheckboxWithLabel(
             label = group.name,
-            labelStyle = RiftTheme.typography.titlePrimary,
+            labelStyle = RiftTheme.typography.headerPrimary,
             tooltip = ids,
             isChecked = isChecked,
             onCheckedChange = {

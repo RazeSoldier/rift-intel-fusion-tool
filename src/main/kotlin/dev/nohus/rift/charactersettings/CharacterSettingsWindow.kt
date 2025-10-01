@@ -279,7 +279,7 @@ private fun CharacterSettingsWindowContent(
                                 RiftTooltipArea(tooltip) {
                                     Text(
                                         text = accountName.uppercase(),
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                 }
                                 Spacer(Modifier.weight(1f))
@@ -436,7 +436,7 @@ private fun CharacterSettingsWindowContent(
     } else {
         Text(
             text = "No characters found.\n\nMake sure the game directory is selected in settings, and that you have logged in to at least one character on this computer before.",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(Spacing.medium),
@@ -473,7 +473,7 @@ private fun CharacterRow(
                 is AsyncResource.Ready -> {
                     Text(
                         text = character.info.value.name,
-                        style = RiftTheme.typography.titleHighlighted,
+                        style = RiftTheme.typography.headerHighlighted,
                     )
                 }
 

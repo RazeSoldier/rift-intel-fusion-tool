@@ -223,7 +223,7 @@ private fun AlertsWindowContent(
             ) {
                 Text(
                     text = "No alerts defined.\nCreate some with the button below.",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -280,7 +280,7 @@ private fun LazyItemScope.AlertGroupHeader(
         ExpandChevron(isExpanded = isExpanded)
         Text(
             text = name,
-            style = RiftTheme.typography.titleSecondary,
+            style = RiftTheme.typography.headerSecondary,
             modifier = Modifier.padding(vertical = Spacing.small),
         )
         Spacer(Modifier.weight(1f))

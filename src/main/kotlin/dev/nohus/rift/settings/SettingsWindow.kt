@@ -55,14 +55,13 @@ import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
 import dev.nohus.rift.compose.RiftRadioButtonWithLabel
 import dev.nohus.rift.compose.RiftSliderWithLabel
+import dev.nohus.rift.compose.RiftSolarSystemChip
 import dev.nohus.rift.compose.RiftTabBar
 import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.SectionTitle
-import dev.nohus.rift.compose.SolarSystemPill
-import dev.nohus.rift.compose.SolarSystemPillState
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
@@ -75,6 +74,7 @@ import dev.nohus.rift.generated.resources.deleteicon
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_warning
 import dev.nohus.rift.notifications.NotificationEditWindow
+import dev.nohus.rift.repositories.SolarSystemChipState
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.SettingsViewModel.JumpBridgeCopyState
 import dev.nohus.rift.settings.SettingsViewModel.JumpBridgeSearchState
@@ -85,6 +85,7 @@ import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.utils.OperatingSystem.MacOs
 import dev.nohus.rift.utils.openBrowser
+import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
@@ -149,7 +150,7 @@ fun SettingsWindow(
                     Text(
                         text = "Use at your own risk!",
                         textAlign = TextAlign.Center,
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Row(
@@ -676,7 +677,7 @@ private fun IntelChannelsSection(
         if (state.intelChannels.isEmpty()) {
             Text(
                 text = "No intel channels configured",
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -936,12 +937,13 @@ private fun JumpBridgeNetworkSection(
                                     .hoverBackground()
                                     .padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
                             ) {
-                                SolarSystemPill(
-                                    state = SolarSystemPillState(
-                                        distance = null,
+                                RiftSolarSystemChip(
+                                    state = SolarSystemChipState(
+                                        locationsText = null,
+                                        jumpsText = null,
                                         name = connection.from.name,
-                                        security = connection.from.security,
-                                        region = solarSystemsRepository.getRegionBySystem(connection.from.name),
+                                        security = connection.from.security.roundSecurity(),
+                                        region = solarSystemsRepository.getRegionBySystem(connection.from.name)?.name,
                                     ),
                                     hasBackground = false,
                                 )
@@ -949,12 +951,13 @@ private fun JumpBridgeNetworkSection(
                                     text = "→",
                                     style = RiftTheme.typography.bodyPrimary,
                                 )
-                                SolarSystemPill(
-                                    state = SolarSystemPillState(
-                                        distance = null,
+                                RiftSolarSystemChip(
+                                    state = SolarSystemChipState(
+                                        locationsText = null,
+                                        jumpsText = null,
                                         name = connection.to.name,
-                                        security = connection.to.security,
-                                        region = solarSystemsRepository.getRegionBySystem(connection.to.name),
+                                        security = connection.to.security.roundSecurity(),
+                                        region = solarSystemsRepository.getRegionBySystem(connection.to.name)?.name,
                                     ),
                                     hasBackground = false,
                                 )
@@ -963,7 +966,7 @@ private fun JumpBridgeNetworkSection(
                     } else {
                         Text(
                             text = "No jump bridges imported",
-                            style = RiftTheme.typography.titlePrimary,
+                            style = RiftTheme.typography.headerPrimary,
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1164,12 +1167,13 @@ private fun SovereigntyUpgradesSection(
                                     .hoverBackground()
                                     .padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
                             ) {
-                                SolarSystemPill(
-                                    state = SolarSystemPillState(
-                                        distance = null,
+                                RiftSolarSystemChip(
+                                    state = SolarSystemChipState(
+                                        locationsText = null,
+                                        jumpsText = null,
                                         name = system.name,
                                         security = system.security,
-                                        region = solarSystemsRepository.getRegionBySystem(system.name),
+                                        region = solarSystemsRepository.getRegionBySystem(system.name)?.name,
                                     ),
                                     hasBackground = false,
                                 )
@@ -1189,7 +1193,7 @@ private fun SovereigntyUpgradesSection(
                     } else {
                         Text(
                             text = "No sovereignty upgrades imported",
-                            style = RiftTheme.typography.titlePrimary,
+                            style = RiftTheme.typography.headerPrimary,
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()

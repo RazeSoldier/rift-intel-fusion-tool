@@ -114,12 +114,12 @@ private fun VersionItem(version: Version) {
                     Spacer(Modifier.width(Spacing.medium))
                 }
                 val style = if (point.isHighlighted) {
-                    RiftTheme.typography.titlePrimary.copy(
+                    RiftTheme.typography.headerPrimary.copy(
                         color = RiftTheme.colors.textSpecialHighlighted,
                         fontWeight = FontWeight.Bold,
                     )
                 } else {
-                    RiftTheme.typography.titlePrimary
+                    RiftTheme.typography.headerPrimary
                 }
                 Text(
                     text = point.text,

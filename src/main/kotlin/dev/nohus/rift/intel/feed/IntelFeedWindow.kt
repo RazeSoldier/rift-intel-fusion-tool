@@ -2,6 +2,8 @@ package dev.nohus.rift.intel.feed
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
@@ -31,6 +33,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,6 +70,8 @@ import dev.nohus.rift.intel.feed.IntelFeedViewModel.UiState
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.map.groupIntelByTime
+import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.DistanceFilter
 import dev.nohus.rift.settings.persistence.EntityFilter
 import dev.nohus.rift.settings.persistence.LocationFilter
@@ -138,6 +143,7 @@ private fun IntelFeedWindowContent(
         if (items.isNotEmpty()) {
             CompositionLocalProvider(LocalNow provides getNow()) {
                 var expandedSystem: String? by remember { mutableStateOf(null) }
+                val enterAnimations: MutableMap<Int, Animatable<Float, AnimationVector1D>> = remember { mutableStateMapOf() }
                 ScrollbarLazyColumn(
                     listState = listState,
                     modifier = Modifier.padding(start = outerPadding, bottom = outerPadding),
@@ -145,7 +151,7 @@ private fun IntelFeedWindowContent(
                 ) {
                     items(items, key = { it.first }) { (system, intel) ->
                         AnimatedContent(
-                            targetState = system == expandedSystem,
+                            targetState = system.name == expandedSystem,
                             transitionSpec = {
                                 (
                                     fadeIn(animationSpec = tween(110, delayMillis = 90)) +
@@ -160,7 +166,8 @@ private fun IntelFeedWindowContent(
                                 state = state,
                                 system = system,
                                 intel = intel,
-                                onClick = { expandedSystem = if (isExpanded) null else system },
+                                enterAnimation = enterAnimations.getOrPut(system.id) { Animatable(0f) },
+                                onClick = { expandedSystem = if (isExpanded) null else system.name },
                             )
                         }
                     }
@@ -185,7 +192,7 @@ private fun EmptyState(state: UiState) {
     }
     Text(
         text = text,
-        style = RiftTheme.typography.titlePrimary,
+        style = RiftTheme.typography.headerPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -198,8 +205,9 @@ private fun EmptyState(state: UiState) {
 private fun IntelFeedItem(
     isExpanded: Boolean,
     state: UiState,
-    system: String,
+    system: MapSolarSystem,
     intel: List<IntelStateController.Dated<SystemEntity>>,
+    enterAnimation: Animatable<Float, AnimationVector1D>,
     onClick: () -> Unit,
 ) {
     ItemBox(
@@ -217,6 +225,7 @@ private fun IntelFeedItem(
                     rowHeight = state.settings.rowHeight,
                     isShowingSystemDistance = state.settings.isShowingSystemDistance,
                     isUsingJumpBridges = state.settings.isUsingJumpBridgesForDistance,
+                    enterAnimation = enterAnimation,
                     background = RiftTheme.colors.windowBackgroundSecondary,
                 )
             }
@@ -232,12 +241,13 @@ private fun IntelFeedItem(
                             rowHeight = state.settings.rowHeight,
                             isShowingSystemDistance = state.settings.isShowingSystemDistance,
                             isUsingJumpBridges = state.settings.isUsingJumpBridgesForDistance,
+                            enterAnimation = enterAnimation,
                             background = RiftTheme.colors.windowBackgroundSecondary,
                         )
                     }
                     IntelTimer(
                         timestamp = group.key,
-                        style = RiftTheme.typography.captionBoldPrimary,
+                        style = RiftTheme.typography.detailBoldPrimary,
                         rowHeight = state.settings.rowHeight,
                         modifier = Modifier.padding(Spacing.small),
                     )

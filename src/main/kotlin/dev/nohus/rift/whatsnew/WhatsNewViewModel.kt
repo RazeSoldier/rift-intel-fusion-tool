@@ -30,7 +30,7 @@ class WhatsNewViewModel(
         val patrons: List<Patron> = emptyList(),
     )
 
-    private val _state = MutableStateFlow(UiState(WhatsNew.getVersions()))
+    private val _state = MutableStateFlow(UiState(WhatsNew.getVersions(true)))
     val state = _state.asStateFlow()
 
     init {

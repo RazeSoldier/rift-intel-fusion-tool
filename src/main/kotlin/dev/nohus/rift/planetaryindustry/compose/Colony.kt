@@ -37,9 +37,8 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
+import dev.nohus.rift.compose.RiftSolarSystemChip
 import dev.nohus.rift.compose.RiftTooltipArea
-import dev.nohus.rift.compose.SolarSystemPill
-import dev.nohus.rift.compose.SolarSystemPillState
 import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.pointerInteraction
@@ -67,7 +66,6 @@ import dev.nohus.rift.utils.formatDateTime
 import dev.nohus.rift.utils.formatDurationCompact
 import dev.nohus.rift.utils.invertedPlural
 import dev.nohus.rift.utils.plural
-import dev.nohus.rift.utils.roundSecurity
 import org.jetbrains.compose.resources.painterResource
 import java.time.Duration
 import java.time.Instant
@@ -100,13 +98,7 @@ fun ColonyTitle(
                 modifier = Modifier.padding(vertical = Spacing.small),
             ) {
                 ColonyOwner(colony, item.characterName)
-                SolarSystemPill(
-                    SolarSystemPillState(
-                        distance = item.distance,
-                        name = colony.planet.name,
-                        security = colony.system.security.roundSecurity(),
-                    ),
-                )
+                RiftSolarSystemChip(item.location)
             }
             Spacer(Modifier.weight(1f))
             ExpiresIn(item, isViewingFastForward, onViewFastForwardChange)
@@ -145,7 +137,7 @@ private fun ViewingFastForward(
         ) {
             Text(
                 text = formatDateTime(item.ffwdColony.currentSimTime),
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
             )
             getFutureColonyStatusDescription(item.ffwdColony.status)?.let {
                 Text(
@@ -302,7 +294,7 @@ private fun ColonyOwner(
         }
         Text(
             text = characterName ?: "Loading…",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
     }
 }

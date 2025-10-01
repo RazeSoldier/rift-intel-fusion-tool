@@ -3,11 +3,11 @@ package dev.nohus.rift.assets
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.Result
-import dev.nohus.rift.network.esi.CharactersIdAsset
-import dev.nohus.rift.network.esi.CharactersIdAssetLocationType
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.UniverseStationsId
-import dev.nohus.rift.network.esi.UniverseStructuresId
+import dev.nohus.rift.network.esi.models.CharactersIdAsset
+import dev.nohus.rift.network.esi.models.CharactersIdAssetLocationType
+import dev.nohus.rift.network.esi.models.UniverseStationsId
+import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -87,7 +87,13 @@ class RequestExecutorImpl(
                     } else if (e.code() == 404) {
                         // Valid response
                     } else {
-                        logger.error { "Unknown API error response: $errorResponse" }
+                        val text = buildString {
+                            append(errorResponse.error)
+                            if (errorResponse.ssoStatus != null) {
+                                append(" (SSO status: ${errorResponse.ssoStatus})")
+                            }
+                        }
+                        logger.error { "ESI error response: $text" }
                     }
                     return Failure(EsiErrorException(errorResponse, e.code()))
                 } catch (ignored: SerializationException) {

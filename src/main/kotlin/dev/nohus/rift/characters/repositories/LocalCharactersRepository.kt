@@ -36,7 +36,11 @@ class LocalCharactersRepository(
         val scopes: List<ScopeGroup>,
         val info: AsyncResource<CharacterInfo>,
         val isHidden: Boolean,
-    )
+    ) {
+        override fun toString(): String {
+            return "LocalCharacter(${info.success?.name ?: characterId})"
+        }
+    }
 
     data class CharacterInfo(
         val name: String,
@@ -138,19 +142,25 @@ class LocalCharactersRepository(
     }
 
     private suspend fun loadEsiCharacters() = coroutineScope {
+        val characterIds = _characters.value.map { it.characterId }
+        val affiliations = esiApi.getCharactersAffiliation(characterIds).map {
+            it.associateBy { it.characterId }
+        }.success ?: emptyMap()
+
         for (item in _characters.value) {
             launch {
                 val result = esiApi.getCharactersId(item.characterId).map { character ->
-                    val corporationDeferred = async { esiApi.getCorporationsId(character.corporationId) }
-                    val allianceDeferred =
-                        if (character.allianceId != null) async { esiApi.getAlliancesId(character.allianceId) } else null
+                    val corporationId = affiliations[item.characterId]?.corporationId ?: character.corporationId
+                    val allianceId = affiliations[item.characterId]?.allianceId ?: character.allianceId
+                    val corporationDeferred = async { esiApi.getCorporationsId(corporationId) }
+                    val allianceDeferred = if (allianceId != null) async { esiApi.getAlliancesId(allianceId) } else null
                     val corporation = corporationDeferred.await()
                     val alliance = allianceDeferred?.await()
                     CharacterInfo(
                         name = character.name,
-                        corporationId = character.corporationId,
+                        corporationId = corporationId,
                         corporationName = corporation.success?.name ?: "?",
-                        allianceId = character.allianceId,
+                        allianceId = allianceId,
                         allianceName = if (alliance != null) alliance.success?.name ?: "?" else null,
                     )
                 }

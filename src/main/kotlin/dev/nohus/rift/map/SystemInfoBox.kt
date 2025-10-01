@@ -75,8 +75,8 @@ import dev.nohus.rift.generated.resources.indicator_wormhole
 import dev.nohus.rift.intel.state.IntelStateController.Dated
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
-import dev.nohus.rift.network.esi.IndustryActivity
-import dev.nohus.rift.network.esi.SovereigntySystem
+import dev.nohus.rift.network.esi.models.IndustryActivity
+import dev.nohus.rift.network.esi.models.SovereigntySystem
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.WormholeSize
 import dev.nohus.rift.repositories.MapStatusRepository.SolarSystemStatus
 import dev.nohus.rift.repositories.NamesRepository
@@ -145,7 +145,7 @@ fun SystemInfoBox(
                                 }
                             }
                         }
-                        val systemNameStyle = RiftTheme.typography.captionBoldPrimary
+                        val systemNameStyle = RiftTheme.typography.detailBoldPrimary
                         val highlightedSystemNameStyle =
                             RiftTheme.typography.bodyHighlighted.copy(fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         val style = if (isHighlightedOrHovered) highlightedSystemNameStyle else systemNameStyle
@@ -164,7 +164,7 @@ fun SystemInfoBox(
                         systemStatus?.regionName?.let { name ->
                             Text(
                                 text = name,
-                                style = RiftTheme.typography.captionSecondary,
+                                style = RiftTheme.typography.detailSecondary,
                                 modifier = Modifier
                                     .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
                                     .onClick { onRegionClick() },
@@ -176,7 +176,7 @@ fun SystemInfoBox(
                         systemStatus?.constellationName?.let { name ->
                             Text(
                                 text = name,
-                                style = RiftTheme.typography.captionSecondary,
+                                style = RiftTheme.typography.detailSecondary,
                             )
                         }
                     }
@@ -894,12 +894,12 @@ private fun Intel(
                     val entities = group.value
                     IntelTimer(
                         timestamp = group.key,
-                        style = RiftTheme.typography.captionBoldPrimary,
+                        style = RiftTheme.typography.detailBoldPrimary,
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                     )
                     SystemEntities(
                         entities = entities,
-                        system = system.name,
+                        system = system,
                         rowHeight = if (isCompact) 24.dp else 32.dp,
                         isGroupingCharacters = isCompact,
                     )

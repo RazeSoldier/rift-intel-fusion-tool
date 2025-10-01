@@ -30,6 +30,7 @@ object Regions : Table() {
 object Constellations : Table() {
     val constellationId = integer("constellationId")
     val constellationName = varchar("constellationName", 100)
+    val regionId = integer("regionId")
     val x = double("x")
     val y = double("y")
     val z = double("z")
@@ -74,6 +75,12 @@ object Types : Table() {
     override val primaryKey = PrimaryKey(typeId)
 }
 
+object TypeGroups : Table() {
+    val groupId = integer("groupId")
+    val groupName = varchar("groupName", 100)
+    override val primaryKey = PrimaryKey(groupId)
+}
+
 object StarGates : Table() {
     val fromSystemId = integer("fromSystemId")
     val toSystemId = integer("toSystemId")
@@ -114,6 +121,7 @@ object Celestials : Table() {
     val id = integer("id")
     val typeId = integer("typeId")
     val solarSystemId = integer("solarSystemId")
+    val orbitId = integer("orbitId").nullable()
     val x = double("x")
     val y = double("y")
     val z = double("z")

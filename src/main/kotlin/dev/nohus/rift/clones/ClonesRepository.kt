@@ -7,7 +7,7 @@ import dev.nohus.rift.location.LocationRepository
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.LocationType
+import dev.nohus.rift.network.esi.models.LocationType
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.sso.scopes.ScopeGroups

@@ -56,7 +56,7 @@ fun Patrons(patrons: List<Patron>, modifier: Modifier = Modifier) {
                 if (patrons.isEmpty()) {
                     Text(
                         text = "Support RIFT",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 } else if (patrons.size == 1) {
                     Patron(patrons.single(), modifier = Modifier.padding(horizontal = Spacing.medium))
@@ -92,7 +92,7 @@ private fun Patron(patron: Patron, modifier: Modifier = Modifier) {
 
         Text(
             text = patron.name,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
     }
 }

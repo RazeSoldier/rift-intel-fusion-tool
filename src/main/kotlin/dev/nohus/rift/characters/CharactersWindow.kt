@@ -95,13 +95,14 @@ import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
 import dev.nohus.rift.network.AsyncResource
-import dev.nohus.rift.network.esi.CharacterIdShip
+import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.sso.SsoAuthority
 import dev.nohus.rift.sso.SsoDialog
 import dev.nohus.rift.utils.article
-import dev.nohus.rift.utils.formatIsk
+import dev.nohus.rift.utils.formatIskCompact
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -216,7 +217,7 @@ private fun CharactersWindowContent(
     } else {
         Text(
             text = "No characters found.\n\nMake sure the game directory is selected in settings, and that you have logged in to at least one character on this computer before.",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(Spacing.medium),
@@ -259,12 +260,12 @@ private fun ColumnScope.CharactersList(
                         if (state.characters.any { it.isHidden }) {
                             Text(
                                 text = "Disabled characters",
-                                style = RiftTheme.typography.titlePrimary,
+                                style = RiftTheme.typography.headerPrimary,
                             )
                         } else {
                             Text(
                                 text = "No disabled characters",
-                                style = RiftTheme.typography.titlePrimary,
+                                style = RiftTheme.typography.headerPrimary,
                             )
                         }
                         RiftImageButton(
@@ -422,7 +423,7 @@ private fun CharacterRow(
                         ) {
                             Text(
                                 text = character.info.value.name,
-                                style = RiftTheme.typography.titleHighlighted,
+                                style = RiftTheme.typography.headerHighlighted,
                                 modifier = Modifier.weight(1f),
                             )
                             OnlineIndicatorDot(
@@ -434,7 +435,7 @@ private fun CharacterRow(
                         LocationText(location)
                         if (character.walletBalance != null) {
                             Text(
-                                text = formatIsk(character.walletBalance),
+                                text = formatIskCompact(character.walletBalance),
                                 style = RiftTheme.typography.bodyPrimary,
                             )
                         }
@@ -703,7 +704,7 @@ private fun HiddenCharacterRow(
                     }
                     Text(
                         text = character.info.value.name,
-                        style = RiftTheme.typography.titleSecondary,
+                        style = RiftTheme.typography.headerSecondary,
                         modifier = Modifier
                             .padding(horizontal = Spacing.medium),
                     )
@@ -806,8 +807,8 @@ private fun Location(location: Location?) {
     ) {
         Row {
             AnimatedContent(location, contentKey = { it.solarSystemId }) {
-                val systemName = systemsRepository.getSystemName(location.solarSystemId) ?: return@AnimatedContent
-                LocationIcon(location, systemName, systemsRepository, typesRepository)
+                val system = systemsRepository.getSystem(location.solarSystemId) ?: return@AnimatedContent
+                LocationIcon(location, system, typesRepository)
             }
             AnimatedContent(location.ship) {
                 ShipIcon(location.ship, typesRepository)
@@ -828,13 +829,12 @@ private fun Location(location: Location?) {
 @Composable
 private fun LocationIcon(
     location: Location,
-    systemName: String,
-    systemsRepository: SolarSystemsRepository,
+    system: MapSolarSystem,
     typesRepository: TypesRepository,
 ) {
     val typeId = location.station?.typeId
         ?: location.structure?.typeId
-        ?: systemsRepository.getSystemSunTypeId(systemName)
+        ?: system.sunTypeId
     val type = typesRepository.getTypeOrPlaceholder(typeId)
     val locationId = location.station?.stationId?.toLong() ?: location.structure?.structureId
 
@@ -854,7 +854,7 @@ private fun LocationIcon(
                             withStyle(RiftTheme.typography.bodyHighlighted.toSpanStyle()) {
                                 appendLine(type.name)
                             }
-                            append(structureName.removePrefix(systemName).trim())
+                            append(structureName.removePrefix(system.name).trim())
                         } else {
                             append("In space")
                         }

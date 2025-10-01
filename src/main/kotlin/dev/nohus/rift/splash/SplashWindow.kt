@@ -284,7 +284,7 @@ private fun Patron(patron: Patron, modifier: Modifier = Modifier) {
 
         Text(
             text = patron.name,
-            style = RiftTheme.typography.titlePrimary.copy(color = Color.White),
+            style = RiftTheme.typography.headerPrimary.copy(color = Color.White),
         )
     }
 }

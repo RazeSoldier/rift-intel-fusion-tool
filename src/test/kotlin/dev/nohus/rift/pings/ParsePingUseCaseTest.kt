@@ -2,6 +2,7 @@ package dev.nohus.rift.pings
 
 import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.character.CharactersRepository
 import dev.nohus.rift.standings.StandingsRepository
 import io.kotest.core.spec.IsolationMode
@@ -36,14 +37,20 @@ class ParsePingUseCaseTest : FreeSpec({
     coEvery { mockCharactersRepository.getCharacterId("Asher Elias") } returns 4
     coEvery { mockCharactersRepository.getCharacterId("Lodena Minax") } returns 5
     coEvery { mockCharactersRepository.getCharacterId("Arkadios Sol") } returns 6
-    every { mockSolarSystemsRepository.getSystemName(any(), any(), any()) } returns null
-    every { mockSolarSystemsRepository.getSystemName("1DQ1-A", emptyList()) } returns "1DQ1-A"
-    every { mockSolarSystemsRepository.getSystemName("UALX-3", emptyList()) } returns "UALX-3"
-    every { mockSolarSystemsRepository.getSystemName("0SHT", emptyList()) } returns "0SHT-A"
-    every { mockSolarSystemsRepository.getSystemName("U-Q", emptyList()) } returns null
-    every { mockSolarSystemsRepository.getSystemName("U-Q", emptyList(), listOf(30000629)) } returns "U-QMOA"
-    every { mockSolarSystemsRepository.getSystemName("49-U", emptyList(), listOf(30000629)) } returns "49-U6U"
-    every { mockSolarSystemsRepository.getSystemName("4-07", emptyList(), listOf(30000629)) } returns "4-07MU"
+    val system1Dq1: MapSolarSystem = mockk { every { id } returns 100000001 }
+    val systemUalx: MapSolarSystem = mockk { every { id } returns 100000002 }
+    val system0sht: MapSolarSystem = mockk { every { id } returns 100000003 }
+    val systemUqmo: MapSolarSystem = mockk { every { id } returns 100000004 }
+    val system49U6: MapSolarSystem = mockk { every { id } returns 100000005 }
+    val system407m: MapSolarSystem = mockk { every { id } returns 100000006 }
+    every { mockSolarSystemsRepository.getFuzzySystem(any(), any(), any()) } returns null
+    every { mockSolarSystemsRepository.getFuzzySystem("1DQ1-A", emptyList()) } returns system1Dq1
+    every { mockSolarSystemsRepository.getFuzzySystem("UALX-3", emptyList()) } returns systemUalx
+    every { mockSolarSystemsRepository.getFuzzySystem("0SHT", emptyList()) } returns system0sht
+    every { mockSolarSystemsRepository.getFuzzySystem("U-Q", emptyList()) } returns null
+    every { mockSolarSystemsRepository.getFuzzySystem("U-Q", emptyList(), listOf(30000629)) } returns systemUqmo
+    every { mockSolarSystemsRepository.getFuzzySystem("49-U", emptyList(), listOf(30000629)) } returns system49U6
+    every { mockSolarSystemsRepository.getFuzzySystem("4-07", emptyList(), listOf(30000629)) } returns system407m
     every { mockStandingsRepository.getFriendlyAllianceIds() } returns setOf(1)
     every { mockMapStatusRepository.status } returns mockk {
         every { value } returns mapOf(
@@ -117,7 +124,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "Hostiles need some time to dock and spin ships. Bring tackle and hunters. NEUTS on sentinels too.",
                 fleetCommander = FleetCommander("Havish Montak", 1),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("1DQ1-A")),
+                formupLocations = listOf(FormupLocation.System(100000001)),
                 papType = PapType.Strategic,
                 comms = Comms.Mumble("Op 4", "https://gnf.lt/2eMgwE2.html"),
                 doctrine = Doctrine(
@@ -149,7 +156,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "WTF 205 - Command Destroyers\n\nWhat mindlink do you need to boost? How the hell does booshing work? Why do I have a combat timer on this gate? Find the answers to all these questions and more in this class.\n\nPlease note there is no SRP for Gooniversity Classes. Our 200 series covers advanced topics, so bring your own ships at your own risk.",
                 fleetCommander = FleetCommander("Mrbluff343", 2),
                 fleet = "WTF 205",
-                formupLocations = listOf(FormupLocation.System("1DQ1-A")),
+                formupLocations = listOf(FormupLocation.System(100000001)),
                 papType = PapType.Peacetime,
                 comms = Comms.Text("General"),
                 doctrine = Doctrine(
@@ -178,7 +185,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "I found an absolutely amazing wh rout of awesome. Getin, im itching for some blood!",
                 fleetCommander = FleetCommander("Mist Amatin", 3),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("1DQ1-A")),
+                formupLocations = listOf(FormupLocation.System(100000001)),
                 papType = PapType.Strategic,
                 comms = Comms.Mumble("Op 3", "https://gnf.lt/NOH1FNH.html"),
                 doctrine = Doctrine(
@@ -227,7 +234,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "Fleet up on Asher",
                 fleetCommander = FleetCommander("Asher Elias", 4),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("U-QMOA")),
+                formupLocations = listOf(FormupLocation.System(100000004)),
                 papType = null,
                 comms = null,
                 doctrine = null,
@@ -277,7 +284,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "Fleet up on Asher",
                 fleetCommander = FleetCommander("Asher Elias", 4),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("49-U6U"), FormupLocation.System("4-07MU")),
+                formupLocations = listOf(FormupLocation.System(100000005), FormupLocation.System(100000006)),
                 papType = null,
                 comms = null,
                 doctrine = null,
@@ -298,7 +305,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "Sub cap move op! Departing 0900 on the dot",
                 fleetCommander = FleetCommander("Asher Elias", 4),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("UALX-3"), FormupLocation.System("0SHT-A")),
+                formupLocations = listOf(FormupLocation.System(100000002), FormupLocation.System(100000003)),
                 papType = null,
                 comms = null,
                 doctrine = null,
@@ -322,7 +329,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "Saturday night brawl seems to be brewing. We're not fighting over anything important so no one will probably overcommit, let's goooo\n\nOp1\nRaven Navy\n0SHT",
                 fleetCommander = FleetCommander("Asher Elias", 4),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("0SHT-A")),
+                formupLocations = listOf(FormupLocation.System(100000003)),
                 papType = null,
                 comms = null,
                 doctrine = null,
@@ -382,7 +389,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "Let's go goons first 3 fleets",
                 fleetCommander = FleetCommander("Arkadios Sol", 6),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("UALX-3")),
+                formupLocations = listOf(FormupLocation.System(100000002)),
                 papType = PapType.Strategic,
                 comms = Comms.Mumble("Op 1", "https://gnf.lt/dYehZh9.html"),
                 doctrine = Doctrine("Vultures (Booster > Basi > Vulture > FNI > Onyx > Lachesis/Huginn > Svipul > Else)", "https://goonfleet.com/index.php/topic/369029-active-strat-vultures/"),
@@ -395,7 +402,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "",
                 fleetCommander = FleetCommander("Mist Amatin", 3),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("UALX-3")),
+                formupLocations = listOf(FormupLocation.System(100000002)),
                 papType = PapType.Strategic,
                 comms = Comms.Mumble("Op 2", "https://gnf.lt/vLwgoyY.html"),
                 doctrine = Doctrine("Vultures (Booster > Basi > Vulture > FNI > Onyx > Lachesis/Huginn > Svipul > Else)", "https://goonfleet.com/index.php/topic/369029-active-strat-vultures/"),
@@ -408,7 +415,7 @@ class ParsePingUseCaseTest : FreeSpec({
                 description = "",
                 fleetCommander = FleetCommander("Lodena Minax", 5),
                 fleet = null,
-                formupLocations = listOf(FormupLocation.System("UALX-3")),
+                formupLocations = listOf(FormupLocation.System(100000002)),
                 papType = PapType.Strategic,
                 comms = Comms.Mumble("Op 3", "https://gnf.lt/NOH1FNH.html"),
                 doctrine = Doctrine("Harpy Fleet (Boosters > Kirin/Scalpel > Harpy > Else) READ MOTD! READ MOTD! READ MOTD!", "https://goonfleet.com/index.php/topic/346057-active-strat-harpyfleet/"),

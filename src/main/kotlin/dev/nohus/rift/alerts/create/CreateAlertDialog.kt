@@ -213,7 +213,7 @@ private fun FormQuestion(
     Column {
         Text(
             text = formQuestion.title,
-            style = RiftTheme.typography.titleSecondary,
+            style = RiftTheme.typography.headerSecondary,
             modifier = Modifier
                 .padding(vertical = Spacing.medium),
         )
@@ -311,7 +311,7 @@ private fun FormQuestion(
                     }
                     Text(
                         text = "From: ",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                     val maxJumps = 16 // 0 - 15
                     RiftDropdown(
@@ -327,7 +327,7 @@ private fun FormQuestion(
                     )
                     Text(
                         text = " To: ",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                     RiftDropdown(
                         items = List(maxJumps - min) { min + it },
@@ -362,7 +362,7 @@ private fun FormQuestion(
                 } else {
                     Text(
                         text = "You have no characters to choose from!",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 }
             }
@@ -385,7 +385,7 @@ private fun FormQuestion(
                 } else {
                     Text(
                         text = "You have no intel channels to choose from!",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 }
             }
@@ -602,7 +602,7 @@ private fun FormQuestion(
                         } else {
                             Text(
                                 text = "No colonies available.\nCheck the Planetary Industry window.",
-                                style = RiftTheme.typography.titlePrimary,
+                                style = RiftTheme.typography.headerPrimary,
                             )
                         }
                     }
@@ -713,7 +713,7 @@ private fun FormQuestion(
                 } else {
                     Text(
                         text = "No contact labels available.\nCheck the Contacts window.",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 }
             }
@@ -757,9 +757,9 @@ private fun ListSelectorRow(
             modifier = Modifier.weight(1f),
         ) {
             val style = if (isSelected) {
-                RiftTheme.typography.titlePrimary.copy(color = RiftTheme.colors.primary)
+                RiftTheme.typography.headerPrimary.copy(color = RiftTheme.colors.primary)
             } else {
-                RiftTheme.typography.titlePrimary
+                RiftTheme.typography.headerPrimary
             }
             Text(
                 text = text,

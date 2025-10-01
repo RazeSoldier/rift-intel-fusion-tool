@@ -163,7 +163,7 @@ private fun MapMarkersWindowContent(
             if (state.markers.isEmpty()) {
                 Text(
                     text = "No map markers created",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -232,7 +232,7 @@ private fun MapMarkersWindowContent(
 
         Text(
             text = "Marker color",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         val animatedColor by animateColorAsState(markerColor ?: Color.White)
         val colors = listOf(
@@ -275,7 +275,7 @@ private fun MapMarkersWindowContent(
 
         Text(
             text = "Marker icon",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),

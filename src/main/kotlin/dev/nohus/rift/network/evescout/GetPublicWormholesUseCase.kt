@@ -65,8 +65,8 @@ class GetPublicWormholesUseCase(
                             outSystemId = outSystem.id,
                             inSystemName = inSystem.name,
                             outSystemName = outSystem.name,
-                            inRegionName = solarSystemsRepository.getRegionBySystemId(inSystem.id).takeIf { it !in ignoredRegionNames },
-                            outRegionName = solarSystemsRepository.getRegionBySystemId(outSystem.id).takeIf { it !in ignoredRegionNames },
+                            inRegionName = solarSystemsRepository.getRegionBySystemId(inSystem.id)?.name.takeIf { it !in ignoredRegionNames },
+                            outRegionName = solarSystemsRepository.getRegionBySystemId(outSystem.id)?.name.takeIf { it !in ignoredRegionNames },
                             maxShipSize = size,
                         )
                         listOf(wormhole, wormhole.reverse())

@@ -101,7 +101,7 @@ class ExternalServiceRepository(
     private fun getShipItems(name: String, typeId: Int): List<ServiceItem> {
         return listOf(
             ServiceItem(UniWiki, "https://wiki.eveuniversity.org/${name.replace(' ', '_')}"),
-            ServiceItem(EveRef, "https://everef.net/type/$typeId"),
+            ServiceItem(EveRef, "https://everef.net/types/$typeId"),
             ServiceItem(ZKillboard, "https://zkillboard.com/ship/$typeId/"),
             ServiceItem(EveKill, "https://eve-kill.com/item/$typeId"),
             ServiceItem(NewEdenEncyclopedia, "https://newedenencyclopedia.net/type/$typeId"),

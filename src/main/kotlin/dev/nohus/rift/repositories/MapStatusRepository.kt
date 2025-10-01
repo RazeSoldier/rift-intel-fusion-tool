@@ -8,10 +8,10 @@ import dev.nohus.rift.map.MapPlanetsController
 import dev.nohus.rift.map.markers.MapMarkersRepository
 import dev.nohus.rift.map.markers.MapMarkersRepository.MapMarker
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.FactionWarfareSystem
-import dev.nohus.rift.network.esi.Incursion
-import dev.nohus.rift.network.esi.IndustryActivity
-import dev.nohus.rift.network.esi.SovereigntySystem
+import dev.nohus.rift.network.esi.models.FactionWarfareSystem
+import dev.nohus.rift.network.esi.models.Incursion
+import dev.nohus.rift.network.esi.models.IndustryActivity
+import dev.nohus.rift.network.esi.models.SovereigntySystem
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.Storm
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase
@@ -134,8 +134,8 @@ class MapStatusRepository(
                 }.toMap()
                 systems.associateWith { systemId ->
                     SolarSystemStatus(
-                        regionName = solarSystemsRepository.getRegionBySystemId(systemId),
-                        constellationName = solarSystemsRepository.getConstellationBySystemId(systemId),
+                        regionName = solarSystemsRepository.getRegionBySystemId(systemId)?.name,
+                        constellationName = solarSystemsRepository.getConstellationBySystemId(systemId)?.name,
                         shipJumps = universe[systemId]?.shipJumps,
                         npcKills = universe[systemId]?.npcKills,
                         podKills = universe[systemId]?.podKills,

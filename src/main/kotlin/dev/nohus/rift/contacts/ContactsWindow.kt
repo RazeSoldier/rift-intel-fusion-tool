@@ -49,10 +49,12 @@ import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
 import dev.nohus.rift.compose.ClickableLocation
 import dev.nohus.rift.compose.ClickableSystem
+import dev.nohus.rift.compose.ConstellationIllustrationIconSmall
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.ExpandChevron
 import dev.nohus.rift.compose.FlagIcon
 import dev.nohus.rift.compose.LoadingSpinner
+import dev.nohus.rift.compose.RegionIllustrationIconSmall
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuArea
 import dev.nohus.rift.compose.RiftDropdown
@@ -63,6 +65,7 @@ import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.ScrollbarLazyColumn
+import dev.nohus.rift.compose.SystemIllustrationIconSmall
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
@@ -546,7 +549,7 @@ private fun Contact(
                 ) {
                     Text(
                         text = contact.entity.name,
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                     if (contact.labels.isNotEmpty()) {
                         Text(
@@ -667,7 +670,7 @@ private fun EmptyState(isLoading: Boolean, contacts: List<Contact>) {
         } else {
             "No contacts loaded"
         },
-        style = RiftTheme.typography.titlePrimary,
+        style = RiftTheme.typography.headerPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -871,10 +874,8 @@ private fun SearchResultRow(
                 }
             }
             SearchCategory.Constellation -> {
-                Image(
-                    painter = painterResource(Res.drawable.constellation),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                ConstellationIllustrationIconSmall(
+                    constellationId = item.typeId,
                 )
             }
             SearchCategory.Corporations -> AsyncCorporationLogo(
@@ -893,17 +894,13 @@ private fun SearchResultRow(
                 modifier = Modifier.size(32.dp),
             )
             SearchCategory.Regions -> {
-                Image(
-                    painter = painterResource(Res.drawable.map_region),
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                RegionIllustrationIconSmall(
+                    regionId = item.id.toInt(),
                 )
             }
             SearchCategory.SolarSystems -> {
-                AsyncTypeIcon(
-                    typeId = item.typeId,
-                    nameHint = item.name,
-                    modifier = Modifier.size(32.dp),
+                SystemIllustrationIconSmall(
+                    solarSystemId = item.typeId,
                 )
             }
             SearchCategory.Stations -> {
@@ -956,7 +953,7 @@ private fun SearchResultRow(
                 ) {
                     Text(
                         text = item.name,
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                     if (item.description != null) {
                         Text(

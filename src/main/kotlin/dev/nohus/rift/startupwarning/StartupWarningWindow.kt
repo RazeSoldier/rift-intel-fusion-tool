@@ -70,7 +70,7 @@ private fun StartupWarningContent(
                 if (showTitles) {
                     Text(
                         text = warning.title,
-                        style = RiftTheme.typography.titleHighlighted,
+                        style = RiftTheme.typography.headerHighlighted,
                     )
                 }
                 Text(

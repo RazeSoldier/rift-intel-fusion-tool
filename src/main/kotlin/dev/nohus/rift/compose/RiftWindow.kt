@@ -549,7 +549,7 @@ private fun TitleBar(
                         text = title,
                         style = when (style) {
                             TitleBarStyle.Full -> RiftTheme.typography.headlineHighlighted
-                            TitleBarStyle.Small -> RiftTheme.typography.titleHighlighted
+                            TitleBarStyle.Small -> RiftTheme.typography.headerHighlighted
                         },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

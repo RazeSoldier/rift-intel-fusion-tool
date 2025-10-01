@@ -53,7 +53,7 @@ class SovereigntyUpgradesHackWatcher(
                     it.type
                 }
                 if (importedUpgrades.isNotEmpty()) {
-                    val notification = SovereigntyUpgradeImportNotification(systemName, importedUpgrades)
+                    val notification = SovereigntyUpgradeImportNotification(system, importedUpgrades)
                     notificationsController.show(notification)
                     sovereigntyUpgradesRepository.setUpgrades(system, importedUpgrades)
                 }

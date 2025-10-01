@@ -183,7 +183,7 @@ private fun WelcomeStep(
         }
         TypingText(
             text = text,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             onFinishedTyping = { hasFinishedTyping = true },
         )
     }
@@ -237,7 +237,7 @@ private fun EveInstallationStep(
         }
         TypingText(
             text = text,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             onFinishedTyping = { hasFinishedTyping = true },
         )
         AnimatedVisibility(
@@ -311,7 +311,7 @@ private fun CharactersStep(
         }
         TypingText(
             text = text,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             onFinishedTyping = { hasFinishedTyping = true },
         )
         AnimatedVisibility(
@@ -363,7 +363,7 @@ private fun ConfigurationPacksStep(
         }
         TypingText(
             text = text,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             onFinishedTyping = { hasFinishedTyping = true },
         )
         AnimatedVisibility(
@@ -416,7 +416,7 @@ private fun IntelChannelsStep(
         }
         TypingText(
             text = text,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             onFinishedTyping = { hasFinishedTyping = true },
         )
         AnimatedVisibility(
@@ -460,7 +460,7 @@ private fun FinishStep(
         }
         TypingText(
             text = text,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             onFinishedTyping = { hasFinishedTyping = true },
         )
         AnimatedVisibility(

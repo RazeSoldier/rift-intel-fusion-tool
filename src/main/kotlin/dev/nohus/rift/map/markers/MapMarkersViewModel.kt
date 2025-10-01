@@ -61,7 +61,7 @@ class MapMarkersViewModel(
                 id = it.id,
                 systemId = it.systemId,
                 systemName = solarSystemsRepository.getSystemName(it.systemId) ?: "Unknown",
-                regionName = solarSystemsRepository.getRegionBySystemId(it.systemId) ?: "Unknown",
+                regionName = solarSystemsRepository.getRegionBySystemId(it.systemId)?.name ?: "Unknown",
                 label = it.label,
                 color = it.color,
                 iconName = it.icon,

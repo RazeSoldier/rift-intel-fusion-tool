@@ -62,7 +62,7 @@ private fun EmptyState(
     ) {
         Text(
             text = "You are not in a fleet",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()

@@ -183,7 +183,7 @@ fun MapSettingsPanel(
                                 ) {
                                     Text(
                                         text = "System:",
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                     SystemColorPills(
                                         isExpanded = false,
@@ -204,7 +204,7 @@ fun MapSettingsPanel(
                                 ) {
                                     Text(
                                         text = "Background:",
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                     SystemColorPills(
                                         isExpanded = false,
@@ -225,7 +225,7 @@ fun MapSettingsPanel(
                                 ) {
                                     Text(
                                         text = "Indicators:",
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                     val text = systemInfoTypes.indicators[settingsMapType].orEmpty().let {
                                         if (it.isEmpty()) "None" else "${it.size} enabled"
@@ -243,7 +243,7 @@ fun MapSettingsPanel(
                                 ) {
                                     Text(
                                         text = "Info box:",
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                     val text = systemInfoTypes.infoBox[settingsMapType].orEmpty().let {
                                         if (it.isEmpty()) "None" else "${it.size} enabled"
@@ -697,7 +697,7 @@ private fun SettingsPanelTitle(
         )
         Text(
             text = title,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
     }
 }
@@ -715,7 +715,7 @@ private fun AlternativeLayoutsPills(
     ) {
         Text(
             text = "Alternative maps:",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         alternativeLayouts.forEach { layout ->
             RiftPill(
@@ -745,7 +745,7 @@ private fun DistanceMapPills(
         ) {
             Text(
                 text = "Centered on:",
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
             )
             if (state.followingCharacterId != null) {
                 RiftPill(
@@ -765,7 +765,7 @@ private fun DistanceMapPills(
         ) {
             Text(
                 text = "Range:",
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
             )
             RiftPill(
                 text = "${state.distance} jump${state.distance.plural}",

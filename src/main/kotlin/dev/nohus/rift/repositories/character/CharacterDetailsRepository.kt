@@ -2,9 +2,9 @@ package dev.nohus.rift.repositories.character
 
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.network.Result
-import dev.nohus.rift.network.esi.AlliancesIdAlliance
-import dev.nohus.rift.network.esi.CorporationsIdCorporation
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
 import kotlinx.coroutines.async
@@ -36,25 +36,30 @@ class CharacterDetailsRepository(
     )
 
     suspend fun getCharacterDetails(characterId: Int): CharacterDetails? = coroutineScope {
-        val character = esiApi.getCharactersId(characterId).success ?: return@coroutineScope null
-        val deferredCorporation = async { esiApi.getCorporationsId(character.corporationId).success }
-        val deferredAlliance = async { character.allianceId?.let { esiApi.getAlliancesId(it).success } }
+        val characterDeferred = async { esiApi.getCharactersId(characterId).success }
+        val affiliationDeferred = async { esiApi.getCharactersAffiliation(listOf(characterId)).success?.firstOrNull() }
+        val character = characterDeferred.await() ?: return@coroutineScope null
+        val affiliation = affiliationDeferred.await()
+        val corporationId = affiliation?.corporationId ?: character.corporationId
+        val allianceId = affiliation?.allianceId ?: character.allianceId
+        val deferredCorporation = async { esiApi.getCorporationsId(corporationId).success }
+        val deferredAlliance = async { allianceId?.let { esiApi.getAlliancesId(it).success } }
         val corporation = deferredCorporation.await()
         val alliance = deferredAlliance.await()
-        val standing = standingsRepository.getStanding(character.allianceId, character.corporationId, characterId) ?: 0f
-        val standingLevel = standingsRepository.getStandingLevel(character.allianceId, character.corporationId, characterId)
+        val standing = standingsRepository.getStanding(allianceId, corporationId, characterId) ?: 0f
+        val standingLevel = standingsRepository.getStandingLevel(allianceId, corporationId, characterId)
         val characterLabels = contactsRepository.getLabels(listOf(characterId)).map { it.name }.distinct()
-        val corporationLabels = contactsRepository.getLabels(listOf(character.corporationId)).map { it.name }.distinct()
-        val allianceLabels = character.allianceId
-            ?.let { contactsRepository.getLabels(listOf(character.allianceId)).map { it.name }.distinct() }
+        val corporationLabels = contactsRepository.getLabels(listOf(corporationId)).map { it.name }.distinct()
+        val allianceLabels = allianceId
+            ?.let { contactsRepository.getLabels(listOf(allianceId)).map { it.name }.distinct() }
             ?: emptyList()
         CharacterDetails(
             characterId = characterId,
             name = character.name,
-            corporationId = character.corporationId,
+            corporationId = corporationId,
             corporationName = corporation?.name,
             corporationTicker = corporation?.ticker,
-            allianceId = character.allianceId,
+            allianceId = allianceId,
             allianceName = alliance?.name,
             allianceTicker = alliance?.ticker,
             standing = standing,
