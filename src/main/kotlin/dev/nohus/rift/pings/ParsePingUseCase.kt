@@ -14,84 +14,132 @@ class ParsePingUseCase(
     private val mapStatusRepository: MapStatusRepository,
     private val standingsRepository: StandingsRepository,
 ) {
+    data class Key(
+        val names: List<String>,
+        val canBeMultiline: Boolean = false,
+    )
+
+    private val fleetCommanderKey = Key(listOf("FC Name", "FC"))
+    private val fleetKey = Key(listOf("Fleet name", "Fleet"))
+    private val formupKey = Key(listOf("Formup Location", "Formup", "Loc"))
+    private val papKey = Key(listOf("PAP Type", "Pap Type"))
+    private val commsKey = Key(listOf("Comms"))
+    private val doctrineKey = Key(listOf("Doctrine"), canBeMultiline = true)
+    private val allKeys = listOf(fleetCommanderKey, fleetKey, formupKey, papKey, commsKey, doctrineKey)
+
     suspend operator fun invoke(
         timestamp: Instant,
         text: String,
-    ): PingModel? {
+    ): List<PingModel> {
         val cleanText = text
             .replace("\u200D", "")
             .replace("\uFEFF", "")
             .replace("PAP \nType:", "\nPAP Type:")
-            .replace("Doctrine:", "\nDoctrine:")
+            .replace("[^\n]Doctrine:".toRegex(), "\nDoctrine:")
 
-        if (!cleanText.contains("~~~ This was")) return null // Not a ping
+        if (!cleanText.contains("~~~ This was")) return emptyList() // Not a ping
 
-        val fleetCommanderKeys = listOf("FC Name", "FC")
-        val fleetKeys = listOf("Fleet name", "Fleet")
-        val formupKeys = listOf("Formup Location", "Formup", "Loc")
-        val papKeys = listOf("PAP Type")
-        val commsKeys = listOf("Comms")
-        val doctrineKeys = listOf("Doctrine")
-        val allKeys = fleetCommanderKeys + fleetKeys + formupKeys + papKeys + commsKeys + doctrineKeys
+        val pingTexts = splitMultiFleetPing(cleanText)
+        return pingTexts.map { pingText ->
+            val fleetCommander = getValue(pingText, fleetCommanderKey)?.let { parseFleetCommander(it) }
+            val fleet = getValue(pingText, fleetKey)
+            var formupLocations = getValue(pingText, formupKey)?.let { parseFormupLocations(it) } ?: emptyList()
+            val papType = getValue(pingText, papKey)?.let { parsePapType(it) }
+            val comms = getValue(pingText, commsKey)?.let { parseComms(it) }
+            val doctrine = getValue(pingText, doctrineKey)?.let { parseDoctrine(it) }
 
-        val fleetCommander = getValue(cleanText, fleetCommanderKeys)?.let { parseFleetCommander(it) }
-        val fleet = getValue(cleanText, fleetKeys)
-        val formupLocations = getValue(cleanText, formupKeys)?.let { parseFormupLocations(it) } ?: emptyList()
-        val papType = getValue(cleanText, papKeys)?.let { parsePapType(it) }
-        val comms = getValue(cleanText, commsKeys)?.let { parseComms(it) }
-        val doctrine = getValue(cleanText, doctrineKeys)?.let { parseDoctrine(it) }
-
-        val description = cleanText.lines()
-            .asSequence()
-            .map { it.trim() }
-            .filterNot { it.startsWith("~~~ This was") }
-            .let { lines ->
-                var filteredLines = lines.toList()
-                while (true) {
-                    val indices = getValueIndices(filteredLines, allKeys) ?: break
-                    filteredLines = filteredLines.withIndex().filter { it.index !in indices }.map { it.value }
+            val description = pingText.lines()
+                .asSequence()
+                .map { it.trim() }
+                .filterNot { it.startsWith("~~~ This was") }
+                .let { lines ->
+                    var filteredLines = lines.toList()
+                    while (true) {
+                        val indices = getValueIndices(filteredLines, allKeys) ?: break
+                        filteredLines = filteredLines.withIndex().filter { it.index !in indices }.map { it.value }
+                    }
+                    filteredLines
                 }
-                filteredLines
-            }
-            .windowed(2) { (a, b) -> if (a.isEmpty() && b.isEmpty()) listOf() else listOf(a) }
-            .flatten()
-            .joinToString("\n")
-            .trim()
-
-        val signature = cleanText.lines().lastOrNull()?.let { lastLine ->
-            val regex = """~~~ This was a (?<source>.*) ?broadcast from (?<sender>.*) to (?<target>.*) at .* ~~~""".toRegex()
-            regex.find(lastLine)
-        }
-        val broadcastSource = signature?.groups?.get("source")?.value?.trim()?.takeIf { it.isNotBlank() }
-        val sender = signature?.groups?.get("sender")?.value?.trim()?.takeIf { it.isNotBlank() }
-        val target = signature?.groups?.get("target")?.value?.trim()?.takeIf { it.isNotBlank() }
-
-        return if (fleetCommander != null) {
-            PingModel.FleetPing(
-                timestamp = timestamp,
-                sourceText = text,
-                description = description,
-                fleetCommander = fleetCommander,
-                fleet = fleet,
-                formupLocations = formupLocations,
-                papType = papType,
-                comms = comms,
-                doctrine = doctrine,
-                broadcastSource = broadcastSource,
-                target = target,
-            )
-        } else {
-            val plainText = cleanText.lines()
-                .takeWhile { !it.startsWith("~~~ This was") }
+                .windowed(2) { (a, b) -> if (a.isEmpty() && b.isEmpty()) listOf() else listOf(a) }
+                .flatten()
                 .joinToString("\n")
                 .trim()
-            PingModel.PlainText(
-                timestamp = timestamp,
-                sourceText = text,
-                text = plainText,
-                sender = sender,
-                target = target,
-            )
+
+            // Try to find a formup location in the description if it wasn't specified with a key
+            if (formupLocations.isEmpty()) {
+                formupLocations = description.lines().firstNotNullOfOrNull { line ->
+                    parseFormupLocations(line)
+                        .filter { it is FormupLocation.System }
+                        .takeIf { it.isNotEmpty() }
+                } ?: emptyList()
+            }
+
+            val signature = cleanText.lines().lastOrNull()?.let { lastLine ->
+                val regex = """~~~ This was a (?<source>.*) ?broadcast from (?<sender>.*) to (?<target>.*) at .* ~~~""".toRegex()
+                regex.find(lastLine)
+            }
+            val broadcastSource = signature?.groups?.get("source")?.value?.trim()?.takeIf { it.isNotBlank() }
+            val sender = signature?.groups?.get("sender")?.value?.trim()?.takeIf { it.isNotBlank() }
+            val target = signature?.groups?.get("target")?.value?.trim()?.takeIf { it.isNotBlank() }
+
+            if (fleetCommander != null) {
+                PingModel.FleetPing(
+                    timestamp = timestamp,
+                    sourceText = text,
+                    description = description,
+                    fleetCommander = fleetCommander,
+                    fleet = fleet,
+                    formupLocations = formupLocations,
+                    papType = papType,
+                    comms = comms,
+                    doctrine = doctrine,
+                    broadcastSource = broadcastSource,
+                    target = target,
+                )
+            } else {
+                val plainText = cleanText.lines()
+                    .takeWhile { !it.startsWith("~~~ This was") }
+                    .joinToString("\n")
+                    .trim()
+                PingModel.PlainText(
+                    timestamp = timestamp,
+                    sourceText = text,
+                    text = plainText,
+                    sender = sender,
+                    target = target,
+                )
+            }
+        }
+    }
+
+    /**
+     * A ping can contain multiple fleets. Split the ping text into the individual constituent pings.
+     */
+    private fun splitMultiFleetPing(text: String): List<String> {
+        val textBlocks = text.split("\n\n")
+        val indicesOfTextBlocksWithFcs = textBlocks.withIndex().filter { (_, block) ->
+            getValue(block, fleetCommanderKey) != null
+        }.map { it.index }
+
+        if (indicesOfTextBlocksWithFcs.size > 1) {
+            // Multi-fleet ping, split
+            var currentIndex = 0
+            val splits = mutableListOf<String>()
+            indicesOfTextBlocksWithFcs.forEach { index ->
+                val toIndex = if (index == indicesOfTextBlocksWithFcs.last()) {
+                    // This is the last split, so consume all text to the end for it
+                    textBlocks.size
+                } else {
+                    index + 1
+                }
+                val blocksInThisSplit = textBlocks.subList(currentIndex, toIndex)
+                splits += blocksInThisSplit.joinToString("\n\n")
+                currentIndex = index + 1
+            }
+            return splits
+        } else {
+            // Normal ping, return as single
+            return listOf(text)
         }
     }
 
@@ -207,23 +255,25 @@ class ParsePingUseCase(
             ?.value
     }
 
-    private fun getValue(text: String, keys: List<String>): String? {
+    private fun getValue(text: String, key: Key): String? {
         val lines = text.lines()
-        val start = lines.indexOfFirst { line -> keys.any { "$it:" in line } }
+        val start = lines.indexOfFirst { line -> key.names.any { "$it:" in line } }
         if (start < 0) return null
-        val key = keys.firstOrNull { lines[start].startsWith(it) } ?: return null
+        val keyName = key.names.firstOrNull { lines[start].startsWith(it) } ?: return null
         return lines.drop(start).withIndex()
-            .takeWhile { (index, line) -> index == 0 || (":" !in line && line.isNotBlank()) }
+            .takeWhile { (index, line) -> index == 0 || key.canBeMultiline && (":" !in line && line.isNotBlank()) }
             .joinToString("\n") { it.value }
-            .removePrefix("$key:")
+            .removePrefix("$keyName:")
             .trim()
     }
 
-    private fun getValueIndices(lines: List<String>, keys: List<String>): List<Int>? {
-        val start = lines.indexOfFirst { line -> keys.any { "$it:" in line } }
+    private fun getValueIndices(lines: List<String>, keys: List<Key>): List<Int>? {
+        val names = keys.flatMap { it.names }
+        val start = lines.indexOfFirst { line -> names.any { "$it:" in line } }
         if (start < 0) return null
+        val key = keys.firstOrNull { it.names.any { name -> "$name:" in lines[start] } } ?: return null
         return lines.drop(start).withIndex()
-            .takeWhile { (index, line) -> index == 0 || (":" !in line && line.isNotBlank()) }
+            .takeWhile { (index, line) -> index == 0 || key.canBeMultiline && (":" !in line && line.isNotBlank()) }
             .map { start + it.index }
     }
 }

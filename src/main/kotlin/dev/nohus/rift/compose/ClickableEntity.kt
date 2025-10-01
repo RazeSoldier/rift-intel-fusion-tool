@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import dev.nohus.rift.autopilot.AutopilotController
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.contacts.ContactsExternalControl
 import dev.nohus.rift.contacts.ContactsRepository
@@ -33,7 +34,6 @@ import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.Settings
-import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.windowing.WindowManager

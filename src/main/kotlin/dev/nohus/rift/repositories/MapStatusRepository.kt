@@ -5,8 +5,6 @@ import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.map.MapJumpRangeController
 import dev.nohus.rift.map.MapJumpRangeController.SystemDistance
 import dev.nohus.rift.map.MapPlanetsController
-import dev.nohus.rift.map.MapSovereigntyUpgradesController
-import dev.nohus.rift.map.MapSovereigntyUpgradesController.SovereigntyUpgrade
 import dev.nohus.rift.map.markers.MapMarkersRepository
 import dev.nohus.rift.map.markers.MapMarkersRepository.MapMarker
 import dev.nohus.rift.network.esi.EsiApi
@@ -22,6 +20,8 @@ import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.PlanetsRepository.Planet
 import dev.nohus.rift.repositories.RatsRepository.RatType
 import dev.nohus.rift.repositories.StationsRepository.Station
+import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController
+import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController.SovereigntyUpgrade
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

@@ -344,6 +344,35 @@ fun NotificationContent(
                 )
             }
         }
+
+        is Notification.SovereigntyUpgradeImportNotification -> {
+            NotificationTitle(
+                title = AnnotatedString("Sovereignty upgrades saved"),
+                onCloseClick = onCloseClick,
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                modifier = Modifier.padding(horizontal = Spacing.medium),
+            ) {
+                SolarSystem(notification.systemName, "Sovereignty Hub")
+                notification.upgrades.forEach { upgrade ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        AsyncTypeIcon(
+                            type = upgrade,
+                            modifier = Modifier.size(32.dp),
+                        )
+                        Text(
+                            text = upgrade.name,
+                            style = RiftTheme.typography.titleHighlighted,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -497,6 +497,13 @@ object WhatsNew {
                 - Multiple killmails happening in the same system in quick succession will no longer trigger multiple alerts
                 - The Assets feature now tells blueprint copies apart from originals for price calculation
             """.trimIndent(),
+            "4.38.0" description """
+                ! New feature: Sovereignty Hub hacking import
+                - When hacking a Sovereignty Hub in-game, you can now click the Copy Hacked Data button to instantly import the list of Sovereignty Upgrades into RIFT
+                - This allows you to easily fill out your map with the information from the Hub you just hacked, and later copy and share the complete list of upgrades from all systems if needed
+                
+                - Updated intel channels and sovereignty upgrades link in a configuration pack
+            """.trimIndent(),
         ).reversed()
     }
 }

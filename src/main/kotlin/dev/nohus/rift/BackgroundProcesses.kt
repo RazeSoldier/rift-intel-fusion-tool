@@ -26,6 +26,7 @@ import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.character.ZkillboardRecentActivityRepository
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sovupgrades.SovereigntyUpgradesHackWatcher
 import dev.nohus.rift.standings.StandingsRepository
 import dev.nohus.rift.utils.ResetSparkleUpdateCheckUseCase
 import dev.nohus.rift.utils.activewindow.ActiveEveWindowRepository
@@ -65,6 +66,7 @@ class BackgroundProcesses(
     private val smartAlwaysAboveRepository: SmartAlwaysAboveRepository,
     private val logLiteServer: LogLiteServer,
     private val logLiteParser: LogLiteParser,
+    private val sovereigntyUpgradesHackWatcher: SovereigntyUpgradesHackWatcher,
     private val settings: Settings,
 ) {
 
@@ -157,6 +159,9 @@ class BackgroundProcesses(
             }
             launch {
                 logLiteParser.start()
+            }
+            launch {
+                sovereigntyUpgradesHackWatcher.start()
             }
         }
     }

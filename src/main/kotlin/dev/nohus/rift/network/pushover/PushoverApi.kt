@@ -10,13 +10,14 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.HttpException
 import retrofit2.Retrofit
 
 @Single
 class PushoverApi(
-    private val json: Json,
+    @Named("network") private val json: Json,
     client: OkHttpClient,
 ) {
 

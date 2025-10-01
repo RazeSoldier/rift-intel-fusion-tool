@@ -55,6 +55,7 @@ class ConfigurationPackRepository(
                 99011223, // Sigma Grindset
                 99010140, // Stribog Clade
                 131511956, // Tactical Narcotics Team
+                99010877, // Out of the Blue.
                 99010931, // WE FORM BL0B
             )
             TheInitiative -> listOf(
@@ -87,21 +88,26 @@ class ConfigurationPackRepository(
                 promptTitleText = "Would you like intel channels of the Imperium to be configured automatically?",
                 promptButtonText = "Add Imperium channels",
                 channels = listOf(
-                    IntelChannel("aridia.imperium", "Aridia"),
-                    IntelChannel("curse.imperium", "Curse"),
                     IntelChannel("east.imperium", "Catch"),
                     IntelChannel("east.imperium", "Immensea"),
                     IntelChannel("east.imperium", "Impass"),
                     IntelChannel("east.imperium", "Tenerifis"),
-                    IntelChannel("ftn.imperium", "Fountain"),
-                    IntelChannel("khanid.imperium", "Khanid"),
+                    IntelChannel("fareast.imperium", "Detorid"),
+                    IntelChannel("fareast.imperium", "Wicked Creek"),
+                    IntelChannel("fareast.imperium", "Insmother"),
+                    IntelChannel("fareast.imperium", "Cache"),
+                    IntelChannel("fareast.imperium", "Scalding Pass"),
+                    IntelChannel("west.imperium", "Delve"),
+                    IntelChannel("west.imperium", "Querious"),
+                    IntelChannel("west.imperium", "Period Basis"),
                     IntelChannel("southeast.imperium", "Esoteria"),
                     IntelChannel("southeast.imperium", "Feythabolis"),
                     IntelChannel("southeast.imperium", "Paragon Soul"),
+                    IntelChannel("aridia.imperium", "Aridia"),
+                    IntelChannel("curse.imperium", "Curse"),
+                    IntelChannel("ftn.imperium", "Fountain"),
+                    IntelChannel("khanid.imperium", "Khanid"),
                     IntelChannel("triangle.imperium", "Pochven"),
-                    IntelChannel("west.imperium", "Delve"),
-                    IntelChannel("west.imperium", "Period Basis"),
-                    IntelChannel("west.imperium", "Querious"),
                 ),
             )
             TheInitiative -> SuggestedIntelChannels(
@@ -149,7 +155,7 @@ class ConfigurationPackRepository(
 
     fun getSovereigntyUpgradesUrl(): String? {
         return when (settings.configurationPack) {
-            Imperium -> "https://goonfleet.com/index.php/topic/361933-equinox-upgrade-information-station/?p=9589562"
+            Imperium -> "https://goonfleet.com/index.php/topic/371770-equinox-upgrade-information-station/"
             TheInitiative -> null
             PhoenixCoalition -> null
             null -> null

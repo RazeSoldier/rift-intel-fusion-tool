@@ -64,6 +64,11 @@ class NotificationsController(
             val systemEntities: List<SystemEntity>,
             val solarSystem: String,
         ) : Notification
+
+        data class SovereigntyUpgradeImportNotification(
+            val systemName: String,
+            val upgrades: List<Type>,
+        ) : Notification
     }
 
     private val maxShownNotifications = 25

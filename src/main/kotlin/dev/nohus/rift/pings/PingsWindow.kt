@@ -21,6 +21,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftOpportunityBox
 import dev.nohus.rift.compose.RiftOpportunityBoxButton
@@ -37,7 +38,6 @@ import dev.nohus.rift.generated.resources.fitting_16px
 import dev.nohus.rift.generated.resources.microphone
 import dev.nohus.rift.generated.resources.window_sovereignty
 import dev.nohus.rift.pings.PingsViewModel.UiState
-import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.utils.viewModel

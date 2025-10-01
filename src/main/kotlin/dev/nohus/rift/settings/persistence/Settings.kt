@@ -261,4 +261,12 @@ class Settings(
     var sovereigntyUpgrades: Map<String, List<Int>>
         get() = model.sovereigntyUpgrades
         set(value) = update { copy(sovereigntyUpgrades = value) }
+
+    var isSovereigntyUpgradesHackImportingEnabled: Boolean
+        get() = model.isSovereigntyUpgradesHackImportingEnabled
+        set(value) = update { copy(isSovereigntyUpgradesHackImportingEnabled = value) }
+
+    var isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean
+        get() = model.isSovereigntyUpgradesHackImportingOfflineEnabled
+        set(value) = update { copy(isSovereigntyUpgradesHackImportingOfflineEnabled = value) }
 }

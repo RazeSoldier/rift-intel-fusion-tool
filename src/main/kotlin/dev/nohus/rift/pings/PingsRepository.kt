@@ -70,10 +70,12 @@ class PingsRepository(
     }
 
     private suspend fun onNewPingMessage(message: UserChatController.UserMessage) {
-        val ping = parsePingUseCase(message.timestamp, message.text) ?: return
-        _pings.update { (it + ping).sortedBy { it.timestamp } }
-        alertsTriggerController.onNewJabberPing(ping)
-        save(_pings.value)
+        val pings = parsePingUseCase(message.timestamp, message.text)
+        pings.forEach { ping ->
+            _pings.update { (it + ping).sortedBy { it.timestamp } }
+            alertsTriggerController.onNewJabberPing(ping)
+            save(_pings.value)
+        }
     }
 
     private fun load(): List<PingModel> {

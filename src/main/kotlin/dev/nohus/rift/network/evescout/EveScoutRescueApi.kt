@@ -6,13 +6,14 @@ import dev.nohus.rift.network.Result
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
 @Single
 class EveScoutRescueApi(
-    json: Json,
+    @Named("network") json: Json,
     client: OkHttpClient,
     requestExecutor: RequestExecutor,
 ) : RequestExecutor by requestExecutor {

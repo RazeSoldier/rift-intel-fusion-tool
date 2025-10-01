@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ContextMenuItem
@@ -64,7 +65,6 @@ import dev.nohus.rift.jabber.client.MultiUserChatController.MultiUserMessage
 import dev.nohus.rift.jabber.client.RosterUsersController.RosterUser
 import dev.nohus.rift.jabber.client.UserChatController.UserChat
 import dev.nohus.rift.jabber.client.UserChatController.UserMessage
-import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.utils.viewModel

@@ -21,6 +21,7 @@ import org.jose4j.jwt.JwtClaims
 import org.jose4j.jwt.consumer.JwtConsumerBuilder
 import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Named
 import java.io.IOException
 import java.net.URI
 import java.security.MessageDigest
@@ -36,7 +37,7 @@ private val logger = KotlinLogging.logger {}
 class SsoClient(
     private val server: CallbackServer,
     private val eveSsoRepository: EveSsoRepository,
-    private val json: Json,
+    @Named("network") private val json: Json,
 ) {
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {

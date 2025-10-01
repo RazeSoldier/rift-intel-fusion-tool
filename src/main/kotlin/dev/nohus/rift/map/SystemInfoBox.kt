@@ -73,7 +73,6 @@ import dev.nohus.rift.generated.resources.indicator_wormhole
 import dev.nohus.rift.intel.state.IntelStateController.Dated
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
-import dev.nohus.rift.map.MapSovereigntyUpgradesController.SovereigntyUpgrade
 import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.network.esi.SovereigntySystem
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.WormholeSize
@@ -82,6 +81,7 @@ import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.RatsRepository.RatType
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
+import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController.SovereigntyUpgrade
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
 import dev.nohus.rift.standings.getSystemColor
