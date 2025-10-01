@@ -512,6 +512,13 @@ object WhatsNew {
                 - When you left-click on a character, corporation, alliance, or ship, it will open in the last used website, instead of being hardcoded to zKillboard
                 - Systems in the Intel Feed window that contain only a single character now show the full character name instead of "1 hostile"
             """.trimIndent(),
+            "4.40.0" description """
+                -! Asteroids and ice on the map
+                - The map can now show indicators for asteroid belts, their counts, and ice field systems
+                
+                - You can now sort by character name in the Planetary Industry window
+                - Viewing and copying fittings with charges is now supported in the Assets window, where supported by ESI
+            """.trimIndent(),
         ).reversed()
     }
 }

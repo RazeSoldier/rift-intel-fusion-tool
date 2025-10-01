@@ -12,6 +12,8 @@ import java.util.zip.GZIPOutputStream
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
+private const val CATEGORY_MODULE = 7
+
 @Single
 class FittingController(
     private val typesRepository: TypesRepository,
@@ -119,9 +121,14 @@ class FittingController(
     }
 
     private fun StringBuilder.addSlot(asset: Asset, locationFlag: String) {
-        val item = asset.children.firstOrNull { it.asset.locationFlag == locationFlag } ?: return
-        val name = typesRepository.getTypeName(item.asset.typeId) ?: return
-        appendLine(name)
+        val itemsInSlot = asset.children
+            .filter { it.asset.locationFlag == locationFlag }
+            .sortedBy { it.type?.categoryId != CATEGORY_MODULE }
+        if (itemsInSlot.isEmpty()) return
+        val line = itemsInSlot.joinToString(", ") {
+            typesRepository.getTypeName(it.asset.typeId) ?: "Unknown"
+        }
+        appendLine(line)
     }
 
     private fun StringBuilder.addQuantifiedContents(

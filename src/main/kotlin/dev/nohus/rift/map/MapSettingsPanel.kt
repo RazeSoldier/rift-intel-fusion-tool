@@ -872,6 +872,8 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.Clones -> "Clones" to "Colored when you have\njump clones present"
         MapSystemInfoType.Standings -> "Standings" to "Colored based on standings\ntowards the sovereignty holder.\nLow and high sec are always yellow and green."
         MapSystemInfoType.RatsType -> "Rats" to "Colored according to the\nfaction of rats in the system"
+        MapSystemInfoType.AsteroidBelts -> "Asteroid Belts" to "Colored when\nasteroid belts are present"
+        MapSystemInfoType.IceFields -> "Ice Fields" to "Colored when\nice fields are present"
         MapSystemInfoType.Region -> throw IllegalArgumentException("Not used for colors")
         MapSystemInfoType.Constellation -> throw IllegalArgumentException("Not used for colors")
         MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Colored according to the\nindustry cost index of Copying"
@@ -911,6 +913,8 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.Clones -> "Clones" to "Indicators for jump clones"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
         MapSystemInfoType.RatsType -> "" to ""
+        MapSystemInfoType.AsteroidBelts -> "Asteroid Belts" to "Indicators for asteroid belts"
+        MapSystemInfoType.IceFields -> "Ice Fields" to "Indicators for ice fields"
         MapSystemInfoType.Region -> "Region" to "Region name"
         MapSystemInfoType.Constellation -> "Constellation" to "Constellation name"
         MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
@@ -950,6 +954,8 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.Clones -> "Clones" to "Jump clones information"
         MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
         MapSystemInfoType.RatsType -> "Rats" to "Faction of rats in the system"
+        MapSystemInfoType.AsteroidBelts -> "Asteroid Belts" to "Asteroid belts presence information"
+        MapSystemInfoType.IceFields -> "Ice Fields" to "Ice fields presence information"
         MapSystemInfoType.Region -> "Region" to "Region name"
         MapSystemInfoType.Constellation -> "Constellation" to "Constellation name"
         MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"

@@ -93,10 +93,12 @@ import dev.nohus.rift.map.painter.RegionsMapPainter
 import dev.nohus.rift.map.painter.SystemsMapPainter
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.AssetsSystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.AsteroidBeltsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.ClonesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.ColoniesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.FactionWarfareSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.HostileEntitiesSystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.IceFieldsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.IncursionsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.IndustryIndicesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.JoveObservatorySystemColorStrategy
@@ -647,6 +649,8 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.Clones -> systemStatusColorStrategies.clones
         MapSystemInfoType.Standings -> systemStatusColorStrategies.standings
         MapSystemInfoType.RatsType -> systemStatusColorStrategies.rats
+        MapSystemInfoType.AsteroidBelts -> koin.get<AsteroidBeltsSystemColorStrategy>()
+        MapSystemInfoType.IceFields -> koin.get<IceFieldsSystemColorStrategy>()
         MapSystemInfoType.Region -> throw IllegalArgumentException("Not used for coloring")
         MapSystemInfoType.Constellation -> throw IllegalArgumentException("Not used for coloring")
         MapSystemInfoType.IndustryIndexCopying -> systemStatusColorStrategies.industryCopying

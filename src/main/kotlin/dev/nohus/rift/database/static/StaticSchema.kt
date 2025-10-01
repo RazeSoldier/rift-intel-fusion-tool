@@ -13,6 +13,8 @@ object SolarSystems : Table() {
     val z = double("z")
     val security = double("security")
     val hasJoveObservatory = bool("hasJoveObservatory")
+    val asteroidBeltCount = integer("asteroidBeltCount")
+    val iceFieldCount = integer("iceFieldCount")
     override val primaryKey = PrimaryKey(solarSystemId)
 }
 
@@ -63,6 +65,7 @@ object Ships : Table() {
 object Types : Table() {
     val typeId = integer("typeId")
     val groupId = integer("groupId")
+    val categoryId = integer("categoryId")
     val typeName = varchar("typeName", 100)
     val volume = float("volume")
     val radius = float("radius").nullable()

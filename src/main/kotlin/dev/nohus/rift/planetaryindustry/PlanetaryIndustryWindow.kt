@@ -542,9 +542,14 @@ private fun FiltersRow(
                 onClick = { onSortingFilterChange(ColonySortingFilter.ExpiryTime) },
             ),
             ContextMenuItem.TextItem(
-                text = "By character",
+                text = "By character account and age",
                 iconResource = Res.drawable.checkmark_16px.takeIf { ColonySortingFilter.Character == state.sortingFilter },
                 onClick = { onSortingFilterChange(ColonySortingFilter.Character) },
+            ),
+            ContextMenuItem.TextItem(
+                text = "By character name",
+                iconResource = Res.drawable.checkmark_16px.takeIf { ColonySortingFilter.CharacterAlphabetical == state.sortingFilter },
+                onClick = { onSortingFilterChange(ColonySortingFilter.CharacterAlphabetical) },
             ),
         )
         Box(contentAlignment = Alignment.BottomStart) {
