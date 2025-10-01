@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -143,23 +144,23 @@ private fun RiftContextMenuPopup(
             CompositionLocalProvider(LocalRiftColors provides getRiftColors(isTransparent = false)) {
                 ScrollbarColumn(
                     isScrollbarConditional = true,
+                    contentPadding = PaddingValues(vertical = 7.dp),
                     modifier = Modifier
                         .pointerHoverIcon(PointerIcon(Cursors.pointer))
                         .width(IntrinsicSize.Max)
                         .background(RiftTheme.colors.windowBackgroundActive)
                         .border(1.dp, RiftTheme.colors.divider)
-                        .padding(1.dp)
-                        .padding(vertical = 7.dp),
+                        .padding(1.dp),
                 ) {
                     val hasIconSpace = items.any { it is ContextMenuItem.TextItem && it.iconResource != null || it is ContextMenuItem.CheckboxItem || it is ContextMenuItem.RadioItem }
                     for (item in items) {
                         when (item) {
-                            is ContextMenuItem.TextItem -> ContextMenuRow(item.text, item.iconResource, hasIconSpace, null) {
+                            is ContextMenuItem.TextItem -> ContextMenuRow(item.text, item.iconResource, item.iconContent, hasIconSpace, null) {
                                 onDismissRequest()
                                 item.onClick()
                             }
-                            is ContextMenuItem.CheckboxItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, false, item.onClick)
-                            is ContextMenuItem.RadioItem -> ContextMenuRow(item.text, null, hasIconSpace, item.isSelected, true, item.onClick)
+                            is ContextMenuItem.CheckboxItem -> ContextMenuRow(item.text, null, null, hasIconSpace, item.isSelected, false, item.onClick)
+                            is ContextMenuItem.RadioItem -> ContextMenuRow(item.text, null, null, hasIconSpace, item.isSelected, true, item.onClick)
                             is ContextMenuItem.HeaderItem -> ContextMenuHeader(item.text)
                             ContextMenuItem.DividerItem -> ContextMenuDivider()
                         }
@@ -174,6 +175,7 @@ sealed interface ContextMenuItem {
     data class TextItem(
         val text: String,
         val iconResource: DrawableResource? = null,
+        val iconContent: (@Composable (PointerInteractionStateHolder) -> Unit)? = null,
         val onClick: () -> Unit,
     ) : ContextMenuItem
 
@@ -201,6 +203,7 @@ sealed interface ContextMenuItem {
 private fun ContextMenuRow(
     text: String,
     iconResource: DrawableResource?,
+    iconContent: (@Composable (PointerInteractionStateHolder) -> Unit)?,
     hasIconSpace: Boolean,
     isSelected: Boolean?,
     isRadio: Boolean = false,
@@ -234,7 +237,14 @@ private fun ContextMenuRow(
                     .padding(start = max(iconAreaSize - itemPadding, 0.dp), end = Spacing.small),
             )
         }
-        if (iconResource != null) {
+        if (iconContent != null) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.requiredSize(iconAreaSize),
+            ) {
+                iconContent(pointerState)
+            }
+        } else if (iconResource != null) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.requiredSize(iconAreaSize),

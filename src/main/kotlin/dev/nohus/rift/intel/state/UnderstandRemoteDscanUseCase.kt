@@ -51,9 +51,9 @@ class UnderstandRemoteDscanUseCase(
         return when (val response = dscanInfoApi.getScan(id)) {
             is Success -> {
                 response.data.ships?.mapNotNull { ship ->
-                    shipTypesRepository.getShip(ship.name)?.let { name ->
+                    shipTypesRepository.getFuzzyShip(ship.name)?.let { type ->
                         SystemEntity.Ship(
-                            name = name,
+                            type = type,
                             count = ship.count,
                         )
                     }
@@ -77,8 +77,8 @@ class UnderstandRemoteDscanUseCase(
                     if (elements.size == 2) {
                         val shipName = elements[0].text()
                         val count = elements[1].text().toIntOrNull() ?: return@mapNotNull null
-                        shipTypesRepository.getShip(shipName)?.let { name ->
-                            SystemEntity.Ship(name, count)
+                        shipTypesRepository.getFuzzyShip(shipName)?.let { type ->
+                            SystemEntity.Ship(type, count)
                         }
                     } else {
                         null

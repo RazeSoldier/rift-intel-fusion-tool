@@ -463,7 +463,7 @@ class AlertsTriggerController(
                         .filter { it.standing?.isFriendly != true }
                 is IntelReportType.SpecificShipClasses ->
                     killmail.ships
-                        .filter { shipTypesRepository.getShipClass(it.name) in type.classes }
+                        .filter { shipTypesRepository.getShipClass(it.type.id) in type.classes }
                         .filter { it.standing?.isFriendly != true }
                 IntelReportType.Bubbles -> emptyList()
                 IntelReportType.GateCamp -> emptyList()
@@ -497,7 +497,7 @@ class AlertsTriggerController(
                 is IntelReportType.SpecificShipClasses ->
                     understanding.entities
                         .filterIsInstance<SystemEntity.Ship>()
-                        .filter { shipTypesRepository.getShipClass(it.name) in type.classes }
+                        .filter { shipTypesRepository.getShipClass(it.type.id) in type.classes }
                 IntelReportType.Bubbles -> understanding.entities.filterIsInstance<SystemEntity.Bubbles>()
                 IntelReportType.GateCamp -> understanding.entities.filterIsInstance<SystemEntity.GateCamp>()
                 IntelReportType.Wormhole -> understanding.entities.filterIsInstance<SystemEntity.Wormhole>()

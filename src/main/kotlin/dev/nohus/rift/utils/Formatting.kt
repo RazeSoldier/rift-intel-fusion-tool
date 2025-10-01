@@ -50,7 +50,7 @@ private fun getFormatter(withDecimals: Boolean) = if (withDecimals) formatterWit
 private fun formatNumberReadable(number: Double, significantDigits: Int = 3, isCompact: Boolean): String {
     var rounded = roundToSignificant(number, significantDigits)
     val logThousand = log1k(rounded).coerceIn(0, 4)
-    rounded /= pow(1000, logThousand)
+    rounded /= 1000.0.pow(logThousand.toDouble())
     var decimalPlaces = 0
     for (i in 0 until (significantDigits - 1)) {
         if ((rounded * pow(10, significantDigits - 1 - i)).roundToInt() % 10 > 0) {

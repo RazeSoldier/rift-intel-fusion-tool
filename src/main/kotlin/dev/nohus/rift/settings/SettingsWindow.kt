@@ -285,7 +285,7 @@ private fun SettingsWindowContent(
                     }
                 }
 
-                // Jump Bridges
+                // Sovereignty
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                     modifier = Modifier

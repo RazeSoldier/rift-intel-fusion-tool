@@ -3,6 +3,8 @@ package dev.nohus.rift.corpprojects
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.corpprojects.CorporationProjectsRepository.CorporationProjects
 import dev.nohus.rift.corpprojects.CorporationProjectsRepository.LoadingState
+import dev.nohus.rift.game.GameUiController
+import dev.nohus.rift.network.esi.models.CorporationProjectCareer
 import dev.nohus.rift.network.esi.models.CorporationProjectState
 import dev.nohus.rift.utils.sumOfDouble
 import dev.nohus.rift.utils.toggle
@@ -17,6 +19,7 @@ import java.time.Instant
 @Single
 class CorporationProjectsViewModel(
     private val corporationProjectsRepository: CorporationProjectsRepository,
+    private val gameUiController: GameUiController,
 ) : ViewModel() {
 
     data class UiState(
@@ -133,6 +136,10 @@ class CorporationProjectsViewModel(
 
     fun onProjectClick(project: Project) {
         _state.update { it.copy(view = View.DetailsView(project)) }
+    }
+
+    fun onViewInGameClick(project: Project) {
+        gameUiController.pushCorporationProject(project)
     }
 
     fun onBackClick() {

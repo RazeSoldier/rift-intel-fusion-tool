@@ -57,6 +57,7 @@ import dev.nohus.rift.compose.ClickableCorporation
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.LinkText
 import dev.nohus.rift.compose.LoadingSpinner
+import dev.nohus.rift.compose.LoadingSpinnerAmbient
 import dev.nohus.rift.compose.OnVisibilityChange
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftButton
@@ -98,6 +99,7 @@ import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
 import dev.nohus.rift.generated.resources.expand_less_16px
 import dev.nohus.rift.generated.resources.expand_more_16px
 import dev.nohus.rift.generated.resources.isk
+import dev.nohus.rift.generated.resources.open_window_16px
 import dev.nohus.rift.generated.resources.window_corporation
 import dev.nohus.rift.network.esi.models.CorporationProjectState
 import dev.nohus.rift.utils.formatDateTime
@@ -137,6 +139,7 @@ fun CorporationProjectsWindow(
             onCorporationSelect = viewModel::onCorporationSelect,
             onReloadClick = viewModel::onReloadClick,
             onProjectClick = viewModel::onProjectClick,
+            onViewInGameClick = viewModel::onViewInGameClick,
             onBackClick = viewModel::onBackClick,
         )
         OnVisibilityChange(viewModel::onVisibilityChange)
@@ -154,6 +157,7 @@ private fun CorporationProjectsWindowContent(
     onCorporationSelect: (Corporation) -> Unit = {},
     onReloadClick: () -> Unit = {},
     onProjectClick: (Project) -> Unit,
+    onViewInGameClick: (Project) -> Unit,
     onBackClick: () -> Unit,
 ) {
     if (state.loading.isLoading && state.corporations.isEmpty()) {
@@ -162,7 +166,7 @@ private fun CorporationProjectsWindowContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize().padding(Spacing.large),
         ) {
-            LoadingSpinner()
+            LoadingSpinnerAmbient()
             Spacer(Modifier.height(Spacing.medium))
             if (state.loading.corporations.isNotEmpty()) {
                 Column(
@@ -224,12 +228,14 @@ private fun CorporationProjectsWindowContent(
                     onSearchChange = onSearchChange,
                     onCorporationSelect = onCorporationSelect,
                     onProjectClick = onProjectClick,
+                    onViewInGameClick = onViewInGameClick,
                     onReloadClick = onReloadClick,
                 )
                 is View.DetailsView -> DetailsView(
                     project = view.project,
                     onBackClick = onBackClick,
                     onCategoryFilterClick = onCategoryFilterChange,
+                    onViewInGameClick = { onViewInGameClick(view.project) },
                 )
             }
         }
@@ -246,6 +252,7 @@ private fun ProjectsView(
     onSearchChange: (String) -> Unit,
     onCorporationSelect: (Corporation) -> Unit,
     onProjectClick: (Project) -> Unit,
+    onViewInGameClick: (Project) -> Unit,
     onReloadClick: () -> Unit,
 ) {
     Column {
@@ -296,6 +303,7 @@ private fun ProjectsView(
                     ProjectCard(
                         project = it,
                         onProjectClick = { onProjectClick(it) },
+                        onViewInGameClick = { onViewInGameClick(it) },
                         modifier = Modifier
                             .sharedTransitionElement("card-${it.id}")
                             .animateItem(),
@@ -649,6 +657,7 @@ private fun FiltersRow(
 private fun ProjectCard(
     project: Project,
     onProjectClick: () -> Unit,
+    onViewInGameClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val category = getProjectCategory(project)
@@ -664,28 +673,36 @@ private fun ProjectCard(
         state = project.state,
     )
 
-    val buttons = if (project.details.expires != null) {
-        listOf(
+    val buttons = buildList {
+        add(
             RiftOpportunityCardButton(
-                resource = Res.drawable.corporation_project_state_time_16px,
-                tooltipContent = {
-                    val expiresIn = Duration.between(getNow(), project.details.expires).coerceAtLeast(Duration.ZERO)
-                    Text(
-                        text = buildAnnotatedString {
-                            append("Expires in ")
-                            withColor(RiftTheme.colors.textPrimary) {
-                                append(formatDuration(expiresIn))
-                            }
-                        },
-                        style = RiftTheme.typography.bodySecondary,
-                        modifier = Modifier.padding(Spacing.large),
-                    )
-                },
-                action = null,
+                resource = Res.drawable.open_window_16px,
+                isAlwaysVisible = false,
+                tooltip = "View In-Game",
+                action = onViewInGameClick,
             ),
         )
-    } else {
-        emptyList()
+        if (project.details.expires != null) {
+            add(
+                RiftOpportunityCardButton(
+                    resource = Res.drawable.corporation_project_state_time_16px,
+                    tooltipContent = {
+                        val expiresIn = Duration.between(getNow(), project.details.expires).coerceAtLeast(Duration.ZERO)
+                        Text(
+                            text = buildAnnotatedString {
+                                append("Expires in ")
+                                withColor(RiftTheme.colors.textPrimary) {
+                                    append(formatDuration(expiresIn))
+                                }
+                            },
+                            style = RiftTheme.typography.bodySecondary,
+                            modifier = Modifier.padding(Spacing.large),
+                        )
+                    },
+                    action = null,
+                ),
+            )
+        }
     }
 
     RiftOpportunityCard(

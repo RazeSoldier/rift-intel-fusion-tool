@@ -50,16 +50,14 @@ class IntelStateController(
     suspend fun submitKillmail(
         killmail: ProcessedKillmail,
     ) = mutex.withLock {
-        if (killmail.timestamp.isAfter(Instant.now() - Duration.ofMinutes(15))) {
-            killmail.victim?.let {
-                removeKilledCharacters(listOf(it.name))
-            }
-
-            val entities: List<SystemEntity> = killmail.attackers + killmail.ships + killmail.killmail + listOfNotNull(killmail.celestial)
-            updateSystemEntities(killmail.timestamp, killmail.system, removeExisting = false, entities)
-
-            updateState()
+        killmail.victim?.let {
+            removeKilledCharacters(listOf(it.name))
         }
+
+        val entities: List<SystemEntity> = killmail.attackers + killmail.ships + killmail.killmail + listOfNotNull(killmail.celestial)
+        updateSystemEntities(killmail.timestamp, killmail.system, removeExisting = false, entities)
+
+        updateState()
     }
 
     suspend fun submitMessage(
@@ -217,9 +215,9 @@ class IntelStateController(
         ships: List<Dated<SystemEntity>>,
     ) {
         val current = systemContents[systemTo] ?: emptyList()
-        val currentShips = current.filter { it.item is Ship }.map { (it.item as Ship).name }
+        val currentShips = current.filter { it.item is Ship }.map { (it.item as Ship).type.id }
         val missingShips = ships.filter { ship ->
-            (ship.item as Ship).name !in currentShips
+            (ship.item as Ship).type.id !in currentShips
         }
         systemContents[systemTo] = current + missingShips
     }
@@ -276,7 +274,7 @@ class IntelStateController(
             .map { (id, list) -> list.maxBy { it.timestamp } }
         val ships = entities
             .filter { it.item is Ship }
-            .groupBy { (it.item as Ship).name }
+            .groupBy { (it.item as Ship).type.id }
             .map { (id, list) -> list.maxBy { it.timestamp } }
         val killmails = entities
             .filter { it.item is Killmail }

@@ -877,7 +877,7 @@ private fun ShipIcon(ship: CharacterIdShip?, typesRepository: TypesRepository) {
     if (ship == null) return
     val type = typesRepository.getType(ship.shipTypeId) ?: return
 
-    ClickableShip(type.name, type.id) {
+    ClickableShip(type) {
         RiftTooltipArea(
             tooltip = {
                 Text(

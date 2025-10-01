@@ -25,6 +25,8 @@ import dev.nohus.rift.contacts.ContactsWindow
 import dev.nohus.rift.corpprojects.CorporationProjectsWindow
 import dev.nohus.rift.debug.DebugWindow
 import dev.nohus.rift.fleet.FleetsWindow
+import dev.nohus.rift.infodialog.InfoDialogInputModel
+import dev.nohus.rift.infodialog.InfoDialogWindow
 import dev.nohus.rift.intel.feed.IntelFeedWindow
 import dev.nohus.rift.intel.feed.settings.IntelFeedSettingsWindow
 import dev.nohus.rift.intel.reports.IntelReportsWindow
@@ -152,6 +154,9 @@ class WindowManager(
         @SerialName("CorporationProjects")
         CorporationProjects,
 
+        @SerialName("InfoDialog")
+        InfoDialog,
+
         @Deprecated("Removed")
         @SerialName("MapSettings")
         MapSettings,
@@ -199,6 +204,7 @@ class WindowManager(
         RiftWindow.WhatsNew,
         RiftWindow.StartupWarning,
         RiftWindow.CharacterSettings,
+        RiftWindow.InfoDialog,
     )
     private val multiInstanceWindows = listOf(
         RiftWindow.Map,
@@ -262,6 +268,7 @@ class WindowManager(
                             RiftWindow.Jukebox -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Jukebox, state.uuid) })
                             RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
                             RiftWindow.CorporationProjects -> CorporationProjectsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CorporationProjects, state.uuid) })
+                            RiftWindow.InfoDialog -> InfoDialogWindow(state.inputModel as InfoDialogInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.InfoDialog, state.uuid) })
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
@@ -409,6 +416,7 @@ class WindowManager(
             RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.CorporationProjects -> WindowSizing(defaultSize = saved ?: (800 to 900), minimumSize = 540 to 700)
+            RiftWindow.InfoDialog -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))

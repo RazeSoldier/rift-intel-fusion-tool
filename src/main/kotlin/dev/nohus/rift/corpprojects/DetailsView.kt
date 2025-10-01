@@ -3,6 +3,7 @@ package dev.nohus.rift.corpprojects
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,12 +38,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.compose.AnimatedImage
 import dev.nohus.rift.compose.AsyncCorporationLogo
+import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
 import dev.nohus.rift.compose.LinkText
 import dev.nohus.rift.compose.MulticolorIconType
 import dev.nohus.rift.compose.PointerInteractionStateHolder
+import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCircularCharacterPortrait
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMulticolorIcon
@@ -74,6 +78,7 @@ import dev.nohus.rift.generated.resources.contribution_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
 import dev.nohus.rift.generated.resources.isk
 import dev.nohus.rift.generated.resources.navigate_back_16px
+import dev.nohus.rift.generated.resources.open_window_16px
 import dev.nohus.rift.generated.resources.ratio_16px
 import dev.nohus.rift.generated.resources.spaceship_command_16px
 import dev.nohus.rift.network.Result
@@ -95,6 +100,7 @@ fun DetailsView(
     project: Project,
     onBackClick: () -> Unit,
     onCategoryFilterClick: (ProjectCategoryFilter) -> Unit,
+    onViewInGameClick: () -> Unit,
 ) {
     Column {
         Row(
@@ -120,6 +126,7 @@ fun DetailsView(
         ProjectHeader(
             project = project,
             onCategoryFilterClick = onCategoryFilterClick,
+            onViewInGameClick = onViewInGameClick,
             modifier = Modifier.sharedTransitionElement("card-${project.id}"),
         )
 
@@ -621,6 +628,7 @@ private fun RewardInfo(
 private fun ProjectHeader(
     project: Project,
     onCategoryFilterClick: (ProjectCategoryFilter) -> Unit,
+    onViewInGameClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
@@ -685,7 +693,16 @@ private fun ProjectHeader(
                     enabledFilters = emptySet(),
                     onCategoryFilterChange = { onCategoryFilterClick(it) },
                 )
+
                 Spacer(Modifier.height(Spacing.large))
+
+                RiftButton(
+                    text = "View In-Game",
+                    icon = Res.drawable.open_window_16px,
+                    cornerCut = ButtonCornerCut.Both,
+                    onClick = onViewInGameClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }

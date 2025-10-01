@@ -36,6 +36,7 @@ sealed class EsiScope(val id: String) {
     }
     abstract class Ui(id: String) : EsiScope(id) {
         object WriteWaypoint : Ui("esi-ui.write_waypoint.v1")
+        object OpenWindow : Ui("esi-ui.open_window.v1")
     }
     abstract class Assets(id: String) : EsiScope(id) {
         object ReadAssets : Assets("esi-assets.read_assets.v1")

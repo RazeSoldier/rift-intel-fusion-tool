@@ -1,7 +1,7 @@
 package dev.nohus.rift.loglite
 
-import dev.nohus.rift.autopilot.AutopilotController
 import dev.nohus.rift.charactersettings.AccountAssociationsRepository
+import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.loglite.LogLiteAction.AccountId
 import dev.nohus.rift.loglite.LogLiteAction.AutopilotPath
 import dev.nohus.rift.loglite.LogLiteAction.CharacterId

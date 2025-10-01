@@ -137,7 +137,7 @@ private fun ProjectAttributeValuesGrid(
                         )
                     },
                     decorator = {
-                        ClickableShip(value.type.name, value.type.id) {
+                        ClickableShip(value.type) {
                             it()
                         }
                     },

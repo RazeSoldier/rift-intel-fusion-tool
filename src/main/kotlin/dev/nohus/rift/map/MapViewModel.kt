@@ -2,8 +2,8 @@ package dev.nohus.rift.map
 
 import androidx.compose.ui.geometry.Offset
 import dev.nohus.rift.ViewModel
-import dev.nohus.rift.autopilot.AutopilotController
 import dev.nohus.rift.compose.Tab
+import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.map_constellation
 import dev.nohus.rift.generated.resources.map_region

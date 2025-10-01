@@ -71,7 +71,6 @@ fun ApplicationScope.RiftTray(
         val items = getTrayMenuItems(
             operatingSystem = operatingSystem,
             isJabberEnabled = state.isJabberEnabled,
-            isCorpProjectsEnabled = state.isCorpProjectsEnabled,
             onButtonClick = viewModel::onButtonClick,
             onQuitClick = viewModel::onQuitClick,
         )
@@ -106,7 +105,6 @@ sealed interface TrayMenuItem {
 private fun getTrayMenuItems(
     operatingSystem: OperatingSystem,
     isJabberEnabled: Boolean,
-    isCorpProjectsEnabled: Boolean,
     onButtonClick: (RiftWindow) -> Unit,
     onQuitClick: () -> Unit,
 ): List<TrayMenuItem> {
@@ -125,9 +123,7 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Characters", Res.drawable.window_characters) { onButtonClick(RiftWindow.Characters) })
         add(TrayMenuTextItem("Assets", Res.drawable.window_assets) { onButtonClick(RiftWindow.Assets) })
         add(TrayMenuTextItem("Planetary Industry", Res.drawable.window_planets) { onButtonClick(RiftWindow.PlanetaryIndustry) })
-        if (isCorpProjectsEnabled) {
-            add(TrayMenuTextItem("Corporation Projects", Res.drawable.window_corporation) { onButtonClick(RiftWindow.CorporationProjects) })
-        }
+        add(TrayMenuTextItem("Corporation Projects", Res.drawable.window_corporation) { onButtonClick(RiftWindow.CorporationProjects) })
         add(TrayMenuTextItem("Contacts", Res.drawable.window_contacts) { onButtonClick(RiftWindow.Contacts) })
         if (isJabberEnabled) {
             add(TrayMenuTextItem("Pings", Res.drawable.window_sovereignty) { onButtonClick(RiftWindow.Pings) })

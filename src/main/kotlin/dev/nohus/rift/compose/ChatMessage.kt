@@ -286,21 +286,19 @@ private fun TokenWithUrl(rowHeight: Dp, text: String) {
 
 @Composable
 private fun TokenWithShip(rowHeight: Dp, ship: TokenType.Ship) {
-    val repository: ShipTypesRepository by koin.inject()
-    val shipTypeId = repository.getShipTypeId(ship.name)
-    ClickableShip(ship.name, shipTypeId) {
+    ClickableShip(ship.type) {
         BorderedToken(rowHeight) {
             AsyncTypeIcon(
-                typeId = shipTypeId,
+                typeId = ship.type.id,
                 modifier = Modifier.size(rowHeight),
             )
             VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
             val text = if (ship.count > 1) {
-                "${ship.count}x ${ship.name}"
+                "${ship.count}x ${ship.type.name}"
             } else if (ship.isPlural) {
-                "${ship.name}s"
+                "${ship.type.name}s"
             } else {
-                ship.name
+                ship.type.name
             }
             Text(
                 text = text,

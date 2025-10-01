@@ -18,6 +18,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.repositories.WordsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.character.CharacterStatus
@@ -44,7 +45,7 @@ class ChatMessageParser(
             val details: CharacterDetails? = null,
         ) : TokenType
         data class Ship(
-            val name: String,
+            val type: Type,
             val count: Int = 1,
             val isPlural: Boolean = false,
         ) : TokenType
@@ -618,15 +619,15 @@ class ChatMessageParser(
 
             val shipText = text
                 .replace("(", "").replace(")", "").replace(".", "")
-            var shipName = shipTypesRepository.getShip(shipText)
-            if (shipName != null) {
-                add(Ship(shipName, isPlural = false))
+            var ship = shipTypesRepository.getFuzzyShip(shipText)
+            if (ship != null) {
+                add(Ship(ship, isPlural = false))
             } else if (text.last() == 's') {
-                shipName = shipTypesRepository.getShip(text.dropLast(1))
-                if (shipName != null) add(Ship(shipName, isPlural = true))
+                ship = shipTypesRepository.getFuzzyShip(text.dropLast(1))
+                if (ship != null) add(Ship(ship, isPlural = true))
             }
 
-            if (shipName == null) { // Ship names are assumed to be ships
+            if (ship == null) { // Ship names are assumed to be ships
                 val status = characterNamesStatus[text]
                 if (status is CharacterStatus.Exists) add(Character(status.characterId))
             }

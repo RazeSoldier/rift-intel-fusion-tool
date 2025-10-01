@@ -20,13 +20,11 @@ class NeocomViewModel(
 
     data class UiState(
         val isJabberEnabled: Boolean = false,
-        val isCorpProjectsEnabled: Boolean = false,
     )
 
     private val _state = MutableStateFlow(
         UiState(
             isJabberEnabled = configurationPackRepository.isJabberEnabled(),
-            isCorpProjectsEnabled = true,
         ),
     )
     val state = _state.asStateFlow()

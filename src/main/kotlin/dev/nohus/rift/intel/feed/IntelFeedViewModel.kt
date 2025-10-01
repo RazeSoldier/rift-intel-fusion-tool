@@ -216,7 +216,7 @@ class IntelFeedViewModel(
             SystemEntity.GateCamp -> term in "gate camp"
             is SystemEntity.Killmail -> {
                 term in "kill" ||
-                    ship?.let { term in it.lowercase() } ?: false ||
+                    ship?.let { term in it.name.lowercase() } ?: false ||
                     typeName?.let { term in it.lowercase() } ?: false ||
                     victim.corporationName?.let { term in it.lowercase() } ?: false
                 victim.corporationTicker?.let { term in it.lowercase() } ?: false
@@ -224,7 +224,7 @@ class IntelFeedViewModel(
                 victim.allianceTicker?.let { term in it.lowercase() } ?: false
             }
             SystemEntity.NoVisual -> term in "no visual" || term in "nv"
-            is SystemEntity.Ship -> term in name.lowercase()
+            is SystemEntity.Ship -> term in type.name.lowercase()
             SystemEntity.Skyhook -> term in "skyhook"
             SystemEntity.Spike -> term in "spike"
             is SystemEntity.UnspecifiedCharacter -> term in "hostiles"

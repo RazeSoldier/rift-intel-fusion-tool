@@ -73,7 +73,7 @@ fun RiftImageButton(
             ) {
                 if (onClick != null) {
                     val blur = LocalDensity.current.run { size.toPx() } * 0.35f
-                    repeat(3) {
+                    repeat(2) {
                         Image(
                             painter = painterResource(resource),
                             contentDescription = null,

@@ -79,7 +79,7 @@ class IntelConversationMerger {
                     entities += entity
                 }
                 is Ship -> {
-                    entities.removeAll { it is Ship && it.name == entity.name }
+                    entities.removeAll { it is Ship && it.type.id == entity.type.id }
                     entities += entity
                 }
                 else -> if (entity !in entities) entities += entity

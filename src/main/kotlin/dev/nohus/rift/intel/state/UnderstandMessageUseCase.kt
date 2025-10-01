@@ -119,7 +119,7 @@ class UnderstandMessageUseCase(
                         questions += Question(questionType, text)
                     }
 
-                    is TokenType.Ship -> entities += Ship(type.name, type.count)
+                    is TokenType.Ship -> entities += Ship(type.type, type.count)
                     is TokenType.System -> systems += type.system
                     TokenType.Url -> {}
                 }

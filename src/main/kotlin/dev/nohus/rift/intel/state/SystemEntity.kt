@@ -3,6 +3,8 @@ package dev.nohus.rift.intel.state
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.Standing
 
@@ -23,7 +25,7 @@ sealed interface SystemEntity {
         CharacterBound
 
     data class Ship(
-        val name: String,
+        val type: Type,
         val count: Int,
         val standing: Standing? = null,
     ) : SystemEntity,
@@ -44,7 +46,7 @@ sealed interface SystemEntity {
 
     data class Killmail(
         val url: String,
-        val ship: String?,
+        val ship: Type?,
         val typeName: String?,
         val victim: KillmailVictim,
     ) : SystemEntity,
