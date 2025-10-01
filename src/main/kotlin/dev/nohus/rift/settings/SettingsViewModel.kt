@@ -3,6 +3,7 @@ package dev.nohus.rift.settings
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.files.DetectEveSettingsDirectoryUseCase
 import dev.nohus.rift.characters.files.GetEveCharactersSettingsUseCase
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
@@ -10,27 +11,36 @@ import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedInt
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.MatchChatLogFilenameUseCase
+import dev.nohus.rift.repositories.JumpBridgesRepository
+import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.SovereigntyUpgradesRepository
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.IntelChannel
+import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
+import org.koin.core.annotation.InjectedParam
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.pathString
 
-@Single
+@Factory
 class SettingsViewModel(
+    @InjectedParam private val inputModel: SettingsInputModel,
     private val settings: Settings,
     private val detectLogsDirectoryUseCase: DetectLogsDirectoryUseCase,
     private val detectEveSettingsDirectoryUseCase: DetectEveSettingsDirectoryUseCase,
@@ -40,9 +50,15 @@ class SettingsViewModel(
     private val configurationPackRepository: ConfigurationPackRepository,
     solarSystemsRepository: SolarSystemsRepository,
     private val windowManager: WindowManager,
+    private val clipboard: Clipboard,
+    private val jumpBridgesParser: JumpBridgesParser,
+    private val jumpBridgesRepository: JumpBridgesRepository,
+    private val sovereigntyUpgradesParser: SovereigntyUpgradesParser,
+    private val sovereigntyUpgradesRepository: SovereigntyUpgradesRepository,
 ) : ViewModel() {
 
     data class UiState(
+        val selectedTab: SettingsTab,
         val intelChannels: List<IntelChannel>,
         val suggestedIntelChannels: SuggestedIntelChannels?,
         val autocompleteIntelChannels: List<String> = emptyList(),
@@ -54,7 +70,6 @@ class SettingsViewModel(
         val isLogsDirectoryValid: Boolean,
         val settingsDirectory: String,
         val isSettingsDirectoryValid: Boolean,
-        val isLoadOldMessagesEnabled: Boolean,
         val isDisplayEveTime: Boolean,
         val isShowSetupWizardOnNextStartEnabled: Boolean,
         val isRememberOpenWindows: Boolean,
@@ -69,10 +84,50 @@ class SettingsViewModel(
         val uiScale: Float,
         val isWindowTransparencyEnabled: Boolean,
         val windowTransparencyModifier: Float,
+        // Map
+        val intelMap: IntelMap,
+        val isUsingRiftAutopilotRoute: Boolean,
+        val jumpBridgeNetwork: List<JumpBridgeConnection>,
+        val jumpBridgeCopyState: JumpBridgeCopyState,
+        val jumpBridgeNetworkUrl: String?,
+        val jumpBridgeSearchState: JumpBridgeSearchState,
+        val isJumpBridgeSearchDialogShown: Boolean,
+        val sovereigntyUpgradesCopyState: SovereigntyUpgradesCopyState,
+        val sovereigntyUpgrades: Map<MapSolarSystem, List<Type>>,
+        val sovereigntyUpgradesUrl: String?,
     )
+
+    sealed class SettingsTab(val id: Int) {
+        data object General : SettingsTab(0)
+        data object Intel : SettingsTab(1)
+        data object Map : SettingsTab(2)
+        data object Sovereignty : SettingsTab(3)
+    }
+
+    sealed interface JumpBridgeCopyState {
+        data object NotCopied : JumpBridgeCopyState
+        data class Copied(val network: List<JumpBridgeConnection>) : JumpBridgeCopyState
+    }
+
+    sealed interface JumpBridgeSearchState {
+        data object NotSearched : JumpBridgeSearchState
+        data class Searching(val progress: Float, val connectionsCount: Int) : JumpBridgeSearchState
+        data object SearchFailed : JumpBridgeSearchState
+        data class SearchDone(val network: List<JumpBridgeConnection>) : JumpBridgeSearchState
+    }
+
+    sealed interface SovereigntyUpgradesCopyState {
+        data object NotCopied : SovereigntyUpgradesCopyState
+        data class Copied(val upgrades: Map<MapSolarSystem, List<Type>>) : SovereigntyUpgradesCopyState
+    }
 
     private val _state = MutableStateFlow(
         UiState(
+            selectedTab = when (inputModel) {
+                SettingsInputModel.Normal -> SettingsTab.General
+                SettingsInputModel.EveInstallation -> SettingsTab.General
+                SettingsInputModel.IntelChannels -> SettingsTab.Intel
+            },
             intelChannels = settings.intelChannels,
             suggestedIntelChannels = configurationPackRepository.getSuggestedIntelChannels(),
             regions = solarSystemsRepository.getKnownSpaceRegions().map { it.name }.sorted(),
@@ -83,7 +138,6 @@ class SettingsViewModel(
             isLogsDirectoryValid = getChatLogsDirectoryUseCase(settings.eveLogsDirectory) != null,
             settingsDirectory = settings.eveSettingsDirectory?.pathString ?: "",
             isSettingsDirectoryValid = getEveCharactersSettingsUseCase(settings.eveSettingsDirectory).isNotEmpty(),
-            isLoadOldMessagesEnabled = settings.isLoadOldMessagesEnabled,
             isDisplayEveTime = settings.isDisplayEveTime,
             isShowSetupWizardOnNextStartEnabled = settings.isShowSetupWizardOnNextStart,
             isRememberOpenWindows = settings.isRememberOpenWindows,
@@ -96,6 +150,17 @@ class SettingsViewModel(
             uiScale = settings.uiScale,
             isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
             windowTransparencyModifier = settings.windowTransparencyModifier,
+            // Map
+            intelMap = settings.intelMap,
+            isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
+            jumpBridgeNetwork = jumpBridgesRepository.getConnections(),
+            jumpBridgeCopyState = JumpBridgeCopyState.NotCopied,
+            jumpBridgeNetworkUrl = configurationPackRepository.getJumpBridgeNetworkUrl(),
+            jumpBridgeSearchState = JumpBridgeSearchState.NotSearched,
+            isJumpBridgeSearchDialogShown = false,
+            sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.NotCopied,
+            sovereigntyUpgrades = sovereigntyUpgradesRepository.upgrades.value,
+            sovereigntyUpgradesUrl = configurationPackRepository.getSovereigntyUpgradesUrl(),
         ),
     )
     val state = _state.asStateFlow()
@@ -111,7 +176,6 @@ class SettingsViewModel(
                         isShowingSystemDistance = settings.isShowingSystemDistance,
                         isUsingJumpBridgesForDistance = settings.isUsingJumpBridgesForDistance,
                         intelExpireSeconds = settings.intelExpireSeconds,
-                        isLoadOldMessagesEnabled = settings.isLoadOldMessagesEnabled,
                         isDisplayEveTime = settings.isDisplayEveTime,
                         isShowSetupWizardOnNextStartEnabled = settings.isShowSetupWizardOnNextStart,
                         isRememberOpenWindows = settings.isRememberOpenWindows,
@@ -124,6 +188,9 @@ class SettingsViewModel(
                         uiScale = settings.uiScale,
                         isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
                         windowTransparencyModifier = settings.windowTransparencyModifier,
+                        // Map
+                        intelMap = settings.intelMap,
+                        isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
                     )
                 }
                 val logsDirectory = settings.eveLogsDirectory
@@ -147,6 +214,29 @@ class SettingsViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            clipboard.state.filterNotNull().collect { text ->
+                if (_state.value.selectedTab == SettingsTab.Sovereignty) {
+                    val network = jumpBridgesParser.parse(text)
+                    if (network != null) {
+                        _state.update { it.copy(jumpBridgeCopyState = JumpBridgeCopyState.Copied(network)) }
+                    } else {
+                        _state.update { it.copy(jumpBridgeCopyState = JumpBridgeCopyState.NotCopied) }
+                    }
+
+                    val sovUpgrades = sovereigntyUpgradesParser.parse(text)
+                    if (sovUpgrades.isNotEmpty()) {
+                        _state.update { it.copy(sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.Copied(sovUpgrades)) }
+                    } else {
+                        _state.update { it.copy(sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.NotCopied) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun onTabSelected(tab: SettingsTab) {
+        _state.update { it.copy(selectedTab = tab) }
     }
 
     private fun updateIntelChannelAutocomplete(logsDirectory: Path?) {
@@ -235,10 +325,6 @@ class SettingsViewModel(
         }
     }
 
-    fun onLoadOldMessagedChanged(enabled: Boolean) {
-        settings.isLoadOldMessagesEnabled = enabled
-    }
-
     fun onShowSetupWizardOnNextStartChanged(enabled: Boolean) {
         settings.isShowSetupWizardOnNextStart = enabled
     }
@@ -313,6 +399,139 @@ class SettingsViewModel(
             showRestartRequiredDialog("Some elements of a configuration pack will only take effect after you restart the application.")
             configurationPackRepository.set(configurationPack)
         }
+    }
+
+    fun onIntelPopupTimeoutSecondsChange(seconds: Int) {
+        settings.intelMap = settings.intelMap.copy(intelPopupTimeoutSeconds = seconds)
+    }
+
+    fun onIsUsingCompactModeChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isUsingCompactMode = enabled)
+    }
+
+    fun onIsFollowingCharacterWithinLayoutsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isFollowingCharacterWithinLayouts = enabled)
+    }
+
+    fun onIsFollowingCharacterAcrossLayoutsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isFollowingCharacterAcrossLayouts = enabled)
+    }
+
+    fun onIsScrollZoomInvertedChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isInvertZoom = enabled)
+    }
+
+    fun onIsAlwaysShowingSystemsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isAlwaysShowingSystems = enabled)
+    }
+
+    fun onIsPreferringRegionMapsChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isPreferringRegionMaps = enabled)
+    }
+
+    fun onMapNotesClick() {
+        windowManager.onWindowOpen(RiftWindow.MapMarkers)
+    }
+
+    fun onIsUsingRiftAutopilotRouteChange(enabled: Boolean) {
+        settings.isUsingRiftAutopilotRoute = enabled
+    }
+
+    fun onJumpBridgeForgetClick() {
+        jumpBridgesRepository.setConnections(emptyList())
+        _state.update { it.copy(jumpBridgeNetwork = emptyList()) }
+    }
+
+    fun onJumpBridgeImportClick() {
+        val network = (_state.value.jumpBridgeCopyState as? JumpBridgeCopyState.Copied)?.network ?: return
+        importJumpBridges(network)
+    }
+
+    fun onJumpBridgeSearchImportClick() {
+        val network = (_state.value.jumpBridgeSearchState as? JumpBridgeSearchState.SearchDone)?.network ?: return
+        importJumpBridges(network)
+    }
+
+    private fun importJumpBridges(network: List<JumpBridgeConnection>) {
+        jumpBridgesRepository.setConnections(network)
+        _state.update {
+            it.copy(
+                jumpBridgeNetwork = network,
+                jumpBridgeCopyState = JumpBridgeCopyState.NotCopied,
+                jumpBridgeSearchState = JumpBridgeSearchState.NotSearched,
+            )
+        }
+    }
+
+    fun onJumpBridgeSearchClick() {
+        _state.update { it.copy(isJumpBridgeSearchDialogShown = true) }
+    }
+
+    fun onIsJumpBridgeNetworkShownChange(enabled: Boolean) {
+        settings.intelMap = settings.intelMap.copy(isJumpBridgeNetworkShown = enabled)
+    }
+
+    fun onJumpBridgeNetworkOpacityChange(percent: Int) {
+        settings.intelMap = settings.intelMap.copy(jumpBridgeNetworkOpacity = percent)
+    }
+
+    fun onJumpBridgeDialogDismissed() {
+        _state.update { it.copy(isJumpBridgeSearchDialogShown = false) }
+    }
+
+    fun onJumpBridgeSearchDialogConfirmClick() {
+        onJumpBridgeDialogDismissed()
+        if (_state.value.jumpBridgeSearchState !is JumpBridgeSearchState.NotSearched) return
+        viewModelScope.launch {
+            _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.Searching(0f, 0)) }
+            jumpBridgesRepository.search().collect { searchState ->
+                when (searchState) {
+                    is JumpBridgesRepository.SearchState.Progress -> {
+                        _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.Searching(searchState.progress, searchState.connectionsCount)) }
+                    }
+                    JumpBridgesRepository.SearchState.Error -> {
+                        _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.SearchFailed) }
+                        kotlinx.coroutines.delay(2000)
+                        _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.NotSearched) }
+                    }
+                    is JumpBridgesRepository.SearchState.Result -> {
+                        _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.SearchDone(searchState.connections)) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun onJumpBridgeCopyClick() {
+        val text = jumpBridgesRepository.getConnections().joinToString("\n") { connection ->
+            "${connection.from.name} -> ${connection.to.name}"
+        }
+        Clipboard.copy(text)
+        _state.update { it.copy(dialogMessage = DialogMessage("Export successful", "Jump Bridge network copied to clipboard", MessageDialogType.Info)) }
+    }
+
+    fun onSovereigntyUpgradesImportClick() {
+        val upgrades = (_state.value.sovereigntyUpgradesCopyState as? SovereigntyUpgradesCopyState.Copied)?.upgrades ?: return
+        sovereigntyUpgradesRepository.setUpgrades(upgrades)
+        _state.update {
+            it.copy(
+                sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.NotCopied,
+                sovereigntyUpgrades = upgrades,
+            )
+        }
+    }
+
+    fun onSovereigntyUpgradesForgetClick() {
+        sovereigntyUpgradesRepository.setUpgrades(emptyMap())
+        _state.update { it.copy(sovereigntyUpgrades = emptyMap()) }
+    }
+
+    fun onSovereigntyUpgradesCopyClick() {
+        val text = sovereigntyUpgradesRepository.upgrades.value.entries.joinToString("\n") { (system, upgrades) ->
+            "${system.name} <- ${upgrades.joinToString(", ") { it.name }}"
+        }
+        Clipboard.copy(text)
+        _state.update { it.copy(dialogMessage = DialogMessage("Export successful", "Sovereignty upgrades copied to clipboard", MessageDialogType.Info)) }
     }
 
     fun onCloseDialogMessage() {

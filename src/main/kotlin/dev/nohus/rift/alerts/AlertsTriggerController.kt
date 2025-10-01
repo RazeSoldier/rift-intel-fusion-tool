@@ -23,6 +23,7 @@ import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.standings.isFriendly
 import dev.nohus.rift.utils.toRegexOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
@@ -80,6 +81,10 @@ class AlertsTriggerController(
     )
 
     fun onNewKillmail(killmail: ProcessedKillmail) {
+        if (killmail.timestamp.isBefore(Instant.now() - Duration.ofMinutes(3))) {
+            return // Don't alert for old killmails
+        }
+
         val triggeredIntelAlerts = enabledAlerts.mapNotNull { alert ->
             if (alert.trigger is IntelReported) {
                 val matchingEntities = getMatchingEntities(alert.trigger.reportTypes, killmail)
@@ -437,11 +442,19 @@ class AlertsTriggerController(
     ): List<Pair<IntelReportType, List<SystemEntity>>> {
         return types.map { type ->
             type to when (type) {
-                IntelReportType.AnyCharacter -> killmail.attackers
-                is IntelReportType.SpecificCharacters -> killmail.attackers.filter { it.name in type.characters }
-                IntelReportType.AnyShip -> killmail.ships
+                IntelReportType.AnyCharacter ->
+                    killmail.attackers
+                        .filter { !it.details.standingLevel.isFriendly }
+                is IntelReportType.SpecificCharacters ->
+                    killmail.attackers
+                        .filter { it.name in type.characters }
+                IntelReportType.AnyShip ->
+                    killmail.ships
+                        .filter { it.standing?.isFriendly != true }
                 is IntelReportType.SpecificShipClasses ->
-                    killmail.ships.filter { shipTypesRepository.getShipClass(it.name) in type.classes }
+                    killmail.ships
+                        .filter { shipTypesRepository.getShipClass(it.name) in type.classes }
+                        .filter { it.standing?.isFriendly != true }
                 IntelReportType.Bubbles -> emptyList()
                 IntelReportType.GateCamp -> emptyList()
                 IntelReportType.Wormhole -> emptyList()

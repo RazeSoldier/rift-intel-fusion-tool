@@ -35,7 +35,6 @@ import dev.nohus.rift.loglite.LogLiteWindow
 import dev.nohus.rift.map.MapWindow
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.map.markers.MapMarkersWindow
-import dev.nohus.rift.map.settings.MapSettingsWindow
 import dev.nohus.rift.neocom.NeocomWindow
 import dev.nohus.rift.pings.PingsWindow
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryWindow
@@ -91,9 +90,6 @@ class WindowManager(
 
         @SerialName("Map")
         Map,
-
-        @SerialName("MapSettings")
-        MapSettings,
 
         @SerialName("MapMarkers")
         MapMarkers,
@@ -153,6 +149,10 @@ class WindowManager(
         JukeboxCollapsed,
 
         @Deprecated("Removed")
+        @SerialName("MapSettings")
+        MapSettings,
+
+        @Deprecated("Removed")
         @SerialName("NonEnglishEveClientWarning")
         NonEnglishEveClientWarning,
 
@@ -189,13 +189,11 @@ class WindowManager(
     private val nonSavedWindows = listOf(
         RiftWindow.IntelReportsSettings,
         RiftWindow.IntelFeedSettings,
-        RiftWindow.MapSettings,
         RiftWindow.MapMarkers,
         RiftWindow.About,
         RiftWindow.ConfigurationPackReminder,
         RiftWindow.WhatsNew,
         RiftWindow.StartupWarning,
-        RiftWindow.Pushover,
         RiftWindow.CharacterSettings,
     )
     private val multiInstanceWindows = listOf(
@@ -238,8 +236,7 @@ class WindowManager(
                             RiftWindow.IntelFeed -> IntelFeedWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelFeed, state.uuid) }, onTuneClick = { onWindowOpen(RiftWindow.IntelFeedSettings) })
                             RiftWindow.IntelFeedSettings -> IntelFeedSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelFeedSettings, state.uuid) })
                             RiftWindow.Settings -> SettingsWindow(state.inputModel as? SettingsInputModel ?: SettingsInputModel.Normal, state, onCloseRequest = { onWindowClose(RiftWindow.Settings, state.uuid) })
-                            RiftWindow.Map -> MapWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Map, state.uuid) }, onTuneClick = { onWindowOpen(RiftWindow.MapSettings) })
-                            RiftWindow.MapSettings -> MapSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.MapSettings, state.uuid) })
+                            RiftWindow.Map -> MapWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Map, state.uuid) })
                             RiftWindow.MapMarkers -> MapMarkersWindow(state.inputModel as? MapMarkersInputModel ?: MapMarkersInputModel.New, state, onCloseRequest = { onWindowClose(RiftWindow.MapMarkers, state.uuid) })
                             RiftWindow.Characters -> CharactersWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Characters, state.uuid) })
                             RiftWindow.Alerts -> AlertsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Alerts, state.uuid) })
@@ -259,6 +256,7 @@ class WindowManager(
                             RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings, state.uuid) })
                             RiftWindow.Jukebox -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Jukebox, state.uuid) })
                             RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
+                            RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
                         }
@@ -383,7 +381,6 @@ class WindowManager(
             RiftWindow.IntelFeedSettings -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.Settings -> WindowSizing(defaultSize = (820 to null), minimumSize = 820 to null)
             RiftWindow.Map -> WindowSizing(defaultSize = saved ?: (800 to 800), minimumSize = 350 to 300)
-            RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
             RiftWindow.MapMarkers -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.Characters -> WindowSizing(defaultSize = saved ?: (420 to 400), minimumSize = 400 to 300)
             RiftWindow.Alerts -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = 500 to 500)
@@ -403,6 +400,7 @@ class WindowManager(
             RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
             RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
+            RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
         }

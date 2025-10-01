@@ -123,13 +123,14 @@ class ParsePingUseCase(
     }
 
     private fun parseFormupLocation(text: String): FormupLocation {
-        var system = solarSystemsRepository.getSystemName(text, regionsHint = emptyList()) // Fast path
+        val textWithoutInterpunction = text.removeSuffix(",")
+        var system = solarSystemsRepository.getSystemName(textWithoutInterpunction, regionsHint = emptyList()) // Fast path
         if (system == null) { // System not found, try with system hints
             val friendlyAllianceIds = standingsRepository.getFriendlyAllianceIds()
             val friendlySystems = mapStatusRepository.status.value.mapNotNull {
                 if (it.value.sovereignty?.allianceId in friendlyAllianceIds) it.key else null
             }
-            system = solarSystemsRepository.getSystemName(text, regionsHint = emptyList(), systemHints = friendlySystems)
+            system = solarSystemsRepository.getSystemName(textWithoutInterpunction, regionsHint = emptyList(), systemHints = friendlySystems)
         }
         return if (system != null) FormupLocation.System(system) else FormupLocation.Text(text)
     }
@@ -191,6 +192,7 @@ class ParsePingUseCase(
             "TOMAHAWK" to "https://goonfleet.com/index.php/topic/355156-active-strat-tomahawks-raven-navy-issues/",
             "Raven" to "https://goonfleet.com/index.php/topic/355156-active-strat-tomahawks-raven-navy-issues/",
             "Snail" to "https://goonfleet.com/index.php/topic/366187-active-strat-snail-fleet/",
+            "Vultures" to "https://goonfleet.com/index.php/topic/369029-active-strat-vultures/",
         )
         if (text.contains("(")) {
             val name = text.substringBefore("(")

@@ -109,6 +109,7 @@ import dev.nohus.rift.map.systemcolor.strategies.NullSecuritySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.RatsTypeSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.SecuritySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.SovereigntySystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.SovereigntyUpgradesSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StandingsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StarColorSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StationsSystemColorStrategy
@@ -116,6 +117,7 @@ import dev.nohus.rift.map.systemcolor.strategies.WormholesSystemColorStrategy
 import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -128,7 +130,6 @@ import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 fun MapWindow(
     windowState: RiftWindowState,
     onCloseRequest: () -> Unit,
-    onTuneClick: () -> Unit,
 ) {
     val viewModel: MapViewModel = viewModel(windowState.uuid)
     val state by viewModel.state.collectAsState()
@@ -136,7 +137,6 @@ fun MapWindow(
         title = "Intel Map",
         icon = Res.drawable.window_map,
         state = windowState,
-        onTuneClick = onTuneClick,
         onCloseClick = onCloseRequest,
         titleBarStyle = if (state.settings.isUsingCompactMode) TitleBarStyle.Small else TitleBarStyle.Full,
         titleBarContent = { height ->
@@ -170,6 +170,7 @@ fun MapWindow(
             onJumpRangeTargetUpdate = viewModel::onJumpRangeTargetUpdate,
             onJumpRangeDistanceUpdate = viewModel::onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = viewModel::onPlanetTypesUpdate,
+            onSovereigntyUpgradeTypesUpdate = viewModel::onSovereigntyUpgradeTypesUpdate,
             onLayoutSelected = viewModel::onLayoutSelected,
             onDistanceMapCenterUpdate = viewModel::onDistanceMapCenterUpdate,
             onDistanceMapRangeUpdate = viewModel::onDistanceMapRangeUpdate,
@@ -200,6 +201,7 @@ private fun MapWindowContent(
     onJumpRangeTargetUpdate: (String) -> Unit,
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
+    onSovereigntyUpgradeTypesUpdate: (List<Type>) -> Unit,
     onLayoutSelected: (Int) -> Unit,
     onDistanceMapCenterUpdate: (String) -> Unit,
     onDistanceMapRangeUpdate: (Int) -> Unit,
@@ -232,6 +234,7 @@ private fun MapWindowContent(
             systemInfoTypes = state.systemInfoTypes,
             mapJumpRangeState = state.mapJumpRangeState,
             mapPlanetsState = state.mapPlanetsState,
+            mapSovereigntyUpgradesState = state.mapSovereigntyUpgradesState,
             distanceMapState = state.distanceMapState,
             alternativeLayouts = state.alternativeLayouts,
             onSystemColorChange = onSystemColorChange,
@@ -243,6 +246,7 @@ private fun MapWindowContent(
             onJumpRangeTargetUpdate = onJumpRangeTargetUpdate,
             onJumpRangeDistanceUpdate = onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = onPlanetTypesUpdate,
+            onSovereigntyUpgradeTypesUpdate = onSovereigntyUpgradeTypesUpdate,
             onLayoutSelected = onLayoutSelected,
             onDistanceMapCenterUpdate = onDistanceMapCenterUpdate,
             onDistanceMapRangeUpdate = onDistanceMapRangeUpdate,
@@ -362,6 +366,7 @@ private fun Map(
             stations = StationsSystemColorStrategy(state.mapState.systemStatus),
             factionWarfare = FactionWarfareSystemColorStrategy(state.mapState.systemStatus),
             sovereignty = koin.get { parametersOf(state.mapState.systemStatus) },
+            sovereigntyUpgrades = SovereigntyUpgradesSystemColorStrategy(state.mapState.systemStatus),
             storms = MetaliminalStormsSystemColorStrategy(state.mapState.systemStatus),
             wormholes = WormholesSystemColorStrategy(state.mapState.systemStatus),
             jumpRange = JumpRangeSystemColorStrategy(state.mapState.systemStatus),
@@ -591,6 +596,7 @@ data class SystemStatusColorStrategies(
     val stations: StationsSystemColorStrategy,
     val factionWarfare: FactionWarfareSystemColorStrategy,
     val sovereignty: SovereigntySystemColorStrategy,
+    val sovereigntyUpgrades: SovereigntyUpgradesSystemColorStrategy,
     val storms: MetaliminalStormsSystemColorStrategy,
     val wormholes: WormholesSystemColorStrategy,
     val jumpRange: JumpRangeSystemColorStrategy,
@@ -631,6 +637,7 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.Stations -> systemStatusColorStrategies.stations
         MapSystemInfoType.FactionWarfare -> systemStatusColorStrategies.factionWarfare
         MapSystemInfoType.Sovereignty -> systemStatusColorStrategies.sovereignty
+        MapSystemInfoType.SovereigntyUpgrades -> systemStatusColorStrategies.sovereigntyUpgrades
         MapSystemInfoType.MetaliminalStorms -> systemStatusColorStrategies.storms
         MapSystemInfoType.JumpRange -> systemStatusColorStrategies.jumpRange
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for coloring")

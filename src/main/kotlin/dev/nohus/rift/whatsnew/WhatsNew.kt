@@ -478,6 +478,20 @@ object WhatsNew {
                 - The character settings copying feature now shows a warning if you have the game open
                 - RIFT will now warn you on startup if your system clock is incorrect, which is a common cause of inaccurate intel timestamps and missing alerts
             """.trimIndent(),
+            "4.36.0" description """
+                ! New feature: Sovereignty Upgrades
+                - You can now import a list of Sovereignty Upgrades improving your solar systems
+                - Your list can be exported out of RIFT as well
+                - The upgrades are then shown on the map. As usual, you can choose to always display them, only display them on hover, or use their presence to color systems or their backgrounds on the map.
+                - You can also choose to only see the types of upgrades you are interested in
+                - All upgrades added in the Legion expansion are supported, including the new Exploration Detector upgrades. Their area of effect is shown on the map, so you can easily see where the additional exploration sites can spawn.
+                - Systems affected by multiple Exploration Detector upgrades also have this indicated
+
+                - The Settings window has been redesigned and organized into separate tabs
+                - Jump Bridge Network settings have been redesigned, and you can now see a list of your imported jump bridge connections
+                - You can now export your jump bridges out of RIFT
+                - The Map Settings window has been removed. Map settings now have their own tab in the main Settings window.
+            """.trimIndent(),
         ).reversed()
     }
 }

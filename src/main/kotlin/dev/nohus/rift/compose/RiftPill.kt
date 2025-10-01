@@ -27,11 +27,52 @@ import dev.nohus.rift.generated.resources.settings_16px
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
+@Composable
+fun RiftPill(
+    text: String,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {},
+    onEditClick: (() -> Unit)? = null,
+    onHoverChange: (Boolean) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    RiftPill(
+        text = text,
+        icon = null,
+        isSelected = isSelected,
+        onClick = onClick,
+        onEditClick = onEditClick,
+        onHoverChange = onHoverChange,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun RiftPill(
+    text: String,
+    icon: DrawableResource?,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {},
+    onEditClick: (() -> Unit)? = null,
+    onHoverChange: (Boolean) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    RiftPill(
+        text = text,
+        icon = { Icon(icon) },
+        isSelected = isSelected,
+        onClick = onClick,
+        onEditClick = onEditClick,
+        onHoverChange = onHoverChange,
+        modifier = modifier,
+    )
+}
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun RiftPill(
     text: String,
-    icon: DrawableResource? = null,
+    icon: @Composable () -> Unit = {},
     isSelected: Boolean = false,
     onClick: () -> Unit = {},
     onEditClick: (() -> Unit)? = null,
@@ -64,7 +105,7 @@ fun RiftPill(
                         )
                         .padding(start = Spacing.medium, top = Spacing.small, bottom = Spacing.small, end = Spacing.small),
                 ) {
-                    Icon(icon)
+                    icon()
                     Text(
                         text = text,
                         style = RiftTheme.typography.bodyPrimary,
@@ -90,6 +131,7 @@ fun RiftPill(
             }
         } else {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .onClick { onClick() }
                     .hoverBackground(
@@ -99,7 +141,7 @@ fun RiftPill(
                     )
                     .padding(horizontal = Spacing.medium, vertical = Spacing.small),
             ) {
-                Icon(icon)
+                icon()
                 Text(
                     text = text,
                     style = RiftTheme.typography.bodyPrimary,

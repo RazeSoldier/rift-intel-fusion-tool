@@ -101,6 +101,7 @@ class SearchRepository(
                 id = id,
                 typeId = id.toInt(),
                 name = namesRepository.getName(id.toInt()) ?: "$id",
+                description = "ID: $id",
             )
         }.sortedBy { it.name }
     }

@@ -50,7 +50,7 @@ class NtpClient {
         return null
     }
 
-    fun requestTime(address: InetAddress, port: Int, timeout: Int): NtpResult? {
+    private fun requestTime(address: InetAddress, port: Int, timeout: Int): NtpResult? {
         var socket: DatagramSocket? = null
         try {
             socket = DatagramSocket()

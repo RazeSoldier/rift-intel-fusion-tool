@@ -112,21 +112,28 @@ class TypesRepository(
      * Tries to find a type name in arbitrary text
      */
     fun findTypeInText(message: String): Type? {
-        val words = message.split(" ")
-        val punctuation = listOf(",", ".", ";")
-        for (startIndex in words.indices) {
-            val longest = words.drop(startIndex).takeWhile { it.isNotEmpty() && !it[0].isLowerCase() }
-            if (longest.isEmpty()) continue
-            for (length in longest.size downTo 1) {
-                val candidate = longest.take(length).joinToString(" ")
-                getType(candidate)?.let { return it }
-                punctuation
-                    .map { candidate.removeSuffix(it) }
-                    .filter { it != candidate }
-                    .forEach { withoutPunctuation -> getType(withoutPunctuation)?.let { return it } }
+        return findTypesInText(message).firstOrNull()
+    }
+
+    /**
+     * Tries to find type names in arbitrary text
+     */
+    fun findTypesInText(message: String): Sequence<Type> {
+        return sequence {
+            val words = message.split("[\\s,.;]+".toRegex())
+            outer@for (startIndex in words.indices) {
+                val longest = words.drop(startIndex).takeWhile { it.isNotEmpty() && !it[0].isLowerCase() }
+                if (longest.isEmpty()) continue
+                for (length in longest.size downTo 1) {
+                    val candidate = longest.take(length).joinToString(" ")
+                    val type = getType(candidate)
+                    if (type != null) {
+                        yield(type)
+                        continue@outer
+                    }
+                }
             }
         }
-        return null
     }
 
     suspend fun resolveNamesFromEsi(ids: List<Int>) {

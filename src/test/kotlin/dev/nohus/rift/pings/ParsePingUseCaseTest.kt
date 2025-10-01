@@ -37,6 +37,8 @@ class ParsePingUseCaseTest : FreeSpec({
     coEvery { mockCharactersRepository.getCharacterId("Lodena Minax") } returns 5
     every { mockSolarSystemsRepository.getSystemName(any(), any(), any()) } returns null
     every { mockSolarSystemsRepository.getSystemName("1DQ1-A", emptyList()) } returns "1DQ1-A"
+    every { mockSolarSystemsRepository.getSystemName("UALX-3", emptyList()) } returns "UALX-3"
+    every { mockSolarSystemsRepository.getSystemName("0SHT", emptyList()) } returns "0SHT-A"
     every { mockSolarSystemsRepository.getSystemName("U-Q", emptyList()) } returns null
     every { mockSolarSystemsRepository.getSystemName("U-Q", emptyList(), listOf(30000629)) } returns "U-QMOA"
     every { mockSolarSystemsRepository.getSystemName("49-U", emptyList(), listOf(30000629)) } returns "49-U6U"
@@ -259,6 +261,25 @@ class ParsePingUseCaseTest : FreeSpec({
             doctrine = null,
             broadcastSource = null,
             target = "discord",
+        ),
+        """
+            Sub cap move op! Departing 0900 on the dot
+            
+            FC Name: Asher Elias
+            Formup Location: UALX-3, 0SHT
+            ~~~ This was a coord broadcast from nyx_viliana to all at 2025-05-27 08:43:11.912502 EVE ~~~
+        """.trimIndent() to PingModel.FleetPing(
+            timestamp = timestamp,
+            sourceText = "",
+            description = "Sub cap move op! Departing 0900 on the dot",
+            fleetCommander = FleetCommander("Asher Elias", 4),
+            fleet = null,
+            formupLocations = listOf(FormupLocation.System("UALX-3"), FormupLocation.System("0SHT-A")),
+            papType = null,
+            comms = null,
+            doctrine = null,
+            broadcastSource = "coord",
+            target = "all",
         ),
     ).forEachIndexed { index, (text, expected) ->
         "ping $index is parsed correctly" {

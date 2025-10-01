@@ -11,6 +11,7 @@ import dev.nohus.rift.settings.persistence.MapSystemInfoType.JoveObservatories
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.MetaliminalStorms
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Security
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Sovereignty
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.SovereigntyUpgrades
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Standings
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Wormholes
 import dev.nohus.rift.standings.StandingsRepository.Standings
@@ -25,7 +26,6 @@ import java.util.UUID
 data class SettingsModel(
     val eveLogsDirectory: String? = null,
     val eveSettingsDirectory: String? = null,
-    val isLoadOldMessagesEnabled: Boolean = false,
     val intelMap: IntelMap = IntelMap(),
     val authenticatedCharacters: Map<Int, SsoAuthentication> = emptyMap(),
     val intelChannels: List<IntelChannel> = emptyList(),
@@ -59,6 +59,7 @@ data class SettingsModel(
     val whatsNewVersion: String? = null,
     val jumpRange: JumpRange? = null,
     val selectedPlanetTypes: List<Int> = emptyList(),
+    val selectedSovereigntyUpgradeTypes: List<Int> = emptyList(),
     val installationId: String? = null,
     val isShowingSystemDistance: Boolean = true,
     val isUsingJumpBridgesForDistance: Boolean = false,
@@ -80,6 +81,7 @@ data class SettingsModel(
     val mapMarkers: List<MapMarker> = emptyList(),
     val assetLocationPins: Map<Long, LocationPinStatus> = emptyMap(),
     val isJukeboxRevealed: Boolean = false,
+    val sovereigntyUpgrades: Map<String, List<Int>> = emptyMap(),
 )
 
 @Serializable
@@ -109,7 +111,7 @@ sealed interface MapOpenedTab {
 @Serializable
 enum class MapSystemInfoType {
     StarColor, Security, NullSecurity, IntelHostiles, Jumps, Kills, NpcKills, Assets, Clones, Incursions, Stations,
-    FactionWarfare, Sovereignty, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Wormholes, Colonies, Standings,
+    FactionWarfare, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Wormholes, Colonies, Standings,
     RatsType, Region, Constellation, IndustryIndexCopying, IndustryIndexInvention, IndustryIndexManufacturing, IndustryIndexReaction,
     IndustryIndexMaterialEfficiency, IndustryIndexTimeEfficiency,
 }
@@ -128,14 +130,14 @@ data class IntelMap(
         MapType.Distance to null,
     ),
     val mapTypeIndicatorInfoTypes: Map<MapType, List<MapSystemInfoType>> = mapOf(
-        MapType.NewEden to listOf(Assets, Clones, Incursions, MetaliminalStorms, Colonies),
-        MapType.Region to listOf(Assets, Clones, Incursions, MetaliminalStorms, Colonies),
+        MapType.NewEden to listOf(Assets, Clones, Incursions, SovereigntyUpgrades, MetaliminalStorms, Colonies),
+        MapType.Region to listOf(Assets, Clones, Incursions, SovereigntyUpgrades, MetaliminalStorms, Colonies),
         MapType.Distance to listOf(),
     ),
     val mapTypeInfoBoxInfoTypes: Map<MapType, List<MapSystemInfoType>> = mapOf(
-        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, Sovereignty, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
-        MapType.Region to listOf(Security, Assets, Clones, Incursions, Sovereignty, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
-        MapType.Distance to listOf(Security, Assets, Clones, Incursions, Sovereignty, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.Region to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.Distance to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
     ),
     val intelPopupTimeoutSeconds: Int = 60,
     val isFollowingCharacterAcrossLayouts: Boolean = true,

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
+import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.RequirementIcon
 import dev.nohus.rift.compose.RiftAutocompleteTextField
 import dev.nohus.rift.compose.RiftDropdownWithLabel
@@ -52,6 +53,7 @@ import dev.nohus.rift.map.DistanceMapController.DistanceMapState
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
+import dev.nohus.rift.map.MapSovereigntyUpgradesController.MapSovereigntyUpgradesState
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
@@ -66,10 +68,13 @@ import dev.nohus.rift.map.PanelState.Indicators
 import dev.nohus.rift.map.PanelState.InfoBox
 import dev.nohus.rift.map.PanelState.JumpRange
 import dev.nohus.rift.map.PanelState.Planets
+import dev.nohus.rift.map.PanelState.SovereigntyUpgrades
 import dev.nohus.rift.map.PanelState.StarColor
 import dev.nohus.rift.repositories.PlanetTypes
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SovereigntyUpgradesRepository
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import dev.nohus.rift.utils.plural
 import org.jetbrains.compose.resources.painterResource
@@ -78,13 +83,14 @@ import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 enum class PanelState {
     Collapsed, Expanded,
     StarColor, CellColor, Indicators, InfoBox,
-    JumpRange, Planets,
+    JumpRange, Planets, SovereigntyUpgrades,
     DistanceMapCenter,
 }
 
 private val editableInfoTypes = mapOf(
     MapSystemInfoType.JumpRange to JumpRange,
     MapSystemInfoType.Planets to Planets,
+    MapSystemInfoType.SovereigntyUpgrades to SovereigntyUpgrades,
 )
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalLayoutApi::class)
@@ -95,6 +101,7 @@ fun MapSettingsPanel(
     systemInfoTypes: SystemInfoTypes,
     mapJumpRangeState: MapJumpRangeState,
     mapPlanetsState: MapPlanetsState,
+    mapSovereigntyUpgradesState: MapSovereigntyUpgradesState,
     distanceMapState: DistanceMapState,
     alternativeLayouts: List<Layout>,
     onSystemColorChange: (SettingsMapType, MapSystemInfoType) -> Unit,
@@ -106,6 +113,7 @@ fun MapSettingsPanel(
     onJumpRangeTargetUpdate: (String) -> Unit,
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
+    onSovereigntyUpgradeTypesUpdate: (List<Type>) -> Unit,
     onLayoutSelected: (Int) -> Unit,
     onDistanceMapCenterUpdate: (String) -> Unit,
     onDistanceMapRangeUpdate: (Int) -> Unit,
@@ -382,6 +390,13 @@ fun MapSettingsPanel(
                             onPlanetTypesUpdate = onPlanetTypesUpdate,
                         )
                     }
+                    SovereigntyUpgrades -> {
+                        SovereigntyUpgradesPanel(
+                            mapSovereigntyUpgradesState = mapSovereigntyUpgradesState,
+                            onBack = { panelState = previousPanelState },
+                            onSovereigntyUpgradeTypesUpdate = onSovereigntyUpgradeTypesUpdate,
+                        )
+                    }
                     DistanceMapCenter -> {
                         DistanceMapPanel(
                             state = distanceMapState,
@@ -516,6 +531,58 @@ private fun PlanetsPanel(
                             mapPlanetsState.selectedTypes + type
                         }
                         onPlanetTypesUpdate(new)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SovereigntyUpgradesPanel(
+    mapSovereigntyUpgradesState: MapSovereigntyUpgradesState,
+    onBack: () -> Unit,
+    onSovereigntyUpgradeTypesUpdate: (List<Type>) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        modifier = Modifier.padding(Spacing.medium),
+    ) {
+        SettingsPanelTitle(
+            title = "Sovereignty upgrade types",
+            onBack = onBack,
+        )
+        FlowRow(
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            val sovereigntyUpgradesRepository: SovereigntyUpgradesRepository = remember { koin.get() }
+            sovereigntyUpgradesRepository.groupedUpgradeTypes.forEach { group ->
+                val isSelected = group.any { it in mapSovereigntyUpgradesState.selectedTypes }
+                val name = group.first().name.replace(Regex("\\s+\\d+$"), "")
+                RiftPill(
+                    text = name,
+                    icon = {
+                        Row {
+                            for (type in group) {
+                                AsyncTypeIcon(
+                                    type = type,
+                                    modifier = Modifier
+                                        .padding(end = Spacing.small)
+                                        .size(32.dp),
+                                )
+                            }
+                        }
+                    },
+                    isSelected = isSelected,
+                    onClick = {
+                        val new = if (isSelected) {
+                            mapSovereigntyUpgradesState.selectedTypes - group
+                        } else {
+                            mapSovereigntyUpgradesState.selectedTypes + group
+                        }
+                        onSovereigntyUpgradeTypesUpdate(new)
                     },
                 )
             }
@@ -789,6 +856,7 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.Stations -> "Stations" to "Colored according to the\nnumber of stations"
         MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Colored according to the\nfaction warfare occupier"
         MapSystemInfoType.Sovereignty -> "Sovereignty" to "Colored according to the\nsovereignty holder"
+        MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Colored according to the\ninstalled sovereignty upgrades"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Colored according to the\npresence of metaliminal storms"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Colored according to\njump range"
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for colors")
@@ -827,6 +895,7 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.Stations -> "Stations" to "Number of stations"
         MapSystemInfoType.FactionWarfare -> "" to ""
         MapSystemInfoType.Sovereignty -> "Sovereignty" to "Sovereignty holder logo"
+        MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Indicators for installed sovereignty upgrades"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Indicator for systems with a storm"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Indicator for systems in jump range"
         MapSystemInfoType.Planets -> "Planets" to "Indicators for planets"
@@ -865,6 +934,7 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.Stations -> "Stations" to "Number of stations"
         MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Faction warfare details"
         MapSystemInfoType.Sovereignty -> "Sovereignty" to "Sovereignty holder"
+        MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Installed sovereignty upgrades"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Metaliminal storm type"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Jump distance to system"
         MapSystemInfoType.Planets -> "Planets" to "Planets information"
