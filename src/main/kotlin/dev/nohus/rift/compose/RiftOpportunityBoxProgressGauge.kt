@@ -34,6 +34,7 @@ import dev.nohus.rift.generated.resources.corporation_project_state_checkmark_16
 import dev.nohus.rift.generated.resources.corporation_project_state_close_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
 import dev.nohus.rift.network.esi.models.CorporationProjectState
+import dev.nohus.rift.utils.formatNumber
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
@@ -183,7 +184,7 @@ private fun ProgressGaugeTooltip(gauge: RiftOpportunityCardProgressGauge) {
                 }
                 appendLine()
                 withStyle(RiftTheme.typography.bodyPrimary.toSpanStyle()) {
-                    append("${gauge.currentProgress} / ${gauge.desiredProgress}")
+                    append("${formatNumber(gauge.currentProgress)} / ${formatNumber(gauge.desiredProgress)}")
                 }
             },
             style = RiftTheme.typography.bodySecondary,
@@ -199,7 +200,7 @@ private fun ProgressGaugeTooltip(gauge: RiftOpportunityCardProgressGauge) {
                 }
                 appendLine()
                 withStyle(RiftTheme.typography.bodyPrimary.toSpanStyle()) {
-                    append("${gauge.ownProgress} / $ownMaxProgress")
+                    append("${formatNumber(gauge.ownProgress)} / ${formatNumber(ownMaxProgress)}")
                 }
             },
             style = RiftTheme.typography.bodySecondary,

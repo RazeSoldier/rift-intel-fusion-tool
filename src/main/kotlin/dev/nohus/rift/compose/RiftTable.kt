@@ -74,6 +74,7 @@ sealed interface TableCell {
 data class TableRow(
     val id: String,
     val cells: List<TableCell>,
+    val characterId: Int? = null,
 )
 
 data class SortingColumn(
@@ -241,35 +242,37 @@ fun RiftTable(
             // Rows
             var selectedRowId: String? by remember { mutableStateOf(null) }
             for (row in sortedRows) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .hoverBackground(isSelected = row.id == selectedRowId)
-                        .onClick {
-                            selectedRowId = row.id
-                        }
-                        .width(this@BoxWithConstraints.maxWidth)
-                        .wrapContentSize(Alignment.TopStart, unbounded = true)
-                        .padding(vertical = rowVerticalPadding),
-                ) {
-                    row.cells.forEachIndexed { index, cell ->
-                        val width = columnWidths[index]
-                        val isRightAligned = (cell as? TableCell.TextTableCell)?.sortingAmount != null
-                        Box(
-                            contentAlignment = if (isRightAligned) Alignment.CenterEnd else Alignment.CenterStart,
-                            modifier = Modifier
-                                .width(width)
-                                .padding(horizontal = cellHorizontalPadding),
-                        ) {
-                            when (cell) {
-                                is TableCell.RichTableCell -> cell.content()
-                                is TableCell.TextTableCell -> Text(
-                                    text = cell.text,
-                                    style = cellStyle,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Clip,
-                                    softWrap = false,
-                                )
+                ClickableCharacter(row.characterId) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .hoverBackground(isSelected = row.id == selectedRowId)
+                            .onClick {
+                                selectedRowId = row.id
+                            }
+                            .width(this@BoxWithConstraints.maxWidth)
+                            .wrapContentSize(Alignment.TopStart, unbounded = true)
+                            .padding(vertical = rowVerticalPadding),
+                    ) {
+                        row.cells.forEachIndexed { index, cell ->
+                            val width = columnWidths[index]
+                            val isRightAligned = (cell as? TableCell.TextTableCell)?.sortingAmount != null
+                            Box(
+                                contentAlignment = if (isRightAligned) Alignment.CenterEnd else Alignment.CenterStart,
+                                modifier = Modifier
+                                    .width(width)
+                                    .padding(horizontal = cellHorizontalPadding),
+                            ) {
+                                when (cell) {
+                                    is TableCell.RichTableCell -> cell.content()
+                                    is TableCell.TextTableCell -> Text(
+                                        text = cell.text,
+                                        style = cellStyle,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Clip,
+                                        softWrap = false,
+                                    )
+                                }
                             }
                         }
                     }
