@@ -20,5 +20,10 @@ data class Client(
 )
 
 enum class LogSeverity {
-    Info, Notice, Warn, Error, Count, Unknown
+    Info,
+    Notice,
+    Warn,
+    Error,
+    Count,
+    Unknown,
 }

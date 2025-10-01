@@ -504,6 +504,14 @@ object WhatsNew {
                 
                 - Updated intel channels and sovereignty upgrades link in a configuration pack
             """.trimIndent(),
+            "4.39.0" description """
+                - You can now create alerts that only consider your undocked characters. If you don't want to receive alerts while docked, this is for you.
+                - Characters in the Intel Reports window now show the corporation, alliance, and standing of the character, like in the Intel Feed window
+                - Characters now show a label icon if they have a contact label assigned to them, their corporation, or their alliance. Hovering on the icon will show the label names. This works in Intel Reports, Intel Feed, the Map, and notifications.
+                - Added EVE-KILL as option in the right-click menus of characters, corporations, alliances, ships, and systems
+                - When you left-click on a character, corporation, alliance, or ship, it will open in the last used website, instead of being hardcoded to zKillboard
+                - Systems in the Intel Feed window that contain only a single character now show the full character name instead of "1 hostile"
+            """.trimIndent(),
         ).reversed()
     }
 }

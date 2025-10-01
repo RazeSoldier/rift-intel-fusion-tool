@@ -54,7 +54,9 @@ import org.jetbrains.compose.resources.painterResource
  * Where on the content element the tooltip is anchored to
  */
 enum class Anchor {
-    Left, Middle, Right
+    Left,
+    Middle,
+    Right,
 }
 
 @Composable
@@ -202,7 +204,9 @@ private fun PointerTooltipArea(
     LaunchedEffect(forcedVisibility) {
         if (forcedVisibility == true) {
             startShowing()
-        } else if (forcedVisibility == false) hide()
+        } else if (forcedVisibility == false) {
+            hide()
+        }
     }
 
     Box(

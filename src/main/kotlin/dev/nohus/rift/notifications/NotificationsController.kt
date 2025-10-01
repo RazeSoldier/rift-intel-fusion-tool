@@ -33,8 +33,8 @@ class NotificationsController(
             val type: Type?, // Associated type ID
         ) : Notification {
             companion object {
-                const val styleTag = "Style"
-                const val styleValue = "Primary"
+                const val STYLE_TAG = "Style"
+                const val STYLE_VALUE = "Primary"
             }
         }
 

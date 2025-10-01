@@ -286,7 +286,7 @@ private fun CharacterPortrait(character: RiftOpportunityBoxCharacter) {
         RiftTooltipArea(
             text = character.name,
         ) {
-            ClickablePlayer(character.id) {
+            ClickableCharacter(character.id) {
                 AsyncPlayerPortrait(
                     characterId = character.id,
                     size = 64,

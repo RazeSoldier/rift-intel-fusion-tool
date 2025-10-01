@@ -27,5 +27,6 @@ data class Attacker(
 )
 
 enum class Killboard {
-    Zkillboard, EveKill
+    Zkillboard,
+    EveKill,
 }

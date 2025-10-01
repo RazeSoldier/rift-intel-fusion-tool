@@ -17,7 +17,9 @@ class HttpGetUseCase(
 ) {
 
     enum class CacheBehavior {
-        Normal, CacheOnly, NetworkOnly
+        Normal,
+        CacheOnly,
+        NetworkOnly,
     }
 
     suspend operator fun invoke(url: String, cache: CacheBehavior = CacheBehavior.Normal): Result<String> {

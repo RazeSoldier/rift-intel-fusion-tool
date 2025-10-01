@@ -190,6 +190,7 @@ class AlertsViewModel(
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun List<Alert>.filterDeprecatedAlerts(): List<Alert> {
         return filter { alert ->
             (alert.trigger as? AlertTrigger.JabberPing)?.pingType !is JabberPingType.Message

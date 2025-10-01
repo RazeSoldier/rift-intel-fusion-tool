@@ -307,6 +307,7 @@ class AlertsTriggerController(
     fun onNewJabberPing(ping: PingModel) {
         enabledAlerts.forEach { alert ->
             if (alert.trigger is JabberPing) {
+                @Suppress("DEPRECATION")
                 when (alert.trigger.pingType) {
                     is JabberPingType.Fleet -> {
                         if (ping is PingModel.FleetPing) {
@@ -538,13 +539,17 @@ class AlertsTriggerController(
             }
             is IntelReportLocation.AnyOwnedCharacter -> {
                 onlineCharactersRepository.onlineCharacters.value.firstNotNullOfOrNull { characterId ->
+                    if (location.onlyUndocked && !characterLocationRepository.isUndocked(characterId)) return@firstNotNullOfOrNull null
                     isCharacterWithinDistance(characterId, reportSystemId, location.jumpsRange)?.let {
                         AlertLocationMatch.Character(characterId, it)
                     }
                 }
             }
             is IntelReportLocation.OwnedCharacter -> {
-                if (location.characterId in onlineCharactersRepository.onlineCharacters.value) {
+                if (
+                    location.characterId in onlineCharactersRepository.onlineCharacters.value &&
+                    (!location.onlyUndocked || characterLocationRepository.isUndocked(location.characterId))
+                ) {
                     isCharacterWithinDistance(location.characterId, reportSystemId, location.jumpsRange)?.let {
                         AlertLocationMatch.Character(location.characterId, it)
                     }

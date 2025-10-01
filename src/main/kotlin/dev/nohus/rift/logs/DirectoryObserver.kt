@@ -41,7 +41,9 @@ class DirectoryObserver(
 ) {
 
     enum class FileEventType {
-        Created, Deleted, Modified
+        Created,
+        Deleted,
+        Modified,
     }
 
     sealed interface DirectoryObserverEvent {
@@ -108,7 +110,8 @@ class DirectoryObserver(
                 val recentFiles = path.listDirectoryEntries().filter {
                     Duration.between(it.getLastModifiedTime().toInstant(), Instant.now()) < Duration.ofHours(24)
                 }
-                repeat(100) { // 100 * 200 == 20 seconds
+                // 100 * 200 == 20 seconds
+                repeat(100) {
                     recentFiles.forEach { file ->
                         val oldLastModified = lastModifiedMap[file] ?: 0L
                         try {

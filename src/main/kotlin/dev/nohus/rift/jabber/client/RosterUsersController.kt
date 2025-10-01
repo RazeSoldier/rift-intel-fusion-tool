@@ -60,7 +60,11 @@ class RosterUsersController {
     )
 
     enum class PresenceMode {
-        FreeToChat, Available, Away, ExtendedAway, DoNotDisturb
+        FreeToChat,
+        Available,
+        Away,
+        ExtendedAway,
+        DoNotDisturb,
     }
 
     fun initialize(connection: XMPPConnection) {

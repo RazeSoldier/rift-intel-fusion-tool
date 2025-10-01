@@ -229,6 +229,7 @@ class WindowManager(
             for (state in states) {
                 key(state.uuid) {
                     CompositionLocalProvider(LocalRiftWindowState provides state) {
+                        @Suppress("DEPRECATION")
                         when (window) {
                             RiftWindow.Neocom -> NeocomWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Neocom, state.uuid) })
                             RiftWindow.IntelReports -> IntelReportsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelReports, state.uuid) }, onTuneClick = { onWindowOpen(RiftWindow.IntelReportsSettings) })
@@ -373,6 +374,8 @@ class WindowManager(
 
     private fun getWindowOpenSizing(window: RiftWindow, savedPlacement: WindowSettings?): WindowSizing {
         val saved = savedPlacement?.size?.let { it.width to it.height }
+
+        @Suppress("DEPRECATION")
         val windowSizing = when (window) {
             RiftWindow.Neocom -> WindowSizing(defaultSize = saved ?: (160 to 650), minimumSize = 143 to 106)
             RiftWindow.IntelReports -> WindowSizing(defaultSize = saved ?: (800 to 500), minimumSize = 400 to 200)
@@ -416,8 +419,12 @@ class WindowManager(
 
     private fun getWindowOpenPosition(window: RiftWindow, savedPlacement: WindowSettings?): WindowPosition {
         val position = when (window) {
-            RiftWindow.Jukebox -> { states.value[RiftWindow.JukeboxCollapsed]?.singleOrNull()?.windowState?.position }
-            RiftWindow.JukeboxCollapsed -> { states.value[RiftWindow.Jukebox]?.singleOrNull()?.windowState?.position }
+            RiftWindow.Jukebox -> {
+                states.value[RiftWindow.JukeboxCollapsed]?.singleOrNull()?.windowState?.position
+            }
+            RiftWindow.JukeboxCollapsed -> {
+                states.value[RiftWindow.Jukebox]?.singleOrNull()?.windowState?.position
+            }
             else -> null
         }
         if (position != null) return position

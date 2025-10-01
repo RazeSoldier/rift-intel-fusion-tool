@@ -66,7 +66,13 @@ class AssetsRepository(
     }
 
     enum class LocationType {
-        Container, AssetSafety, System, AbyssalSystem, Station, Structure, Other
+        Container,
+        AssetSafety,
+        System,
+        AbyssalSystem,
+        Station,
+        Structure,
+        Other,
     }
 
     data class AssetWithCharacter(

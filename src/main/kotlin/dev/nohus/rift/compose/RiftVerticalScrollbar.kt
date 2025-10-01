@@ -166,7 +166,10 @@ private fun RiftVerticalScrollbar(
 }
 
 private enum class ScrollbarInteractionState {
-    Normal, Hover, Press, Scrolling
+    Normal,
+    Hover,
+    Press,
+    Scrolling,
 }
 
 private fun <T> getTransitionSpec(): @Composable Transition.Segment<ScrollbarInteractionState>.() -> FiniteAnimationSpec<T> {

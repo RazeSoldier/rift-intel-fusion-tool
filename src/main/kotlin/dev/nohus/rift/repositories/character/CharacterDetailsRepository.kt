@@ -1,5 +1,6 @@
 package dev.nohus.rift.repositories.character
 
+import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.CorporationsIdCorporation
@@ -14,6 +15,7 @@ import org.koin.core.annotation.Single
 class CharacterDetailsRepository(
     private val esiApi: EsiApi,
     private val standingsRepository: StandingsRepository,
+    private val contactsRepository: ContactsRepository,
 ) {
 
     data class CharacterDetails(
@@ -28,6 +30,9 @@ class CharacterDetailsRepository(
         val standing: Float,
         val standingLevel: Standing,
         val title: String?,
+        val characterLabels: List<String>,
+        val corporationLabels: List<String>,
+        val allianceLabels: List<String>,
     )
 
     suspend fun getCharacterDetails(characterId: Int): CharacterDetails? = coroutineScope {
@@ -38,6 +43,11 @@ class CharacterDetailsRepository(
         val alliance = deferredAlliance.await()
         val standing = standingsRepository.getStanding(character.allianceId, character.corporationId, characterId) ?: 0f
         val standingLevel = standingsRepository.getStandingLevel(character.allianceId, character.corporationId, characterId)
+        val characterLabels = contactsRepository.getLabels(listOf(characterId)).map { it.name }.distinct()
+        val corporationLabels = contactsRepository.getLabels(listOf(character.corporationId)).map { it.name }.distinct()
+        val allianceLabels = character.allianceId
+            ?.let { contactsRepository.getLabels(listOf(character.allianceId)).map { it.name }.distinct() }
+            ?: emptyList()
         CharacterDetails(
             characterId = characterId,
             name = character.name,
@@ -50,6 +60,9 @@ class CharacterDetailsRepository(
             standing = standing,
             standingLevel = standingLevel,
             title = character.title,
+            characterLabels = characterLabels,
+            corporationLabels = corporationLabels,
+            allianceLabels = allianceLabels,
         )
     }
 

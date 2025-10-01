@@ -77,6 +77,11 @@ class CharacterLocationRepository(
         }
     }
 
+    fun isUndocked(characterId: Int): Boolean {
+        val location = _locations.value[characterId] ?: return false
+        return location.station == null && location.structure == null
+    }
+
     private suspend fun loadLocations() {
         val minTime = Instant.now() - locationExpiry
         val minTimeOffline = Instant.now() - locationExpiryOffline

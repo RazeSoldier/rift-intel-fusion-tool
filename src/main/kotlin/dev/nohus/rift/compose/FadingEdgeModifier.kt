@@ -18,9 +18,9 @@ private fun Modifier.fadingEdge(brush: Brush): Modifier {
     return graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
         .drawWithContent {
             drawContent()
-            translate(left = size.width - maskSize) {
+            translate(left = size.width - MASK_SIZE) {
                 drawRect(
-                    size = Size(maskSize, size.height),
+                    size = Size(MASK_SIZE, size.height),
                     brush = brush,
                     blendMode = BlendMode.DstIn,
                 )
@@ -28,5 +28,5 @@ private fun Modifier.fadingEdge(brush: Brush): Modifier {
         }
 }
 
-private const val maskSize = 20f
-private val rightEdgeMaskBrush = Brush.horizontalGradient(0f to Color.Black, 1f to Color.Transparent, startX = 0f, endX = maskSize)
+private const val MASK_SIZE = 20f
+private val rightEdgeMaskBrush = Brush.horizontalGradient(0f to Color.Black, 1f to Color.Transparent, startX = 0f, endX = MASK_SIZE)

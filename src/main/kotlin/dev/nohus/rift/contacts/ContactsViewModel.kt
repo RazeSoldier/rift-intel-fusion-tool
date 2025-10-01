@@ -85,7 +85,8 @@ class ContactsViewModel(
     )
 
     enum class ContactsTab {
-        Contacts, Search
+        Contacts,
+        Search,
     }
 
     private val _state = MutableStateFlow(UiState())

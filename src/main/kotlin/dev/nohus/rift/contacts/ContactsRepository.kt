@@ -119,7 +119,7 @@ class ContactsRepository(
     }
 
     /**
-     * Returns labels of the given character/corporation/alliance IDs, if there are contacts for them
+     * Returns labels of the given character/corporation/alliance IDs if there are contacts for them
      */
     fun getLabels(ids: List<Int>): List<Label> {
         return _contacts.value.contacts

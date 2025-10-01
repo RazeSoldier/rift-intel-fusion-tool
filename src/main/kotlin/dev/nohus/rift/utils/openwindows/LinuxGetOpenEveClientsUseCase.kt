@@ -12,7 +12,8 @@ class LinuxGetOpenEveClientsUseCase(
 ) : GetOpenEveClientsUseCase {
 
     enum class Method {
-        XWinInfo, WMCtrl,
+        XWinInfo,
+        WMCtrl,
     }
 
     private val method = detectAvailableMethod()

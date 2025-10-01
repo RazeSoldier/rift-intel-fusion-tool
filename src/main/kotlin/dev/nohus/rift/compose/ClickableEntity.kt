@@ -21,21 +21,13 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.map_marker_place_bookmark
 import dev.nohus.rift.generated.resources.menu_add
-import dev.nohus.rift.generated.resources.menu_anoikis
-import dev.nohus.rift.generated.resources.menu_dotlan
-import dev.nohus.rift.generated.resources.menu_everef
-import dev.nohus.rift.generated.resources.menu_evewho
-import dev.nohus.rift.generated.resources.menu_newedenencyclopedia
 import dev.nohus.rift.generated.resources.menu_set_destination
-import dev.nohus.rift.generated.resources.menu_uniwiki
-import dev.nohus.rift.generated.resources.menu_zkillboard
 import dev.nohus.rift.map.MapExternalControl
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.markers.MapMarkersInputModel
+import dev.nohus.rift.repositories.ExternalServiceRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.persistence.Settings
-import dev.nohus.rift.utils.openBrowser
-import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 
@@ -118,12 +110,10 @@ fun GetSystemContextMenuItems(
     val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
     val windowManager: WindowManager = remember { koin.get() }
     val settings: Settings = remember { koin.get() }
+    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
     val system = solarSystemsRepository.getSystemName(systemId) ?: return emptyList()
     val isKnownSpace = solarSystemsRepository.isKnownSpace(systemId)
     val isWormholeSpace = !isKnownSpace && solarSystemsRepository.isWormholeSpace(systemId)
-    val dotlanUrl = "https://evemaps.dotlan.net/system/$system"
-    val zkillboardUrl = "https://zkillboard.com/system/$systemId/"
-    val anoikisUrl = "http://anoik.is/systems/$system"
     var isSettingAutopilotToAll by remember { mutableStateOf(settings.isSettingAutopilotToAll) }
     return buildList {
         add(
@@ -214,34 +204,12 @@ fun GetSystemContextMenuItems(
             }
         }
         add(ContextMenuItem.DividerItem)
-        if (isWormholeSpace) {
-            add(
-                ContextMenuItem.TextItem(
-                    text = "Anoikis",
-                    iconResource = Res.drawable.menu_anoikis,
-                    onClick = { anoikisUrl.toURIOrNull()?.openBrowser() },
-                ),
-            )
-        }
-        add(
-            ContextMenuItem.TextItem(
-                text = "Dotlan",
-                iconResource = Res.drawable.menu_dotlan,
-                onClick = { dotlanUrl.toURIOrNull()?.openBrowser() },
-            ),
-        )
-        add(
-            ContextMenuItem.TextItem(
-                text = "zKillboard",
-                iconResource = Res.drawable.menu_zkillboard,
-                onClick = { zkillboardUrl.toURIOrNull()?.openBrowser() },
-            ),
-        )
+        addAll(externalServiceRepository.getSystemMenuItems(system, systemId, isWormholeSpace))
     }
 }
 
 @Composable
-fun ClickablePlayer(
+fun ClickableCharacter(
     characterId: Int?,
     content: @Composable () -> Unit,
 ) {
@@ -249,20 +217,17 @@ fun ClickablePlayer(
         content()
         return
     }
-
-    val evewhoUrl = "https://evewho.com/character/$characterId"
-    val zKillboardUrl = "https://zkillboard.com/character/$characterId/"
+    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
     RiftContextMenuArea(
-        listOf(
-            ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("EveWho", Res.drawable.menu_evewho, onClick = { evewhoUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.DividerItem,
-            getContactMenuItem(characterId, EntityType.Character),
-        ),
+        buildList {
+            addAll(externalServiceRepository.getCharacterMenuItems(characterId))
+            add(ContextMenuItem.DividerItem)
+            add(getContactMenuItem(characterId, EntityType.Character))
+        },
     ) {
         ClickableEntity(
             onClick = {
-                zKillboardUrl.toURIOrNull()?.openBrowser()
+                externalServiceRepository.openCharacterPreferredService(characterId)
             },
             content = content,
         )
@@ -278,20 +243,17 @@ fun ClickableCorporation(
         content()
         return
     }
-
-    val evewhoUrl = "https://evewho.com/corporation/$corporationId"
-    val zKillboardUrl = "https://zkillboard.com/corporation/$corporationId/"
+    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
     RiftContextMenuArea(
-        listOf(
-            ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("EveWho", Res.drawable.menu_evewho, onClick = { evewhoUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.DividerItem,
-            getContactMenuItem(corporationId, EntityType.Corporation),
-        ),
+        buildList {
+            addAll(externalServiceRepository.getCorporationMenuItems(corporationId))
+            add(ContextMenuItem.DividerItem)
+            add(getContactMenuItem(corporationId, EntityType.Corporation))
+        },
     ) {
         ClickableEntity(
             onClick = {
-                zKillboardUrl.toURIOrNull()?.openBrowser()
+                externalServiceRepository.openCorporationPreferredService(corporationId)
             },
             content = content,
         )
@@ -307,20 +269,17 @@ fun ClickableAlliance(
         content()
         return
     }
-
-    val evewhoUrl = "https://evewho.com/alliance/$allianceId"
-    val zKillboardUrl = "https://zkillboard.com/alliance/$allianceId/"
+    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
     RiftContextMenuArea(
-        listOf(
-            ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("EveWho", Res.drawable.menu_evewho, onClick = { evewhoUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.DividerItem,
-            getContactMenuItem(allianceId, EntityType.Alliance),
-        ),
+        buildList {
+            addAll(externalServiceRepository.getAllianceMenuItems(allianceId))
+            add(ContextMenuItem.DividerItem)
+            add(getContactMenuItem(allianceId, EntityType.Alliance))
+        },
     ) {
         ClickableEntity(
             onClick = {
-                zKillboardUrl.toURIOrNull()?.openBrowser()
+                externalServiceRepository.openAlliancePreferredService(allianceId)
             },
             content = content,
         )
@@ -347,21 +306,15 @@ fun ClickableShip(
     typeId: Int,
     content: @Composable () -> Unit,
 ) {
-    val uniWikiUrl = "https://wiki.eveuniversity.org/${name.replace(' ', '_')}"
-    val eveRefUrl = "https://everef.net/type/$typeId"
-    val zKillboardUrl = "https://zkillboard.com/ship/$typeId/"
-    val newEdenEncyclopediaUrl = "https://newedenencyclopedia.net/type/$typeId"
+    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
     RiftContextMenuArea(
-        listOf(
-            ContextMenuItem.TextItem("UniWiki", Res.drawable.menu_uniwiki, onClick = { uniWikiUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("EVE Ref", Res.drawable.menu_everef, onClick = { eveRefUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("zKillboard", Res.drawable.menu_zkillboard, onClick = { zKillboardUrl.toURIOrNull()?.openBrowser() }),
-            ContextMenuItem.TextItem("New Eden Encyclopedia", Res.drawable.menu_newedenencyclopedia, onClick = { newEdenEncyclopediaUrl.toURIOrNull()?.openBrowser() }),
-        ),
+        buildList {
+            addAll(externalServiceRepository.getShipMenuItems(name, typeId))
+        },
     ) {
         ClickableEntity(
             onClick = {
-                uniWikiUrl.toURIOrNull()?.openBrowser()
+                externalServiceRepository.openShipPreferredService(name, typeId)
             },
             content = content,
         )

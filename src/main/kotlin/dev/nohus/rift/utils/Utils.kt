@@ -8,6 +8,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.di.koin
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.koin.core.parameter.parametersOf
 import java.awt.Desktop
 import java.io.IOException
@@ -103,4 +106,10 @@ fun Color.desaturate(factor: Float): Color {
     val g = green + factor * (l - green)
     val b = blue + factor * (l - blue)
     return Color(r, g, b, alpha)
+}
+
+suspend fun <T, R> Collection<T>.mapAsync(transform: suspend (T) -> R): List<R> {
+    return coroutineScope {
+        map { async { transform(it) } }.awaitAll()
+    }
 }

@@ -47,14 +47,14 @@ class Duration64 private constructor(private val mBits: Long) {
         return Duration.ofSeconds(seconds.toLong(), nanos.toLong())
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as Duration64
+        val that = other as Duration64
         return mBits == that.mBits
     }
 

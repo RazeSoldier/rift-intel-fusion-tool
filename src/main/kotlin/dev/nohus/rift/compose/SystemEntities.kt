@@ -221,7 +221,7 @@ fun SystemEntities(
             .sortedWith(compareBy({ it.details.allianceId }, { it.details.corporationId }))
             .forEach { character ->
                 SystemEntityInfoRow(rowHeight, isHorizontal) {
-                    ClickablePlayer(character.characterId) {
+                    ClickableCharacter(character.characterId) {
                         AsyncPlayerPortrait(
                             characterId = character.characterId,
                             size = 32,
@@ -253,7 +253,7 @@ fun SystemEntities(
                         }
                     }
 
-                    ClickablePlayer(character.characterId) {
+                    ClickableCharacter(character.characterId) {
                         val ticker = buildString {
                             character.details.corporationTicker?.let { append("$it ") }
                             character.details.allianceTicker?.let { append(it) }
@@ -276,7 +276,7 @@ fun SystemEntities(
                             }
                         } else {
                             Column(
-                                modifier = Modifier.padding(horizontal = 4.dp),
+                                modifier = Modifier.padding(horizontal = Spacing.small),
                             ) {
                                 Text(
                                     text = character.name,
@@ -289,6 +289,11 @@ fun SystemEntities(
                             }
                         }
                     }
+
+                    ContactLabelTag(
+                        details = character.details,
+                        modifier = Modifier.padding(end = Spacing.small),
+                    )
                 }
             }
     }
@@ -345,7 +350,7 @@ private fun CharactersPortraits(
                 delay = 2_000,
                 modifier = Modifier.height(rowHeight).width(rowHeight * 3),
             ) { character ->
-                ClickablePlayer(character.characterId) {
+                ClickableCharacter(character.characterId) {
                     RiftTooltipArea(
                         text = character.name,
                     ) {
@@ -361,7 +366,7 @@ private fun CharactersPortraits(
         } else {
             Row {
                 characters.forEach { character ->
-                    ClickablePlayer(character.characterId) {
+                    ClickableCharacter(character.characterId) {
                         RiftTooltipArea(
                             text = character.name,
                         ) {

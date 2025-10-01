@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -33,11 +34,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
+import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.keywords_clear
@@ -60,6 +63,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Link
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import org.jetbrains.compose.resources.painterResource
@@ -196,7 +200,7 @@ private fun Message(
                     is TokenType.Keyword -> TokenWithKeyword(settings.rowHeight, type.type)
                     is TokenType.Kill -> TokenWithKill(settings.rowHeight, type)
                     Link -> TokenWithText(settings.rowHeight, text, "Link")
-                    is TokenType.Player -> TokenWithPlayer(settings.rowHeight, text, type.characterId)
+                    is TokenType.Character -> TokenWithCharacter(settings.rowHeight, text, type)
                     is TokenType.Question -> TokenWithText(settings.rowHeight, text, "Question")
                     is TokenType.Ship -> TokenWithShip(settings.rowHeight, type)
                     is TokenType.System -> TokenWithSystem(settings.rowHeight, settings.isShowingSystemDistance, settings.isUsingJumpBridgesForDistance, type.name)
@@ -494,19 +498,84 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
 }
 
 @Composable
-private fun TokenWithPlayer(rowHeight: Dp, name: String, characterId: Int) {
-    ClickablePlayer(characterId) {
-        BorderedToken(rowHeight) {
+private fun TokenWithCharacter(rowHeight: Dp, name: String, character: TokenType.Character) {
+    BorderedToken(rowHeight) {
+        ClickableCharacter(character.characterId) {
             AsyncPlayerPortrait(
-                characterId = characterId,
+                characterId = character.characterId,
                 size = 32,
                 modifier = Modifier.size(rowHeight),
             )
-            VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-            Text(
-                text = name,
-                style = RiftTheme.typography.bodyHighlighted,
-                modifier = Modifier.padding(4.dp),
+        }
+        if (character.details != null) {
+            ClickableCorporation(character.details.corporationId) {
+                RiftTooltipArea(
+                    text = character.details.corporationName ?: "",
+                ) {
+                    AsyncCorporationLogo(
+                        corporationId = character.details.corporationId,
+                        size = 32,
+                        modifier = Modifier.size(rowHeight),
+                    )
+                }
+            }
+            if (character.details.allianceId != null) {
+                ClickableAlliance(character.details.allianceId) {
+                    RiftTooltipArea(
+                        text = character.details.allianceName ?: "",
+                    ) {
+                        AsyncAllianceLogo(
+                            allianceId = character.details.allianceId,
+                            size = 32,
+                            modifier = Modifier.size(rowHeight),
+                        )
+                    }
+                }
+            }
+        }
+
+        VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+        ClickableCharacter(character.characterId) {
+            val ticker = buildString {
+                character.details?.corporationTicker?.let { append("$it ") }
+                character.details?.allianceTicker?.let { append(it) }
+            }
+            var nameStyle = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold)
+            character.details?.standingLevel?.getColor()?.let { nameStyle = nameStyle.copy(color = it) }
+            if (rowHeight < 32.dp) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                    modifier = Modifier.padding(horizontal = Spacing.small),
+                ) {
+                    Text(
+                        text = ticker,
+                        style = RiftTheme.typography.bodySecondary,
+                    )
+                    Text(
+                        text = name,
+                        style = nameStyle,
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.padding(horizontal = Spacing.small),
+                ) {
+                    Text(
+                        text = name,
+                        style = nameStyle,
+                    )
+                    Text(
+                        text = ticker,
+                        style = RiftTheme.typography.bodySecondary,
+                    )
+                }
+            }
+        }
+
+        if (character.details != null) {
+            ContactLabelTag(
+                details = character.details,
+                modifier = Modifier.padding(end = Spacing.small),
             )
         }
     }
@@ -518,7 +587,7 @@ private fun TokenWithKill(rowHeight: Dp, token: TokenType.Kill) {
     RiftTooltipArea(
         text = "${token.name}\n${token.target}",
     ) {
-        ClickablePlayer(token.characterId) {
+        ClickableCharacter(token.characterId) {
             BorderedToken(rowHeight) {
                 Image(
                     painter = painterResource(Res.drawable.keywords_killreport),

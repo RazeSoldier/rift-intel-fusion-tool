@@ -66,10 +66,10 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
 
     // Koin
-    implementation("io.insert-koin:koin-core:3.5.6")
-    implementation("io.insert-koin:koin-logger-slf4j:3.5.6")
-    implementation("io.insert-koin:koin-annotations:1.3.1")
-    ksp("io.insert-koin:koin-ksp-compiler:1.3.1")
+    implementation("io.insert-koin:koin-core:4.1.0")
+    implementation("io.insert-koin:koin-logger-slf4j:4.1.0")
+    implementation("io.insert-koin:koin-annotations:2.1.0")
+    ksp("io.insert-koin:koin-ksp-compiler:2.1.0")
 
     // Other
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
@@ -158,10 +158,6 @@ compose.desktop {
     }
 }
 
-composeCompiler {
-    featureFlags.add(ComposeFeatureFlag.OptimizeNonSkippingGroups)
-}
-
 tasks.withType<ComposeHotRun>().configureEach {
     mainClass.set("dev.nohus.rift.MainKt")
     jvmArgs("--add-opens=java.desktop/java.awt=ALL-UNNAMED", "--add-exports=java.desktop/java.awt.peer=ALL-UNNAMED")
@@ -171,9 +167,11 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    kotlinOptions.freeCompilerArgs += "-opt-in=org.jetbrains.compose.resources.ExperimentalResourceApi"
+kotlin {
+    compilerOptions {
+        optIn.add("kotlin.RequiresOptIn")
+        optIn.add("org.jetbrains.compose.resources.ExperimentalResourceApi")
+    }
 }
 
 java {
@@ -192,7 +190,13 @@ configurations.all {
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
     kotlin {
-        ktlint("0.50.0")
+        ktlint("1.7.1")
+            .editorConfigOverride(mapOf(
+                "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+                "ktlint_standard_no-empty-first-line-in-class-body" to "disabled",
+                "ktlint_standard_function-expression-body" to "disabled",
+                "ktlint_standard_class-signature" to "disabled",
+            ))
         targetExclude("**/generated/**")
     }
 }
