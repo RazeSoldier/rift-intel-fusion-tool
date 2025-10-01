@@ -492,6 +492,11 @@ object WhatsNew {
                 - You can now export your jump bridges out of RIFT
                 - The Map Settings window has been removed. Map settings now have their own tab in the main Settings window.
             """.trimIndent(),
+            "4.37.0" description """
+                - The map now shows active clones in addition to jump clones. This means you can now see your offline characters on the map.
+                - Multiple killmails happening in the same system in quick succession will no longer trigger multiple alerts
+                - The Assets feature now tells blueprint copies apart from originals for price calculation
+            """.trimIndent(),
         ).reversed()
     }
 }

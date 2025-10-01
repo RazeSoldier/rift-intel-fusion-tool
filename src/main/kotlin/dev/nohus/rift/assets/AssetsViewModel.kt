@@ -332,7 +332,8 @@ class AssetsViewModel(
             name = asset.name,
             typeName = asset.typeName,
             children = getAssetTree(assets, asset.asset.itemId),
-            price = pricesRepository.getPrice(asset.asset.typeId),
+            price = pricesRepository.getPrice(asset.asset.typeId)
+                .takeIf { asset.asset.isBlueprintCopy != true },
         ).run {
             fittingController.fillFitting(this)
         }

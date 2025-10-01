@@ -28,7 +28,7 @@ class ParsePingUseCase(
 
         val fleetCommanderKeys = listOf("FC Name", "FC")
         val fleetKeys = listOf("Fleet name", "Fleet")
-        val formupKeys = listOf("Formup Location", "Formup")
+        val formupKeys = listOf("Formup Location", "Formup", "Loc")
         val papKeys = listOf("PAP Type")
         val commsKeys = listOf("Comms")
         val doctrineKeys = listOf("Doctrine")
@@ -101,7 +101,7 @@ class ParsePingUseCase(
     }
 
     private fun parseFormupLocations(text: String): List<FormupLocation> {
-        val splitRegex = """[\s/]""".toRegex()
+        val splitRegex = """[\s/&]""".toRegex()
         return if (splitRegex in text) { // Multiple systems
             val locations = text.split(splitRegex).filterNot {
                 it.trim().lowercase() in listOf("", "and", "or", "-")
@@ -135,10 +135,11 @@ class ParsePingUseCase(
         return if (system != null) FormupLocation.System(system) else FormupLocation.Text(text)
     }
 
-    private fun parsePapType(text: String): PapType {
+    private fun parsePapType(text: String): PapType? {
         return when {
             text.lowercase().startsWith("strat") -> PapType.Strategic
             text.lowercase().startsWith("peace") -> PapType.Peacetime
+            text.lowercase() in listOf("none") -> null
             else -> PapType.Text(text)
         }
     }

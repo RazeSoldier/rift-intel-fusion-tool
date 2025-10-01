@@ -157,7 +157,7 @@ class MapViewModel(
             systemInfoTypes = getColorModes(),
             mapJumpRangeState = mapJumpRangeController.state.value,
             mapPlanetsState = mapPlanetsController.state.value,
-            mapSovereigntyUpgradesState = mapSovereigntyUpgradesController.state.value,
+            mapSovereigntyUpgradesState = MapSovereigntyUpgradesState(),
             distanceMapState = distanceMapController.state.value,
             cluster = Cluster(
                 systems = solarSystemsRepository.getSystems(knownSpace = true),
