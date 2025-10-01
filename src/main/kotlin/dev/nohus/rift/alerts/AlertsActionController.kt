@@ -158,8 +158,8 @@ class AlertsActionController(
     }
 
     fun triggerInactiveChannelAlert(alert: Alert, triggeredInactiveChannels: List<String>) {
-        val styleTag = Notification.TextNotification.styleTag
-        val styleValue = Notification.TextNotification.styleValue
+        val styleTag = Notification.TextNotification.STYLE_TAG
+        val styleValue = Notification.TextNotification.STYLE_VALUE
         val message = if (triggeredInactiveChannels.size == 1) {
             buildAnnotatedString {
                 append("Channel ")
@@ -190,8 +190,8 @@ class AlertsActionController(
         } else {
             "Your colony needs attention"
         }
-        val styleTag = Notification.TextNotification.styleTag
-        val styleValue = Notification.TextNotification.styleValue
+        val styleTag = Notification.TextNotification.STYLE_TAG
+        val styleValue = Notification.TextNotification.STYLE_VALUE
         val riftMessage = buildAnnotatedString {
             append("Planet ")
             withAnnotation(styleTag, styleValue) {
@@ -324,8 +324,8 @@ class AlertsActionController(
     }
 
     private fun getNotificationMessage(action: GameLogAction): AnnotatedString {
-        val styleTag = Notification.TextNotification.styleTag
-        val styleValue = Notification.TextNotification.styleValue
+        val styleTag = Notification.TextNotification.STYLE_TAG
+        val styleValue = Notification.TextNotification.STYLE_VALUE
         return when (action) {
             is GameLogAction.UnderAttack -> buildAnnotatedString {
                 append("Attacker is ")

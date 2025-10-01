@@ -4,13 +4,13 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.Location
 import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.Number
 import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.ShipTypes
 import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.Status
+import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Character
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Count
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Gate
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Keyword
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Kill
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Link
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Movement
-import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Player
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
@@ -18,6 +18,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.WordsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.character.CharacterStatus
 import dev.nohus.rift.repositories.character.CharactersRepository
 import kotlinx.coroutines.coroutineScope
@@ -37,8 +38,9 @@ class ChatMessageParser(
         data class System(
             val name: String,
         ) : TokenType
-        data class Player(
+        data class Character(
             val characterId: Int,
+            val details: CharacterDetails? = null,
         ) : TokenType
         data class Ship(
             val name: String,
@@ -76,11 +78,22 @@ class ChatMessageParser(
     }
 
     enum class KeywordType {
-        NoVisual, Clear, Wormhole, Spike, Ess, Skyhook, GateCamp, CombatProbes, Bubbles
+        NoVisual,
+        Clear,
+        Wormhole,
+        Spike,
+        Ess,
+        Skyhook,
+        GateCamp,
+        CombatProbes,
+        Bubbles,
     }
 
     enum class QuestionType {
-        Location, ShipTypes, Number, Status
+        Location,
+        ShipTypes,
+        Number,
+        Status,
     }
 
     data class MultiTypeToken(
@@ -467,12 +480,12 @@ class ChatMessageParser(
     private fun filterCharacters(parsing: List<MultiTypeToken>, characterNamesStatus: Map<String, CharacterStatus>): List<MultiTypeToken> {
         return buildList {
             for ((index, token) in parsing.withIndex()) {
-                if (token.types.any { it is Player }) {
+                if (token.types.any { it is Character }) {
                     val fullText = token.words.joinToString(" ")
                     val status = characterNamesStatus.getValue(fullText)
                     if (status is CharacterStatus.Dormant) {
                         // Character is dormant, ignore
-                        add(token.copy(types = token.types.filterNot { it is Player }))
+                        add(token.copy(types = token.types.filterNot { it is Character }))
                         continue
                     }
                     if (status !is CharacterStatus.Active) {
@@ -489,7 +502,7 @@ class ChatMessageParser(
                                     }
                                 if (surroundingLowercaseWords.isNotEmpty()) {
                                     // Lowercase English words character name touches a lowercase plaintext, ignore
-                                    add(token.copy(types = token.types.filterNot { it is Player }))
+                                    add(token.copy(types = token.types.filterNot { it is Character }))
                                     continue
                                 }
                             } else {
@@ -499,7 +512,7 @@ class ChatMessageParser(
                                     val nextLowercaseWord = nextWord?.all { it.isLowerCase() || it in listOf('\'', '?') }
                                     if (nextLowercaseWord == true) {
                                         // English words character name with first capital letter, with next word being lowercase plaintext, ignore
-                                        add(token.copy(types = token.types.filterNot { it is Player }))
+                                        add(token.copy(types = token.types.filterNot { it is Character }))
                                         continue
                                     }
                                 }
@@ -507,7 +520,7 @@ class ChatMessageParser(
                         }
                         if (isTypeName) {
                             // Character name is a type name
-                            add(token.copy(types = token.types.filterNot { it is Player }))
+                            add(token.copy(types = token.types.filterNot { it is Character }))
                             continue
                         }
                     }
@@ -532,7 +545,7 @@ class ChatMessageParser(
                     }
                     continue
                 }
-                if (token.types.any { it is System } && token.types.any { it is Player }) {
+                if (token.types.any { it is System } && token.types.any { it is Character }) {
                     // Token is both a system and a player
                     val inRegionSystem = token.types.filterIsInstance<System>()
                         .firstOrNull { solarSystemsRepository.getRegionBySystem(it.name) in regionsHint }
@@ -541,7 +554,7 @@ class ChatMessageParser(
                         add(Token(token.words, type = inRegionSystem, isLink))
                     } else {
                         // Otherwise choose the player
-                        add(Token(token.words, type = token.types.filterIsInstance<Player>().first(), isLink))
+                        add(Token(token.words, type = token.types.filterIsInstance<Character>().first(), isLink))
                     }
                     continue
                 }
@@ -614,7 +627,7 @@ class ChatMessageParser(
 
             if (shipName == null) { // Ship names are assumed to be ships
                 val status = characterNamesStatus[text]
-                if (status is CharacterStatus.Exists) add(Player(status.characterId))
+                if (status is CharacterStatus.Exists) add(Character(status.characterId))
             }
 
             val keywordText = words.joinToString(" ")

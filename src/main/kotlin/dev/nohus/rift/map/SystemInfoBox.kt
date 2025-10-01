@@ -42,7 +42,7 @@ import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
-import dev.nohus.rift.compose.ClickablePlayer
+import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.IntelTimer
 import dev.nohus.rift.compose.LocalNow
 import dev.nohus.rift.compose.RiftTooltipArea
@@ -186,7 +186,7 @@ fun SystemInfoBox(
                         ) {
                             SystemInfoTypes(system, infoTypes, systemStatus)
                             onlineCharacters.forEach { onlineCharacterLocation ->
-                                ClickablePlayer(onlineCharacterLocation.id) {
+                                ClickableCharacter(onlineCharacterLocation.id) {
                                     SystemEntityInfoRow(32.dp, hasBorder = false) {
                                         AsyncPlayerPortrait(
                                             characterId = onlineCharacterLocation.id,

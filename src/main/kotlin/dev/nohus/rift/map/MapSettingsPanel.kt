@@ -81,9 +81,15 @@ import org.jetbrains.compose.resources.painterResource
 import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 
 enum class PanelState {
-    Collapsed, Expanded,
-    StarColor, CellColor, Indicators, InfoBox,
-    JumpRange, Planets, SovereigntyUpgrades,
+    Collapsed,
+    Expanded,
+    StarColor,
+    CellColor,
+    Indicators,
+    InfoBox,
+    JumpRange,
+    Planets,
+    SovereigntyUpgrades,
     DistanceMapCenter,
 }
 

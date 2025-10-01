@@ -65,7 +65,9 @@ class WizardViewModel(
     }
 
     enum class EveInstallationState {
-        None, Detected, Set
+        None,
+        Detected,
+        Set,
     }
 
     private val _state = MutableStateFlow(UiState())

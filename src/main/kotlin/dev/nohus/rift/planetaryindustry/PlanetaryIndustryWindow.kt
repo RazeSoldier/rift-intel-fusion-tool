@@ -395,7 +395,7 @@ private fun MainColoniesContent(
 private fun getLayoutBoundsOverlayClip(sharedTransitionLayoutSize: Offset): SharedTransitionScope.OverlayClip {
     return object : SharedTransitionScope.OverlayClip {
         override fun getClipPath(
-            state: SharedTransitionScope.SharedContentState,
+            sharedContentState: SharedTransitionScope.SharedContentState,
             bounds: Rect,
             layoutDirection: LayoutDirection,
             density: Density,

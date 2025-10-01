@@ -97,12 +97,18 @@ class CreateAlertQuestions(
         FormChoiceItem(id = id++, text = "Any online character's location")
     val INTEL_REPORT_LOCATION_OWNED_CHARACTER =
         FormChoiceItem(id = id++, text = "An online character's location")
+    val INTEL_REPORT_LOCATION_ANY_UNDOCKED_CHARACTER =
+        FormChoiceItem(id = id++, text = "Any undocked character's location")
+    val INTEL_REPORT_LOCATION_UNDOCKED_CHARACTER =
+        FormChoiceItem(id = id++, text = "An undocked character's location")
     val INTEL_REPORT_LOCATION_QUESTION = SingleChoiceQuestion(
         title = "And it's reported near:",
         items = listOf(
             INTEL_REPORT_LOCATION_SYSTEM,
             INTEL_REPORT_LOCATION_ANY_OWNED_CHARACTER,
             INTEL_REPORT_LOCATION_OWNED_CHARACTER,
+            INTEL_REPORT_LOCATION_ANY_UNDOCKED_CHARACTER,
+            INTEL_REPORT_LOCATION_UNDOCKED_CHARACTER,
         ),
     )
 

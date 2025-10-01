@@ -136,6 +136,7 @@ sealed interface IntelReportLocation {
     @SerialName("AnyOwnedCharacter")
     data class AnyOwnedCharacter(
         val jumpsRange: JumpRange,
+        val onlyUndocked: Boolean = false,
     ) : IntelReportLocation
 
     @Serializable
@@ -143,6 +144,7 @@ sealed interface IntelReportLocation {
     data class OwnedCharacter(
         val characterId: Int,
         val jumpsRange: JumpRange,
+        val onlyUndocked: Boolean = false,
     ) : IntelReportLocation
 }
 

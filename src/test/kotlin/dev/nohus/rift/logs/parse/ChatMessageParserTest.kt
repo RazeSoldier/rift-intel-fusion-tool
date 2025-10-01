@@ -7,12 +7,12 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.Location
 import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.ShipTypes
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
+import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Character
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Count
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Gate
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Keyword
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Kill
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Movement
-import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Player
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
@@ -64,8 +64,8 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "D-W7F0".token(System("D-W7F0"), isLink = true),
-            "Ishani Kalki".token(Player(0), isLink = true),
-            "Shiva Callipso".token(Player(0)),
+            "Ishani Kalki".token(Character(0), isLink = true),
+            "Shiva Callipso".token(Character(0)),
         )
     }
 
@@ -76,7 +76,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("S-Killer malediction", listOf("Delve"))
 
         actual shouldContain listOf(
-            "S-Killer".token(Player(0)),
+            "S-Killer".token(Character(0)),
             "malediction".token(Ship("Malediction")),
         )
     }
@@ -99,7 +99,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("Rinah Minayin   MO-GZ5 nv", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Rinah Minayin".token(Player(0), isLink = true),
+            "Rinah Minayin".token(Character(0), isLink = true),
             "MO-GZ5".token(System("MO-GZ5")),
             "nv".token(Keyword(NoVisual)),
         )
@@ -113,7 +113,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "N-8YET".token(System("N-8YET"), isLink = true),
-            "Charlie Murdoch".token(Player(0)),
+            "Charlie Murdoch".token(Character(0)),
         )
     }
 
@@ -149,7 +149,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "Caldari Shuttle".token(Ship("Caldari Shuttle"), isLink = true),
-            "Keeppley TT".token(Player(0), isLink = true),
+            "Keeppley TT".token(Character(0), isLink = true),
             "NOL-M9".token(System("NOL-M9"), isLink = true),
         )
     }
@@ -162,7 +162,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("M2002M  SVM-3K eris", listOf("Delve"))
 
         actual shouldContain listOf(
-            "M2002M".token(Player(0), isLink = true),
+            "M2002M".token(Character(0), isLink = true),
             "SVM-3K".token(System("SVM-3K")),
             "eris".token(Ship("Eris")),
         )
@@ -176,8 +176,8 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("ssllss1  Yaakov Y2 2x capsule  319-3D", listOf("Delve"))
 
         actual shouldContain listOf(
-            "ssllss1".token(Player(0), isLink = true),
-            "Yaakov Y2".token(Player(0)),
+            "ssllss1".token(Character(0), isLink = true),
+            "Yaakov Y2".token(Character(0)),
             "2x capsule".token(Ship("Capsule", count = 2), isLink = true),
             "319-3D".token(System("319-3D")),
         )
@@ -199,7 +199,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("Ishani Kalki where is he", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Ishani Kalki".token(Player(0)),
+            "Ishani Kalki".token(Character(0)),
             "where is he".token(Question(Location, "where is he")),
         )
     }
@@ -211,7 +211,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "+".token(),
-            "ssllss1".token(Player(0)),
+            "ssllss1".token(Character(0)),
         )
     }
 
@@ -269,7 +269,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("stark +3 ZXB-VC", listOf("Delve"))
 
         actual shouldContain listOf(
-            "stark".token(Player(0)),
+            "stark".token(Character(0)),
             "+3".token(Count(3, isPlus = true)),
             "ZXB-VC".token(System("ZXB-VC")),
         )
@@ -348,7 +348,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "319-3D".token(System("319-3D"), isLink = true),
-            "RB Charlote".token(Player(0)),
+            "RB Charlote".token(Character(0)),
             "+3".token(Count(3, isPlus = true)),
             "1x hecate".token(Ship("Hecate", count = 1)),
             "3x".token(Count(3)),
@@ -365,8 +365,8 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("FeiShi  iT0p camping in 1-2J4P purifier + sabre", listOf("Delve"))
 
         actual shouldContain listOf(
-            "FeiShi".token(Player(0), isLink = true),
-            "iT0p".token(Player(0)),
+            "FeiShi".token(Character(0), isLink = true),
+            "iT0p".token(Character(0)),
             "camping in".token(),
             "1-2J4P".token(System("1-2J4P")),
             "purifier".token(Ship("Purifier")),
@@ -430,13 +430,13 @@ class ChatMessageParserTest : FreeSpec({
 
         actual.forEach { println(it) }
         actual shouldContain listOf(
-            "CPT Grabowsky".token(Player(0), isLink = true),
-            "Kelci Papi".token(Player(0), isLink = true),
-            "Kelio Rift".token(Player(0), isLink = true),
-            "Rim'tuti'tuks".token(Player(0), isLink = true),
-            "Lucho IYI".token(Player(0), isLink = true),
-            "Shopa s topa".token(Player(0), isLink = true),
-            "Urriah Souldown".token(Player(0)),
+            "CPT Grabowsky".token(Character(0), isLink = true),
+            "Kelci Papi".token(Character(0), isLink = true),
+            "Kelio Rift".token(Character(0), isLink = true),
+            "Rim'tuti'tuks".token(Character(0), isLink = true),
+            "Lucho IYI".token(Character(0), isLink = true),
+            "Shopa s topa".token(Character(0), isLink = true),
+            "Urriah Souldown".token(Character(0)),
         )
     }
 
@@ -473,9 +473,9 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "nothing of value".token(),
-            "was".token(Player(0)),
+            "was".token(Character(0)),
             "lost it's".token(),
-            "the blues".token(Player(0)),
+            "the blues".token(Character(0)),
         )
         actual shouldHaveSize 4
     }
@@ -488,7 +488,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("Ruthy stabber uvho gate", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Ruthy".token(Player(0)),
+            "Ruthy".token(Character(0)),
             "stabber".token(Ship("Stabber")),
             "uvho gate".token(Gate("UVHO-F")),
         )
@@ -518,7 +518,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "FM-JK5".token(System("FM-JK5"), isLink = true),
-            "CrystalWater".token(Player(0)),
+            "CrystalWater".token(Character(0)),
             "+10".token(Count(10, isPlus = true)),
             "gate JP4".token(Gate("JP4-AA"), isLink = true),
             "Retribution".token(Ship("Retribution")),
@@ -535,7 +535,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "FM-JK5".token(System("FM-JK5"), isLink = true),
-            "CrystalWater".token(Player(0)),
+            "CrystalWater".token(Character(0)),
             "going JP4".token(Movement("going", "JP4-AA", isGate = false)),
         )
     }
@@ -550,7 +550,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "FM-JK5".token(System("FM-JK5"), isLink = true),
-            "CrystalWater".token(Player(0)),
+            "CrystalWater".token(Character(0)),
             "jumped JP4".token(Movement("jumped", "JP4-AA", isGate = false)),
         )
     }
@@ -565,7 +565,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "FM-JK5".token(System("FM-JK5"), isLink = true),
-            "CrystalWater".token(Player(0)),
+            "CrystalWater".token(Character(0)),
             "jumped JP4 gate".token(Movement("jumped", "JP4-AA", isGate = true)),
         )
     }
@@ -589,7 +589,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("chazzathespazman +7  B-DBYQ gate camp on  J5A-IX gate", listOf("Delve"))
 
         actual shouldContain listOf(
-            "chazzathespazman".token(Player(0)),
+            "chazzathespazman".token(Character(0)),
             "+7".token(Count(7, isPlus = true), isLink = true),
             "B-DBYQ".token(System("B-DBYQ")),
             "gate camp".token(Keyword(GateCamp)),
@@ -617,7 +617,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("KQK  1-SMEB", listOf("Delve"))
 
         actual shouldContain listOf(
-            "KQK".token(Player(0), isLink = true),
+            "KQK".token(Character(0), isLink = true),
             "1-SMEB".token(System("1-SMEB")),
         )
     }
@@ -643,7 +643,7 @@ class ChatMessageParserTest : FreeSpec({
         val actual = target.parse("Jita Alt 1", listOf("Delve"))
 
         actual shouldContain listOf(
-            "Jita Alt 1".token(Player(0)),
+            "Jita Alt 1".token(Character(0)),
         )
     }
 
@@ -675,9 +675,9 @@ class ChatMessageParserTest : FreeSpec({
         actual shouldContain listOf(
             "Drake".token(Ship("Drake")),
             "at a".token(),
-            "Fortizar".token(Player(0)),
+            "Fortizar".token(Character(0)),
             "with a".token(),
-            "Festival Launcher".token(Player(0)),
+            "Festival Launcher".token(Character(0)),
         )
         actual shouldHaveSize 8
     }
@@ -701,7 +701,7 @@ class ChatMessageParserTest : FreeSpec({
 
         actual shouldContain listOf(
             "Jita".token(System("Jita")),
-            "Jita Alt 1".token(Player(0)),
+            "Jita Alt 1".token(Character(0)),
         )
     }
 

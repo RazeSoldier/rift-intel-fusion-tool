@@ -688,7 +688,12 @@ private fun getAlertText(
                     append(" are reported ")
                     val location = when (val location = trigger.reportLocation) {
                         is IntelReportLocation.System -> "${getRangePrefixText(location.jumpsRange)} ${location.systemName}"
+                        is IntelReportLocation.AnyOwnedCharacter if location.onlyUndocked -> "${getRangePrefixText(location.jumpsRange)} any undocked character's location"
                         is IntelReportLocation.AnyOwnedCharacter -> "${getRangePrefixText(location.jumpsRange)} any online character's location"
+                        is IntelReportLocation.OwnedCharacter if location.onlyUndocked -> {
+                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.success?.name ?: location.characterId.toString()
+                            "${getRangePrefixText(location.jumpsRange)} $character's undocked location"
+                        }
                         is IntelReportLocation.OwnedCharacter -> {
                             val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.success?.name ?: location.characterId.toString()
                             "${getRangePrefixText(location.jumpsRange)} $character's location"
@@ -832,6 +837,7 @@ private fun getAlertText(
                     }
                 }
                 is AlertTrigger.JabberPing -> {
+                    @Suppress("DEPRECATION")
                     when (trigger.pingType) {
                         JabberPingType.Message -> {}
                         is JabberPingType.Message2 -> {

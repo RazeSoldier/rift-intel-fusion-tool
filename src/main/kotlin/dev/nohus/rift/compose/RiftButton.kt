@@ -52,11 +52,16 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 enum class ButtonCornerCut {
-    BottomLeft, BottomRight, None, Both
+    BottomLeft,
+    BottomRight,
+    None,
+    Both,
 }
 
 enum class ButtonType {
-    Primary, Secondary, Negative
+    Primary,
+    Secondary,
+    Negative,
 }
 
 private data class ButtonColors(

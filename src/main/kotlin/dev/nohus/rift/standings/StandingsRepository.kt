@@ -8,6 +8,7 @@ import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.StandingUtils.getStandingLevel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
@@ -33,6 +34,7 @@ class StandingsRepository(
 
     private val standings get() = settings.standings
 
+    @OptIn(FlowPreview::class)
     suspend fun start() = coroutineScope {
         launch {
             contactsRepository.contacts.collect {

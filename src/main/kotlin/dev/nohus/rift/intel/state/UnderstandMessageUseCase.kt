@@ -39,7 +39,10 @@ class UnderstandMessageUseCase(
     )
 
     enum class QuestionType {
-        Location, ShipTypes, Number, Status
+        Location,
+        ShipTypes,
+        Number,
+        Status,
     }
 
     data class Movement(
@@ -59,7 +62,7 @@ class UnderstandMessageUseCase(
         val deferredCharacterDetails = tokens
             .asSequence()
             .mapNotNull { it.type }
-            .filterIsInstance<TokenType.Player>()
+            .filterIsInstance<TokenType.Character>()
             .map { it.characterId }
             .distinct()
             .map { async { characterDetailsRepository.getCharacterDetails(it) } }
@@ -100,7 +103,7 @@ class UnderstandMessageUseCase(
 
                     is TokenType.Kill -> kills += Kill(type.name, type.characterId, type.target)
                     TokenType.Link -> {}
-                    is TokenType.Player -> {
+                    is TokenType.Character -> {
                         characterDetails[type.characterId]?.let {
                             entities += Character(it.name, it.characterId, it)
                         }

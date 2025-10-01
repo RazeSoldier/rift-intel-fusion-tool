@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
 import java.io.IOException
 import java.io.InputStream
-import java.net.URL
+import java.net.URI
 import kotlin.io.path.inputStream
 
 private val logger = KotlinLogging.logger {}
@@ -78,7 +78,7 @@ class Mp3Player {
             return when (source) {
                 is Source.File -> source.path.inputStream()
                 is Source.Network -> {
-                    val url = URL(source.url)
+                    val url = URI(source.url).toURL()
                     val connection = url.openConnection()
                     connection.connectTimeout = 5_000
                     connection.readTimeout = 5_000

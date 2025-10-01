@@ -48,7 +48,9 @@ data class Route(
 )
 
 enum class RoutedState {
-    Routed, InputNotRouted, OutputNotRouted
+    Routed,
+    InputNotRouted,
+    OutputNotRouted,
 }
 
 data class Link(

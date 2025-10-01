@@ -9,11 +9,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okio.IOException
 import org.koin.core.annotation.Single
-import org.koin.core.time.measureTimedValue
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.UnsupportedFlavorException
+import kotlin.time.measureTimedValue
 
 @Single
 class Clipboard {
@@ -29,11 +29,11 @@ class Clipboard {
 
     private suspend fun observeClipboard() = withContext(Dispatchers.IO) {
         while (true) {
-            val (contents, millis) = measureTimedValue {
+            val (contents, duration) = measureTimedValue {
                 getClipboardContents()
             }
             _state.value = contents
-            val delay = (millis.toLong() * 4).coerceIn(1000, 2000)
+            val delay = (duration.inWholeMilliseconds * 4).coerceIn(1000, 2000)
             delay(delay)
         }
     }

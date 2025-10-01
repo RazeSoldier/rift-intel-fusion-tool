@@ -47,12 +47,14 @@ class ParsePingUseCaseTest : FreeSpec({
     every { mockStandingsRepository.getFriendlyAllianceIds() } returns setOf(1)
     every { mockMapStatusRepository.status } returns mockk {
         every { value } returns mapOf(
-            30000629 to mockk { // U-QMOA
+            // U-QMOA
+            30000629 to mockk {
                 every { sovereignty } returns mockk {
                     every { allianceId } returns 1
                 }
             },
-            30001155 to mockk { // U-QVWD
+            // U-QVWD
+            30001155 to mockk {
                 every { sovereignty } returns mockk {
                     every { allianceId } returns 2
                 }

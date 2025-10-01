@@ -84,11 +84,14 @@ data class SettingsModel(
     val sovereigntyUpgrades: Map<String, List<Int>> = emptyMap(),
     val isSovereigntyUpgradesHackImportingEnabled: Boolean = true,
     val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean = false,
+    val preferredExternalServices: List<ExternalService> = emptyList(),
 )
 
 @Serializable
 enum class MapType {
-    NewEden, Region, Distance
+    NewEden,
+    Region,
+    Distance,
 }
 
 @Serializable
@@ -112,10 +115,36 @@ sealed interface MapOpenedTab {
 
 @Serializable
 enum class MapSystemInfoType {
-    StarColor, Security, NullSecurity, IntelHostiles, Jumps, Kills, NpcKills, Assets, Clones, Incursions, Stations,
-    FactionWarfare, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JumpRange, Planets, JoveObservatories, Wormholes, Colonies, Standings,
-    RatsType, Region, Constellation, IndustryIndexCopying, IndustryIndexInvention, IndustryIndexManufacturing, IndustryIndexReaction,
-    IndustryIndexMaterialEfficiency, IndustryIndexTimeEfficiency,
+    StarColor,
+    Security,
+    NullSecurity,
+    IntelHostiles,
+    Jumps,
+    Kills,
+    NpcKills,
+    Assets,
+    Clones,
+    Incursions,
+    Stations,
+    FactionWarfare,
+    Sovereignty,
+    SovereigntyUpgrades,
+    MetaliminalStorms,
+    JumpRange,
+    Planets,
+    JoveObservatories,
+    Wormholes,
+    Colonies,
+    Standings,
+    RatsType,
+    Region,
+    Constellation,
+    IndustryIndexCopying,
+    IndustryIndexInvention,
+    IndustryIndexManufacturing,
+    IndustryIndexReaction,
+    IndustryIndexMaterialEfficiency,
+    IndustryIndexTimeEfficiency,
 }
 
 @Serializable
@@ -358,5 +387,19 @@ data class MapMarker(
 
 @Serializable
 enum class LocationPinStatus {
-    Pinned, None, Hidden
+    Pinned,
+    None,
+    Hidden,
+}
+
+@Serializable
+enum class ExternalService {
+    EveWho,
+    ZKillboard,
+    EveKill,
+    UniWiki,
+    EveRef,
+    NewEdenEncyclopedia,
+    Dotlan,
+    Anoikis,
 }

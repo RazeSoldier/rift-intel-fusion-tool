@@ -302,6 +302,11 @@ class CreateAlertViewModel(
                             INTEL_REPORT_LOCATION_OWNED_CHARACTER_QUESTION.answer
                                 ?: return INTEL_REPORT_LOCATION_OWNED_CHARACTER_QUESTION
                         }
+                        INTEL_REPORT_LOCATION_ANY_UNDOCKED_CHARACTER.id -> {}
+                        INTEL_REPORT_LOCATION_UNDOCKED_CHARACTER.id -> {
+                            INTEL_REPORT_LOCATION_OWNED_CHARACTER_QUESTION.answer
+                                ?: return INTEL_REPORT_LOCATION_OWNED_CHARACTER_QUESTION
+                        }
                     }
                     INTEL_REPORT_LOCATION_JUMPS_RANGE_QUESTION.answer
                         ?: return INTEL_REPORT_LOCATION_JUMPS_RANGE_QUESTION
@@ -444,6 +449,7 @@ class CreateAlertViewModel(
 
                         INTEL_REPORT_LOCATION_ANY_OWNED_CHARACTER.id -> IntelReportLocation.AnyOwnedCharacter(
                             jumpsRange = jumpsRange,
+                            onlyUndocked = false,
                         )
 
                         INTEL_REPORT_LOCATION_OWNED_CHARACTER.id -> {
@@ -451,6 +457,22 @@ class CreateAlertViewModel(
                                 IntelReportLocation.OwnedCharacter(
                                     characterId = it.characterId,
                                     jumpsRange = jumpsRange,
+                                    onlyUndocked = false,
+                                )
+                            } ?: return null
+                        }
+
+                        INTEL_REPORT_LOCATION_ANY_UNDOCKED_CHARACTER.id -> IntelReportLocation.AnyOwnedCharacter(
+                            jumpsRange = jumpsRange,
+                            onlyUndocked = true,
+                        )
+
+                        INTEL_REPORT_LOCATION_UNDOCKED_CHARACTER.id -> {
+                            INTEL_REPORT_LOCATION_OWNED_CHARACTER_QUESTION.answer?.let {
+                                IntelReportLocation.OwnedCharacter(
+                                    characterId = it.characterId,
+                                    jumpsRange = jumpsRange,
+                                    onlyUndocked = true,
                                 )
                             } ?: return null
                         }

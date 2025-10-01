@@ -131,7 +131,7 @@ class IntelStateController(
         return context.filter { previousMessage ->
             val characterIdsInPreviousMessage = previousMessage.parsed
                 .map { it.type }
-                .filterIsInstance<ChatMessageParser.TokenType.Player>()
+                .filterIsInstance<ChatMessageParser.TokenType.Character>()
                 .map { it.characterId }
             characterIds.all { it in characterIdsInPreviousMessage }
         }

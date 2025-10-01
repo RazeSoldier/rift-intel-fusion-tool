@@ -12,35 +12,41 @@ sealed interface SystemEntity {
         val name: String,
         val characterId: Int,
         val details: CharacterDetails,
-    ) : SystemEntity, CharacterBound
+    ) : SystemEntity,
+        CharacterBound
 
     data class UnspecifiedCharacter(
         val count: Int,
-    ) : SystemEntity, CharacterBound
+    ) : SystemEntity,
+        CharacterBound
 
     data class Ship(
         val name: String,
         val count: Int,
         val standing: Standing? = null,
-    ) : SystemEntity, CharacterBound
+    ) : SystemEntity,
+        CharacterBound
 
     data class Gate(
         val system: String,
         val isAnsiblex: Boolean,
         val distanceKm: Int? = null,
-    ) : SystemEntity, CharacterBound
+    ) : SystemEntity,
+        CharacterBound
 
     data class Celestial(
         val celestial: CelestialsRepository.Celestial,
         val distanceKm: Int,
-    ) : SystemEntity, CharacterBound
+    ) : SystemEntity,
+        CharacterBound
 
     data class Killmail(
         val url: String,
         val ship: String?,
         val typeName: String?,
         val victim: KillmailVictim,
-    ) : SystemEntity, Clearable
+    ) : SystemEntity,
+        Clearable
 
     data class KillmailVictim(
         val characterId: Int?,
@@ -65,7 +71,9 @@ sealed interface SystemEntity {
 }
 
 // Marker for system entities that go away if the character situation changes
-interface CharacterBound : SystemEntity, Clearable
+interface CharacterBound :
+    SystemEntity,
+    Clearable
 
 // Marker for entities that go away when a system is reported clear
 interface Clearable : SystemEntity

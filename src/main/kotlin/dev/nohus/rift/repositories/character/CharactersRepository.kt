@@ -81,27 +81,26 @@ class CharactersRepository(
         esiCharacters + notExistingCharacters
     }
 
-    private suspend fun getCharactersFromDatabase(names: List<String>): Map<String, CharacterStatus> =
-        withContext(Dispatchers.IO) {
-            val currentTime = Instant.now().toEpochMilli()
-            localDatabase.transaction {
-                Characters2.selectAll().where {
-                    Characters2.name inList names and (
-                        ((Characters2.status eq DbCharacterStatus.Active) and (Characters2.checkTimestamp greater currentTime - activeRecheckDuration)) or
-                            ((Characters2.status eq DbCharacterStatus.Inactive) and (Characters2.checkTimestamp greater currentTime - inactiveRecheckDuration)) or
-                            ((Characters2.status eq DbCharacterStatus.Dormant) and (Characters2.checkTimestamp greater currentTime - dormantRecheckDuration)) or
-                            ((Characters2.status eq DbCharacterStatus.DoesNotExists) and (Characters2.checkTimestamp greater currentTime - doesNotExistRecheckDuration))
-                        )
-                }.associate { row ->
-                    row[Characters2.name] to when (row[Characters2.status]) {
-                        DbCharacterStatus.Active -> CharacterStatus.Active(row[Characters2.characterId]!!)
-                        DbCharacterStatus.Inactive -> CharacterStatus.Inactive(row[Characters2.characterId]!!)
-                        DbCharacterStatus.Dormant -> CharacterStatus.Dormant(row[Characters2.characterId]!!)
-                        DbCharacterStatus.DoesNotExists -> CharacterStatus.DoesNotExist
-                    }
+    private suspend fun getCharactersFromDatabase(names: List<String>): Map<String, CharacterStatus> = withContext(Dispatchers.IO) {
+        val currentTime = Instant.now().toEpochMilli()
+        localDatabase.transaction {
+            Characters2.selectAll().where {
+                Characters2.name inList names and (
+                    ((Characters2.status eq DbCharacterStatus.Active) and (Characters2.checkTimestamp greater currentTime - activeRecheckDuration)) or
+                        ((Characters2.status eq DbCharacterStatus.Inactive) and (Characters2.checkTimestamp greater currentTime - inactiveRecheckDuration)) or
+                        ((Characters2.status eq DbCharacterStatus.Dormant) and (Characters2.checkTimestamp greater currentTime - dormantRecheckDuration)) or
+                        ((Characters2.status eq DbCharacterStatus.DoesNotExists) and (Characters2.checkTimestamp greater currentTime - doesNotExistRecheckDuration))
+                    )
+            }.associate { row ->
+                row[Characters2.name] to when (row[Characters2.status]) {
+                    DbCharacterStatus.Active -> CharacterStatus.Active(row[Characters2.characterId]!!)
+                    DbCharacterStatus.Inactive -> CharacterStatus.Inactive(row[Characters2.characterId]!!)
+                    DbCharacterStatus.Dormant -> CharacterStatus.Dormant(row[Characters2.characterId]!!)
+                    DbCharacterStatus.DoesNotExists -> CharacterStatus.DoesNotExist
                 }
             }
         }
+    }
 
     private suspend fun saveCharactersToDatabase(characters: List<Character>) = withContext(Dispatchers.IO) {
         localDatabase.transaction {

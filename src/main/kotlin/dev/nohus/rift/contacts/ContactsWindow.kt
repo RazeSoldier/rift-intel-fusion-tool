@@ -45,9 +45,9 @@ import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ClickableAlliance
+import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
 import dev.nohus.rift.compose.ClickableLocation
-import dev.nohus.rift.compose.ClickablePlayer
 import dev.nohus.rift.compose.ClickableSystem
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.ExpandChevron
@@ -862,7 +862,7 @@ private fun SearchResultRow(
                 modifier = Modifier.size(32.dp),
             )
             SearchCategory.Characters -> {
-                ClickablePlayer(item.id.toInt()) {
+                ClickableCharacter(item.id.toInt()) {
                     AsyncPlayerPortrait(
                         characterId = item.id.toInt(),
                         size = 32,
@@ -968,7 +968,7 @@ private fun SearchResultRow(
             }
             when (category) {
                 SearchCategory.Characters -> {
-                    ClickablePlayer(item.id.toInt()) {
+                    ClickableCharacter(item.id.toInt()) {
                         textContent()
                     }
                 }

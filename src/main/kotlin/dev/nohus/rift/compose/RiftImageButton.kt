@@ -41,7 +41,8 @@ fun RiftImageButton(
     highlightModifier: Float = 1f,
 ) {
     val windowOpenTimestamp = LocalRiftWindowState.current?.openTimestamp
-    key(windowOpenTimestamp) { // This is to clear hover / press states and animations when window is reopened
+    // This is to clear hover / press states and animations when window is reopened
+    key(windowOpenTimestamp) {
         val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
         val transition = updateTransition(pointerInteractionStateHolder.current)
         val highlightAlpha by transition.animateFloat {

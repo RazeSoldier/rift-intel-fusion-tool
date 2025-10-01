@@ -43,7 +43,9 @@ class PointerInteractionStateHolder {
 fun rememberPointerInteractionStateHolder() = remember { PointerInteractionStateHolder() }
 
 enum class PointerInteractionState {
-    Normal, Hover, Press
+    Normal,
+    Hover,
+    Press,
 }
 
 private val IGNORE_HOVER_ON_LOST_FOCUS_DURATION = Duration.ofMillis(100)

@@ -289,7 +289,8 @@ fun WindowScope.RiftDialog(
 }
 
 enum class TitleBarStyle {
-    Full, Small
+    Full,
+    Small,
 }
 
 @Composable

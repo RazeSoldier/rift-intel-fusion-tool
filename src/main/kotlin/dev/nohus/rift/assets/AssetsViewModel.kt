@@ -59,7 +59,10 @@ class AssetsViewModel(
     )
 
     enum class SortType {
-        Distance, Name, Count, Price
+        Distance,
+        Name,
+        Count,
+        Price,
     }
 
     data class AssetTotals(
@@ -81,7 +84,9 @@ class AssetsViewModel(
     )
 
     enum class FitAction {
-        Copy, CopyWithCargo, Open
+        Copy,
+        CopyWithCargo,
+        Open,
     }
 
     private var allAssets: List<Pair<AssetLocation, List<Asset>>> = emptyList()

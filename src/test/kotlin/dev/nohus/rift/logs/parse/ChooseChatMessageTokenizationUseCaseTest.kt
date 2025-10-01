@@ -7,10 +7,10 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.Location
 import dev.nohus.rift.logs.parse.ChatMessageParser.QuestionType.ShipTypes
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
+import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Character
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Count
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Keyword
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Kill
-import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Player
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
@@ -59,8 +59,8 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
 
         actual shouldBe listOf(
             "D-W7F0".token(System("D-W7F0"), isLink = true),
-            "Ishani Kalki".token(Player(0), isLink = true),
-            "Shiva Callipso".token(Player(0)),
+            "Ishani Kalki".token(Character(0), isLink = true),
+            "Shiva Callipso".token(Character(0)),
         )
     }
 
@@ -72,7 +72,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "S-Killer".token(Player(0)),
+            "S-Killer".token(Character(0)),
             "malediction".token(Ship("Malediction")),
         )
     }
@@ -97,7 +97,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "Rinah Minayin".token(Player(0), isLink = true),
+            "Rinah Minayin".token(Character(0), isLink = true),
             "MO-GZ5".token(System("MO-GZ5")),
             "nv".token(Keyword(NoVisual)),
         )
@@ -112,7 +112,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
 
         actual shouldBe listOf(
             "N-8YET".token(System("N-8YET"), isLink = true),
-            "Charlie Murdoch".token(Player(0)),
+            "Charlie Murdoch".token(Character(0)),
         )
     }
 
@@ -138,7 +138,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
 
         actual shouldBe listOf(
             "Caldari Shuttle".token(Ship("Caldari Shuttle"), isLink = true),
-            "Keeppley TT".token(Player(0), isLink = true),
+            "Keeppley TT".token(Character(0), isLink = true),
             "NOL-M9".token(System("NOL-M9"), isLink = true),
         )
     }
@@ -152,7 +152,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "M2002M".token(Player(0), isLink = true),
+            "M2002M".token(Character(0), isLink = true),
             "SVM-3K".token(System("SVM-3K")),
             "eris".token(Ship("Eris")),
         )
@@ -167,8 +167,8 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "ssllss1".token(Player(0), isLink = true),
-            "Yaakov Y2".token(Player(0)),
+            "ssllss1".token(Character(0), isLink = true),
+            "Yaakov Y2".token(Character(0)),
             "2x capsule".token(Ship("Capsule", count = 2), isLink = true),
             "319-3D".token(System("319-3D")),
         )
@@ -192,7 +192,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "Ishani Kalki".token(Player(0)),
+            "Ishani Kalki".token(Character(0)),
             "where is he".token(Question(Location, "where is he")),
         )
     }
@@ -205,7 +205,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
 
         actual shouldBe listOf(
             "+".token(),
-            "ssllss1".token(Player(0)),
+            "ssllss1".token(Character(0)),
         )
     }
 
@@ -256,7 +256,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "stark".token(Player(0)),
+            "stark".token(Character(0)),
             "+3".token(Count(3, isPlus = true)),
             "ZXB-VC".token(System("ZXB-VC")),
         )
@@ -328,7 +328,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
 
         actual shouldBe listOf(
             "319-3D".token(System("319-3D"), isLink = true),
-            "RB Charlote".token(Player(0)),
+            "RB Charlote".token(Character(0)),
             "+3".token(Count(3, isPlus = true)),
             "1x hecate".token(Ship("Hecate", count = 1)),
             "3x".token(Count(3)),
@@ -346,8 +346,8 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "FeiShi".token(Player(0), isLink = true),
-            "iT0p".token(Player(0)),
+            "FeiShi".token(Character(0), isLink = true),
+            "iT0p".token(Character(0)),
             "camping in".token(),
             "1-2J4P".token(System("1-2J4P")),
             "purifier".token(Ship("Purifier")),
@@ -376,13 +376,13 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "CPT Grabowsky".token(Player(0), isLink = true),
-            "Kelci Papi".token(Player(0), isLink = true),
-            "Kelio Rift".token(Player(0), isLink = true),
-            "Rim'tuti'tuks".token(Player(0), isLink = true),
-            "Lucho IYI".token(Player(0), isLink = true),
-            "Shopa s topa".token(Player(0), isLink = true),
-            "Urriah Souldown".token(Player(0)),
+            "CPT Grabowsky".token(Character(0), isLink = true),
+            "Kelci Papi".token(Character(0), isLink = true),
+            "Kelio Rift".token(Character(0), isLink = true),
+            "Rim'tuti'tuks".token(Character(0), isLink = true),
+            "Lucho IYI".token(Character(0), isLink = true),
+            "Shopa s topa".token(Character(0), isLink = true),
+            "Urriah Souldown".token(Character(0)),
         )
     }
 
@@ -394,7 +394,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "Sixty Ever4".token(Player(0)),
+            "Sixty Ever4".token(Character(0)),
             "+5".token(Count(5, isPlus = true)),
             "gang".token(),
             "4K-TRB".token(System("4K-TRB"), isLink = true),
@@ -423,7 +423,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "chazzathespazman".token(Player(0)),
+            "chazzathespazman".token(Character(0)),
             "+7".token(Count(7, isPlus = true), isLink = true),
             "B-DBYQ".token(System("B-DBYQ")),
             "gate camp".token(Keyword(GateCamp)),

@@ -241,12 +241,13 @@ private fun IntelFeedItem(
                         rowHeight = state.settings.rowHeight,
                         modifier = Modifier.padding(Spacing.small),
                     )
+                    val hasMultipleCharacters = group.value.count { it is SystemEntity.Character } > 1
                     SystemEntities(
                         entities = group.value,
                         system = system,
                         rowHeight = state.settings.rowHeight,
                         isHorizontal = true,
-                        isGroupingCharacters = !isExpanded,
+                        isGroupingCharacters = !isExpanded && hasMultipleCharacters,
                     )
                 }
             }

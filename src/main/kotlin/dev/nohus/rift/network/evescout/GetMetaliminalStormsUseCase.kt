@@ -17,11 +17,15 @@ class GetMetaliminalStormsUseCase(
 ) {
 
     enum class StormType {
-        Gamma, Electric, Plasma, Exotic
+        Gamma,
+        Electric,
+        Plasma,
+        Exotic,
     }
 
     enum class StormStrength {
-        Strong, Weak
+        Strong,
+        Weak,
     }
 
     data class Storm(

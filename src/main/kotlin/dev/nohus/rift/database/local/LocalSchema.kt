@@ -11,5 +11,8 @@ object Characters2 : Table() {
 }
 
 enum class CharacterStatus {
-    Active, Inactive, Dormant, DoesNotExists
+    Active,
+    Inactive,
+    Dormant,
+    DoesNotExists,
 }

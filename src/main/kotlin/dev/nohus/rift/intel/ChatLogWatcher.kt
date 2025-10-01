@@ -10,7 +10,9 @@ import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.logs.parse.ChatMessageParser
 import dev.nohus.rift.logs.parse.ChooseChatMessageTokenizationUseCase
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.mapAsync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.sentry.Sentry
 import kotlinx.coroutines.coroutineScope
@@ -40,6 +42,7 @@ class ChatLogWatcher(
     private val localSystemChangeController: LocalSystemChangeController,
     private val alertsTriggerController: AlertsTriggerController,
     private val understandMessageUseCase: UnderstandMessageUseCase,
+    private val characterDetailsRepository: CharacterDetailsRepository,
 ) {
 
     private val _channelChatMessages = MutableStateFlow<List<ParsedChannelChatMessage>>(emptyList())
@@ -97,7 +100,7 @@ class ChatLogWatcher(
                             try {
                                 val parsings = chatMessageParser.parse(channelChatMessage.chatMessage.message, regions)
                                 if (parsings.isNotEmpty()) {
-                                    val bestParsing = chooseChatMessageTokenizationUseCase(parsings)
+                                    val bestParsing = fillCharacterDetails(chooseChatMessageTokenizationUseCase(parsings))
                                     val understanding = understandMessageUseCase(bestParsing)
                                     val parsed = ParsedChannelChatMessage(
                                         chatMessage = channelChatMessage.chatMessage,
@@ -130,6 +133,20 @@ class ChatLogWatcher(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private suspend fun fillCharacterDetails(parsing: List<ChatMessageParser.Token>): List<ChatMessageParser.Token> {
+        return parsing.mapAsync { token ->
+            if (token.type is ChatMessageParser.TokenType.Character) {
+                token.copy(
+                    type = token.type.copy(
+                        details = characterDetailsRepository.getCharacterDetails(token.type.characterId),
+                    ),
+                )
+            } else {
+                token
             }
         }
     }

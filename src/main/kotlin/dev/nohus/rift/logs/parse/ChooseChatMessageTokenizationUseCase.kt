@@ -61,10 +61,10 @@ class ChooseChatMessageTokenizationUseCase {
 
         // Prefer all character names to be recognized
         val characterNames = remaining.flatMap { tokens ->
-            tokens.filter { it.type is TokenType.Player }.map { it.words }
+            tokens.filter { it.type is TokenType.Character }.map { it.words }
         }.toSet()
         remaining.filterNot { tokens ->
-            tokens.filter { it.type is TokenType.Player }.any { it.words in characterNames }
+            tokens.filter { it.type is TokenType.Character }.any { it.words in characterNames }
         }.let { if (it.isNotEmpty()) remaining = it }
 
         // Prefer for a Count to exist before a Ship
@@ -112,7 +112,7 @@ class ChooseChatMessageTokenizationUseCase {
 
         // Prefer for player names to cover more text (longer player names)
         val groupBySumOfNamesLength = remaining.groupBy { tokens ->
-            tokens.filter { it.type is TokenType.Player }.sumOf { it.words.joinToString(" ").length }
+            tokens.filter { it.type is TokenType.Character }.sumOf { it.words.joinToString(" ").length }
         }
         remaining = groupBySumOfNamesLength[groupBySumOfNamesLength.keys.max()]!!
 

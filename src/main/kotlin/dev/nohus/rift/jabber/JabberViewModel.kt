@@ -94,7 +94,9 @@ class JabberViewModel(
             }
         }
         when (jabberAccountRepository.getAccount()) {
-            JabberAccountResult.NoAccount -> { _state.update { UiState.NoAccount(canImport = detectJabberAccountUseCase() != null) } }
+            JabberAccountResult.NoAccount -> {
+                _state.update { UiState.NoAccount(canImport = detectJabberAccountUseCase() != null) }
+            }
             is JabberAccountResult.JabberAccount -> if (jabberClient.state.value.isConnected) {
                 setLoggedInState(jabberClient.state.value)
             } else {

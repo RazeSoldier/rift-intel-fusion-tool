@@ -47,7 +47,7 @@ import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
-import dev.nohus.rift.compose.ClickablePlayer
+import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableSystem
 import dev.nohus.rift.compose.FlagIcon
 import dev.nohus.rift.compose.RiftImageButton
@@ -177,7 +177,7 @@ fun NotificationContent(
                         text = buildAnnotatedString {
                             val annotations = notification.message
                                 .getStringAnnotations(
-                                    Notification.TextNotification.styleTag,
+                                    Notification.TextNotification.STYLE_TAG,
                                     0,
                                     notification.message.length,
                                 )
@@ -220,7 +220,7 @@ fun NotificationContent(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         if (message.senderCharacterId != null) {
-                            ClickablePlayer(message.senderCharacterId) {
+                            ClickableCharacter(message.senderCharacterId) {
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -457,7 +457,7 @@ private fun SolarSystem(system: String, subtext: String?) {
 private fun Character(characterId: Int, subtext: String) {
     val localCharactersRepository: LocalCharactersRepository by koin.inject()
     val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: "Character"
-    ClickablePlayer(characterId) {
+    ClickableCharacter(characterId) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),

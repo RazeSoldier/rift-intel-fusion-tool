@@ -269,4 +269,8 @@ class Settings(
     var isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean
         get() = model.isSovereigntyUpgradesHackImportingOfflineEnabled
         set(value) = update { copy(isSovereigntyUpgradesHackImportingOfflineEnabled = value) }
+
+    var preferredExternalServices: List<ExternalService>
+        get() = model.preferredExternalServices
+        set(value) = update { copy(preferredExternalServices = value) }
 }

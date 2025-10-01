@@ -59,6 +59,7 @@ fun Pin.getStatus(now: Instant, routes: List<Route>): PinStatus {
         is Pin.Extractor -> {
             val isSetup = installTime != null && expiryTime != null && cycleTime != null && baseValue != null && productType != null
             if (!isSetup) return NotSetup
+            @Suppress("SENSELESS_COMPARISON")
             val hasExpired = expiryTime != null && expiryTime <= now
             if (hasExpired) return ExtractorExpired
             when (isRouted(routes)) {
