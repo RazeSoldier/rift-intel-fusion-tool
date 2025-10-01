@@ -53,6 +53,7 @@ class AlertsTriggerController(
 
     private val enabledAlerts: List<Alert> get() = settings.alerts.filter { it.isEnabled }
     private val triggerTimestamps: MutableMap<String, Instant> = mutableMapOf()
+    private val killmailSystemTriggerTimestamps: MutableMap<String, Instant> = mutableMapOf()
     private val lastSeenMessagePerChannel = mutableMapOf<String, Instant>()
     private val alertedInactiveChannels = mutableSetOf<String>()
     private var loggedInTimestamp: Instant? = null
@@ -84,6 +85,11 @@ class AlertsTriggerController(
         if (killmail.timestamp.isBefore(Instant.now() - Duration.ofMinutes(3))) {
             return // Don't alert for old killmails
         }
+        val lastTriggeredInThisSystem = killmailSystemTriggerTimestamps[killmail.system] ?: Instant.EPOCH
+        val duration = Duration.between(lastTriggeredInThisSystem, Instant.now())
+        if (duration < Duration.ofSeconds(15)) {
+            return // Don't repeatedly alert for kills in the same system
+        }
 
         val triggeredIntelAlerts = enabledAlerts.mapNotNull { alert ->
             if (alert.trigger is IntelReported) {
@@ -111,6 +117,7 @@ class AlertsTriggerController(
             }
         }
         triggeredIntelAlerts.forEach {
+            killmailSystemTriggerTimestamps[it.solarSystem] = Instant.now()
             alertsActionController.triggerIntelAlert(
                 alert = it.alert,
                 matchingEntities = it.matchingEntities,

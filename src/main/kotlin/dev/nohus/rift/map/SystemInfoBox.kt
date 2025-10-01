@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncPlayerPortrait
@@ -705,9 +706,16 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
             contentDescription = null,
             modifier = Modifier.size(16.dp),
         )
+        val localCharactersRepository: LocalCharactersRepository = remember { koin.get() }
         clones.forEach { (characterId, count) ->
+            val characterName = localCharactersRepository.characters.value
+                .find { it.characterId == characterId }
+                ?.info?.success?.name
             RiftTooltipArea(
-                text = "$count clone${count.plural}".takeIf { withDetails },
+                text = buildString {
+                    if (characterName != null) appendLine(characterName)
+                    append("$count clone${count.plural}")
+                },
             ) {
                 Box(
                     modifier = Modifier
@@ -725,7 +733,7 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
         if (withDetails) {
             val totalCount = clones.entries.sumOf { it.value }
             Text(
-                text = "$totalCount jump clone${totalCount.plural}",
+                text = "$totalCount clone${totalCount.plural}",
                 style = RiftTheme.typography.bodyPrimary,
             )
         }

@@ -6,8 +6,9 @@ import dev.nohus.rift.repositories.SovereigntyUpgradesRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.Settings
-import dev.nohus.rift.utils.combineStates
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import org.koin.core.annotation.Single
 
@@ -33,10 +34,14 @@ class MapSovereigntyUpgradesController(
     )
 
     private val _selectedTypes = MutableStateFlow(emptyList<Type>())
-    val state = combineStates(_selectedTypes, sovereigntyUpgradesRepository.upgrades) { selectedTypes, upgrades ->
+    val selectedTypes get() = _selectedTypes.value
+    val state = combine(
+        _selectedTypes,
+        sovereigntyUpgradesRepository.upgrades.map { getSovereigntyUpgrades(it) },
+    ) { selectedTypes, upgrades ->
         MapSovereigntyUpgradesState(
             selectedTypes = selectedTypes,
-            upgrades = getSovereigntyUpgrades(upgrades),
+            upgrades = upgrades,
         )
     }
 

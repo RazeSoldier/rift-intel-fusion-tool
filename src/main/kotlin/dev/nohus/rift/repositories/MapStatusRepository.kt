@@ -203,7 +203,7 @@ class MapStatusRepository(
     }
 
     private fun filterSovereigntyUpgrades(upgrades: List<SovereigntyUpgrade>): List<SovereigntyUpgrade> {
-        val selectedTypes = mapSovereigntyUpgradesController.state.value.selectedTypes
+        val selectedTypes = mapSovereigntyUpgradesController.selectedTypes
         return if (selectedTypes.isEmpty()) {
             upgrades
         } else {
