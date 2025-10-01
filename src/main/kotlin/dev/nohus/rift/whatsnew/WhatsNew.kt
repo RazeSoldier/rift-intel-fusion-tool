@@ -657,6 +657,15 @@ object WhatsNew {
                 - Updated font sizes in the app to better match in-game. Some text is now slightly bigger.
                 """.trimIndent(),
             )
+            add(
+                "5.3.0" description """
+                -! New feature: PI colony time seek & fast-forward
+                - You can now preview the state of your colonies at any time in the future up to the time they stop working
+                - Set up a complex layout and want to see what will happen in 12 hours? Now you can.
+                
+                - Spreadsheet exports of colonies now include all stored commodities
+                """.trimIndent()
+            )
         }.reversed()
     }
 }

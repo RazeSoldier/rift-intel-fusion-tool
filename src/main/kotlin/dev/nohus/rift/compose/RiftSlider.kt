@@ -38,6 +38,7 @@ import androidx.compose.ui.util.lerp
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import kotlin.math.roundToInt
+import kotlin.math.sign
 
 @Composable
 fun RiftSlider(
@@ -45,17 +46,24 @@ fun RiftSlider(
     range: IntRange,
     currentValue: Int,
     onValueChange: (Int) -> Unit,
-    getValueName: (Int) -> String = { "$it" },
+    getValueName: (Int) -> String? = { "$it" },
+    isPreciseScroll: Boolean = false,
+    isImmediate: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     var isPressed by remember { mutableStateOf(false) }
     val widthPx = LocalDensity.current.run { width.toPx() }
-    val offset = remember { mutableStateOf(((currentValue.toFloat() - range.first) / (range.last - range.first)) * widthPx) }
+    val offset = remember(widthPx) { mutableStateOf(((currentValue.toFloat() - range.first) / (range.last - range.first)) * widthPx) }
     val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
 
     val currentTransientValue = lerp(range.first.toFloat(), range.last.toFloat(), offset.value / widthPx).roundToInt()
     LaunchedEffect(isPressed) {
         if (!isPressed) {
+            onValueChange(currentTransientValue)
+        }
+    }
+    if (isImmediate) {
+        LaunchedEffect(currentTransientValue) {
             onValueChange(currentTransientValue)
         }
     }
@@ -84,8 +92,14 @@ fun RiftSlider(
                                 PointerEventType.Release -> isPressed = false
                                 PointerEventType.Scroll -> {
                                     event.changes.forEach { change ->
-                                        val scrollDelta = -change.scrollDelta.y
-                                        offset.value = (offset.value + (widthPx * 0.1f * scrollDelta)).coerceIn(0f..widthPx)
+                                        if (isPreciseScroll) {
+                                            val scrollDelta = -sign(change.scrollDelta.y)
+                                            val offsetPerUnit = widthPx / (range.last - range.first)
+                                            offset.value = (offset.value + (scrollDelta * offsetPerUnit)).coerceIn(0f..widthPx)
+                                        } else {
+                                            val scrollDelta = -change.scrollDelta.y
+                                            offset.value = (offset.value + (widthPx * 0.1f * scrollDelta)).coerceIn(0f..widthPx)
+                                        }
                                         val value = lerp(range.first.toFloat(), range.last.toFloat(), offset.value / widthPx).roundToInt()
                                         if (value != currentValue) {
                                             onValueChange(value)

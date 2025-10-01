@@ -61,13 +61,13 @@ private val logger = KotlinLogging.logger {}
 fun ApplicationScope.RiftTray(
     isVisible: Boolean,
 ) {
-    val operatingSystem = remember { koin.get<OperatingSystem>() }
-    val settings = remember { koin.get<Settings>() }
-
-    val viewModel: NeocomViewModel = viewModel()
-    val state by viewModel.state.collectAsState()
-
     if (isVisible) {
+        val operatingSystem = remember { koin.get<OperatingSystem>() }
+        val settings = remember { koin.get<Settings>() }
+
+        val viewModel: NeocomViewModel = viewModel()
+        val state by viewModel.state.collectAsState()
+
         val items = getTrayMenuItems(
             operatingSystem = operatingSystem,
             isJabberEnabled = state.isJabberEnabled,

@@ -76,6 +76,7 @@ import dev.nohus.rift.network.AsyncResource.Error
 import dev.nohus.rift.network.AsyncResource.Loading
 import dev.nohus.rift.network.AsyncResource.Ready
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
+import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.SeekingColony
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.UiState
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.View.DetailsView
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryViewModel.View.GridView
@@ -120,6 +121,7 @@ fun PlanetaryIndustryWindow(
             onBackClick = viewModel::onBackClick,
             onSortingFilterChange = viewModel::onSortingFilterChange,
             onCopyData = viewModel::onCopyData,
+            onSetSeekingColony = viewModel::setSeekingColony,
         )
         OnVisibilityChange(viewModel::onVisibilityChange)
     }
@@ -135,6 +137,7 @@ private fun PlanetaryIndustryWindowContent(
     onBackClick: () -> Unit,
     onSortingFilterChange: (ColonySortingFilter) -> Unit,
     onCopyData: (CopyType) -> Unit,
+    onSetSeekingColony: (SeekingColony?) -> Unit,
 ) {
     when (val resource = state.colonies) {
         is Error -> {
@@ -183,6 +186,7 @@ private fun PlanetaryIndustryWindowContent(
                     onDetailsClick = onDetailsClick,
                     onSortingFilterChange = onSortingFilterChange,
                     onCopyData = onCopyData,
+                    onSetSeekingColony = onSetSeekingColony,
                 )
             } else {
                 EmptyState()
@@ -202,6 +206,7 @@ private fun MainColoniesContent(
     onDetailsClick: (id: String) -> Unit,
     onSortingFilterChange: (ColonySortingFilter) -> Unit,
     onCopyData: (CopyType) -> Unit,
+    onSetSeekingColony: (SeekingColony?) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
     val lazyGridState = rememberLazyGridState()
@@ -229,14 +234,18 @@ private fun MainColoniesContent(
             AnimatedContent(targetState = state.view) { view ->
                 when (view) {
                     is DetailsView -> {
-                        ColonyDetails(
-                            item = view.item,
-                            now = Instant.now(),
-                            animatedVisibilityScope = this@AnimatedContent,
-                            sharedTransitionScope = this@SharedTransitionLayout,
-                            onBackClick = onBackClick,
-                            onRequestSimulation = onRequestSimulation,
-                        )
+                        val item = state.colonies.success?.firstOrNull { it.colony.id == view.colonyId }
+                        if (item != null) {
+                            ColonyDetails(
+                                item = item,
+                                now = Instant.now(),
+                                animatedVisibilityScope = this@AnimatedContent,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                onBackClick = onBackClick,
+                                onRequestSimulation = onRequestSimulation,
+                                onSetSeekingColony = onSetSeekingColony,
+                            )
+                        }
                     }
 
                     ListView -> {
@@ -256,6 +265,7 @@ private fun MainColoniesContent(
                                             isExpanded = false,
                                             isViewingFastForward = isViewingFastForward,
                                             onViewFastForwardChange = { isViewingFastForward = it },
+                                            onSetSeekingColony = onSetSeekingColony,
                                             colonyIconModifier = Modifier
                                                 .sharedElement(
                                                     rememberSharedContentState(item.colony.id),
@@ -265,9 +275,10 @@ private fun MainColoniesContent(
                                             onDetailsClick = { onDetailsClick(item.colony.id) },
                                         )
                                         if (isViewingFastForward) {
+                                            val colony = item.seekColony ?: item.ffwdColony
                                             ColonyOverview(
-                                                colony = item.ffwdColony,
-                                                now = item.ffwdColony.currentSimTime,
+                                                colony = colony,
+                                                now = colony.currentSimTime,
                                                 isAdvancingTime = false,
                                                 onRequestSimulation = {},
                                             )
@@ -428,6 +439,7 @@ private fun ColonyDetails(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onBackClick: () -> Unit,
     onRequestSimulation: () -> Unit,
+    onSetSeekingColony: (SeekingColony?) -> Unit,
 ) {
     Column {
         var isViewingFastForward by remember { mutableStateOf(false) }
@@ -438,21 +450,24 @@ private fun ColonyDetails(
                 isExpanded = true,
                 isViewingFastForward = isViewingFastForward,
                 onViewFastForwardChange = { isViewingFastForward = it },
+                onSetSeekingColony = onSetSeekingColony,
                 scrollState = scrollState,
                 colonyIconModifier = Modifier
                     .sharedElement(rememberSharedContentState(item.colony.id), animatedVisibilityScope),
                 onDetailsClick = onBackClick,
             )
         }
+
         ScrollbarColumn(
             scrollState = scrollState,
             contentPadding = PaddingValues(top = Spacing.medium),
         ) {
             AnimatedContent(isViewingFastForward) {
                 if (it) {
+                    val colony = item.seekColony ?: item.ffwdColony
                     ColonyPins(
-                        colony = item.ffwdColony,
-                        now = item.ffwdColony.currentSimTime,
+                        colony = colony,
+                        now = colony.currentSimTime,
                         isAdvancingTime = false,
                         onRequestSimulation = {},
                     )

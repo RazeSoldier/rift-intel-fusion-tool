@@ -29,9 +29,11 @@ object SpreadsheetFormatter {
     }
 
     private fun formatForGoogleSheets(items: List<ColonyItem>): String {
+        val types = getAllTypes(items)
         val extractedTypes = getAllExtractedTypes(items)
         val rows = items.joinToString("\n") { item ->
             val colony = item.colony
+            val contents = getColonyContents(colony)
             val finalProducts = colony.overview.finalProducts.joinToString(",") { it.name }
             val status = colony.status.getDisplayName()
             val totalUsedCapacity = String.format("%.02f", colony.overview.finalProductsUsedCapacity + colony.overview.otherUsedCapacity)
@@ -57,6 +59,7 @@ object SpreadsheetFormatter {
                 expiryTimestamp,
                 expiryReasons,
                 *extractedTypes.map { averagesPerHourExtracted[it] ?: 0 }.toTypedArray(),
+                *types.map { contents[it] ?: 0 }.toTypedArray(),
             ).joinToString(separator = "\t")
         }
         val headers = listOf(
@@ -76,14 +79,17 @@ object SpreadsheetFormatter {
             "Expires at",
             "Expiry reason",
             *extractedTypes.map { "Avg. per hour (${it.name})" }.toTypedArray(),
+            *types.map { "Stored (${it.name})" }.toTypedArray(),
         ).joinToString("\t")
         return "$headers\n$rows"
     }
 
     private fun formatForExcel(items: List<ColonyItem>): String {
+        val types = getAllTypes(items)
         val extractedTypes = getAllExtractedTypes(items)
         val rows = items.joinToString("\n") { item ->
             val colony = item.colony
+            val contents = getColonyContents(colony)
             val finalProducts = colony.overview.finalProducts.joinToString(",") { it.name }
             val status = colony.status.getDisplayName()
             val totalUsedCapacity = String.format("%.02f", colony.overview.finalProductsUsedCapacity + colony.overview.otherUsedCapacity)
@@ -109,6 +115,7 @@ object SpreadsheetFormatter {
                 expiryTimestamp,
                 expiryReasons,
                 *extractedTypes.map { averagesPerHourExtracted[it] ?: 0 }.toTypedArray(),
+                *types.map { contents[it] ?: 0 }.toTypedArray(),
             ).joinToString(separator = "\t")
         }
         val headers = listOf(
@@ -128,15 +135,18 @@ object SpreadsheetFormatter {
             "Expires at (Date)",
             "Expiry reason",
             *extractedTypes.map { "Avg. per hour (${it.name})" }.toTypedArray(),
+            *types.map { "Stored (${it.name})" }.toTypedArray(),
         ).joinToString("\t")
         return "$headers\n$rows"
     }
 
     private fun formatForExcelWithAddin(items: List<ColonyItem>): String {
+        val types = getAllTypes(items)
         val extractedTypes = getAllExtractedTypes(items)
         val maxFinalProducts = items.maxOf { it.colony.overview.finalProducts.size }
         val rows = items.joinToString("\n") { item ->
             val colony = item.colony
+            val contents = getColonyContents(colony)
             val finalProducts = colony.overview.finalProducts.map {
                 "=EVEONLINE.TYPE(${it.id})"
             }.toTypedArray()
@@ -163,6 +173,7 @@ object SpreadsheetFormatter {
                 expiryTimestamp,
                 expiryReasons,
                 *extractedTypes.map { averagesPerHourExtracted[it] ?: 0 }.toTypedArray(),
+                *types.map { contents[it] ?: 0 }.toTypedArray(),
             ).joinToString(separator = "\t")
         }
         val headers = listOf(
@@ -180,8 +191,22 @@ object SpreadsheetFormatter {
             "Expires at (Date)",
             "Expiry reason",
             *extractedTypes.map { "Avg. per hour (${it.name})" }.toTypedArray(),
+            *types.map { "Stored (${it.name})" }.toTypedArray(),
         ).joinToString("\t")
         return "$headers\n$rows"
+    }
+
+    private fun getAllTypes(items: List<ColonyItem>): List<Type> {
+        return items.flatMap { item ->
+            item.colony.pins.flatMap { it.contents.keys }
+        }.distinct()
+    }
+
+    private fun getColonyContents(colony: Colony): Map<Type, Long> {
+        return colony.pins
+            .flatMap { it.contents.entries }
+            .groupingBy({ it.key })
+            .fold(0L) { accumulator, element -> accumulator + element.value }
     }
 
     private fun getAllExtractedTypes(items: List<ColonyItem>): List<Type> {
