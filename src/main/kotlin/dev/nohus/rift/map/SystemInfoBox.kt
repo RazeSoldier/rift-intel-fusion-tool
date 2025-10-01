@@ -25,6 +25,7 @@ import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncPlayerPortrait
+import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ClickablePlayer
 import dev.nohus.rift.compose.IntelTimer
 import dev.nohus.rift.compose.LocalNow
@@ -70,6 +72,7 @@ import dev.nohus.rift.generated.resources.indicator_wormhole
 import dev.nohus.rift.intel.state.IntelStateController.Dated
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
+import dev.nohus.rift.map.MapSovereigntyUpgradesController.SovereigntyUpgrade
 import dev.nohus.rift.network.esi.IndustryActivity
 import dev.nohus.rift.network.esi.SovereigntySystem
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.WormholeSize
@@ -228,7 +231,7 @@ private fun ColumnScope.SystemInfoTypes(
     infoTypes: List<MapSystemInfoType>,
     systemStatus: SolarSystemStatus?,
 ) {
-    val namesRepository: NamesRepository = koin.get()
+    val namesRepository: NamesRepository = remember { koin.get() }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -265,6 +268,7 @@ private fun ColumnScope.SystemInfoTypes(
                     }
                     MapSystemInfoType.FactionWarfare -> {} // In column
                     MapSystemInfoType.Sovereignty -> {} // In column
+                    MapSystemInfoType.SovereigntyUpgrades -> {} // In column
                     MapSystemInfoType.MetaliminalStorms -> {} // In column
                     MapSystemInfoType.Planets -> {} // In column
                     MapSystemInfoType.JoveObservatories -> {
@@ -358,6 +362,11 @@ private fun ColumnScope.SystemInfoTypes(
                         }
                     }
                 }
+                MapSystemInfoType.SovereigntyUpgrades -> {
+                    systemStatus?.sovereigntyUpgrades?.takeIf { it.isNotEmpty() }?.let {
+                        SovereigntyUpgradesIndicators(it, isExpanded = true)
+                    }
+                }
                 MapSystemInfoType.MetaliminalStorms -> {
                     systemStatus?.storms?.let {
                         it.forEach { storm ->
@@ -443,6 +452,7 @@ private fun SystemInfoTypesIndicators(
     systemStatus: SolarSystemStatus?,
     isExpanded: Boolean,
 ) {
+    val namesRepository: NamesRepository = remember { koin.get() }
     infoTypes.distinct()
         .sortedBy { listOf(MapSystemInfoType.Incursions, MapSystemInfoType.Sovereignty).indexOf(it) }
         .forEach { color ->
@@ -483,7 +493,20 @@ private fun SystemInfoTypesIndicators(
                 MapSystemInfoType.FactionWarfare -> {}
                 MapSystemInfoType.Sovereignty -> {
                     systemStatus?.sovereignty?.let {
-                        SovereigntyLogo(it)
+                        val id = it.allianceId ?: it.factionId ?: it.corporationId
+                        if (id != null) {
+                            val name = namesRepository.getName(id) ?: "Unknown"
+                            RiftTooltipArea(
+                                text = name,
+                            ) {
+                                SovereigntyLogo(it)
+                            }
+                        }
+                    }
+                }
+                MapSystemInfoType.SovereigntyUpgrades -> {
+                    systemStatus?.sovereigntyUpgrades?.takeIf { it.isNotEmpty() }?.let {
+                        SovereigntyUpgradesIndicators(it, isExpanded = false)
                     }
                 }
                 MapSystemInfoType.MetaliminalStorms -> {
@@ -705,6 +728,43 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
                 text = "$totalCount jump clone${totalCount.plural}",
                 style = RiftTheme.typography.bodyPrimary,
             )
+        }
+    }
+}
+
+@Composable
+private fun SovereigntyUpgradesIndicators(upgrades: List<SovereigntyUpgrade>, isExpanded: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+    ) {
+        for ((upgrade, grouped) in upgrades.groupBy { it }) {
+            val count = grouped.size
+            RiftTooltipArea(
+                text = buildString {
+                    if (upgrade.isEffect) append("Affected by ")
+                    if (count > 1) append("${count}x ")
+                    append(upgrade.type.name)
+                },
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (count > 1) {
+                        Text(
+                            text = "${count}x ",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                    }
+                    val size = if (isExpanded) 32.dp else 24.dp
+                    AsyncTypeIcon(
+                        type = upgrade.type,
+                        modifier = Modifier
+                            .alpha(if (upgrade.isEffect) 0.5f else 1f)
+                            .size(size),
+                    )
+                }
+            }
         }
     }
 }

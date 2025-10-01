@@ -158,7 +158,7 @@ class ChatLogWatcher(
         if (message.chatMessage.author == "EVE System") return false
         val messageAge = Duration.between(message.chatMessage.timestamp, Instant.now())
         val isMessageOld = messageAge > Duration.ofMinutes(10)
-        if (isMessageOld && !settings.isLoadOldMessagesEnabled) return false
+        if (isMessageOld) return false
         return true
     }
 

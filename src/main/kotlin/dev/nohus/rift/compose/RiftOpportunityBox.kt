@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +69,7 @@ import dev.nohus.rift.generated.resources.careerpaths_unclassified_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_flair
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.utils.roundSecurity
+import dev.nohus.rift.utils.withColor
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
@@ -105,6 +107,7 @@ data class SolarSystemPillState(
     val distance: Int?,
     val name: String,
     val security: Double?,
+    val region: String? = null,
 )
 
 data class RiftOpportunityBoxCharacter(
@@ -297,12 +300,12 @@ private fun CharacterPortrait(character: RiftOpportunityBoxCharacter) {
 }
 
 @Composable
-fun SolarSystemPill(state: SolarSystemPillState) {
+fun SolarSystemPill(
+    state: SolarSystemPillState,
+    hasBackground: Boolean = true,
+) {
     ClickableSystem(state.name) {
-        Surface(
-            color = Color.Black.copy(alpha = 0.5f),
-            shape = RoundedCornerShape(2.dp),
-        ) {
+        val content = movableContentOf {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
@@ -325,8 +328,16 @@ fun SolarSystemPill(state: SolarSystemPillState) {
                     color = securityColor.copy(alpha = 0.25f),
                     shape = RoundedCornerShape(2.dp),
                 ) {
+                    val text = buildAnnotatedString {
+                        append(state.name)
+                        if (state.region != null) {
+                            withColor(RiftTheme.colors.textSecondary) {
+                                append(" ${state.region}")
+                            }
+                        }
+                    }
                     Text(
-                        text = state.name,
+                        text = text,
                         style = RiftTheme.typography.bodyPrimary,
                         modifier = Modifier.padding(horizontal = Spacing.small, vertical = 1.dp),
                     )
@@ -344,6 +355,16 @@ fun SolarSystemPill(state: SolarSystemPillState) {
                     }
                 }
             }
+        }
+        if (hasBackground) {
+            Surface(
+                color = Color.Black.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(2.dp),
+            ) {
+                content()
+            }
+        } else {
+            content()
         }
     }
 }

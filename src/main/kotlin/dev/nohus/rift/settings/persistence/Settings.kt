@@ -36,10 +36,6 @@ class Settings(
         get() = model.eveSettingsDirectory?.let { Path.of(it) }
         set(value) = update { copy(eveSettingsDirectory = value?.pathString) }
 
-    var isLoadOldMessagesEnabled: Boolean
-        get() = model.isLoadOldMessagesEnabled
-        set(value) = update { copy(isLoadOldMessagesEnabled = value) }
-
     var intelMap: IntelMap
         get() = model.intelMap
         set(value) = update { copy(intelMap = value) }
@@ -175,6 +171,10 @@ class Settings(
         get() = model.selectedPlanetTypes
         set(value) = update { copy(selectedPlanetTypes = value) }
 
+    var selectedSovereigntyUpgradeTypes: List<Int>
+        get() = model.selectedSovereigntyUpgradeTypes
+        set(value) = update { copy(selectedSovereigntyUpgradeTypes = value) }
+
     var installationId: String?
         get() = model.installationId
         set(value) = update { copy(installationId = value) }
@@ -257,4 +257,8 @@ class Settings(
     var isJukeboxRevealed: Boolean
         get() = model.isJukeboxRevealed
         set(value) = update { copy(isJukeboxRevealed = value) }
+
+    var sovereigntyUpgrades: Map<String, List<Int>>
+        get() = model.sovereigntyUpgrades
+        set(value) = update { copy(sovereigntyUpgrades = value) }
 }

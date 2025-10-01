@@ -96,3 +96,11 @@ fun <T> List<T>.toggle(element: T): List<T> {
 fun <T> Set<T>.toggle(element: T): Set<T> {
     return if (element in this) this - element else this + element
 }
+
+fun Color.desaturate(factor: Float): Color {
+    val l = 0.3f * red + 0.6f * green + 0.1f * blue
+    val r = red + factor * (l - red)
+    val g = green + factor * (l - green)
+    val b = blue + factor * (l - blue)
+    return Color(r, g, b, alpha)
+}

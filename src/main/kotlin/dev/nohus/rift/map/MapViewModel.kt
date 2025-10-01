@@ -19,6 +19,7 @@ import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
 import dev.nohus.rift.map.MapLayoutRepository.Position
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
+import dev.nohus.rift.map.MapSovereigntyUpgradesController.MapSovereigntyUpgradesState
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
 import dev.nohus.rift.map.MapViewModel.MapType.DistanceMap
@@ -34,6 +35,7 @@ import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapConstellation
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapRegion
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.MapOpenedTab
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
@@ -76,6 +78,7 @@ class MapViewModel(
     private val mapStatusRepository: MapStatusRepository,
     private val mapJumpRangeController: MapJumpRangeController,
     private val mapPlanetsController: MapPlanetsController,
+    private val mapSovereigntyUpgradesController: MapSovereigntyUpgradesController,
     private val windowManager: WindowManager,
     private val settings: Settings,
 ) : ViewModel() {
@@ -130,6 +133,7 @@ class MapViewModel(
         val systemInfoTypes: SystemInfoTypes,
         val mapJumpRangeState: MapJumpRangeState,
         val mapPlanetsState: MapPlanetsState,
+        val mapSovereigntyUpgradesState: MapSovereigntyUpgradesState,
         val distanceMapState: DistanceMapState,
         val cluster: Cluster,
         val mapType: MapType,
@@ -153,6 +157,7 @@ class MapViewModel(
             systemInfoTypes = getColorModes(),
             mapJumpRangeState = mapJumpRangeController.state.value,
             mapPlanetsState = mapPlanetsController.state.value,
+            mapSovereigntyUpgradesState = mapSovereigntyUpgradesController.state.value,
             distanceMapState = distanceMapController.state.value,
             cluster = Cluster(
                 systems = solarSystemsRepository.getSystems(knownSpace = true),
@@ -185,6 +190,9 @@ class MapViewModel(
         }
         viewModelScope.launch {
             mapPlanetsController.state.collect { state -> _state.update { it.copy(mapPlanetsState = state) } }
+        }
+        viewModelScope.launch {
+            mapSovereigntyUpgradesController.state.collect { state -> _state.update { it.copy(mapSovereigntyUpgradesState = state) } }
         }
         viewModelScope.launch {
             distanceMapController.state.collect { state ->
@@ -282,10 +290,9 @@ class MapViewModel(
             val position = layout.position
             (offset.x - position.x).pow(2) + (offset.y - position.y).pow(2)
         } ?: return
-        val closestSystem = solarSystemsRepository.getSystems(knownSpace = true).first { it.id == closestSystemId }
         val closestSystemLayoutPosition = closestSystemLayout.position
         val distanceInPixels = sqrt((offset.x - closestSystemLayoutPosition.x).pow(2) + (offset.y - closestSystemLayoutPosition.y).pow(2)) / mapScale
-        val hoveredSystem = if (distanceInPixels < 10) closestSystem.id else null
+        val hoveredSystem = if (distanceInPixels < 10) closestSystemId else null
         updateMapState { copy(hoveredSystem = hoveredSystem) }
     }
 
@@ -437,6 +444,10 @@ class MapViewModel(
 
     fun onPlanetTypesUpdate(types: List<PlanetType>) {
         mapPlanetsController.onPlanetTypesUpdate(types)
+    }
+
+    fun onSovereigntyUpgradeTypesUpdate(types: List<Type>) {
+        mapSovereigntyUpgradesController.onSovereigntyUpgradeTypesUpdate(types)
     }
 
     fun onLayoutSelected(layoutId: Int) {

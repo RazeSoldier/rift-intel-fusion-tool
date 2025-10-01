@@ -52,6 +52,7 @@ class AlertsViewModel(
     private val _state = MutableStateFlow(
         UiState(
             sounds = soundsRepository.getSounds(),
+            alerts = settings.alerts.filterDeprecatedAlerts().sortedWith(AlertsComparator),
             groups = settings.alertGroups,
         ),
     )
@@ -59,11 +60,6 @@ class AlertsViewModel(
 
     init {
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    alerts = settings.alerts.filterDeprecatedAlerts().sortedWith(AlertsComparator),
-                )
-            }
             settings.updateFlow.collect {
                 _state.update {
                     it.copy(
