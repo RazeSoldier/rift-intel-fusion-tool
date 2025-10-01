@@ -14,6 +14,7 @@ import kotlinx.coroutines.yield
 import org.koin.core.annotation.Factory
 import java.io.IOException
 import java.nio.file.FileSystemException
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds.ENTRY_CREATE
 import java.nio.file.StandardWatchEventKinds.ENTRY_DELETE
@@ -143,9 +144,13 @@ class DirectoryObserver(
                     ENTRY_DELETE -> FileEventType.Deleted
                     else -> throw IllegalStateException()
                 }
-                val event = FileEvent(directory.resolve(context.name), type)
-                logger.debug { "File update event: ${event.file.name} ${event.type}" }
-                onUpdate(event)
+                try {
+                    val event = FileEvent(directory.resolve(context.name), type)
+                    logger.debug { "File update event: ${event.file.name} ${event.type}" }
+                    onUpdate(event)
+                } catch (e: InvalidPathException) {
+                    logger.error { "Invalid path in file event: ${e.message}" }
+                }
             }
             OVERFLOW -> {
                 onUpdate(OverflowEvent)

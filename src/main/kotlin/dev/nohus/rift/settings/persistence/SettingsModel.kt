@@ -82,6 +82,8 @@ data class SettingsModel(
     val assetLocationPins: Map<Long, LocationPinStatus> = emptyMap(),
     val isJukeboxRevealed: Boolean = false,
     val sovereigntyUpgrades: Map<String, List<Int>> = emptyMap(),
+    val isSovereigntyUpgradesHackImportingEnabled: Boolean = true,
+    val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean = false,
 )
 
 @Serializable

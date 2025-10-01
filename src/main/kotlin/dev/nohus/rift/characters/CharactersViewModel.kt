@@ -12,6 +12,7 @@ import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.windowing.WindowManager
@@ -37,6 +38,7 @@ class CharactersViewModel(
     private val characterLocationRepository: CharacterLocationRepository,
     private val characterWalletRepository: CharacterWalletRepository,
     private val clonesRepository: ClonesRepository,
+    private val eveSsoRepository: EveSsoRepository,
     private val getAccounts: GetAccountsUseCase,
     private val windowManager: WindowManager,
     private val settings: Settings,
@@ -158,6 +160,7 @@ class CharactersViewModel(
         try {
             item.settingsFiles.values.forEach { it.deleteExisting() }
             settings.hiddenCharacterIds -= item.characterId
+            eveSsoRepository.removeAuthentication(item.characterId)
             viewModelScope.launch {
                 localCharactersRepository.load()
                 _state.update { it.copy(deletingCharacter = null) }

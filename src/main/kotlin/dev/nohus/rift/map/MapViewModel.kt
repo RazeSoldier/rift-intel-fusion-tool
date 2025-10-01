@@ -19,7 +19,6 @@ import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
 import dev.nohus.rift.map.MapLayoutRepository.Position
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
-import dev.nohus.rift.map.MapSovereigntyUpgradesController.MapSovereigntyUpgradesState
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
 import dev.nohus.rift.map.MapViewModel.MapType.DistanceMap
@@ -40,6 +39,8 @@ import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.MapOpenedTab
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController
+import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController.MapSovereigntyUpgradesState
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.delay

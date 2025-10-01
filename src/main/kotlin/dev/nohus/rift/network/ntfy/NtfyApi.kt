@@ -9,12 +9,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
 
 @Single
 class NtfyApi(
-    json: Json,
+    @Named("network") json: Json,
     client: OkHttpClient,
 ) {
 

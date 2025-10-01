@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -165,7 +164,7 @@ private fun DeleteCharacterDialogContent(viewModel: CharactersViewModel) {
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         Text(
-            text = "The settings file for this character will be deleted from your installation of EVE Online.",
+            text = "The settings files for this character will be deleted from your installation of EVE Online, and RIFT's connection with ESI for this character will be removed.",
             style = RiftTheme.typography.bodyPrimary,
         )
         Row(
@@ -468,11 +467,13 @@ private fun CharacterRow(
             }
 
             AnimatedVisibility(isChoosingDisabledCharacters) {
-                RiftIconButton(
-                    icon = Res.drawable.buttoniconminus,
-                    onClick = { onDisableCharacterClick(character.characterId) },
-                    modifier = Modifier.padding(start = Spacing.small),
-                )
+                RiftTooltipArea("Disable this character") {
+                    RiftIconButton(
+                        icon = Res.drawable.buttoniconminus,
+                        onClick = { onDisableCharacterClick(character.characterId) },
+                        modifier = Modifier.padding(start = Spacing.small),
+                    )
+                }
             }
         }
 
@@ -678,59 +679,67 @@ private fun HiddenCharacterRow(
             size = 32,
             modifier = Modifier.size(32.dp),
         )
-        when (character.info) {
-            is AsyncResource.Ready -> {
-                AsyncCorporationLogo(
-                    corporationId = character.info.value.corporationId,
-                    size = 32,
-                    modifier = Modifier.size(32.dp),
-                )
-                if (character.info.value.allianceId != null) {
-                    AsyncAllianceLogo(
-                        allianceId = character.info.value.allianceId,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f),
+        ) {
+            when (character.info) {
+                is AsyncResource.Ready -> {
+                    AsyncCorporationLogo(
+                        corporationId = character.info.value.corporationId,
                         size = 32,
                         modifier = Modifier.size(32.dp),
                     )
+                    if (character.info.value.allianceId != null) {
+                        AsyncAllianceLogo(
+                            allianceId = character.info.value.allianceId,
+                            size = 32,
+                            modifier = Modifier.size(32.dp),
+                        )
+                    }
+                    Text(
+                        text = character.info.value.name,
+                        style = RiftTheme.typography.titleSecondary,
+                        modifier = Modifier
+                            .padding(horizontal = Spacing.medium),
+                    )
                 }
-                Text(
-                    text = character.info.value.name,
-                    style = RiftTheme.typography.titleSecondary,
-                    modifier = Modifier
-                        .padding(horizontal = Spacing.medium),
-                )
-            }
 
-            is AsyncResource.Error -> {
-                Text(
-                    text = "Could not load",
-                    style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
-                    modifier = Modifier.padding(horizontal = Spacing.medium),
-                )
-            }
+                is AsyncResource.Error -> {
+                    Text(
+                        text = "Could not load",
+                        style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
+                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                    )
+                }
 
-            AsyncResource.Loading -> {
-                Text(
-                    text = "Loading…",
-                    style = RiftTheme.typography.bodySecondary,
-                    modifier = Modifier.padding(horizontal = Spacing.medium),
-                )
+                AsyncResource.Loading -> {
+                    Text(
+                        text = "Loading…",
+                        style = RiftTheme.typography.bodySecondary,
+                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                    )
+                }
             }
         }
-        Spacer(Modifier.weight(1f))
         AnimatedVisibility(isChoosingDisabledCharacters) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
-                RiftIconButton(
-                    icon = Res.drawable.delete,
-                    type = ButtonType.Negative,
-                    cornerCut = ButtonCornerCut.None,
-                    onClick = { onDeleteCharacterClick(character.characterId) },
-                )
-                RiftIconButton(
-                    icon = Res.drawable.buttoniconplus,
-                    onClick = { onEnableCharacterClick(character.characterId) },
-                )
+                RiftTooltipArea("Delete this character") {
+                    RiftIconButton(
+                        icon = Res.drawable.delete,
+                        type = ButtonType.Negative,
+                        cornerCut = ButtonCornerCut.None,
+                        onClick = { onDeleteCharacterClick(character.characterId) },
+                    )
+                }
+                RiftTooltipArea("Enable this character") {
+                    RiftIconButton(
+                        icon = Res.drawable.buttoniconplus,
+                        onClick = { onEnableCharacterClick(character.characterId) },
+                    )
+                }
             }
         }
     }
@@ -806,7 +815,7 @@ private fun Location(location: Location?) {
                 text = systemName,
                 style = RiftTheme.typography.bodyLink,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.width(50.dp),
+                modifier = Modifier.widthIn(max = 64.dp),
             )
         }
     }

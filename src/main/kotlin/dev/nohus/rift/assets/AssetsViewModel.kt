@@ -6,6 +6,7 @@ import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.network.esi.CharactersIdAsset
 import dev.nohus.rift.repositories.GetSystemDistanceUseCase
@@ -16,7 +17,6 @@ import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.LocationPinStatus
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
-import dev.nohus.rift.utils.Clipboard
 import dev.nohus.rift.utils.openBrowser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

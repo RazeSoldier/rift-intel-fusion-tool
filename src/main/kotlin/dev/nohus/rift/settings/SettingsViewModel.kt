@@ -15,15 +15,16 @@ import dev.nohus.rift.repositories.JumpBridgesRepository
 import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
-import dev.nohus.rift.repositories.SovereigntyUpgradesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.IntelChannel
 import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.sovupgrades.SovereigntyUpgradesRepository
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -32,11 +33,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.InjectedParam
+import java.io.IOException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.pathString
+
+private val logger = KotlinLogging.logger {}
 
 @Factory
 class SettingsViewModel(
@@ -95,6 +99,9 @@ class SettingsViewModel(
         val sovereigntyUpgradesCopyState: SovereigntyUpgradesCopyState,
         val sovereigntyUpgrades: Map<MapSolarSystem, List<Type>>,
         val sovereigntyUpgradesUrl: String?,
+        // Sovereignty
+        val isSovereigntyUpgradesHackImportingEnabled: Boolean,
+        val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean,
     )
 
     sealed class SettingsTab(val id: Int) {
@@ -161,6 +168,9 @@ class SettingsViewModel(
             sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.NotCopied,
             sovereigntyUpgrades = sovereigntyUpgradesRepository.upgrades.value,
             sovereigntyUpgradesUrl = configurationPackRepository.getSovereigntyUpgradesUrl(),
+            // Sovereignty
+            isSovereigntyUpgradesHackImportingEnabled = settings.isSovereigntyUpgradesHackImportingEnabled,
+            isSovereigntyUpgradesHackImportingOfflineEnabled = settings.isSovereigntyUpgradesHackImportingOfflineEnabled,
         ),
     )
     val state = _state.asStateFlow()
@@ -191,6 +201,9 @@ class SettingsViewModel(
                         // Map
                         intelMap = settings.intelMap,
                         isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
+                        // Sovereignty
+                        isSovereigntyUpgradesHackImportingEnabled = settings.isSovereigntyUpgradesHackImportingEnabled,
+                        isSovereigntyUpgradesHackImportingOfflineEnabled = settings.isSovereigntyUpgradesHackImportingOfflineEnabled,
                     )
                 }
                 val logsDirectory = settings.eveLogsDirectory
@@ -240,11 +253,16 @@ class SettingsViewModel(
     }
 
     private fun updateIntelChannelAutocomplete(logsDirectory: Path?) {
-        val channelNames = getChatLogsDirectoryUseCase(logsDirectory)
-            ?.listDirectoryEntries()
-            ?.mapNotNull { matchChatLogFilenameUseCase(it)?.channelName }
-            ?.distinct()
-            ?: emptyList()
+        val channelNames = try {
+            getChatLogsDirectoryUseCase(logsDirectory)
+                ?.listDirectoryEntries()
+                ?.mapNotNull { matchChatLogFilenameUseCase(it)?.channelName }
+                ?.distinct()
+                ?: emptyList()
+        } catch (e: IOException) {
+            logger.error { "Could not get intel channels for autocomplete: ${e.message}" }
+            emptyList()
+        }
         _state.update { it.copy(autocompleteIntelChannels = channelNames) }
     }
 
@@ -532,6 +550,14 @@ class SettingsViewModel(
         }
         Clipboard.copy(text)
         _state.update { it.copy(dialogMessage = DialogMessage("Export successful", "Sovereignty upgrades copied to clipboard", MessageDialogType.Info)) }
+    }
+
+    fun onIsSovereigntyUpgradesHackImportingEnabledClick(enabled: Boolean) {
+        settings.isSovereigntyUpgradesHackImportingEnabled = enabled
+    }
+
+    fun onIsSovereigntyUpgradesHackImportingOfflineEnabledClick(enabled: Boolean) {
+        settings.isSovereigntyUpgradesHackImportingOfflineEnabled = enabled
     }
 
     fun onCloseDialogMessage() {

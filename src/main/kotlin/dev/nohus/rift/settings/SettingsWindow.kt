@@ -1115,6 +1115,7 @@ private fun JumpBridgeNetworkSection(
             ) {
                 RiftCheckboxWithLabel(
                     label = "Show network on map",
+                    tooltip = "Jump bridge connection lines\nwill be shown on the map",
                     isChecked = state.intelMap.isJumpBridgeNetworkShown,
                     onCheckedChange = viewModel::onIsJumpBridgeNetworkShownChange,
                 )
@@ -1141,7 +1142,9 @@ private fun SovereigntyUpgradesSection(
     viewModel: SettingsViewModel,
 ) {
     SectionTitle("Sovereignty Upgrades", Modifier.padding())
-    Column {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+    ) {
         ScrollbarColumn(
             modifier = Modifier
                 .height(140.dp)
@@ -1205,7 +1208,7 @@ private fun SovereigntyUpgradesSection(
                                     ) {
                                         Text("Import upgrades by copying a list to clipboard")
                                         if (state.sovereigntyUpgradesUrl != null) {
-                                            Text("You can press Ctrl+A, Ctrl+C on this page:")
+                                            Text("You can press Ctrl+A, Ctrl+C on the list you can find on this page:")
                                             LinkText(
                                                 text = "Alliance Sovereignty Upgrades List",
                                                 onClick = { state.sovereigntyUpgradesUrl.toURIOrNull()?.openBrowser() },
@@ -1259,5 +1262,18 @@ private fun SovereigntyUpgradesSection(
                 }
             }
         }
+
+        RiftCheckboxWithLabel(
+            label = "Import upgrades from hacked Sovereignty Hubs",
+            tooltip = "Automatically import sovereignty upgrades\nwhen clicking the copy button on\na hacked Sovereignty Hub result",
+            isChecked = state.isSovereigntyUpgradesHackImportingEnabled,
+            onCheckedChange = viewModel::onIsSovereigntyUpgradesHackImportingEnabledClick,
+        )
+        RiftCheckboxWithLabel(
+            label = "Import offline upgrades from hacked Sovereignty Hubs",
+            tooltip = "When importing sovereignty upgrades from\na hacked Sovereignty Hub,\nalso import offline upgrades",
+            isChecked = state.isSovereigntyUpgradesHackImportingOfflineEnabled,
+            onCheckedChange = viewModel::onIsSovereigntyUpgradesHackImportingOfflineEnabledClick,
+        )
     }
 }

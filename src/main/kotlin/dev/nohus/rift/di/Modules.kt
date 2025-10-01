@@ -2,6 +2,7 @@ package dev.nohus.rift.di
 
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
+import dev.nohus.rift.network.EsiCompatibilityInterceptor
 import dev.nohus.rift.network.EsiErrorLimitInterceptor
 import dev.nohus.rift.network.LoggingInterceptor
 import dev.nohus.rift.network.RequestExecutor
@@ -95,10 +96,11 @@ val factoryModule = module {
             .cache(Cache(directory.toFile(), size))
             .addInterceptor(get<UserAgentInterceptor>())
             .addInterceptor(get<EsiErrorLimitInterceptor>())
+            .addInterceptor(get<EsiCompatibilityInterceptor>())
             .addInterceptor(get<LoggingInterceptor>())
             .build()
     }
-    single<Json> {
+    single<Json>(qualifier = named("network")) {
         Json {
             ignoreUnknownKeys = true
         }
@@ -109,7 +111,7 @@ val factoryModule = module {
             prettyPrint = true
         }
     }
-    single<RequestExecutor> { RequestExecutorImpl(get(), get(), get()) }
+    single<RequestExecutor> { RequestExecutorImpl(get(), get(), get(named("network"))) }
     single<User32> { Native.load("user32", User32::class.java) }
     single<Analytics> { Analytics() }
 }

@@ -14,7 +14,7 @@ import retrofit2.Retrofit
 
 @Single
 class EsiApi(
-    json: Json,
+    @Named("network") json: Json,
     @Named("esi") client: OkHttpClient,
     requestExecutor: RequestExecutor,
 ) : RequestExecutor by requestExecutor {

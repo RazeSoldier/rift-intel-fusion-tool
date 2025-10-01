@@ -5,6 +5,7 @@ import dev.nohus.rift.killboard.KillmailProcessor
 import dev.nohus.rift.network.Result
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
@@ -34,6 +35,7 @@ class ZkillboardObserver(
                     }
                     is Result.Failure -> {
                         logger.error { "Failed to receive killmail: ${result.cause?.message ?: "unknown error"}" }
+                        delay(5_000)
                     }
                 }
             }
