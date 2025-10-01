@@ -12,6 +12,7 @@ import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.compose.SmartAlwaysAboveRepository
 import dev.nohus.rift.contacts.ContactsRepository
+import dev.nohus.rift.corpprojects.CorporationProjectsRepository
 import dev.nohus.rift.gamelogs.GameLogWatcher
 import dev.nohus.rift.intel.ChatLogWatcher
 import dev.nohus.rift.jabber.client.StartJabberUseCase
@@ -67,6 +68,7 @@ class BackgroundProcesses(
     private val logLiteServer: LogLiteServer,
     private val logLiteParser: LogLiteParser,
     private val sovereigntyUpgradesHackWatcher: SovereigntyUpgradesHackWatcher,
+    private val corporationProjectsRepository: CorporationProjectsRepository,
     private val settings: Settings,
 ) {
 
@@ -162,6 +164,9 @@ class BackgroundProcesses(
             }
             launch {
                 sovereigntyUpgradesHackWatcher.start()
+            }
+            launch {
+                corporationProjectsRepository.start()
             }
         }
     }

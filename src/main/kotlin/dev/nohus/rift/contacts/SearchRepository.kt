@@ -3,7 +3,7 @@ package dev.nohus.rift.contacts
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.UniverseStructuresId
+import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.StationsRepository
@@ -152,14 +152,10 @@ class SearchRepository(
     private fun List<Long>.mapSolarSystemsResults(): List<SearchResult> {
         return map { id ->
             val name = solarSystemsRepository.getSystem(id.toInt())?.name
-            val sunTypeId = if (name != null) {
-                solarSystemsRepository.getSystemSunTypeId(name)
-            } else {
-                0
-            }
             SearchResult(
                 id = id,
-                typeId = sunTypeId,
+                typeId = id.toInt(),
+                systemId = id.toInt(),
                 name = namesRepository.getName(id.toInt()) ?: name ?: "$id",
             )
         }.sortedBy { it.name }

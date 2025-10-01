@@ -132,12 +132,12 @@ private fun EditContactDialogContent(
             Column {
                 Text(
                     text = dialog.entity.name,
-                    style = RiftTheme.typography.titlePrimary.copy(fontWeight = FontWeight.Bold),
+                    style = RiftTheme.typography.headerPrimary.copy(fontWeight = FontWeight.Bold),
                 )
 
                 Text(
                     text = selectedStanding.getName(),
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     modifier = Modifier.padding(top = Spacing.medium),
                 )
                 StandingLevelSelector(
@@ -158,7 +158,7 @@ private fun EditContactDialogContent(
 
                 Text(
                     text = "Choose character",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     modifier = Modifier.padding(top = Spacing.mediumLarge),
                 )
                 RiftDropdown(
@@ -178,7 +178,7 @@ private fun EditContactDialogContent(
                         RiftTooltipArea("Labels can only be created in-game") {
                             Text(
                                 text = if (labels.isNotEmpty()) "Assign labels" else "No labels available",
-                                style = RiftTheme.typography.titlePrimary,
+                                style = RiftTheme.typography.headerPrimary,
                             )
                         }
                         ScrollbarColumn(

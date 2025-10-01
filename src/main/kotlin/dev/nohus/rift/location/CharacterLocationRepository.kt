@@ -5,8 +5,8 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCha
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
-import dev.nohus.rift.network.esi.CharacterIdShip
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging

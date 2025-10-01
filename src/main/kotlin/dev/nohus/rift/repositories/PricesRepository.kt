@@ -3,7 +3,7 @@ package dev.nohus.rift.repositories
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.MarketsPrice
+import dev.nohus.rift.network.esi.models.MarketsPrice
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single

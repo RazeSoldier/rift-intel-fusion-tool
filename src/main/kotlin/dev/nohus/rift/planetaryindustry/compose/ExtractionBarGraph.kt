@@ -81,7 +81,7 @@ fun ExtractionBarGraph(
     var tooltipText by remember { mutableStateOf<AnnotatedString?>(null) }
     val tooltipPrimary = RiftTheme.colors.textPrimary
     val tooltipSecondary = RiftTheme.colors.textSecondary
-    val tooltipFontSize = RiftTheme.typography.titlePrimary.fontSize
+    val tooltipFontSize = RiftTheme.typography.headerPrimary.fontSize
     RiftTooltipArea(
         text = tooltipText,
         contentAnchor = Anchor.Left,

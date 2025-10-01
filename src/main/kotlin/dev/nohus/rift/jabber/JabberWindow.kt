@@ -204,7 +204,7 @@ private fun ConnectingContent() {
             LoadingSpinner()
             Text(
                 text = "Connecting…",
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
                 modifier = Modifier
                     .padding(top = Spacing.large),
             )
@@ -250,7 +250,7 @@ private fun NoAccountContent(
                 }
                 Text(
                     text = text,
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -327,7 +327,7 @@ private fun LoginContent(
                 ) {
                     Text(
                         text = "Jabber username",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                     RiftTextField(
                         text = jidLocalPart,
@@ -339,7 +339,7 @@ private fun LoginContent(
                     )
                     Text(
                         text = "Jabber password",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(top = Spacing.small),
                     )
@@ -535,7 +535,7 @@ private fun AddContact(
     ) {
         Text(
             text = "Add contact",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         var jidLocalPart by remember { mutableStateOf("") }
         RiftTextField(
@@ -548,7 +548,7 @@ private fun AddContact(
         )
         Text(
             text = "Choose nickname",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         var name by remember { mutableStateOf("") }
         RiftTextField(
@@ -561,7 +561,7 @@ private fun AddContact(
         )
         Text(
             text = "Choose group (optional)",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         var group by remember { mutableStateOf("") }
         RiftTextField(
@@ -610,7 +610,7 @@ private fun AddChatRoom(
     ) {
         Text(
             text = "Add chat room",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
         )
         var jidLocalPart by remember { mutableStateOf("") }
         Row(
@@ -677,7 +677,7 @@ private fun UserChat(
             }
             Text(
                 text = userChat.name,
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
             )
         }
         Box(
@@ -762,7 +762,7 @@ private fun MultiUserChat(
             } else {
                 Text(
                     text = multiUserChat.room.localpartOrNull?.toString() ?: "",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                 )
             }
         }
@@ -883,7 +883,7 @@ private fun ChatMessage(
                 .hoverBackground()
                 .padding(horizontal = Spacing.medium, vertical = Spacing.verySmall),
         ) {
-            val style = if (isUsingBiggerFontSize) RiftTheme.typography.titlePrimary else RiftTheme.typography.bodyPrimary
+            val style = if (isUsingBiggerFontSize) RiftTheme.typography.headerPrimary else RiftTheme.typography.bodyPrimary
             Text(
                 text = text,
                 style = style,

@@ -117,6 +117,24 @@ object ScopeGroups {
             EsiScope.Assets.ReadAssets,
         ),
     )
+    val readProjects = ScopeGroup(
+        name = "Read corporation projects",
+        reasons = listOf(
+            "Needed to show projects in the Corporation Projects window",
+        ),
+        scopes = listOf(
+            EsiScope.Corporations.ReadProjects,
+        ),
+    )
+    val readRoles = ScopeGroup(
+        name = "Read corporation roles",
+        reasons = listOf(
+            "Needed to show projects in the Corporation Projects window",
+        ),
+        scopes = listOf(
+            EsiScope.Characters.ReadCorporationRoles,
+        ),
+    )
 
     val all = listOf(
         readContacts,
@@ -130,6 +148,8 @@ object ScopeGroups {
         readStructures,
         updateAutopilot,
         readAssets,
+        readProjects,
+        readRoles,
     )
 
     fun getByIds(scopes: List<String>): List<ScopeGroup> {

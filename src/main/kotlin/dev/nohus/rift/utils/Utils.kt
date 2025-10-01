@@ -8,6 +8,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.di.koin
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -26,6 +27,8 @@ fun URI.openBrowser() {
         Desktop.getDesktop().browse(this)
     } catch (e: UnsupportedOperationException) {
         Runtime.getRuntime().exec(arrayOf("xdg-open", toString()))
+    } catch (e: IOException) {
+        // System has no default browser, etc.
     }
 }
 
@@ -108,8 +111,16 @@ fun Color.desaturate(factor: Float): Color {
     return Color(r, g, b, alpha)
 }
 
-suspend fun <T, R> Collection<T>.mapAsync(transform: suspend (T) -> R): List<R> {
+suspend fun <T, R> Collection<T>.mapAsync(transform: suspend CoroutineScope.(T) -> R): List<R> {
     return coroutineScope {
         map { async { transform(it) } }.awaitAll()
     }
+}
+
+inline fun <T> Iterable<T>.sumOfDouble(selector: (T) -> Double): Double {
+    var sum = 0.0
+    for (element in this) {
+        sum += selector(element)
+    }
+    return sum
 }

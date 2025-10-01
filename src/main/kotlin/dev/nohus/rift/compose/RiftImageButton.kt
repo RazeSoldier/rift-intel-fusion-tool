@@ -34,7 +34,7 @@ import org.jetbrains.compose.resources.painterResource
 fun RiftImageButton(
     resource: DrawableResource,
     size: Dp,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     tint: Color? = null,
     iconPadding: Dp = 0.dp,
@@ -64,19 +64,27 @@ fun RiftImageButton(
             modifier = modifier
                 .pointerInteraction(pointerInteractionStateHolder)
                 .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-                .onClick(onClick = onClick),
+                .modifyIfNotNull(onClick) {
+                    onClick(onClick = it)
+                },
         ) {
-            val blur = LocalDensity.current.run { size.toPx() } * 0.35f
-            repeat(3) {
-                Image(
-                    painter = painterResource(resource),
-                    contentDescription = null,
-                    colorFilter = tint?.let { ColorFilter.tint(tint) },
-                    modifier = Modifier
-                        .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                        .size(size + iconPadding * 2)
-                        .alpha(highlightAlpha),
-                )
+            Box(
+                modifier = Modifier.size(size + iconPadding * 2),
+            ) {
+                if (onClick != null) {
+                    val blur = LocalDensity.current.run { size.toPx() } * 0.35f
+                    repeat(3) {
+                        Image(
+                            painter = painterResource(resource),
+                            contentDescription = null,
+                            colorFilter = tint?.let { ColorFilter.tint(tint) },
+                            modifier = Modifier
+                                .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
+                                .size(size + iconPadding * 2)
+                                .alpha(highlightAlpha),
+                        )
+                    }
+                }
             }
             Image(
                 painter = painterResource(resource),

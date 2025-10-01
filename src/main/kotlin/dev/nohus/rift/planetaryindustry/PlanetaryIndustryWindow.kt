@@ -145,7 +145,7 @@ private fun PlanetaryIndustryWindowContent(
             ) {
                 Text(
                     text = "Could not load your colonies",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                 )
                 RiftButton(
@@ -165,7 +165,7 @@ private fun PlanetaryIndustryWindowContent(
                 LoadingSpinner()
                 Text(
                     text = "Loading colonies…",
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -411,7 +411,7 @@ private fun getLayoutBoundsOverlayClip(sharedTransitionLayoutSize: Offset): Shar
 private fun EmptyState() {
     Text(
         text = "No established planetary colonies.",
-        style = RiftTheme.typography.titlePrimary,
+        style = RiftTheme.typography.headerPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
@@ -632,7 +632,7 @@ private fun FiltersRow(
                 }
                 Text(
                     text = text,
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                 )
             }
         }

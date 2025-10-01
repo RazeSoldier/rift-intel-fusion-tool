@@ -53,6 +53,7 @@ import dev.nohus.rift.compose.FlagIcon
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.SystemEntities
+import dev.nohus.rift.compose.SystemIllustrationIconSmall
 import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.compose.modifyIfNotNull
 import dev.nohus.rift.compose.theme.Cursors
@@ -64,6 +65,7 @@ import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.generated.resources.window_titlebar_close
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.painterResource
@@ -193,7 +195,7 @@ fun NotificationContent(
                             }
                             append(styledMessage)
                         },
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 }
             }
@@ -232,14 +234,14 @@ fun NotificationContent(
                                     )
                                     Text(
                                         text = message.sender,
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                     if (message.senderStanding != null) {
                                         FlagIcon(message.senderStanding)
                                     }
                                     Text(
                                         text = " >",
-                                        style = RiftTheme.typography.titlePrimary,
+                                        style = RiftTheme.typography.headerPrimary,
                                     )
                                 }
                             }
@@ -252,7 +254,7 @@ fun NotificationContent(
                                 }
                                 appendMessageWithHighlight(message.message, message.highlight)
                             },
-                            style = RiftTheme.typography.titlePrimary,
+                            style = RiftTheme.typography.headerPrimary,
                         )
                     }
                 }
@@ -290,7 +292,7 @@ fun NotificationContent(
                             }
                             appendMessageWithHighlight(notification.message, notification.highlight)
                         },
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 }
             }
@@ -317,7 +319,7 @@ fun NotificationContent(
                                 else -> "$distance jumps away"
                             }
                             SolarSystem(notification.solarSystem, systemSubtext)
-                            SolarSystem(notification.locationMatch.systemId, "Reference system")
+                            SolarSystem(notification.locationMatch.system, "Reference system")
                         }
                     }
 
@@ -354,7 +356,7 @@ fun NotificationContent(
                 verticalArrangement = Arrangement.spacedBy(Spacing.medium),
                 modifier = Modifier.padding(horizontal = Spacing.medium),
             ) {
-                SolarSystem(notification.systemName, "Sovereignty Hub")
+                SolarSystem(notification.system, "Sovereignty Hub")
                 notification.upgrades.forEach { upgrade ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -367,7 +369,7 @@ fun NotificationContent(
                         )
                         Text(
                             text = upgrade.name,
-                            style = RiftTheme.typography.titleHighlighted,
+                            style = RiftTheme.typography.headerHighlighted,
                         )
                     }
                 }
@@ -405,7 +407,7 @@ private fun NotificationTitle(
         Text(
             text = title,
             textAlign = TextAlign.Center,
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 16.dp)
@@ -418,28 +420,19 @@ private fun NotificationTitle(
 }
 
 @Composable
-private fun SolarSystem(systemId: Int, subtext: String?) {
-    val repository: SolarSystemsRepository by koin.inject()
-    val systemName = repository.getSystemName(systemId) ?: return
-    SolarSystem(systemName, subtext)
-}
-
-@Composable
-private fun SolarSystem(system: String, subtext: String?) {
-    val repository: SolarSystemsRepository by koin.inject()
-    ClickableSystem(system) {
+private fun SolarSystem(system: MapSolarSystem, subtext: String?) {
+    ClickableSystem(system.id) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
-            val sunTypeId = repository.getSystemSunTypeId(system)
-            AsyncTypeIcon(
-                typeId = sunTypeId,
-                modifier = Modifier.size(32.dp),
+            SystemIllustrationIconSmall(
+                solarSystemId = system.id,
+                size = 32.dp,
             )
             Column {
                 Text(
-                    text = system,
+                    text = system.name,
                     style = RiftTheme.typography.bodyLink,
                 )
                 if (subtext != null) {

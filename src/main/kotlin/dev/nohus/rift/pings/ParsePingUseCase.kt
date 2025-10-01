@@ -172,15 +172,16 @@ class ParsePingUseCase(
 
     private fun parseFormupLocation(text: String): FormupLocation {
         val textWithoutInterpunction = text.removeSuffix(",")
-        var system = solarSystemsRepository.getSystemName(textWithoutInterpunction, regionsHint = emptyList()) // Fast path
+        var system = solarSystemsRepository.getFuzzySystem(textWithoutInterpunction, regionsHint = emptyList()) // Fast path
         if (system == null) { // System not found, try with system hints
             val friendlyAllianceIds = standingsRepository.getFriendlyAllianceIds()
             val friendlySystems = mapStatusRepository.status.value.mapNotNull {
                 if (it.value.sovereignty?.allianceId in friendlyAllianceIds) it.key else null
             }
-            system = solarSystemsRepository.getSystemName(textWithoutInterpunction, regionsHint = emptyList(), systemHints = friendlySystems)
+            system = solarSystemsRepository.getFuzzySystem(textWithoutInterpunction, regionsHint = emptyList(), systemHints = friendlySystems)
         }
-        return if (system != null) FormupLocation.System(system) else FormupLocation.Text(text)
+        val solarSystemId = system?.id
+        return if (solarSystemId != null) FormupLocation.System(solarSystemId) else FormupLocation.Text(text)
     }
 
     private fun parsePapType(text: String): PapType? {
@@ -242,6 +243,7 @@ class ParsePingUseCase(
             "Raven" to "https://goonfleet.com/index.php/topic/355156-active-strat-tomahawks-raven-navy-issues/",
             "Snail" to "https://goonfleet.com/index.php/topic/366187-active-strat-snail-fleet/",
             "Vultures" to "https://goonfleet.com/index.php/topic/369029-active-strat-vultures/",
+            "Crusaders" to "https://goonfleet.com/index.php/topic/372184-active-strat-contraceptors/",
         )
         if (text.contains("(")) {
             val name = text.substringBefore("(")

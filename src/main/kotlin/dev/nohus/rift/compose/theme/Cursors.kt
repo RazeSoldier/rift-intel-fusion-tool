@@ -17,6 +17,7 @@ object Cursors {
     val pointerDropdown = createCursor("files/window_cursor_dropdown.png")
     val hand = createCursor("files/window_cursor_hand.png")
     val drag = createCursor("files/window_cursor_drag.png")
+    val dragHorizontal = createCursor("files/window_cursor_drag_horizontal.png")
 
     private fun createCursor(resource: String): Cursor {
         val originalImage = runBlocking { ImageIO.read(Res.readBytes(resource).inputStream()) }

@@ -49,7 +49,7 @@ class SsoAuthenticator(
         }
         return if (authentication.expiration.isBefore(Instant.now())) {
             val newAuthentication = ssoClient.refreshToken(SsoAuthority.Eve, authentication) as EveAuthentication
-            logger.info { "Eve SSO access token refreshed" }
+            logger.debug { "Eve SSO access token refreshed" }
             eveSsoRepository.addAuthentication(newAuthentication)
             newAuthentication.accessToken
         } else {

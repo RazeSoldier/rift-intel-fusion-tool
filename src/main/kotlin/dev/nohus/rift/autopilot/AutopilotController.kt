@@ -1,7 +1,6 @@
 package dev.nohus.rift.autopilot
 
 import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.loglite.ClientLogLiteAction
@@ -25,7 +24,6 @@ private val logger = KotlinLogging.logger {}
 class AutopilotController(
     private val activeCharacterRepository: ActiveCharacterRepository,
     private val characterLocationRepository: CharacterLocationRepository,
-    private val localCharactersRepository: LocalCharactersRepository,
     private val onlineCharactersRepository: OnlineCharactersRepository,
     private val getRouteUseCase: GetRouteUseCase,
     private val esiApi: EsiApi,
@@ -153,13 +151,13 @@ class AutopilotController(
         return if (addWaypoint && characterId in _activeRoutes.value) {
             // From tip of current route
             val currentRoute = _activeRoutes.value[characterId]?.systems?.takeIf { it.isNotEmpty() } ?: return null
-            val waypointRoute = getRouteUseCase(currentRoute.last(), solarSystemId, 50, withJumpBridges = true) ?: return null
+            val waypointRoute = getRouteUseCase(currentRoute.last(), solarSystemId, withJumpBridges = true) ?: return null
             val route = currentRoute + waypointRoute.drop(1)
             UpdatedRoute(full = Route(route), appended = Route(waypointRoute.drop(1)))
         } else {
             // New route
             val currentSystemId = characterLocationRepository.locations.value[characterId]?.solarSystemId ?: return null
-            val route = getRouteUseCase(currentSystemId, solarSystemId, 50, withJumpBridges = true) ?: return null
+            val route = getRouteUseCase(currentSystemId, solarSystemId, withJumpBridges = true) ?: return null
             UpdatedRoute(full = Route(route), appended = Route(route))
         }
     }

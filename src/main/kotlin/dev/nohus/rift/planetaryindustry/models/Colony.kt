@@ -1,6 +1,6 @@
 package dev.nohus.rift.planetaryindustry.models
 
-import dev.nohus.rift.network.esi.PlanetType
+import dev.nohus.rift.network.esi.models.PlanetType
 import dev.nohus.rift.repositories.PlanetsRepository.Planet
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type

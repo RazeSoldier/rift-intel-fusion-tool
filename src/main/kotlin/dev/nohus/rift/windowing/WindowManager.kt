@@ -22,6 +22,7 @@ import dev.nohus.rift.charactersettings.CharacterSettingsWindow
 import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.configurationpack.ConfigurationPackReminderWindow
 import dev.nohus.rift.contacts.ContactsWindow
+import dev.nohus.rift.corpprojects.CorporationProjectsWindow
 import dev.nohus.rift.debug.DebugWindow
 import dev.nohus.rift.fleet.FleetsWindow
 import dev.nohus.rift.intel.feed.IntelFeedWindow
@@ -148,6 +149,9 @@ class WindowManager(
         @SerialName("JukeboxCollapsed")
         JukeboxCollapsed,
 
+        @SerialName("CorporationProjects")
+        CorporationProjects,
+
         @Deprecated("Removed")
         @SerialName("MapSettings")
         MapSettings,
@@ -257,6 +261,7 @@ class WindowManager(
                             RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings, state.uuid) })
                             RiftWindow.Jukebox -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Jukebox, state.uuid) })
                             RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
+                            RiftWindow.CorporationProjects -> CorporationProjectsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CorporationProjects, state.uuid) })
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
@@ -403,6 +408,7 @@ class WindowManager(
             RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
             RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
+            RiftWindow.CorporationProjects -> WindowSizing(defaultSize = saved ?: (800 to 900), minimumSize = 540 to 700)
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))

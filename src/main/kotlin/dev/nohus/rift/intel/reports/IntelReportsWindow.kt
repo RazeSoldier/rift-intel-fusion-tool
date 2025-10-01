@@ -1,5 +1,7 @@
 package dev.nohus.rift.intel.reports
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +38,7 @@ import dev.nohus.rift.intel.reports.settings.IntelReportsSettings
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import java.time.Instant
 
 @Composable
 fun IntelReportsWindow(
@@ -96,7 +101,7 @@ private fun IntelReportsWindowContent(
             }
             Text(
                 text = text,
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -152,6 +157,7 @@ private fun ScrollingIntelPanel(
         }
     }
 
+    val enterAnimations: MutableMap<Instant, Animatable<Float, AnimationVector1D>> = remember { mutableStateMapOf() }
     ScrollbarLazyColumn(
         listState = listState,
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -160,7 +166,12 @@ private fun ScrollingIntelPanel(
     ) {
         items(channelChatMessages) { message ->
             val alertTriggerTimestamp = alertTriggeringMessages.firstOrNull { it.message == message }?.alertTriggerTimestamp
-            ChatMessage(settings, message, alertTriggerTimestamp)
+            ChatMessage(
+                settings = settings,
+                message = message,
+                alertTriggerTimestamp = alertTriggerTimestamp,
+                enterAnimation = enterAnimations.getOrPut(message.chatMessage.timestamp) { Animatable(0f) },
+            )
         }
     }
 }

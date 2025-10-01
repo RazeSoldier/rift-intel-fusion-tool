@@ -73,7 +73,7 @@ import dev.nohus.rift.generated.resources.planet_ocean_128
 import dev.nohus.rift.generated.resources.planet_plasma_128
 import dev.nohus.rift.generated.resources.planet_storm_128
 import dev.nohus.rift.generated.resources.planet_temperate_128
-import dev.nohus.rift.network.esi.PlanetType
+import dev.nohus.rift.network.esi.models.PlanetType
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.ColonyOverview

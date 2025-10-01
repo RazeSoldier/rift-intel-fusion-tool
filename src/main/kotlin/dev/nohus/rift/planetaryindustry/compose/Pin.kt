@@ -89,7 +89,7 @@ fun Pin(
                 )
                 Text(
                     text = pin.getName(),
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                 )
             }
 

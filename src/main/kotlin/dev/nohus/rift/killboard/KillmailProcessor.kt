@@ -6,6 +6,7 @@ import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.StarGatesRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
@@ -40,7 +41,7 @@ class KillmailProcessor(
 ) {
 
     data class ProcessedKillmail(
-        val system: String,
+        val system: MapSolarSystem,
         val ships: List<SystemEntity.Ship>,
         val victim: SystemEntity.Character?,
         val attackers: List<SystemEntity.Character>,
@@ -57,7 +58,7 @@ class KillmailProcessor(
     fun submit(message: Killmail) {
         runBlocking(Dispatchers.Default) {
             val ago = Duration.between(message.killmailTime, Instant.now())
-            val system = solarSystemsRepository.getSystemName(message.solarSystemId) ?: return@runBlocking
+            val system = solarSystemsRepository.getSystem(message.solarSystemId) ?: return@runBlocking
 
             val deferredVictim = message.victim.characterId
                 ?.let { async { characterDetailsRepository.getCharacterDetails(it) } }
@@ -156,12 +157,12 @@ class KillmailProcessor(
         val distanceKm = (distance / 1000).roundToInt()
         if (distanceKm >= 1000) return null
 
-        val stargateSystemName = starGatesRepository.getStargates(message.solarSystemId)
+        val stargateSystem = starGatesRepository.getStargates(message.solarSystemId)
             .filter { it.second == closestCelestial.celestial.type.id }
-            .mapNotNull { solarSystemsRepository.getSystemName(it.first) }
-            .singleOrNull { it in closestCelestial.celestial.name }
-        return if (stargateSystemName != null) {
-            SystemEntity.Gate(stargateSystemName, isAnsiblex = false, distanceKm = distanceKm)
+            .mapNotNull { solarSystemsRepository.getSystem(it.first) }
+            .singleOrNull { it.name in closestCelestial.celestial.name }
+        return if (stargateSystem != null) {
+            SystemEntity.Gate(stargateSystem, isAnsiblex = false, distanceKm = distanceKm)
         } else {
             SystemEntity.Celestial(closestCelestial.celestial, distanceKm)
         }

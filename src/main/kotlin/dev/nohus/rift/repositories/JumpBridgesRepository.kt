@@ -2,9 +2,9 @@ package dev.nohus.rift.repositories
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.Result
-import dev.nohus.rift.network.esi.CharactersIdSearch
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.UniverseStructuresId
+import dev.nohus.rift.network.esi.models.CharactersIdSearch
+import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -20,6 +20,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import org.koin.core.annotation.Single
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -32,6 +33,12 @@ class JumpBridgesRepository(
     private val localCharactersRepository: LocalCharactersRepository,
     private val solarSystemsRepository: SolarSystemsRepository,
 ) {
+
+    /**
+     * Changes when connections have changed
+     */
+    var connectionsKey: UUID = UUID.randomUUID()
+        private set
 
     data class JumpBridgeConnection(
         val from: MapSolarSystem,
@@ -49,6 +56,7 @@ class JumpBridgesRepository(
 
     fun setConnections(connections: List<JumpBridgeConnection>) {
         settings.jumpBridgeNetwork = connections.associate { it.from.name to it.to.name }
+        connectionsKey = UUID.randomUUID()
     }
 
     sealed interface SearchState {

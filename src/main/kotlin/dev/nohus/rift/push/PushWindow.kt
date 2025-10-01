@@ -133,7 +133,7 @@ private fun Ntfy(
         )
         Text(
             text = "Setup",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             modifier = Modifier.padding(top = Spacing.medium),
         )
         Row {
@@ -248,7 +248,7 @@ private fun Pushover(
         )
         Text(
             text = "Setup",
-            style = RiftTheme.typography.titlePrimary,
+            style = RiftTheme.typography.headerPrimary,
             modifier = Modifier.padding(top = Spacing.medium),
         )
         Row {

@@ -24,40 +24,50 @@ import org.jetbrains.compose.resources.Font
 
 @Immutable
 data class RiftTypography(
-    val captionPrimary: TextStyle,
-    val captionSecondary: TextStyle,
-    val captionBoldPrimary: TextStyle,
+    val detailBoldPrimary: TextStyle,
+    val detailPrimary: TextStyle,
+    val detailSecondary: TextStyle,
+    val detailDisabled: TextStyle,
     val bodySpecialHighlighted: TextStyle,
     val bodyHighlighted: TextStyle,
     val bodyPrimary: TextStyle,
     val bodySecondary: TextStyle,
+    val bodyDisabled: TextStyle,
     val bodyLink: TextStyle,
     val bodyTriglavian: TextStyle,
-    val titleHighlighted: TextStyle,
-    val titlePrimary: TextStyle,
-    val titleSecondary: TextStyle,
+    val headerHighlighted: TextStyle,
+    val headerPrimary: TextStyle,
+    val headerSecondary: TextStyle,
     val headlineHighlighted: TextStyle,
     val headlinePrimary: TextStyle,
     val headlineSecondary: TextStyle,
+    val displayHighlighted: TextStyle,
+    val displayPrimary: TextStyle,
+    val displaySecondary: TextStyle,
 )
 
 val LocalRiftTypography = staticCompositionLocalOf {
     RiftTypography(
-        captionPrimary = TextStyle.Default,
-        captionSecondary = TextStyle.Default,
-        captionBoldPrimary = TextStyle.Default,
+        detailBoldPrimary = TextStyle.Default,
+        detailPrimary = TextStyle.Default,
+        detailSecondary = TextStyle.Default,
+        detailDisabled = TextStyle.Default,
         bodySpecialHighlighted = TextStyle.Default,
         bodyHighlighted = TextStyle.Default,
         bodyPrimary = TextStyle.Default,
         bodySecondary = TextStyle.Default,
+        bodyDisabled = TextStyle.Default,
         bodyLink = TextStyle.Default,
         bodyTriglavian = TextStyle.Default,
-        titleHighlighted = TextStyle.Default,
-        titlePrimary = TextStyle.Default,
-        titleSecondary = TextStyle.Default,
+        headerHighlighted = TextStyle.Default,
+        headerPrimary = TextStyle.Default,
+        headerSecondary = TextStyle.Default,
         headlineHighlighted = TextStyle.Default,
         headlinePrimary = TextStyle.Default,
         headlineSecondary = TextStyle.Default,
+        displayHighlighted = TextStyle.Default,
+        displayPrimary = TextStyle.Default,
+        displaySecondary = TextStyle.Default,
     )
 }
 
@@ -104,23 +114,21 @@ fun getRiftTypography(colors: RiftColors): RiftTypography {
             color = Color(0xFF000000).copy(alpha = 0.5f),
         ),
     )
-    val caption = base.copy(
-        fontSize = 11.sp,
-    )
-    val captionBold = caption.copy(
-        fontWeight = FontWeight.Bold,
+    val detail = base.copy(
+        fontSize = 12.sp,
+        letterSpacing = 0.5.sp,
     )
     val body = base.copy(
-        fontSize = 13.sp,
+        fontSize = 14.sp,
     )
-    val bodyBold = body.copy(
-        fontWeight = FontWeight.Bold,
-    )
-    val title = base.copy(
+    val header = base.copy(
         fontSize = 16.sp,
     )
     val headline = base.copy(
         fontSize = 19.sp,
+    )
+    val display = base.copy(
+        fontSize = 24.sp,
     )
 
     val baseTriglavian = base.copy(
@@ -131,21 +139,26 @@ fun getRiftTypography(colors: RiftColors): RiftTypography {
     )
 
     return RiftTypography(
-        captionPrimary = caption.copy(color = colors.textPrimary),
-        captionSecondary = caption.copy(color = colors.textSecondary),
-        captionBoldPrimary = captionBold.copy(color = colors.textPrimary),
+        detailBoldPrimary = detail.copy(color = colors.textPrimary, fontWeight = FontWeight.Bold),
+        detailPrimary = detail.copy(color = colors.textPrimary),
+        detailSecondary = detail.copy(color = colors.textSecondary),
+        detailDisabled = detail.copy(color = colors.textDisabled),
         bodySpecialHighlighted = body.copy(color = colors.textSpecialHighlighted),
         bodyHighlighted = body.copy(color = colors.textHighlighted),
         bodyPrimary = body.copy(color = colors.textPrimary),
         bodySecondary = body.copy(color = colors.textSecondary),
-        bodyLink = bodyBold.copy(color = colors.textLink),
+        bodyDisabled = body.copy(color = colors.textDisabled),
+        bodyLink = body.copy(color = colors.textLink, fontWeight = FontWeight.Bold),
         bodyTriglavian = bodyTriglavian,
-        titleHighlighted = title.copy(color = colors.textHighlighted),
-        titlePrimary = title.copy(color = colors.textPrimary),
-        titleSecondary = title.copy(color = colors.textSecondary),
+        headerHighlighted = header.copy(color = colors.textHighlighted),
+        headerPrimary = header.copy(color = colors.textPrimary),
+        headerSecondary = header.copy(color = colors.textSecondary),
         headlineHighlighted = headline.copy(color = colors.textHighlighted),
         headlinePrimary = headline.copy(color = colors.textPrimary),
         headlineSecondary = headline.copy(color = colors.textSecondary),
+        displayHighlighted = display.copy(color = colors.textHighlighted),
+        displayPrimary = display.copy(color = colors.textPrimary),
+        displaySecondary = display.copy(color = colors.textSecondary),
     )
 }
 
@@ -154,44 +167,72 @@ fun getRiftTypography(colors: RiftColors): RiftTypography {
 private fun RiftTypographyPreview() {
     PreviewContainer {
         Text(
-            text = "Caption Primary",
-            style = RiftTheme.typography.captionPrimary,
+            text = "Detail Primary",
+            style = RiftTheme.typography.detailPrimary,
         )
         Text(
-            text = "Caption Secondary",
-            style = RiftTheme.typography.captionSecondary,
+            text = "Detail Secondary",
+            style = RiftTheme.typography.detailSecondary,
         )
         Text(
-            text = "Caption Bold Primary",
-            style = RiftTheme.typography.captionBoldPrimary,
+            text = "Detail Bold Primary",
+            style = RiftTheme.typography.detailBoldPrimary,
         )
+
         Text(
-            text = "Body Special Highlighted – 30%",
+            text = "Body Special Highlighted",
             style = RiftTheme.typography.bodySpecialHighlighted,
         )
         Text(
-            text = "Body Special Highlighted – 30%",
-            style = RiftTheme.typography.bodySpecialHighlighted,
-        )
-        Text(
-            text = "Body Highlighted – Flagship product in the Upwell Consortium's Citadel range of space stations",
+            text = "Body Highlighted",
             style = RiftTheme.typography.bodyHighlighted,
         )
         Text(
-            text = "Body Primary – Structure Damage Limit (per second)",
+            text = "Body Primary",
             style = RiftTheme.typography.bodyPrimary,
         )
         Text(
-            text = "Body Secondary – Only one Upwell Palatine Keepstar may be deployed at a time in New Eden",
+            text = "Body Secondary",
             style = RiftTheme.typography.bodySecondary,
         )
+
         Text(
-            text = "Headline Highlighted – Pointer Window",
+            text = "Header Highlighted",
+            style = RiftTheme.typography.headerHighlighted,
+        )
+        Text(
+            text = "Header Primary",
+            style = RiftTheme.typography.headerPrimary,
+        )
+        Text(
+            text = "Header Secondary",
+            style = RiftTheme.typography.headerSecondary,
+        )
+
+        Text(
+            text = "Headline Highlighted",
             style = RiftTheme.typography.headlineHighlighted,
         )
         Text(
-            text = "Headline Secondary – Log and Messages",
+            text = "Headline Primary",
+            style = RiftTheme.typography.headlinePrimary,
+        )
+        Text(
+            text = "Headline Secondary",
             style = RiftTheme.typography.headlineSecondary,
+        )
+
+        Text(
+            text = "Display Highlighted",
+            style = RiftTheme.typography.displayHighlighted,
+        )
+        Text(
+            text = "Display Primary",
+            style = RiftTheme.typography.displayPrimary,
+        )
+        Text(
+            text = "Display Secondary",
+            style = RiftTheme.typography.displaySecondary,
         )
     }
 }

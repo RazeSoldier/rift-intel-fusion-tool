@@ -17,6 +17,7 @@ import dev.nohus.rift.pings.PingModel
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.push.PushNotificationController
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
@@ -58,7 +59,7 @@ class AlertsActionController(
         matchingEntities: List<Pair<IntelReportType, List<SystemEntity>>>,
         entities: List<SystemEntity>,
         locationMatch: AlertLocationMatch,
-        solarSystem: String,
+        solarSystem: MapSolarSystem,
     ) {
         val title = getNotificationTitle(matchingEntities)
         val message = getNotificationMessage(locationMatch)
@@ -134,7 +135,7 @@ class AlertsActionController(
                     if (ping.formupLocations.isNotEmpty()) {
                         val formup = ping.formupLocations.joinToString {
                             when (it) {
-                                is FormupLocation.System -> it.name
+                                is FormupLocation.System -> solarSystemsRepository.getSystemName(it.id) ?: "${it.id}"
                                 is FormupLocation.Text -> it.text
                             }
                         }
@@ -295,8 +296,7 @@ class AlertsActionController(
                     1 -> "1 jump away from"
                     else -> "$distance jumps away from"
                 }
-                val systemName = solarSystemsRepository.getSystemName(locationMatch.systemId) ?: "${locationMatch.systemId}"
-                "$distanceText $systemName"
+                "$distanceText ${locationMatch.system.name}"
             }
 
             is AlertLocationMatch.Character -> {

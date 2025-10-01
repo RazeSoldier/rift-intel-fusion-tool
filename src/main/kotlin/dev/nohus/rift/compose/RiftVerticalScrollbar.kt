@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.v2.ScrollbarAdapter
 import androidx.compose.runtime.Composable
@@ -65,6 +66,21 @@ fun RiftVerticalScrollbar(
     RiftVerticalScrollbar(
         scrollKey = scrollKey,
         scrollbarAdapter = rememberScrollbarAdapter(listState),
+        hasBackground = hasBackground,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun RiftVerticalScrollbar(
+    gridState: LazyGridState,
+    modifier: Modifier = Modifier,
+    hasBackground: Boolean = true,
+) {
+    val scrollKey = gridState.layoutInfo.visibleItemsInfo.firstOrNull()?.let { it.index * 100_000 + it.offset.x + it.offset.y } ?: 0
+    RiftVerticalScrollbar(
+        scrollKey = scrollKey,
+        scrollbarAdapter = rememberScrollbarAdapter(gridState),
         hasBackground = hasBackground,
         modifier = modifier,
     )

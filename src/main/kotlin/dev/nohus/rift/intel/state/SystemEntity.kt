@@ -1,6 +1,8 @@
 package dev.nohus.rift.intel.state
 
 import dev.nohus.rift.repositories.CelestialsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.Standing
 
@@ -28,7 +30,7 @@ sealed interface SystemEntity {
         CharacterBound
 
     data class Gate(
-        val system: String,
+        val system2: MapSolarSystem,
         val isAnsiblex: Boolean,
         val distanceKm: Int? = null,
     ) : SystemEntity,

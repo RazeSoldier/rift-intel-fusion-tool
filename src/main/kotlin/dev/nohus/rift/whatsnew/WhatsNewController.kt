@@ -21,7 +21,7 @@ class WhatsNewController(
         val currentVersion = BuildConfig.version
         if (lastShownVersion != null && lastShownVersion != currentVersion) {
             runMigrations(lastShownVersion)
-            val hasChangelog = WhatsNew.getVersions().any {
+            val hasChangelog = WhatsNew.getVersions(true).any {
                 VersionUtils.isNewer(lastShownVersion, it.version)
             }
             if (hasChangelog) {

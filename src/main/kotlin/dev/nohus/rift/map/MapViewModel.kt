@@ -685,9 +685,9 @@ class MapViewModel(
     }
 
     private fun updateIntel() = viewModelScope.launch {
-        val intelBySystemName = intelStateController.state.value
-        val intelBySystemId = intelBySystemName.mapKeys { (key, _) ->
-            solarSystemsRepository.getSystemId(key)!!
+        val intelBySystem = intelStateController.state.value
+        val intelBySystemId = intelBySystem.mapKeys { (key, _) ->
+            key.id
         }
 
         val popupMinTimestamp = Instant.now() - Duration.ofSeconds(settings.intelMap.intelPopupTimeoutSeconds.toLong())

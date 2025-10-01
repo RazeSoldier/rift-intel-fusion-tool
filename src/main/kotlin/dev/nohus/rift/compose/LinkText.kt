@@ -17,22 +17,29 @@ import dev.nohus.rift.compose.theme.RiftTheme
 @Composable
 fun LinkText(
     text: String,
-    style: TextStyle = RiftTheme.typography.bodyLink,
-    onClick: () -> Unit,
+    normalStyle: TextStyle = RiftTheme.typography.bodyLink,
+    hoveredStyle: TextStyle = normalStyle,
+    onClick: (() -> Unit)? = null,
+    hasHoverCursor: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
     val coloredStyle = if (pointerInteractionStateHolder.isHovered) {
-        style.copy(color = RiftTheme.colors.textLink, textDecoration = TextDecoration.Underline)
+        hoveredStyle.copy(textDecoration = TextDecoration.Underline)
     } else {
-        style.copy(color = RiftTheme.colors.textLink)
+        normalStyle
     }
+    val cursor = if (hasHoverCursor) Cursors.hand else null
     Text(
         text = text,
         style = coloredStyle,
         modifier = modifier
             .pointerInteraction(pointerInteractionStateHolder)
-            .pointerHoverIcon(PointerIcon(Cursors.hand))
-            .onClick { onClick() },
+            .modifyIfNotNull(cursor) {
+                pointerHoverIcon(PointerIcon(it))
+            }
+            .modifyIfNotNull(onClick) {
+                onClick { it() }
+            },
     )
 }

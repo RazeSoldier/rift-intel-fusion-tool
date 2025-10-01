@@ -105,7 +105,7 @@ fun AboutWindow(
                     if (state.updateAvailability.success == UPDATE_AUTOMATIC) {
                         Text(
                             text = "A newer version of RIFT is ready to install.",
-                            style = RiftTheme.typography.titlePrimary,
+                            style = RiftTheme.typography.headerPrimary,
                         )
                         RiftButton(
                             text = "Update now",
@@ -115,7 +115,7 @@ fun AboutWindow(
                     } else {
                         Text(
                             text = getUpdateDialogText(state.operatingSystem, state.executablePath),
-                            style = RiftTheme.typography.titlePrimary,
+                            style = RiftTheme.typography.headerPrimary,
                         )
                     }
                 }
@@ -133,7 +133,7 @@ fun AboutWindow(
                 ScrollbarColumn {
                     Text(
                         text = getLegalText(),
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                     )
                 }
             }
@@ -149,7 +149,7 @@ fun AboutWindow(
             ) {
                 Text(
                     text = getCreditsText(),
-                    style = RiftTheme.typography.titlePrimary,
+                    style = RiftTheme.typography.headerPrimary,
                 )
             }
         }
@@ -200,7 +200,7 @@ private fun AboutWindowContent(
                     ) {
                         Text(
                             text = state.version,
-                            style = RiftTheme.typography.titlePrimary,
+                            style = RiftTheme.typography.headerPrimary,
                         )
                     }
                     AnimatedContent(state.updateAvailability) { isUpdateAvailable ->
@@ -260,7 +260,7 @@ private fun AboutWindowContent(
 
                     Text(
                         text = "Developed by Nohus",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
                     LinkText(
@@ -270,7 +270,7 @@ private fun AboutWindowContent(
 
                     Text(
                         text = "Join the Discord!",
-                        style = RiftTheme.typography.titlePrimary,
+                        style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
                     LinkText(

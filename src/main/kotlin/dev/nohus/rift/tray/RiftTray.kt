@@ -26,6 +26,7 @@ import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.generated.resources.window_contacts
+import dev.nohus.rift.generated.resources.window_corporation
 import dev.nohus.rift.generated.resources.window_evemailtag
 import dev.nohus.rift.generated.resources.window_jukebox
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
@@ -70,7 +71,7 @@ fun ApplicationScope.RiftTray(
         val items = getTrayMenuItems(
             operatingSystem = operatingSystem,
             isJabberEnabled = state.isJabberEnabled,
-            isJukeboxEnabled = state.isJukeboxEnabled,
+            isCorpProjectsEnabled = state.isCorpProjectsEnabled,
             onButtonClick = viewModel::onButtonClick,
             onQuitClick = viewModel::onQuitClick,
         )
@@ -105,7 +106,7 @@ sealed interface TrayMenuItem {
 private fun getTrayMenuItems(
     operatingSystem: OperatingSystem,
     isJabberEnabled: Boolean,
-    isJukeboxEnabled: Boolean,
+    isCorpProjectsEnabled: Boolean,
     onButtonClick: (RiftWindow) -> Unit,
     onQuitClick: () -> Unit,
 ): List<TrayMenuItem> {
@@ -124,14 +125,15 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Characters", Res.drawable.window_characters) { onButtonClick(RiftWindow.Characters) })
         add(TrayMenuTextItem("Assets", Res.drawable.window_assets) { onButtonClick(RiftWindow.Assets) })
         add(TrayMenuTextItem("Planetary Industry", Res.drawable.window_planets) { onButtonClick(RiftWindow.PlanetaryIndustry) })
+        if (isCorpProjectsEnabled) {
+            add(TrayMenuTextItem("Corporation Projects", Res.drawable.window_corporation) { onButtonClick(RiftWindow.CorporationProjects) })
+        }
         add(TrayMenuTextItem("Contacts", Res.drawable.window_contacts) { onButtonClick(RiftWindow.Contacts) })
         if (isJabberEnabled) {
             add(TrayMenuTextItem("Pings", Res.drawable.window_sovereignty) { onButtonClick(RiftWindow.Pings) })
             add(TrayMenuTextItem("Jabber", Res.drawable.window_chatchannels) { onButtonClick(RiftWindow.Jabber) })
         }
-        if (isJukeboxEnabled) {
-            add(TrayMenuTextItem("Jukebox", Res.drawable.window_jukebox) { onButtonClick(RiftWindow.Jukebox) })
-        }
+        add(TrayMenuTextItem("Jukebox", Res.drawable.window_jukebox) { onButtonClick(RiftWindow.Jukebox) })
         add(TrayMenuTextItem("Settings", Res.drawable.window_settings) { onButtonClick(RiftWindow.Settings) })
         add(TrayMenuTextItem("About", Res.drawable.window_evemailtag) { onButtonClick(RiftWindow.About) })
         add(Separator)

@@ -17,7 +17,9 @@ data class RiftColors(
     val textHighlighted: Color,
     val textPrimary: Color,
     val textSecondary: Color,
+    val textDisabled: Color,
     val textLink: Color,
+    val textLinkHovered: Color,
     val textGreen: Color,
     val textRed: Color,
 
@@ -85,7 +87,9 @@ val LocalRiftColors = staticCompositionLocalOf {
         textHighlighted = Color.Unspecified,
         textPrimary = Color.Unspecified,
         textSecondary = Color.Unspecified,
+        textDisabled = Color.Unspecified,
         textLink = Color.Unspecified,
+        textLinkHovered = Color.Unspecified,
         textGreen = Color.Unspecified,
         textRed = Color.Unspecified,
 
@@ -179,15 +183,17 @@ private fun getRiftColors() = RiftColors(
     windowBorderActive = Color(0xFF1E2022),
 
     textSpecialHighlighted = Color(0xFFC3E9FF),
-    textHighlighted = Color(0xFFE6E6E7),
-    textPrimary = Color(0xFFC3C5C6),
-    textSecondary = Color(0xFF9B9B95),
+    textHighlighted = Color(0xE5FFFFFF),
+    textPrimary = Color(0xBFFFFFFF),
+    textSecondary = Color(0x7FFFFFFF),
+    textDisabled = Color(0x4CFFFFFF),
     textLink = Color(0xFFD98D00),
+    textLinkHovered = EveColors.destinationYellow,
     textGreen = Color(0xFF029C02),
     textRed = Color(0xFFFB0101),
 
     inactiveGray = Color(0xFF595555),
-    primary = Color(0xFF58A7BF),
+    primary = EveColors.cryoBlue,
     primaryDark = Color(0xFF41707D),
 
     backgroundPrimary = Color(0xFF172327),
@@ -223,10 +229,10 @@ private fun getRiftColors() = RiftColors(
     warningBackground = Color(0xFF180F09),
     warningColor = Color(0xFFF39058),
 
-    onlineGreen = Color(0xFF75D25A),
-    awayYellow = Color(0xFFFFD25A),
-    extendedAwayOrange = Color(0xFFFF945A),
-    offlineRed = Color(0xFFFF494F),
+    onlineGreen = EveColors.limeGreen,
+    awayYellow = EveColors.sandYellow,
+    extendedAwayOrange = EveColors.warningOrange,
+    offlineRed = EveColors.hotRed,
 
     mapBackground = Color(0xFF0A0E15),
 
@@ -235,3 +241,46 @@ private fun getRiftColors() = RiftColors(
 
     transparentWindowAlpha = 1f,
 )
+
+object EveColors {
+    val burnishedGold = Color(0xFF996A1F)
+    val cherryRed = Color(0xFF991F24)
+    val copperOxideGreen = Color(0xFF415931)
+    val cryoBlue = Color(0xFF58A7BF)
+    val dangerRed = Color(0xFFFF454B)
+    val destinationYellow = Color(0xFFF0FF45)
+    val duskyOrange = Color(0xFF9F583A)
+    val focusBlue = Color(0xFF58A7BF)
+    val hotRed = Color(0xFFFF454B)
+    val iceWhite = Color(0xFFC2E5F2)
+    val leafyGreen = Color(0xFF8DC169)
+    val limeGreen = Color(0xFFB2F84D)
+    val omegaYellow = Color(0xFFFFC64A)
+    val plexYellow = Color(0xFFFFCC00)
+    val primaryBlue = Color(0xFF407196)
+    val smokeBlue = Color(0xFF305665)
+    val warningOrange = Color(0xFFF39058)
+    val sandYellow = Color(0xFFFFB845)
+    val successGreen = Color(0xFF8DC169)
+    val auraPurple = Color(0xFF956BEC)
+    val airTurquoise = Color(0xFF70F0E3)
+    val ultramarineBlue = Color(0xFF2E4EBE)
+    val paragonBlue = Color(0xFF97D3CB)
+    val evermarkGreen = Color(0xFFCEFF01)
+    val black = Color(0xFF000000)
+    val coalBlack = Color(0xFF1A1A1A)
+    val matteBlack = Color(0xFF303030)
+    val gunmetalGrey = Color(0xFF4D4D4D)
+    val ledGrey = Color(0xFF8A8A8A)
+    val silverGrey = Color(0xFFB0B0B0)
+    val tungstenGrey = Color(0xFFD9D9D9)
+    val platinumGrey = Color(0xFFF2F2F2)
+    val white = Color(0xFFFFFFFF)
+    val omegaAccent = Color(0xFFFFC64A)
+    val omegaAccentStroke = Color(0xFF96794A)
+    val omegaSecondary = Color(0xCC221D18)
+    val omegaTertiary = Color(0xCC4A3E2C)
+    val omegaTagTextRed = Color(0xFFFFD2D2)
+    val omegaTagTextGreen = Color(0xFFB6F28C)
+    val omegaTagTextBlue = Color(0xFF8CDEF8)
+}

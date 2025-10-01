@@ -22,19 +22,19 @@ fun ContactLabelTag(details: CharacterDetailsRepository.CharacterDetails, modifi
         RiftTooltipArea(
             text = buildAnnotatedString {
                 if (details.characterLabels.isNotEmpty()) {
-                    withStyle(RiftTheme.typography.captionSecondary.toSpanStyle()) {
+                    withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
                         appendLine("Character label${details.characterLabels.size.plural}")
                     }
                     appendLine(details.characterLabels.joinToString(", "))
                 }
                 if (details.corporationLabels.isNotEmpty()) {
-                    withStyle(RiftTheme.typography.captionSecondary.toSpanStyle()) {
+                    withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
                         appendLine("Corporation label${details.corporationLabels.size.plural}")
                     }
                     appendLine(details.corporationLabels.joinToString(", "))
                 }
                 if (details.allianceLabels.isNotEmpty()) {
-                    withStyle(RiftTheme.typography.captionSecondary.toSpanStyle()) {
+                    withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
                         appendLine("Alliance label${details.allianceLabels.size.plural}")
                     }
                     appendLine(details.allianceLabels.joinToString(", "))

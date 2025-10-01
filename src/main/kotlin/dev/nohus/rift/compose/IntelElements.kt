@@ -1,5 +1,7 @@
 package dev.nohus.rift.compose
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextStyle
@@ -31,6 +34,7 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.repositories.AbyssalSystemNames
 import dev.nohus.rift.repositories.GetSystemDistanceFromCharacterUseCase
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.WormholeRegionClasses
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.withColor
@@ -39,25 +43,27 @@ import java.time.Instant
 
 @Composable
 fun IntelSystem(
-    system: String,
+    system: MapSolarSystem,
     rowHeight: Dp,
     isShowingSystemDistance: Boolean,
     isUsingJumpBridges: Boolean,
+    enterAnimation: Animatable<Float, AnimationVector1D>,
     background: Color = Color.Transparent,
 ) {
-    val repository: SolarSystemsRepository by koin.inject()
-    ClickableSystem(system) {
+    val repository: SolarSystemsRepository = remember { koin.get() }
+    ClickableSystem(system.id) {
         BorderedToken(rowHeight, modifier = Modifier.background(background)) {
-            val sunTypeId = repository.getSystemSunTypeId(system)
-            AsyncTypeIcon(
-                typeId = sunTypeId,
-                modifier = Modifier.size(rowHeight),
+            SystemIllustrationIconSmall(
+                solarSystemId = system.id,
+                size = rowHeight,
+                animation = enterAnimation,
+                modifier = Modifier.clipToBounds(),
             )
             VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
             Column(
                 modifier = Modifier.padding(horizontal = Spacing.small),
             ) {
-                val abyssalName = AbyssalSystemNames[system]
+                val abyssalName = AbyssalSystemNames[system.name]
                 if (abyssalName != null) {
                     Text(
                         text = abyssalName,
@@ -66,23 +72,22 @@ fun IntelSystem(
                     )
                 } else {
                     Text(
-                        text = system,
+                        text = system.name,
                         style = RiftTheme.typography.bodyLink.copy(fontWeight = FontWeight.Bold),
                     )
                     if (rowHeight >= 32.dp) {
-                        repository.getRegionBySystem(system)?.let { region ->
+                        repository.getRegion(system.regionId)?.name?.let { region ->
                             val text = WormholeRegionClasses[region] ?: region
                             Text(
                                 text = text,
-                                style = RiftTheme.typography.bodyPrimary,
+                                style = RiftTheme.typography.detailPrimary,
                             )
                         }
                     }
                 }
             }
             if (isShowingSystemDistance) {
-                val systemId = repository.getSystemId(system) ?: return@BorderedToken
-                SystemDistanceIndicator(systemId, rowHeight, isUsingJumpBridges)
+                SystemDistanceIndicator(system.id, rowHeight, isUsingJumpBridges)
             }
         }
     }
@@ -97,9 +102,9 @@ private fun SystemDistanceIndicator(
     val getDistance: GetSystemDistanceFromCharacterUseCase by koin.inject()
     val localCharactersRepository: LocalCharactersRepository by koin.inject()
     val characterDistance = remember(systemId, isUsingJumpBridges, localCharactersRepository.characters.value) {
-        getDistance(systemId, maxDistance = 9, withJumpBridges = isUsingJumpBridges)
+        getDistance(systemId, withJumpBridges = isUsingJumpBridges)
     }
-    if (characterDistance == null || characterDistance.distance > 9) return
+    if (characterDistance == null) return
     val distanceColor = getDistanceColor(characterDistance.distance)
     val characterName = localCharactersRepository.characters.value
         .firstOrNull { it.characterId == characterDistance.characterId }

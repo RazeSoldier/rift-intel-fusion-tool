@@ -22,6 +22,7 @@ class CelestialsRepository(
         val id: Int,
         val type: Type,
         val solarSystemId: Int,
+        val orbitId: Int?,
         val position: Position,
         val radius: Double?,
         val name: String,
@@ -44,10 +45,11 @@ class CelestialsRepository(
                         id = it[Celestials.id],
                         type = typesRepository.getType(it[Celestials.typeId]) ?: error("Missing celestial type: ${it[Celestials.typeId]}"),
                         solarSystemId = it[Celestials.solarSystemId],
+                        orbitId = it[Celestials.orbitId],
                         position = Position(
-                            x = it[Celestials.x].toDouble(),
-                            y = it[Celestials.y].toDouble(),
-                            z = it[Celestials.z].toDouble(),
+                            x = it[Celestials.x],
+                            y = it[Celestials.y],
+                            z = it[Celestials.z],
                         ),
                         radius = it[Celestials.radius],
                         name = it[Celestials.name],
@@ -63,6 +65,11 @@ class CelestialsRepository(
         runBlocking {
             hasLoaded.await()
         }
+    }
+
+    fun getCelestials(solarSystemId: Int): List<Celestial> {
+        blockUntilLoaded()
+        return celestialsBySolarSystemId[solarSystemId] ?: emptyList()
     }
 
     /**

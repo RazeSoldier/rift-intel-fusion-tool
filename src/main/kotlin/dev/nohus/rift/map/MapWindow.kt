@@ -116,7 +116,7 @@ import dev.nohus.rift.map.systemcolor.strategies.StandingsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StarColorSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.StationsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.WormholesSystemColorStrategy
-import dev.nohus.rift.network.esi.IndustryActivity
+import dev.nohus.rift.network.esi.models.IndustryActivity
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository.Type

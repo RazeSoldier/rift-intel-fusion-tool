@@ -15,6 +15,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser
 import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -46,11 +47,11 @@ class UnderstandMessageUseCase(
     }
 
     data class Movement(
-        val toSystem: String,
+        val toSystem: MapSolarSystem,
     )
 
     suspend operator fun invoke(tokens: List<Token>): IntelUnderstanding = coroutineScope {
-        val systems = mutableListOf<String>()
+        val systems = mutableListOf<MapSolarSystem>()
         val entities = mutableListOf<SystemEntity>()
         val kills = mutableListOf<Kill>()
         val questions = mutableListOf<Question>()
@@ -119,7 +120,7 @@ class UnderstandMessageUseCase(
                     }
 
                     is TokenType.Ship -> entities += Ship(type.name, type.count)
-                    is TokenType.System -> systems += type.name
+                    is TokenType.System -> systems += type.system
                     TokenType.Url -> {}
                 }
             }

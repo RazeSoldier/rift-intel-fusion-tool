@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -46,6 +47,8 @@ import dev.nohus.rift.intel.state.Clearable
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.ShipTypesRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.getColor
@@ -59,7 +62,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun SystemEntities(
     entities: List<SystemEntity>,
-    system: String,
+    system: MapSolarSystem,
     rowHeight: Dp,
     isHorizontal: Boolean = false,
     isGroupingCharacters: Boolean = false,
@@ -140,7 +143,7 @@ fun SystemEntities(
                     )
                     Text(
                         text = ticket,
-                        style = RiftTheme.typography.bodySecondary,
+                        style = RiftTheme.typography.detailSecondary,
                     )
                 }
             }
@@ -210,7 +213,7 @@ fun SystemEntities(
                             )
                             Text(
                                 text = ticker,
-                                style = RiftTheme.typography.bodySecondary,
+                                style = RiftTheme.typography.detailSecondary,
                             )
                         }
                     }
@@ -284,7 +287,7 @@ fun SystemEntities(
                                 )
                                 Text(
                                     text = ticker,
-                                    style = RiftTheme.typography.bodySecondary,
+                                    style = RiftTheme.typography.detailSecondary,
                                 )
                             }
                         }
@@ -487,22 +490,29 @@ private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
 }
 
 @Composable
-private fun GateInfoRow(system: String, entity: SystemEntity.Gate, rowHeight: Dp, isHorizontal: Boolean) {
+private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHeight: Dp, isHorizontal: Boolean) {
+    val systemsRepository: SolarSystemsRepository = remember { koin.get() }
+
     SystemEntityInfoRow(rowHeight, isHorizontal) {
-        GateIcon(entity.isAnsiblex, system, entity.system, rowHeight)
+        GateIcon(
+            isAnsiblex = entity.isAnsiblex,
+            fromSystem = system.name,
+            toSystem = entity.system2.name,
+            size = rowHeight,
+        )
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
         val gateText = if (entity.isAnsiblex) "Ansiblex" else "Gate"
         Column(
             modifier = Modifier.padding(horizontal = Spacing.small),
         ) {
             Text(
-                text = "${entity.system} $gateText",
+                text = "${entity.system2.name} $gateText",
                 style = RiftTheme.typography.bodyHighlighted,
             )
             if (entity.distanceKm != null && rowHeight >= 32.dp) {
                 Text(
                     text = "${entity.distanceKm}km",
-                    style = RiftTheme.typography.bodySecondary,
+                    style = RiftTheme.typography.detailSecondary,
                 )
             }
         }
@@ -534,7 +544,7 @@ private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHo
             if (rowHeight >= 32.dp) {
                 Text(
                     text = "${entity.distanceKm}km",
-                    style = RiftTheme.typography.bodySecondary,
+                    style = RiftTheme.typography.detailSecondary,
                 )
             }
         }
@@ -561,7 +571,7 @@ private fun NoVisualRow(
         )
         Text(
             text = "No visual",
-            style = RiftTheme.typography.bodyPrimary.copy(fontSize = 11.sp),
+            style = RiftTheme.typography.detailPrimary,
             modifier = Modifier.padding(horizontal = 4.dp),
         )
     }

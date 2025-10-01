@@ -43,6 +43,7 @@ import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.generated.resources.window_contacts
+import dev.nohus.rift.generated.resources.window_corporation
 import dev.nohus.rift.generated.resources.window_evemailtag
 import dev.nohus.rift.generated.resources.window_jukebox
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
@@ -90,14 +91,15 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_characters, name = "Characters", "Chars") { viewModel.onButtonClick(RiftWindow.Characters) })
             add(ButtonModel(icon = Res.drawable.window_assets, name = "Assets") { viewModel.onButtonClick(RiftWindow.Assets) })
             add(ButtonModel(icon = Res.drawable.window_planets, name = "Planetary Industry", "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
+            if (state.isCorpProjectsEnabled) {
+                add(ButtonModel(icon = Res.drawable.window_corporation, name = "Corporation Projects", "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
+            }
             add(ButtonModel(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) })
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })
                 add(ButtonModel(icon = Res.drawable.window_chatchannels, name = "Jabber") { viewModel.onButtonClick(RiftWindow.Jabber) })
             }
-            if (state.isJukeboxEnabled) {
-                add(ButtonModel(icon = Res.drawable.window_jukebox, name = "Jukebox") { viewModel.onButtonClick(RiftWindow.Jukebox) })
-            }
+            add(ButtonModel(icon = Res.drawable.window_jukebox, name = "Jukebox") { viewModel.onButtonClick(RiftWindow.Jukebox) })
             add(ButtonModel(icon = Res.drawable.window_settings, name = "Settings") { viewModel.onButtonClick(RiftWindow.Settings) })
             add(ButtonModel(icon = Res.drawable.window_evemailtag, name = "About") { viewModel.onButtonClick(RiftWindow.About) })
             add(ButtonModel(icon = Res.drawable.window_quitgame, name = "Quit") { viewModel.onQuitClick() })
@@ -188,7 +190,7 @@ private fun NeocomRowButton(
         }
         BoxWithConstraints {
             val textMeasurer = rememberTextMeasurer()
-            val style = RiftTheme.typography.titlePrimary.copy(color = textColor)
+            val style = RiftTheme.typography.headerPrimary.copy(color = textColor)
             val measured = textMeasurer.measure(name, style)
             if (measured.size.width > constraints.maxWidth) {
                 Text(

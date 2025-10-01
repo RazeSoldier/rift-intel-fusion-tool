@@ -1,6 +1,7 @@
 package dev.nohus.rift.repositories
 
 import dev.nohus.rift.database.static.StaticDatabase
+import dev.nohus.rift.database.static.TypeGroups
 import dev.nohus.rift.database.static.Types
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
@@ -38,6 +39,7 @@ class TypesRepository(
     private val resolvedTypeNames = mutableMapOf<Int, String>()
     private lateinit var types: Map<Int, Type>
     private lateinit var typeIds: Map<String, Int>
+    private lateinit var groupNames: Map<Int, String>
     private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
@@ -58,6 +60,12 @@ class TypesRepository(
                 )
             }
             typeIds = rows.associate { it[Types.typeName] to it[Types.typeId] }
+            val groupRows = staticDatabase.transaction {
+                TypeGroups.selectAll().toList()
+            }
+            groupNames = groupRows.associate {
+                it[TypeGroups.groupId] to it[TypeGroups.groupName]
+            }
             hasLoaded.complete(Unit)
         }
     }
@@ -109,6 +117,11 @@ class TypesRepository(
             repackagedVolume = null,
             iconId = -1,
         )
+    }
+
+    fun getGroupName(id: Int): String? {
+        blockUntilLoaded()
+        return groupNames[id]
     }
 
     /**

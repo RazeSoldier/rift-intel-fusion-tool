@@ -10,6 +10,7 @@ import dev.nohus.rift.intel.state.SystemEntity.Ship
 import dev.nohus.rift.intel.state.SystemEntity.UnspecifiedCharacter
 import dev.nohus.rift.killboard.KillmailProcessor.ProcessedKillmail
 import dev.nohus.rift.logs.parse.ChatMessageParser
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,10 +32,10 @@ class IntelStateController(
         val item: T,
     )
 
-    private val systemContents = mutableMapOf<String, List<Dated<SystemEntity>>>()
+    private val systemContents = mutableMapOf<MapSolarSystem, List<Dated<SystemEntity>>>()
 
     private val mutex = Mutex()
-    private val _state = MutableStateFlow<Map<String, List<Dated<SystemEntity>>>>(emptyMap())
+    private val _state = MutableStateFlow<Map<MapSolarSystem, List<Dated<SystemEntity>>>>(emptyMap())
     val state = _state.asStateFlow()
 
     private fun updateState() {
@@ -139,15 +140,15 @@ class IntelStateController(
 
     private fun findSystemInMessages(
         messages: List<ParsedChannelChatMessage>,
-    ): String? {
+    ): MapSolarSystem? {
         return messages.firstNotNullOfOrNull { message ->
-            message.parsed.map { it.type }.filterIsInstance<ChatMessageParser.TokenType.System>().lastOrNull()?.name
+            message.parsed.map { it.type }.filterIsInstance<ChatMessageParser.TokenType.System>().lastOrNull()?.system
         }
     }
 
     private fun updateSystemEntities(
         timestamp: Instant,
-        system: String,
+        system: MapSolarSystem,
         removeExisting: Boolean,
         entities: List<SystemEntity>,
     ) {
@@ -166,7 +167,7 @@ class IntelStateController(
     }
 
     private fun removeSystemEntities(
-        system: String,
+        system: MapSolarSystem,
         entities: List<SystemEntity>,
     ) {
         val existingContents = systemContents[system] ?: emptyList()
@@ -174,7 +175,7 @@ class IntelStateController(
         systemContents[system] = newContents
     }
 
-    private fun updateSystemToClear(system: String) {
+    private fun updateSystemToClear(system: MapSolarSystem) {
         val existingContents = systemContents[system] ?: emptyList()
         val remainingContents = existingContents.filter { it.item !is Clearable }
         systemContents[system] = remainingContents
@@ -184,7 +185,7 @@ class IntelStateController(
      * Remove these characters from anywhere except this system, and move their ships if needed
      */
     private fun removeMovedCharacters(
-        systemTo: String,
+        systemTo: MapSolarSystem,
         characters: List<Character>,
     ) {
         if (characters.isEmpty()) return
@@ -212,7 +213,7 @@ class IntelStateController(
      * Add these ships that moved into a system with their characters, unless they are already in that system
      */
     private fun addMovedShips(
-        systemTo: String,
+        systemTo: MapSolarSystem,
         ships: List<Dated<SystemEntity>>,
     ) {
         val current = systemContents[systemTo] ?: emptyList()

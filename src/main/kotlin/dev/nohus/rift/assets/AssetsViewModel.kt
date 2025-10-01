@@ -8,7 +8,7 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.location.CharacterLocationRepository
-import dev.nohus.rift.network.esi.CharactersIdAsset
+import dev.nohus.rift.network.esi.models.CharactersIdAsset
 import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.PricesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -268,7 +268,7 @@ class AssetsViewModel(
         }
         val system = systemId?.let { solarSystemsRepository.getSystem(it) }
         val distance = if (activeCharacterSolarSystem != null && systemId != null) {
-            getSystemDistanceUseCase(activeCharacterSolarSystem, systemId, 50, withJumpBridges = true)
+            getSystemDistanceUseCase(activeCharacterSolarSystem, systemId, withJumpBridges = true)
         } else {
             null
         }

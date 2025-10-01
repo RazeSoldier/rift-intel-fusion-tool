@@ -4,7 +4,7 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.PlanetaryPin
+import dev.nohus.rift.network.esi.models.PlanetaryPin
 import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.Link
 import dev.nohus.rift.planetaryindustry.models.Pin
@@ -19,8 +19,10 @@ import dev.nohus.rift.planetaryindustry.models.getStatus
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilNow
 import dev.nohus.rift.planetaryindustry.simulation.ColonySimulation.SimulationEndCondition.UntilWorkEnds
-import dev.nohus.rift.repositories.GetSystemDistanceFromCharacterUseCase
+import dev.nohus.rift.repositories.GetSolarSystemChipStateUseCase
 import dev.nohus.rift.repositories.PlanetsRepository
+import dev.nohus.rift.repositories.SolarSystemChipLocation
+import dev.nohus.rift.repositories.SolarSystemChipState
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -56,15 +58,15 @@ class PlanetaryIndustryRepository(
     private val planetsRepository: PlanetsRepository,
     private val planetaryIndustrySchematicsRepository: PlanetaryIndustrySchematicsRepository,
     private val typesRepository: TypesRepository,
-    private val getSystemDistanceFromCharacterUseCase: GetSystemDistanceFromCharacterUseCase,
     private val characterLocationRepository: CharacterLocationRepository,
+    private val getSolarSystemChipStateUseCase: GetSolarSystemChipStateUseCase,
 ) {
 
     data class ColonyItem(
         val colony: Colony,
         val ffwdColony: Colony,
         val characterName: String?,
-        val distance: Int?,
+        val location: SolarSystemChipState,
     )
 
     private val _colonies = MutableStateFlow<AsyncResource<Map<String, ColonyItem>>>(AsyncResource.Loading)
@@ -122,7 +124,7 @@ class PlanetaryIndustryRepository(
         launch {
             characterLocationRepository.locations.collect {
                 updateItems {
-                    copy(distance = getDistance(colony))
+                    copy(location = getLocation(colony))
                 }
             }
         }
@@ -202,7 +204,7 @@ class PlanetaryIndustryRepository(
             colony = colony,
             ffwdColony = ffwdColony,
             characterName = character?.info?.success?.name,
-            distance = getDistance(colony),
+            location = getLocation(colony),
         )
     }
 
@@ -213,13 +215,12 @@ class PlanetaryIndustryRepository(
         _colonies.update { resource }
     }
 
-    private fun getDistance(colony: Colony): Int {
-        return getSystemDistanceFromCharacterUseCase(
-            systemId = colony.system.id,
-            maxDistance = 9,
-            withJumpBridges = true,
+    private fun getLocation(colony: Colony): SolarSystemChipState {
+        return getSolarSystemChipStateUseCase(
+            location = SolarSystemChipLocation.SolarSystem(colony.system.id),
+            nameOverride = colony.planet.name,
             characterId = colony.characterId,
-        )?.distance ?: Int.MAX_VALUE
+        )
     }
 
     private suspend fun loadColonies(): AsyncResource<List<Colony>> = coroutineScope {

@@ -24,8 +24,8 @@ import org.koin.core.annotation.Single
 import java.time.Duration
 import java.time.Instant
 import kotlin.time.Duration.Companion.minutes
-import dev.nohus.rift.network.esi.Contact as ContactDto
-import dev.nohus.rift.network.esi.ContactType as ContactTypeDto
+import dev.nohus.rift.network.esi.models.Contact as ContactDto
+import dev.nohus.rift.network.esi.models.ContactType as ContactTypeDto
 
 private val logger = KotlinLogging.logger {}
 

@@ -22,6 +22,7 @@ import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.isFriendly
 import dev.nohus.rift.utils.toRegexOrNull
@@ -78,14 +79,14 @@ class AlertsTriggerController(
         val matchingEntities: List<Pair<IntelReportType, List<SystemEntity>>>,
         val entities: List<SystemEntity>,
         val locationMatch: AlertLocationMatch,
-        val solarSystem: String,
+        val solarSystem: MapSolarSystem,
     )
 
     fun onNewKillmail(killmail: ProcessedKillmail) {
         if (killmail.timestamp.isBefore(Instant.now() - Duration.ofMinutes(3))) {
             return // Don't alert for old killmails
         }
-        val lastTriggeredInThisSystem = killmailSystemTriggerTimestamps[killmail.system] ?: Instant.EPOCH
+        val lastTriggeredInThisSystem = killmailSystemTriggerTimestamps[killmail.system.name] ?: Instant.EPOCH
         val duration = Duration.between(lastTriggeredInThisSystem, Instant.now())
         if (duration < Duration.ofSeconds(15)) {
             return // Don't repeatedly alert for kills in the same system
@@ -95,8 +96,7 @@ class AlertsTriggerController(
             if (alert.trigger is IntelReported) {
                 val matchingEntities = getMatchingEntities(alert.trigger.reportTypes, killmail)
                 if (matchingEntities.isNotEmpty()) {
-                    val systemId = solarSystemsRepository.getSystemId(killmail.system) ?: throw IllegalArgumentException("No system ${killmail.system}")
-                    getMatchingAlertLocation(alert.trigger.reportLocation, systemId)?.let { alertLocationMatch ->
+                    getMatchingAlertLocation(alert.trigger.reportLocation, killmail.system.id)?.let { alertLocationMatch ->
                         withCooldown(alert) {
                             return@mapNotNull TriggeredIntelAlert(
                                 alert = alert,
@@ -117,7 +117,7 @@ class AlertsTriggerController(
             }
         }
         triggeredIntelAlerts.forEach {
-            killmailSystemTriggerTimestamps[it.solarSystem] = Instant.now()
+            killmailSystemTriggerTimestamps[it.solarSystem.name] = Instant.now()
             alertsActionController.triggerIntelAlert(
                 alert = it.alert,
                 matchingEntities = it.matchingEntities,
@@ -136,7 +136,7 @@ class AlertsTriggerController(
                 if (matchingEntities.isNotEmpty() && understanding.systems.isNotEmpty()) {
                     logger.debug { "Entities are matching the alert: $matchingEntities" }
                     val reportSystem = understanding.systems.first()
-                    val reportSystemId = solarSystemsRepository.getSystemId(reportSystem) ?: throw IllegalArgumentException("No system $reportSystem")
+                    val reportSystemId = reportSystem.id
                     getMatchingAlertLocation(alert.trigger.reportLocation, reportSystemId)?.let { alertLocationMatch ->
                         withCooldown(alert) {
                             return@mapNotNull TriggeredIntelAlert(
@@ -322,7 +322,9 @@ class AlertsTriggerController(
                             } else {
                                 ping.formupLocations.any { location ->
                                     when (location) {
-                                        is FormupLocation.System -> location.name == fleetPingAlert.formupSystem
+                                        is FormupLocation.System -> {
+                                            solarSystemsRepository.getSystemName(location.id) == fleetPingAlert.formupSystem
+                                        }
                                         is FormupLocation.Text -> false
                                     }
                                 }
@@ -525,17 +527,17 @@ class AlertsTriggerController(
     }
 
     sealed interface AlertLocationMatch {
-        data class System(val systemId: Int, val distance: Int) : AlertLocationMatch
+        data class System(val system: MapSolarSystem, val distance: Int) : AlertLocationMatch
         data class Character(val characterId: Int, val distance: Int) : AlertLocationMatch
     }
 
     private fun getMatchingAlertLocation(location: IntelReportLocation, reportSystemId: Int): AlertLocationMatch? {
         return when (location) {
             is IntelReportLocation.System -> {
-                val systemId = solarSystemsRepository.getSystemId(location.systemName)
+                val system = solarSystemsRepository.getSystem(location.systemName)
                     ?: throw IllegalArgumentException("No system ${location.systemName}")
-                val distance = getSystemDistanceUseCase(systemId, reportSystemId, location.jumpsRange.max, withJumpBridges = false) ?: Int.MAX_VALUE
-                if (distance in location.jumpsRange) AlertLocationMatch.System(systemId, distance) else null
+                val distance = getSystemDistanceUseCase(system.id, reportSystemId, withJumpBridges = false) ?: Int.MAX_VALUE
+                if (distance in location.jumpsRange) AlertLocationMatch.System(system, distance) else null
             }
             is IntelReportLocation.AnyOwnedCharacter -> {
                 onlineCharactersRepository.onlineCharacters.value.firstNotNullOfOrNull { characterId ->
@@ -563,7 +565,7 @@ class AlertsTriggerController(
     private fun isCharacterWithinDistance(characterId: Int, systemId: Int, range: JumpRange): Int? {
         val characterSystemId = characterLocationRepository.locations.value[characterId]?.solarSystemId
         return if (characterSystemId != null) {
-            val distance = getSystemDistanceUseCase(characterSystemId, systemId, range.max, withJumpBridges = settings.isUsingJumpBridgesForDistance) ?: Int.MAX_VALUE
+            val distance = getSystemDistanceUseCase(characterSystemId, systemId, withJumpBridges = settings.isUsingJumpBridgesForDistance) ?: Int.MAX_VALUE
             if (distance in range) distance else null
         } else {
             null

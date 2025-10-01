@@ -41,7 +41,7 @@ fun AffiliateCode() {
             )
             Text(
                 text = code,
-                style = RiftTheme.typography.titlePrimary,
+                style = RiftTheme.typography.headerPrimary,
             )
             Row(
                 modifier = Modifier.padding(top = Spacing.small),
