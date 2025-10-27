@@ -36,6 +36,7 @@ class SolarSystemsRepository(
     data class MapSolarSystem(
         val id: Int,
         val name: String,
+        val abyssalName: String?,
         val constellationId: Int,
         val regionId: Int,
         val x: Double,
@@ -90,6 +91,7 @@ class SolarSystemsRepository(
             MapSolarSystem(
                 id = it[SolarSystems.solarSystemId],
                 name = it[SolarSystems.solarSystemName],
+                abyssalName = AbyssalSystemNames[it[SolarSystems.solarSystemName]],
                 constellationId = it[SolarSystems.constellationId],
                 regionId = it[SolarSystems.regionId],
                 x = it[SolarSystems.x],

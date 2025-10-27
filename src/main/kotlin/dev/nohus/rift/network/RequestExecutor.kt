@@ -15,14 +15,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import okhttp3.Headers
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * A deserialized response body and response headers
+ */
+data class Reply<T>(
+    val body: T,
+    val headers: Headers,
+)
+
 interface RequestExecutor {
     suspend fun <R : Any> execute(request: suspend () -> R): Result<R>
     suspend fun <R : Any> executeEveAuthorized(characterId: Int, scope: EsiScope?, request: suspend (authentication: String) -> R): Result<R>
+    suspend fun <R : Any> executeEveAuthorizedWithHeaders(characterId: Int, scope: EsiScope?, request: suspend (authorization: String) -> Response<R>): Result<Reply<R>>
 }
 
 class RequestExecutorImpl(
@@ -49,6 +60,29 @@ class RequestExecutorImpl(
         return try {
             val accessToken = ssoAuthenticator.getValidEveAccessToken(characterId, scope)
             Success(withContext(Dispatchers.IO) { request("Bearer $accessToken") })
+        } catch (e: Exception) {
+            handleError(e, characterId)
+        }
+    }
+
+    override suspend fun <R : Any> executeEveAuthorizedWithHeaders(
+        characterId: Int,
+        scope: EsiScope?,
+        request: suspend (authorization: String) -> Response<R>,
+    ): Result<Reply<R>> {
+        return try {
+            val accessToken = ssoAuthenticator.getValidEveAccessToken(characterId, scope)
+            val response = withContext(Dispatchers.IO) { request("Bearer $accessToken") }
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    Success(Reply(body, response.headers()))
+                } else {
+                    handleError(SerializationException("Response body was null"))
+                }
+            } else {
+                handleError(HttpException(response))
+            }
         } catch (e: Exception) {
             handleError(e, characterId)
         }
@@ -96,8 +130,8 @@ class RequestExecutorImpl(
                         logger.error { "ESI error response: $text" }
                     }
                     return Failure(EsiErrorException(errorResponse, e.code()))
-                } catch (ignored: SerializationException) {
-                    logger.error { "API HTTP error: ${e.code()} (with unknown body)" }
+                } catch (_: SerializationException) {
+                    logger.error { "API HTTP error: ${e.code()} (with unknown body) \"$body\"" }
                 }
             } else {
                 logger.error { "API HTTP error: ${e.code()}" }

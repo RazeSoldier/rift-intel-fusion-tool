@@ -197,7 +197,7 @@ fun SystemInfoBox(
                                         )
                                         Text(
                                             text = onlineCharacterLocation.name,
-                                            style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.onlineGreen),
+                                            style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.successGreen),
                                             modifier = Modifier.padding(4.dp),
                                         )
                                     }

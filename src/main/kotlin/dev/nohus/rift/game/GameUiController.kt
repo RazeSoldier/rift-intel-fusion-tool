@@ -9,7 +9,6 @@ import dev.nohus.rift.compose.text.FormattedTextColor.Highlighted
 import dev.nohus.rift.compose.text.FormattedTextColor.Secondary
 import dev.nohus.rift.compose.text.buildFormattedText
 import dev.nohus.rift.compose.text.toFormattedText
-import dev.nohus.rift.corpprojects.Project
 import dev.nohus.rift.infodialog.InfoDialogInputModel
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
@@ -69,8 +68,16 @@ class GameUiController(
         pushLink(GameLink.forSystem(system), "solar system")
     }
 
-    fun pushCorporationProject(project: Project) {
-        pushLink(GameLink.forCorporationProject(project), "corporation project")
+    fun pushLocation(locationId: Long, locationTypeId: Int, locationName: String) {
+        pushLink(GameLink.forLocation(locationId, locationTypeId, locationName), "location")
+    }
+
+    fun pushCorporationProject(id: String, name: String) {
+        pushLink(GameLink.forCorporationProject(id, name), "corporation project")
+    }
+
+    fun pushFreelanceProject(id: String, name: String) {
+        pushLink(GameLink.forFreelanceProject(id, name), "freelance project")
     }
 
     private fun pushLink(link: String, category: String) {

@@ -1,6 +1,7 @@
 package dev.nohus.rift.network.esi
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import dev.nohus.rift.network.Reply
 import dev.nohus.rift.network.RequestExecutor
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
@@ -20,7 +21,9 @@ import dev.nohus.rift.network.esi.models.CharactersIdRoles
 import dev.nohus.rift.network.esi.models.CharactersIdSearch
 import dev.nohus.rift.network.esi.models.Contact
 import dev.nohus.rift.network.esi.models.ContactsLabel
+import dev.nohus.rift.network.esi.models.CorporationDivisions
 import dev.nohus.rift.network.esi.models.CorporationProjectsQueryState
+import dev.nohus.rift.network.esi.models.CorporationWalletBalance
 import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
 import dev.nohus.rift.network.esi.models.CorporationsIdProjects
 import dev.nohus.rift.network.esi.models.CorporationsIdProjectsId
@@ -40,13 +43,14 @@ import dev.nohus.rift.network.esi.models.UniverseStationsId
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.esi.models.UniverseSystemJumps
 import dev.nohus.rift.network.esi.models.UniverseSystemKills
+import dev.nohus.rift.network.esi.models.WalletJournalEntry
+import dev.nohus.rift.network.esi.models.WalletTransaction
 import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
-import retrofit2.Response
 import retrofit2.Retrofit
 
 @Single
@@ -68,7 +72,7 @@ class EsiApi(
         return execute { service.postUniverseIds(names) }
     }
 
-    suspend fun postUniverseNames(ids: List<Int>): Result<List<UniverseName>> {
+    suspend fun postUniverseNames(ids: List<Long>): Result<List<UniverseName>> {
         return execute { service.postUniverseNames(ids) }
     }
 
@@ -192,6 +196,64 @@ class EsiApi(
         }
     }
 
+    suspend fun getCharactersIdWalletJournal(
+        characterId: Int,
+        page: Int? = null,
+    ): Result<Reply<List<WalletJournalEntry>>> {
+        return executeEveAuthorizedWithHeaders(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
+            service.getCharactersIdWalletJournal(characterId, page, authorization)
+        }
+    }
+
+    suspend fun getCharactersIdWalletTransactions(
+        characterId: Int,
+        fromId: Long? = null,
+    ): Result<List<WalletTransaction>> {
+        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
+            service.getCharactersIdWalletTransactions(characterId, fromId, authorization)
+        }
+    }
+
+    suspend fun getCorporationsCorporationIdWallet(
+        characterId: Int,
+        corporationId: Int,
+    ): Result<List<CorporationWalletBalance>> {
+        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
+            service.getCorporationsCorporationIdWallets(corporationId, authorization)
+        }
+    }
+
+    suspend fun getCorporationsCorporationIdWalletsDivisionJournal(
+        characterId: Int,
+        corporationId: Int,
+        division: Int,
+        page: Int? = null,
+    ): Result<Reply<List<WalletJournalEntry>>> {
+        return executeEveAuthorizedWithHeaders(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
+            service.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, division, page, authorization)
+        }
+    }
+
+    suspend fun getCorporationsCorporationIdWalletsDivisionTransactions(
+        characterId: Int,
+        corporationId: Int,
+        division: Int,
+        fromId: Long? = null,
+    ): Result<List<WalletTransaction>> {
+        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
+            service.getCorporationsCorporationIdWalletsDivisionTransactions(corporationId, division, fromId, authorization)
+        }
+    }
+
+    suspend fun getCorporationsCorporationIdDivisions(
+        characterId: Int,
+        corporationId: Int,
+    ): Result<CorporationDivisions> {
+        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadDivisions) { authorization ->
+            service.getCorporationsCorporationIdDivisions(corporationId, authorization)
+        }
+    }
+
     suspend fun getCharactersIdSearch(characterId: Int, categories: List<String>, strict: Boolean, search: String): Result<CharactersIdSearch> {
         return executeEveAuthorized(characterId, EsiScope.Search.SearchStructures) { authorization ->
             service.getCharactersIdSearch(characterId, categories, strict, search, authorization)
@@ -255,8 +317,8 @@ class EsiApi(
         }
     }
 
-    suspend fun getCharactersIdAssets(page: Int, characterId: Int): Result<Response<List<CharactersIdAsset>>> {
-        return executeEveAuthorized(characterId, EsiScope.Assets.ReadAssets) { authorization ->
+    suspend fun getCharactersIdAssets(page: Int, characterId: Int): Result<Reply<List<CharactersIdAsset>>> {
+        return executeEveAuthorizedWithHeaders(characterId, EsiScope.Assets.ReadAssets) { authorization ->
             service.getCharactersIdAssets(characterId, page, authorization)
         }
     }

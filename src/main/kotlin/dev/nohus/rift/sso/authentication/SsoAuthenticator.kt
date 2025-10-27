@@ -20,7 +20,7 @@ class SsoAuthenticator(
      * Returns once the authentication flow has finished, or failed
      */
     suspend fun authenticate(authority: SsoAuthority, scopes: List<String>) {
-        val authentication = ssoClient.authenticate(authority, scopes)
+        val authentication = ssoClient.authenticate(authority, scopes.sorted())
         when (authority) {
             SsoAuthority.Eve -> eveSsoRepository.addAuthentication(authentication as EveAuthentication)
         }

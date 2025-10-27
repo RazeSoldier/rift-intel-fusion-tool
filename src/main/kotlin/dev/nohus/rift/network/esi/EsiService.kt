@@ -17,7 +17,9 @@ import dev.nohus.rift.network.esi.models.CharactersIdRoles
 import dev.nohus.rift.network.esi.models.CharactersIdSearch
 import dev.nohus.rift.network.esi.models.Contact
 import dev.nohus.rift.network.esi.models.ContactsLabel
+import dev.nohus.rift.network.esi.models.CorporationDivisions
 import dev.nohus.rift.network.esi.models.CorporationProjectsQueryState
+import dev.nohus.rift.network.esi.models.CorporationWalletBalance
 import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
 import dev.nohus.rift.network.esi.models.CorporationsIdProjects
 import dev.nohus.rift.network.esi.models.CorporationsIdProjectsId
@@ -37,6 +39,8 @@ import dev.nohus.rift.network.esi.models.UniverseStationsId
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.esi.models.UniverseSystemJumps
 import dev.nohus.rift.network.esi.models.UniverseSystemKills
+import dev.nohus.rift.network.esi.models.WalletJournalEntry
+import dev.nohus.rift.network.esi.models.WalletTransaction
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -57,7 +61,7 @@ interface EsiService {
 
     @POST("/universe/names/")
     suspend fun postUniverseNames(
-        @Body ids: List<Int>,
+        @Body ids: List<Long>,
     ): List<UniverseName>
 
     @GET("/characters/{id}")
@@ -166,6 +170,48 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Header("Authorization") authorization: String,
     ): Double
+
+    @GET("/characters/{id}/wallet/journal/")
+    suspend fun getCharactersIdWalletJournal(
+        @Path("id") characterId: Int,
+        @Query("page") page: Int?,
+        @Header("Authorization") authorization: String,
+    ): Response<List<WalletJournalEntry>>
+
+    @GET("/characters/{id}/wallet/transactions/")
+    suspend fun getCharactersIdWalletTransactions(
+        @Path("id") characterId: Int,
+        @Query("from_id") fromId: Long?,
+        @Header("Authorization") authorization: String,
+    ): List<WalletTransaction>
+
+    @GET("/corporations/{corporation_id}/wallets")
+    suspend fun getCorporationsCorporationIdWallets(
+        @Path("corporation_id") corporationId: Int,
+        @Header("Authorization") authorization: String,
+    ): List<CorporationWalletBalance>
+
+    @GET("/corporations/{corporation_id}/wallets/{division}/journal")
+    suspend fun getCorporationsCorporationIdWalletsDivisionJournal(
+        @Path("corporation_id") corporationId: Int,
+        @Path("division") division: Int,
+        @Query("page") page: Int?,
+        @Header("Authorization") authorization: String,
+    ): Response<List<WalletJournalEntry>>
+
+    @GET("/corporations/{corporation_id}/wallets/{division}/transactions")
+    suspend fun getCorporationsCorporationIdWalletsDivisionTransactions(
+        @Path("corporation_id") corporationId: Int,
+        @Path("division") division: Int,
+        @Query("from_id") fromId: Long?,
+        @Header("Authorization") authorization: String,
+    ): List<WalletTransaction>
+
+    @GET("/corporations/{corporation_id}/divisions")
+    suspend fun getCorporationsCorporationIdDivisions(
+        @Path("corporation_id") corporationId: Int,
+        @Header("Authorization") authorization: String,
+    ): CorporationDivisions
 
     @GET("/characters/{id}/search/")
     suspend fun getCharactersIdSearch(

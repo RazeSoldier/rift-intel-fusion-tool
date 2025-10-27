@@ -51,7 +51,9 @@ class JumpBridgesRepository(
                 val from = solarSystemsRepository.getSystem(it.key) ?: return@mapNotNull null
                 val to = solarSystemsRepository.getSystem(it.value) ?: return@mapNotNull null
                 JumpBridgeConnection(from, to)
-            } ?: emptyList()
+            }
+            ?.distinct()
+            ?: emptyList()
     }
 
     fun setConnections(connections: List<JumpBridgeConnection>) {

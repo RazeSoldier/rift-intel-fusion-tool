@@ -1,6 +1,6 @@
 package dev.nohus.rift.wizard
 
-import androidx.compose.foundation.text.isTypedEvent
+import androidx.compose.ui.awt.awtEventOrNull
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.utf16CodePoint
 import dev.nohus.rift.Event
@@ -188,7 +188,7 @@ class WizardViewModel(
     }
 
     fun onKeyEvent(event: KeyEvent) {
-        if (event.isTypedEvent) {
+        if (event.awtEventOrNull?.id == java.awt.event.KeyEvent.KEY_TYPED) {
             val character = event.utf16CodePoint.toChar()
             if (character.isLetter()) {
                 typedText += character

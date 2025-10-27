@@ -4,7 +4,6 @@ import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.alerts.PlanetaryInteractionAlertTriggerController
 import dev.nohus.rift.assets.AssetsRepository
 import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
-import dev.nohus.rift.characters.repositories.CharacterWalletRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.clipboard.Clipboard
@@ -32,6 +31,7 @@ import dev.nohus.rift.standings.StandingsRepository
 import dev.nohus.rift.utils.ResetSparkleUpdateCheckUseCase
 import dev.nohus.rift.utils.activewindow.ActiveEveWindowRepository
 import dev.nohus.rift.utils.sound.SoundPlayer
+import dev.nohus.rift.wallet.WalletRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.koin.core.annotation.Single
@@ -42,7 +42,7 @@ class BackgroundProcesses(
     private val localCharactersRepository: LocalCharactersRepository,
     private val characterLocationRepository: CharacterLocationRepository,
     private val activeCharacterRepository: ActiveCharacterRepository,
-    private val characterWalletRepository: CharacterWalletRepository,
+    private val walletRepository: WalletRepository,
     private val gameLogWatcher: GameLogWatcher,
     private val chatLogsWatcher: ChatLogWatcher,
     private val alertsTriggerController: AlertsTriggerController,
@@ -94,7 +94,7 @@ class BackgroundProcesses(
                 activeCharacterRepository.start()
             }
             launch {
-                characterWalletRepository.start()
+                walletRepository.start()
             }
             launch {
                 pingsRepository.start()

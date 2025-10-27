@@ -1,9 +1,10 @@
 package dev.nohus.rift.repositories
 
 import dev.nohus.rift.database.static.StaticDatabase
+import dev.nohus.rift.database.static.TypeCategories
+import dev.nohus.rift.database.static.TypeDogmas
 import dev.nohus.rift.database.static.TypeGroups
 import dev.nohus.rift.database.static.Types
-import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +18,7 @@ import org.koin.core.annotation.Single
 @Single
 class TypesRepository(
     staticDatabase: StaticDatabase,
-    private val esiApi: EsiApi,
+    private val namesRepository: NamesRepository,
 ) {
 
     data class Type(
@@ -29,6 +30,11 @@ class TypesRepository(
         val radius: Float?,
         val repackagedVolume: Int?,
         val iconId: Int,
+        val dogmas: Dogmas,
+    )
+
+    data class Dogmas(
+        val entityOverviewShipGroupId: Int?,
     )
 
     private val scope = CoroutineScope(Job())
@@ -36,10 +42,10 @@ class TypesRepository(
     /**
      * Names resolved from ESI for types not in the SDE
      */
-    private val resolvedTypeNames = mutableMapOf<Int, String>()
     private lateinit var types: Map<Int, Type>
     private lateinit var typeIds: Map<String, Int>
     private lateinit var groupNames: Map<Int, String>
+    private lateinit var categoryNames: Map<Int, String>
     private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
@@ -47,9 +53,13 @@ class TypesRepository(
             val rows = staticDatabase.transaction {
                 Types.selectAll().toList()
             }
+            val dogmaRows = staticDatabase.transaction {
+                TypeDogmas.selectAll().toList()
+            }.associateBy { it[TypeDogmas.typeId] }
             types = rows.associate {
-                it[Types.typeId] to Type(
-                    id = it[Types.typeId],
+                val id = it[Types.typeId]
+                id to Type(
+                    id = id,
                     groupId = it[Types.groupId],
                     categoryId = it[Types.categoryId],
                     name = it[Types.typeName],
@@ -57,6 +67,9 @@ class TypesRepository(
                     radius = it[Types.radius],
                     repackagedVolume = it[Types.repackagedVolume],
                     iconId = it[Types.iconId] ?: it[Types.typeId],
+                    dogmas = Dogmas(
+                        entityOverviewShipGroupId = dogmaRows[id]?.get(TypeDogmas.entityOverviewShipGroupId),
+                    ),
                 )
             }
             typeIds = rows.associate { it[Types.typeName] to it[Types.typeId] }
@@ -65,6 +78,12 @@ class TypesRepository(
             }
             groupNames = groupRows.associate {
                 it[TypeGroups.groupId] to it[TypeGroups.groupName]
+            }
+            val categoryRows = staticDatabase.transaction {
+                TypeCategories.selectAll().toList()
+            }
+            categoryNames = categoryRows.associate {
+                it[TypeCategories.categoryId] to it[TypeCategories.categoryName]
             }
             hasLoaded.complete(Unit)
         }
@@ -95,7 +114,7 @@ class TypesRepository(
     }
 
     fun getTypeName(id: Int): String? {
-        return getType(id)?.name ?: resolvedTypeNames[id]
+        return getType(id)?.name ?: namesRepository.getName(id)
     }
 
     fun getType(name: String): Type? {
@@ -116,12 +135,18 @@ class TypesRepository(
             radius = null,
             repackagedVolume = null,
             iconId = -1,
+            dogmas = Dogmas(null),
         )
     }
 
     fun getGroupName(id: Int): String? {
         blockUntilLoaded()
         return groupNames[id]
+    }
+
+    fun getCategoryName(id: Int): String? {
+        blockUntilLoaded()
+        return categoryNames[id]
     }
 
     /**
@@ -153,17 +178,6 @@ class TypesRepository(
     }
 
     suspend fun resolveNamesFromEsi(ids: List<Int>) {
-        @Suppress("ConvertCallChainIntoSequence")
-        resolvedTypeNames += ids
-            .distinct()
-            .filter { getTypeName(it) == null }
-            .chunked(1000)
-            .flatMap { typeIds ->
-                when (val result = esiApi.postUniverseNames(typeIds)) {
-                    is Result.Success -> result.data
-                    is Result.Failure -> emptyList()
-                }
-            }
-            .associate { it.id to it.name }
+        namesRepository.resolveNames(ids)
     }
 }

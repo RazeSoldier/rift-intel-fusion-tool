@@ -14,10 +14,13 @@ object IdRanges {
     val wormholeSystem = 31_000_000..31_999_999
     val abyssalSystem = 32_000_000..32_999_999
     val voidSystem = 34_000_000..34_999_999
+    val station = 60_000_000..69_999_999
     val playerCorporation = 98_000_000..98_999_999
     val playerAlliance = 99_000_000..99_999_999
 
     fun isNpcAgent(id: Int) = id in npcAgent
     fun isFaction(id: Int) = id in faction
     fun isNpcCorporation(id: Int) = id in npcCorporation
+    fun isStation(id: Long) = id in station
+    fun isSpawnedItem(id: Long) = id >= 1_000_000_000_000
 }

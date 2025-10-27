@@ -80,11 +80,13 @@ class ContactsRepository(
     private var originalContacts: List<Contact> = emptyList()
     private val _contacts = MutableStateFlow(Contacts())
     val contacts = _contacts.asStateFlow()
+    private val _finishedLoading = MutableStateFlow(false)
+    val finishedLoading = _finishedLoading.asStateFlow()
 
     @OptIn(FlowPreview::class)
     suspend fun start() = coroutineScope {
         launch {
-            localCharactersRepository.characters.debounce(500).collect {
+            localCharactersRepository.characters.debounce(500).collectLatest {
                 reloadEventFlow.emit(Unit)
             }
         }
@@ -224,15 +226,19 @@ class ContactsRepository(
 
     private suspend fun updateContacts() {
         _contacts.update { it.copy(isLoading = true) }
-        val validCharacters =
-            localCharactersRepository.characters.value.filter { ScopeGroups.readContacts in it.scopes && it.info.success != null }
+        val charactersWithScopes = localCharactersRepository.characters.value.filter { ScopeGroups.readContacts in it.scopes }
+        val validCharacters = charactersWithScopes.filter { it.info.success != null }
         if (validCharacters.isEmpty()) {
             _contacts.update { it.copy(isLoading = false) }
+            if (charactersWithScopes.isEmpty()) {
+                _finishedLoading.update { true }
+            }
             return
         }
         val contactsResponse = getContacts(validCharacters)
         if (contactsResponse == null) {
             _contacts.update { it.copy(isLoading = false) }
+            _finishedLoading.update { true }
             return
         }
         if (contacts != originalContacts) {
@@ -245,6 +251,7 @@ class ContactsRepository(
             _contacts.update { it.copy(isLoading = false) }
             logger.info { "Checked contacts, no changes" }
         }
+        _finishedLoading.update { true }
     }
 
     private suspend fun getContacts(characters: List<LocalCharacter>): ContactsResponse? {
@@ -302,8 +309,8 @@ class ContactsRepository(
         val contactIds = (allianceContactsList.values + corporationContactsList.values + characterContactsList.values)
             .flatMap { it.map { it.contactId } }
         val names = (ownerIds + contactIds).distinct().chunked(1000).flatMap { ids ->
-            esiApi.postUniverseNames(ids).success
-                ?.map { it.id to it.name } ?: return@coroutineScope null
+            esiApi.postUniverseNames(ids.map { it.toLong() }).success
+                ?.map { it.id.toInt() to it.name } ?: return@coroutineScope null
         }.toMap()
 
         // Await labels

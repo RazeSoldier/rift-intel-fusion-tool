@@ -60,10 +60,11 @@ data class RiftColors(
     val warningBackground: Color,
     val warningColor: Color,
 
-    val onlineGreen: Color,
     val awayYellow: Color,
     val extendedAwayOrange: Color,
-    val offlineRed: Color,
+
+    val successGreen: Color,
+    val hotRed: Color,
 
     val mapBackground: Color,
 
@@ -130,10 +131,11 @@ val LocalRiftColors = staticCompositionLocalOf {
         warningBackground = Color.Unspecified,
         warningColor = Color.Unspecified,
 
-        onlineGreen = Color.Unspecified,
         awayYellow = Color.Unspecified,
         extendedAwayOrange = Color.Unspecified,
-        offlineRed = Color.Unspecified,
+
+        successGreen = Color.Unspecified,
+        hotRed = Color.Unspecified,
 
         mapBackground = Color.Unspecified,
 
@@ -229,10 +231,11 @@ private fun getRiftColors() = RiftColors(
     warningBackground = Color(0xFF180F09),
     warningColor = Color(0xFFF39058),
 
-    onlineGreen = EveColors.limeGreen,
     awayYellow = EveColors.sandYellow,
     extendedAwayOrange = EveColors.warningOrange,
-    offlineRed = EveColors.hotRed,
+
+    successGreen = EveColors.successGreen,
+    hotRed = EveColors.hotRed,
 
     mapBackground = Color(0xFF0A0E15),
 

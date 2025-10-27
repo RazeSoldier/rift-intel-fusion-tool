@@ -4,7 +4,6 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.corpprojects.CorporationProjectsRepository.CorporationProjects
 import dev.nohus.rift.corpprojects.CorporationProjectsRepository.LoadingState
 import dev.nohus.rift.game.GameUiController
-import dev.nohus.rift.network.esi.models.CorporationProjectCareer
 import dev.nohus.rift.network.esi.models.CorporationProjectState
 import dev.nohus.rift.utils.sumOfDouble
 import dev.nohus.rift.utils.toggle
@@ -139,7 +138,7 @@ class CorporationProjectsViewModel(
     }
 
     fun onViewInGameClick(project: Project) {
-        gameUiController.pushCorporationProject(project)
+        gameUiController.pushCorporationProject(project.id, project.name)
     }
 
     fun onBackClick() {

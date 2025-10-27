@@ -27,7 +27,7 @@ class LocalDatabase(
 
     init {
         transaction(targetDatabase) {
-            SchemaUtils.create(Characters2)
+            SchemaUtils.create(Characters2, WalletJournalEntries, WalletTransactions)
         }
     }
 

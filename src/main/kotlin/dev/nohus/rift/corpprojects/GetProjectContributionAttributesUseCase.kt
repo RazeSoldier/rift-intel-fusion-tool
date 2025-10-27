@@ -22,6 +22,7 @@ import dev.nohus.rift.network.esi.models.Item
 import dev.nohus.rift.network.esi.models.Location
 import dev.nohus.rift.network.esi.models.OwnerType
 import dev.nohus.rift.network.esi.models.SignatureTypeId
+import dev.nohus.rift.repositories.FactionNames
 import dev.nohus.rift.repositories.ShipTreeGroups
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapConstellation
@@ -378,7 +379,7 @@ class GetProjectContributionAttributesUseCase(
     }
 
     private fun mapFaction(faction: Faction): ProjectContributionAttribute {
-        val name = getFactionName(faction.factionId.toInt())
+        val name = FactionNames[faction.factionId.toInt()]
         return ProjectContributionAttribute.Faction(faction.factionId.toInt(), name)
     }
 
@@ -408,7 +409,7 @@ class GetProjectContributionAttributesUseCase(
                 return ProjectContributionAttribute.Alliance(identity.allianceId.toInt(), name)
             }
             identity.factionId != null -> {
-                val name = getFactionName(identity.factionId.toInt())
+                val name = FactionNames[identity.factionId.toInt()]
                 return ProjectContributionAttribute.Faction(identity.factionId.toInt(), name)
             }
             else -> null
@@ -472,34 +473,5 @@ class GetProjectContributionAttributesUseCase(
 
     private fun any(text: String = "Any"): List<ProjectContributionAttribute.Text> {
         return listOf(ProjectContributionAttribute.Text(text, isPlain = true))
-    }
-
-    private fun getFactionName(factionId: Int): String {
-        return when (factionId) {
-            500001 -> "Caldari State"
-            500002 -> "Minmatar Republic"
-            500003 -> "Amarr Empire"
-            500004 -> "Gallente Federation"
-            500005 -> "Jove Empire"
-            500006 -> "CONCORD Assembly"
-            500007 -> "Ammatar Mandate"
-            500008 -> "Khanid Kingdom"
-            500009 -> "The Syndicate"
-            500010 -> "Guristas Pirates"
-            500011 -> "Angel Cartel"
-            500012 -> "Blood Raider Covenant"
-            500013 -> "EverMore"
-            500014 -> "ORE"
-            500015 -> "Thukker Tribe"
-            500016 -> "Servant Sisters of EVE"
-            500017 -> "The Society of Conscious Thought"
-            500018 -> "Mordu's Legion Command"
-            500019 -> "Sansha's Nation"
-            500020 -> "Serpentis"
-            500026 -> "Triglavian Collective"
-            500028 -> "Association for Interdisciplinary Research"
-            500029 -> "Deathless Circle"
-            else -> "Unknown Faction"
-        }
     }
 }

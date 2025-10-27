@@ -1,7 +1,6 @@
 package dev.nohus.rift.characters
 
 import dev.nohus.rift.ViewModel
-import dev.nohus.rift.characters.repositories.CharacterWalletRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.charactersettings.GetAccountsUseCase
@@ -15,6 +14,8 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
+import dev.nohus.rift.wallet.WalletRepository
+import dev.nohus.rift.wallet.WalletRepository.WalletBalance
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -36,7 +37,7 @@ class CharactersViewModel(
     private val onlineCharactersRepository: OnlineCharactersRepository,
     private val localCharactersRepository: LocalCharactersRepository,
     private val characterLocationRepository: CharacterLocationRepository,
-    private val characterWalletRepository: CharacterWalletRepository,
+    private val walletRepository: WalletRepository,
     private val clonesRepository: ClonesRepository,
     private val eveSsoRepository: EveSsoRepository,
     private val getAccounts: GetAccountsUseCase,
@@ -86,10 +87,10 @@ class CharactersViewModel(
             combine(
                 localCharactersRepository.allCharacters,
                 onlineCharactersRepository.onlineCharacters,
-                characterWalletRepository.balances,
+                walletRepository.state,
                 clonesRepository.clones,
                 settings.updateFlow,
-            ) { characters, onlineCharacters, balances, clones, _ ->
+            ) { characters, onlineCharacters, walletsState, clones, _ ->
                 val items = characters
                     .map { localCharacter ->
                         val missingScopes = ScopeGroups.all - localCharacter.scopes.toSet()
@@ -98,13 +99,16 @@ class CharactersViewModel(
                             localCharacter.scopes.isEmpty() -> AuthenticationStatus.Unauthenticated
                             else -> AuthenticationStatus.PartiallyAuthenticated(missingScopes)
                         }
+                        val walletBalance = walletsState.loadedState?.success?.balances
+                            ?.firstOrNull { it is WalletBalance.Character && it.characterId == localCharacter.characterId }
+                            ?.balance
                         CharacterItem(
                             characterId = localCharacter.characterId,
                             settingsFiles = localCharacter.settingsFiles,
                             authenticationStatus = authenticationStatus,
                             isHidden = localCharacter.isHidden,
                             info = localCharacter.info,
-                            walletBalance = balances[localCharacter.characterId],
+                            walletBalance = walletBalance,
                             clones = clones[localCharacter.characterId] ?: emptyList(),
                         )
                     }

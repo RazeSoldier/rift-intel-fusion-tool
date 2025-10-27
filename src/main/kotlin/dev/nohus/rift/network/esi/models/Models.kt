@@ -1,5 +1,6 @@
 package dev.nohus.rift.network.esi.models
 
+import dev.nohus.rift.network.esi.pagination.OffsetId
 import dev.nohus.rift.network.zkillboardqueue.IsoDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,7 +17,7 @@ data class UniverseName(
     @SerialName("category")
     val category: UniverseNamesCategory,
     @SerialName("id")
-    val id: Int,
+    val id: Long,
     @SerialName("name")
     val name: String,
 )
@@ -89,6 +90,8 @@ data class CorporationsIdCorporation(
     val name: String,
     @SerialName("ticker")
     val ticker: String,
+    @SerialName("alliance_id")
+    val allianceId: Int? = null,
 )
 
 @Serializable
@@ -211,6 +214,8 @@ data class CharacterIdLocation(
 data class UniverseStationsId(
     @SerialName("name")
     val name: String,
+    @SerialName("owner")
+    val ownerId: Int? = null,
     @SerialName("system_id")
     val systemId: Int,
     @SerialName("type_id")
@@ -221,6 +226,8 @@ data class UniverseStationsId(
 data class UniverseStructuresId(
     @SerialName("name")
     val name: String,
+    @SerialName("owner_id")
+    val ownerId: Int,
     @SerialName("solar_system_id")
     val solarSystemId: Int,
     @SerialName("type_id")
@@ -679,4 +686,123 @@ data class NewMailRequest(
     val corporationOrAllianceId: Int? = null,
     @SerialName("to_mailing_list_id")
     val mailingListId: Long? = null,
+)
+
+@Serializable
+data class WalletJournalEntry(
+    @SerialName("amount")
+    val amount: Double? = null,
+    @SerialName("balance")
+    val balance: Double? = null,
+    @SerialName("context_id")
+    val contextId: Long? = null,
+    @SerialName("context_id_type")
+    val contextIdType: ContextIdType? = null,
+    @SerialName("date")
+    @Serializable(with = IsoDateTimeSerializer::class)
+    val date: Instant,
+    @SerialName("description")
+    val description: String,
+    @SerialName("id")
+    val id: Long,
+    @SerialName("reason")
+    val reason: String? = null,
+    @SerialName("ref_type")
+    val refType: String,
+    @SerialName("first_party_id")
+    val firstPartyId: Long? = null,
+    @SerialName("second_party_id")
+    val secondPartyId: Long? = null,
+    @SerialName("tax")
+    val tax: Double? = null,
+    @SerialName("tax_receiver_id")
+    val taxReceiverId: Long? = null,
+)
+
+@Serializable
+enum class ContextIdType {
+    @SerialName("structure_id")
+    Structure,
+
+    @SerialName("station_id")
+    Station,
+
+    @SerialName("market_transaction_id")
+    MarketTransaction,
+
+    @SerialName("character_id")
+    Character,
+
+    @SerialName("corporation_id")
+    Corporation,
+
+    @SerialName("alliance_id")
+    Alliance,
+
+    @SerialName("eve_system")
+    EveSystem,
+
+    @SerialName("industry_job_id")
+    IndustryJob,
+
+    @SerialName("contract_id")
+    Contract,
+
+    @SerialName("planet_id")
+    Planet,
+
+    @SerialName("system_id")
+    System,
+
+    @SerialName("type_id")
+    Type,
+}
+
+@Serializable
+data class WalletTransaction(
+    @SerialName("client_id")
+    val clientId: Long,
+    @SerialName("date")
+    @Serializable(with = IsoDateTimeSerializer::class)
+    val date: Instant,
+    @SerialName("is_buy")
+    val isBuy: Boolean,
+    @SerialName("is_personal")
+    val isPersonal: Boolean? = null,
+    @SerialName("journal_ref_id")
+    val journalRefId: Long,
+    @SerialName("location_id")
+    val locationId: Long,
+    @SerialName("quantity")
+    val quantity: Long,
+    @SerialName("transaction_id")
+    val transactionId: Long,
+    @SerialName("type_id")
+    val typeId: Long,
+    @SerialName("unit_price")
+    val unitPrice: Double,
+) : OffsetId {
+    override val offsetId: Long get() = transactionId
+}
+
+@Serializable
+data class CorporationWalletBalance(
+    @SerialName("balance")
+    val balance: Double,
+    @SerialName("division")
+    val divisionId: Int,
+)
+
+@Serializable
+data class CorporationDivisions(
+    @SerialName("wallet")
+    val walletDivisions: List<WalletDivision>? = null,
+)
+
+@Serializable
+data class WalletDivision(
+    @SerialName("division")
+    val id: Long? = null,
+    @SerialName("name")
+    val name: String? = null,
 )

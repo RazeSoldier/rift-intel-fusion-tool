@@ -7,6 +7,7 @@ sealed class EsiScope(val id: String) {
     abstract class Corporations(id: String) : EsiScope(id) {
         object ReadContacts : Corporations("esi-corporations.read_contacts.v1")
         object ReadProjects : Corporations("esi-corporations.read_projects.v1")
+        object ReadDivisions : Corporations("esi-corporations.read_divisions.v1")
     }
     abstract class Characters(id: String) : EsiScope(id) {
         object ReadContacts : Characters("esi-characters.read_contacts.v1")
@@ -27,6 +28,7 @@ sealed class EsiScope(val id: String) {
     }
     abstract class Wallet(id: String) : EsiScope(id) {
         object ReadCharacterWallet : Wallet("esi-wallet.read_character_wallet.v1")
+        object ReadCorporationWallets : Wallet("esi-wallet.read_corporation_wallets.v1")
     }
     abstract class Search(id: String) : EsiScope(id) {
         object SearchStructures : Search("esi-search.search_structures.v1")
