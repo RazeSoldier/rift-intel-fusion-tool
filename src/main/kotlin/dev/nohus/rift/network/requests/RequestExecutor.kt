@@ -77,50 +77,48 @@ class RequestExecutorImpl(
     private fun handleError(e: Exception, characterId: Int? = null): Failure {
         if (e is SsoException) {
             logger.error { "Could not execute request due to SSO failure: $e" }
-        } else if (e is NoAuthenticationException) {
-            if (e.scope != null) {
-                logger.error { "Could not execute request because the character ${e.characterId} does not allow scope \"${e.scope.id}\"" }
-            } else {
-                logger.error { "Could not execute request because the character ${e.characterId} is not authenticated" }
-            }
         } else if (e is HttpException) {
-            val body = e.response()?.errorBody()?.string()
-            if (!body.isNullOrBlank()) {
-                try {
-                    val errorResponse: EsiErrorResponse = json.decodeFromString(body)
-                    if ("token is not valid" in errorResponse.error) {
-                        if (characterId != null) {
-                            logger.error { "Character $characterId has an invalid token, removing" }
-                            eveSsoRepository.removeAuthentication(characterId)
-                        }
-                    } else if ("Character has been deleted" in errorResponse.error) {
-                        if (characterId != null) {
-                            logger.error { "Character $characterId has been deleted from the game, removing" }
-                            eveSsoRepository.removeAuthentication(characterId)
-                        }
-                    } else if ("Forbidden" == errorResponse.error) {
-                        logger.debug { "Forbidden API response" }
-                    } else if ("unroutable" == errorResponse.error) {
-                        logger.error { "ESI request could not be routed to Tranquility, the game is probably down" }
-                    } else if ("Timeout contacting tranquility" == errorResponse.error) {
-                        logger.error { "ESI request timed out contacting Tranquility, the game is probably down" }
-                    } else if (e.code() == 404) {
-                        // Valid response
-                    } else {
-                        val text = buildString {
-                            append(errorResponse.error)
-                            if (errorResponse.ssoStatus != null) {
-                                append(" (SSO status: ${errorResponse.ssoStatus})")
-                            }
-                        }
-                        logger.error { "ESI error response: $text" }
-                    }
-                    return Failure(EsiErrorException(errorResponse, e.code()))
-                } catch (_: SerializationException) {
-                    logger.error { "API HTTP error: ${e.code()} (with unknown body) \"$body\"" }
-                }
+            if (e.code() == 401) {
+                logger.error { "Unauthorized: ${e.message}" }
             } else {
-                logger.error { "API HTTP error: ${e.code()}" }
+                val body = e.response()?.errorBody()?.string()
+                if (!body.isNullOrBlank()) {
+                    try {
+                        val errorResponse: EsiErrorResponse = json.decodeFromString(body)
+                        if ("token is not valid" in errorResponse.error) {
+                            if (characterId != null) {
+                                logger.error { "Character $characterId has an invalid token, removing" }
+                                eveSsoRepository.removeAuthentication(characterId)
+                            }
+                        } else if ("Character has been deleted" in errorResponse.error) {
+                            if (characterId != null) {
+                                logger.error { "Character $characterId has been deleted from the game, removing" }
+                                eveSsoRepository.removeAuthentication(characterId)
+                            }
+                        } else if ("Forbidden" == errorResponse.error) {
+                            logger.debug { "Forbidden API response" }
+                        } else if ("unroutable" == errorResponse.error) {
+                            logger.error { "ESI request could not be routed to Tranquility, the game is probably down" }
+                        } else if ("Timeout contacting tranquility" == errorResponse.error) {
+                            logger.error { "ESI request timed out contacting Tranquility, the game is probably down" }
+                        } else if (e.code() == 404) {
+                            // Valid response
+                        } else {
+                            val text = buildString {
+                                append(errorResponse.error)
+                                if (errorResponse.ssoStatus != null) {
+                                    append(" (SSO status: ${errorResponse.ssoStatus})")
+                                }
+                            }
+                            logger.error { "ESI error response: $text" }
+                        }
+                        return Failure(EsiErrorException(errorResponse, e.code()))
+                    } catch (_: SerializationException) {
+                        logger.error { "API HTTP error: ${e.code()} (with unknown body) \"$body\"" }
+                    }
+                } else {
+                    logger.error { "API HTTP error: ${e.code()}" }
+                }
             }
         } else if (e is IOException) {
             logger.error { "Could not execute request: $e" }

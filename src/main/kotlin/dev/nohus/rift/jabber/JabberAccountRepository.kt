@@ -19,7 +19,7 @@ class JabberAccountRepository(
     fun getAccount(): JabberAccountResult {
         val jidLocalPart = settings.jabberJidLocalPart ?: return JabberAccountResult.NoAccount
         val password = settings.jabberPassword ?: return JabberAccountResult.NoAccount
-        val jid = "$jidLocalPart@goonfleet.com"
+        val jid = "$jidLocalPart@jabber-server.goonfleet.com"
         return JabberAccountResult.JabberAccount(jid, password)
     }
 

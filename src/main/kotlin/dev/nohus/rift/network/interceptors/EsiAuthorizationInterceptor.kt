@@ -2,10 +2,14 @@ package dev.nohus.rift.network.interceptors
 
 import dev.nohus.rift.network.requests.Character
 import dev.nohus.rift.network.requests.Scope
+import dev.nohus.rift.sso.authentication.NoAuthenticationException
 import dev.nohus.rift.sso.authentication.SsoAuthenticator
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
+import okhttp3.Protocol
+import okhttp3.Request
 import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.koin.core.annotation.Single
 import retrofit2.Invocation
 
@@ -23,7 +27,11 @@ class EsiAuthorizationInterceptor(
         val scope = scopeAnnotation?.value?.objectInstance
 
         val newRequest = if (character != null) {
-            val accessToken = ssoAuthenticator.getValidEveAccessToken(character.id, scope)
+            val accessToken = try {
+                ssoAuthenticator.getValidEveAccessToken(character.id, scope)
+            } catch (e: NoAuthenticationException) {
+                return@runBlocking createSyntheticFailure(request, e)
+            }
             request.newBuilder()
                 .addHeader("Authorization", "Bearer $accessToken")
                 .build()
@@ -32,5 +40,20 @@ class EsiAuthorizationInterceptor(
         }
 
         chain.proceed(newRequest)
+    }
+
+    private fun createSyntheticFailure(request: Request, exception: NoAuthenticationException): Response {
+        val message = if (exception.scope != null) {
+            "Could not execute request because the character ${exception.characterId} does not allow scope \"${exception.scope.id}\""
+        } else {
+            "Could not execute request because the character ${exception.characterId} is not authenticated"
+        }
+        return Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(401)
+            .message(message)
+            .body(message.toResponseBody(null))
+            .build()
     }
 }

@@ -116,7 +116,7 @@ private fun ToolbarRow(
             modifier = Modifier.weight(1f),
         )
 
-        AnimatedVisibility(state.loading.stage != null && state.loadedData is Result.Success) {
+        AnimatedVisibility((state.loading.stage != null || state.isProcessing) && state.loadedData is Result.Success) {
             LoadingSpinner(modifier = Modifier.size(36.dp))
         }
     }
@@ -184,7 +184,7 @@ private fun WalletWindowContent(
                                     onViewPartyDailyGoals = onViewPartyDailyGoals,
                                     onViewPartyActivity = onViewPartyActivity,
                                 )
-                                WalletTab.LoyaltyPoints -> LoyaltyPointsContent(resource.data)
+                                WalletTab.LoyaltyPoints -> LoyaltyPointsContent(state, resource.data, onFiltersUpdate)
                             }
                         }
                     }

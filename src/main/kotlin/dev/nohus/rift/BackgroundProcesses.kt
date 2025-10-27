@@ -1,5 +1,6 @@
 package dev.nohus.rift
 
+import dev.nohus.rift.about.CheckForUpdatesUseCase
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.alerts.PlanetaryInteractionAlertTriggerController
 import dev.nohus.rift.assets.AssetsRepository
@@ -69,12 +70,16 @@ class BackgroundProcesses(
     private val logLiteParser: LogLiteParser,
     private val sovereigntyUpgradesHackWatcher: SovereigntyUpgradesHackWatcher,
     private val corporationProjectsRepository: CorporationProjectsRepository,
+    private val checkForUpdatesUseCase: CheckForUpdatesUseCase,
     private val settings: Settings,
 ) {
 
     suspend fun start() = supervisorScope {
         launch {
             resetSparkleUpdateCheckUseCase()
+        }
+        launch {
+            checkForUpdatesUseCase()
         }
         if (!settings.isDemoMode) {
             launch {

@@ -88,6 +88,7 @@ data class SettingsModel(
     val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean = false,
     val preferredExternalServices: List<ExternalService> = emptyList(),
     val corpWalletDivisionNames: Map<Int, Map<Int, String>> = emptyMap(),
+    val newVersionSeenTimestamp: Long? = null,
 )
 
 @Serializable
