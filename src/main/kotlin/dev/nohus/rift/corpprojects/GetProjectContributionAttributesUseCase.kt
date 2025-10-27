@@ -22,6 +22,7 @@ import dev.nohus.rift.network.esi.models.Item
 import dev.nohus.rift.network.esi.models.Location
 import dev.nohus.rift.network.esi.models.OwnerType
 import dev.nohus.rift.network.esi.models.SignatureTypeId
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.FactionNames
 import dev.nohus.rift.repositories.ShipTreeGroups
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -397,15 +398,15 @@ class GetProjectContributionAttributesUseCase(
     private suspend fun mapIdentity(identity: Identity): ProjectContributionAttribute? {
         return when {
             identity.characterId != null -> {
-                val details = characterDetailsRepository.getCharacterDetails(identity.characterId.toInt())
+                val details = characterDetailsRepository.getCharacterDetails(Originator.CorporationProjects, identity.characterId.toInt())
                 return ProjectContributionAttribute.Character(identity.characterId.toInt(), details)
             }
             identity.corporationId != null -> {
-                val name = characterDetailsRepository.getCorporationName(identity.corporationId.toInt()).success?.name
+                val name = characterDetailsRepository.getCorporationName(Originator.CorporationProjects, identity.corporationId.toInt()).success?.name
                 return ProjectContributionAttribute.Corporation(identity.corporationId.toInt(), name)
             }
             identity.allianceId != null -> {
-                val name = characterDetailsRepository.getAllianceName(identity.allianceId.toInt()).success?.name
+                val name = characterDetailsRepository.getAllianceName(Originator.CorporationProjects, identity.allianceId.toInt()).success?.name
                 return ProjectContributionAttribute.Alliance(identity.allianceId.toInt(), name)
             }
             identity.factionId != null -> {
@@ -417,19 +418,19 @@ class GetProjectContributionAttributesUseCase(
     }
 
     private suspend fun mapCorporationId(corporationId: CorporationId): ProjectContributionAttribute {
-        val name = characterDetailsRepository.getCorporationName(corporationId.corporationId.toInt()).success?.name
+        val name = characterDetailsRepository.getCorporationName(Originator.CorporationProjects, corporationId.corporationId.toInt()).success?.name
         return ProjectContributionAttribute.Corporation(corporationId.corporationId.toInt(), name)
     }
 
     private suspend fun mapDockableLocation(dockableLocation: DockableLocation, characterId: Int): ProjectContributionAttribute? {
         return when {
             dockableLocation.stationId != null -> {
-                val station = locationRepository.getStation(dockableLocation.stationId.toInt())
+                val station = locationRepository.getStation(Originator.CorporationProjects, dockableLocation.stationId.toInt())
                 val solarSystem = station?.solarSystemId?.let { solarSystemsRepository.getSystem(it) }
                 ProjectContributionAttribute.Station(station, solarSystem)
             }
             dockableLocation.structureId != null -> {
-                val structure = locationRepository.getStructure(dockableLocation.structureId, characterId)
+                val structure = locationRepository.getStructure(Originator.CorporationProjects, dockableLocation.structureId, characterId)
                 val solarSystem = structure?.solarSystemId?.let { solarSystemsRepository.getSystem(it) }
                 ProjectContributionAttribute.Structure(structure, solarSystem)
             }

@@ -8,6 +8,7 @@ import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.LocationType
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -156,7 +157,7 @@ class ClonesRepository(
         if (clones != null) {
             _clones.value = clones
             lastUpdated = Instant.now()
-            logger.info { "Updated clones" }
+            logger.debug { "Updated clones" }
         } else {
             logger.error { "Could not update clones" }
         }
@@ -164,10 +165,10 @@ class ClonesRepository(
 
     private suspend fun getClones(characterIds: List<Int>): Map<Int, List<Clone>>? = coroutineScope {
         val clonesDeferred = characterIds.map { characterId ->
-            async { characterId to esiApi.getCharactersIdClones(characterId) }
+            async { characterId to esiApi.getCharactersIdClones(Originator.Clones, characterId) }
         }
         val implantsDeferred = characterIds.map { characterId ->
-            async { characterId to esiApi.getCharactersIdImplants(characterId) }
+            async { characterId to esiApi.getCharactersIdImplants(Originator.Clones, characterId) }
         }
         val cloneResults = clonesDeferred.awaitAll()
             .map { (characterId, result) -> characterId to (result.success ?: return@coroutineScope null) }
@@ -177,12 +178,12 @@ class ClonesRepository(
         val clones = cloneResults.map { (characterId, clones) ->
             characterId to clones.jumpClones.map { clone ->
                 val station = if (clone.locationType == LocationType.Station) {
-                    locationRepository.getStation(clone.locationId.toInt())
+                    locationRepository.getStation(Originator.Clones, clone.locationId.toInt())
                 } else {
                     null
                 }
                 val structure = if (clone.locationType == LocationType.Structure) {
-                    locationRepository.getStructure(clone.locationId, characterId)
+                    locationRepository.getStructure(Originator.Clones, clone.locationId, characterId)
                 } else {
                     null
                 }

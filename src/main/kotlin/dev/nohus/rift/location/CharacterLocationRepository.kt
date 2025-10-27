@@ -7,6 +7,7 @@ import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.CharacterIdShip
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -108,14 +109,14 @@ class CharacterLocationRepository(
     }
 
     private suspend fun loadLocation(character: LocalCharacter) {
-        val location = esiApi.getCharacterIdLocation(character.characterId).success ?: return
+        val location = esiApi.getCharacterIdLocation(Originator.LocalCharacters, character.characterId).success ?: return
         val ship = if (ScopeGroups.readCurrentShip in character.scopes) {
-            esiApi.getCharacterIdShip(character.characterId).success ?: _locations.value[character.characterId]?.ship
+            esiApi.getCharacterIdShip(Originator.LocalCharacters, character.characterId).success ?: _locations.value[character.characterId]?.ship
         } else {
             null
         }
-        val station = locationRepository.getStation(location.stationId)
-        val structure = locationRepository.getStructure(location.structureId, character.characterId)
+        val station = locationRepository.getStation(Originator.LocalCharacters, location.stationId)
+        val structure = locationRepository.getStructure(Originator.LocalCharacters, location.structureId, character.characterId)
         _locations.value +=
             character.characterId to Location(
                 solarSystemId = location.solarSystemId,

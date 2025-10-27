@@ -1,6 +1,7 @@
 package dev.nohus.rift.location
 
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import org.koin.core.annotation.Single
 
@@ -26,18 +27,18 @@ class LocationRepository(
         val solarSystemId: Int,
     )
 
-    suspend fun getStation(stationId: Int?, fetchOwner: Boolean = false): Station? {
+    suspend fun getStation(originator: Originator, stationId: Int?, fetchOwner: Boolean = false): Station? {
         if (stationId == null) return null
-        return esiApi.getUniverseStationsId(stationId).map {
-            val owner = it.ownerId?.takeIf { fetchOwner }?.let { ownerId -> characterDetailsRepository.getCorporationDetails(ownerId) }
+        return esiApi.getUniverseStationsId(originator, stationId).map {
+            val owner = it.ownerId?.takeIf { fetchOwner }?.let { ownerId -> characterDetailsRepository.getCorporationDetails(originator, ownerId) }
             Station(stationId, it.name, owner, it.typeId, it.systemId)
         }.success
     }
 
-    suspend fun getStructure(structureId: Long?, characterId: Int, fetchOwner: Boolean = false): Structure? {
+    suspend fun getStructure(originator: Originator, structureId: Long?, characterId: Int, fetchOwner: Boolean = false): Structure? {
         if (structureId == null) return null
-        return esiApi.getUniverseStructuresId(structureId, characterId).map {
-            val owner = it.ownerId.takeIf { fetchOwner }?.let { ownerId -> characterDetailsRepository.getCorporationDetails(ownerId) }
+        return esiApi.getUniverseStructuresId(originator, structureId, characterId).map {
+            val owner = it.ownerId.takeIf { fetchOwner }?.let { ownerId -> characterDetailsRepository.getCorporationDetails(originator, ownerId) }
             Structure(structureId, it.name, owner, it.typeId, it.solarSystemId)
         }.success
     }

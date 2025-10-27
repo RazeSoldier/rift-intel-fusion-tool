@@ -5,6 +5,7 @@ import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.PlanetaryPin
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.Link
 import dev.nohus.rift.planetaryindustry.models.Pin
@@ -125,7 +126,7 @@ class PlanetaryIndustryRepository(
             localCharactersRepository.characters.collect { characters ->
                 updateItems {
                     val character = characters.firstOrNull { it.characterId == colony.characterId }
-                    copy(characterName = character?.info?.success?.name)
+                    copy(characterName = character?.info?.name)
                 }
             }
         }
@@ -228,7 +229,7 @@ class PlanetaryIndustryRepository(
             colony = colony,
             seekColony = null,
             ffwdColony = colony,
-            characterName = character?.info?.success?.name,
+            characterName = character?.info?.name,
             location = getLocation(colony),
         )
     }
@@ -253,11 +254,11 @@ class PlanetaryIndustryRepository(
             .filter { ScopeGroups.readPlanetaryIndustryColonies in it.scopes }.map { it.characterId }
 
         val colonies = characters.map { characterId ->
-            async { esiApi.getCharactersIdPlanets(characterId) }
+            async { esiApi.getCharactersIdPlanets(Originator.PlanetaryIndustry, characterId) }
         }.awaitAll().flatMap { it.success ?: return@coroutineScope AsyncResource.Error(null) }
 
         val details = colonies.map { colony ->
-            async { colony to esiApi.getCharactersIdPlanetsId(colony.ownerId, colony.planetId) }
+            async { colony to esiApi.getCharactersIdPlanetsId(Originator.PlanetaryIndustry, colony.ownerId, colony.planetId) }
         }.awaitAll()
             .map { (colony, result) -> colony to (result.success ?: return@coroutineScope AsyncResource.Error(null)) }
 

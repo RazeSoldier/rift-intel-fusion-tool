@@ -1,4 +1,4 @@
-package dev.nohus.rift.network
+package dev.nohus.rift.network.interceptors
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.delay

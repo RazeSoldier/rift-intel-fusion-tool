@@ -39,7 +39,6 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.delete
 import dev.nohus.rift.generated.resources.deleteicon
 import dev.nohus.rift.utils.formatDateTime
 import dev.nohus.rift.utils.formatIsk

@@ -57,7 +57,7 @@ class DistanceMapController(
             centerSystemId = systemId,
             centerSystemName = solarSystemsRepository.getSystemName(systemId),
             followingCharacterId = firstCharacterWithLocation?.characterId,
-            followingCharacterName = firstCharacterWithLocation?.info?.success?.name,
+            followingCharacterName = firstCharacterWithLocation?.info?.name,
             distance = 3,
             layout = getLayout(systemId, 3),
         )
@@ -66,7 +66,7 @@ class DistanceMapController(
     suspend fun start() = coroutineScope {
         launch {
             localCharactersRepository.characters.collect { characters ->
-                val name = characters.find { it.characterId == _state.value.followingCharacterId }?.info?.success?.name
+                val name = characters.find { it.characterId == _state.value.followingCharacterId }?.info?.name
                 _state.update { it.copy(followingCharacterName = name) }
             }
         }
@@ -79,7 +79,7 @@ class DistanceMapController(
     }
 
     fun setSettings(centerSystemId: Int, followingCharacterId: Int?, distance: Int) {
-        val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == followingCharacterId }?.info?.success?.name
+        val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == followingCharacterId }?.info?.name
         _state.update {
             it.copy(
                 centerSystemId = centerSystemId,
@@ -96,7 +96,7 @@ class DistanceMapController(
      * From user input, which can be a character name or system name
      */
     fun setCenterTarget(target: String) {
-        val characterId = localCharactersRepository.characters.value.firstOrNull { it.info.success?.name == target }?.characterId
+        val characterId = localCharactersRepository.characters.value.firstOrNull { it.info?.name == target }?.characterId
         val systemId = solarSystemsRepository.getSystemId(target)
         if (characterId != null) {
             setFollowingCharacter(characterId)
@@ -122,7 +122,7 @@ class DistanceMapController(
 
     fun setFollowingCharacter(characterId: Int?) {
         if (characterId != null) {
-            val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.success?.name
+            val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.name
             _state.update {
                 it.copy(
                     followingCharacterId = characterId,

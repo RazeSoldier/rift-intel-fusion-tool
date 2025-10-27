@@ -1,5 +1,6 @@
-package dev.nohus.rift.network
+package dev.nohus.rift.network.requests
 
+import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.esi.EsiErrorException
@@ -16,7 +17,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.Headers
-import okhttp3.ResponseBody
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
@@ -32,10 +32,25 @@ data class Reply<T>(
 )
 
 interface RequestExecutor {
-    suspend fun <R : Any> execute(request: suspend () -> R): Result<R>
-    suspend fun <R : Any> executeWithHeaders(request: suspend () -> Response<R>): Result<Reply<R>>
-    suspend fun <R : Any> executeEveAuthorized(characterId: Int, scope: EsiScope?, request: suspend (authentication: String) -> R): Result<R>
-    suspend fun <R : Any> executeEveAuthorizedWithHeaders(characterId: Int, scope: EsiScope?, request: suspend (authorization: String) -> Response<R>): Result<Reply<R>>
+    suspend fun <R : Any> execute(
+        request: suspend () -> R,
+    ): Result<R>
+
+    suspend fun <R : Any> executeWithHeaders(
+        request: suspend () -> Response<R>,
+    ): Result<Reply<R>>
+
+    suspend fun <R : Any> executeEveAuthorized(
+        characterId: Int,
+        scope: EsiScope?,
+        request: suspend (authentication: String) -> R,
+    ): Result<R>
+
+    suspend fun <R : Any> executeEveAuthorizedWithHeaders(
+        characterId: Int,
+        scope: EsiScope?,
+        request: suspend (authorization: String) -> Response<R>,
+    ): Result<Reply<R>>
 }
 
 class RequestExecutorImpl(
@@ -54,7 +69,9 @@ class RequestExecutorImpl(
         }
     }
 
-    override suspend fun <R : Any> executeWithHeaders(request: suspend () -> Response<R>): Result<Reply<R>> {
+    override suspend fun <R : Any> executeWithHeaders(
+        request: suspend () -> Response<R>,
+    ): Result<Reply<R>> {
         return try {
             val response = withContext(Dispatchers.IO) { request() }
             if (response.isSuccessful) {

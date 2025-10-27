@@ -4,6 +4,7 @@ import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.StormStrength.Strong
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.StormStrength.Weak
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.GetSystemsInRangeUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
@@ -33,8 +34,8 @@ class GetMetaliminalStormsUseCase(
         val strength: StormStrength,
     )
 
-    suspend operator fun invoke(): Map<Int, List<Storm>> {
-        val storms = getStormCenters()
+    suspend operator fun invoke(originator: Originator): Map<Int, List<Storm>> {
+        val storms = getStormCenters(originator)
         return storms.flatMap { storm ->
             val core = getSystemsInRangeUseCase(storm.key, 1)
             val periphery = getSystemsInRangeUseCase(storm.key, 3) - core
@@ -42,8 +43,8 @@ class GetMetaliminalStormsUseCase(
         }.groupBy({ it.first }, { it.second })
     }
 
-    private suspend fun getStormCenters(): Map<Int, StormType> {
-        return when (val response = eveScoutRescueApi.getObservations()) {
+    private suspend fun getStormCenters(originator: Originator): Map<Int, StormType> {
+        return when (val response = eveScoutRescueApi.getObservations(originator)) {
             is Success -> {
                 response.data.mapNotNull { observation ->
                     val type = when (observation.observationType) {

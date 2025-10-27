@@ -3,6 +3,7 @@ package dev.nohus.rift.map.systemcolor
 import androidx.collection.MutableIntLongMap
 import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.network.imageserver.ImageServerApi
+import dev.nohus.rift.network.requests.Originator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,12 +45,12 @@ class SovereigntyColorRepository(
         return Color.Unspecified
     }
 
-    private fun getColorFromLogo(id: Int, getLogo: suspend (id: Int, size: Int) -> BufferedImage?) {
+    private fun getColorFromLogo(id: Int, getLogo: suspend (originator: Originator, id: Int, size: Int) -> BufferedImage?) {
         if (id in processedIds) return
         processedIds += id
 
         scope.launch(Dispatchers.Default) {
-            val logo = getLogo(id, 32) ?: run {
+            val logo = getLogo(Originator.Map, id, 32) ?: run {
                 processedIds -= id
                 return@launch
             }

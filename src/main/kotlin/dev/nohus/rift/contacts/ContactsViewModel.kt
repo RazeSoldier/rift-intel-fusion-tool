@@ -16,6 +16,7 @@ import dev.nohus.rift.network.AsyncResource.Ready
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiErrorException
 import dev.nohus.rift.network.esi.EsiErrorResponse
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.toResource
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.standings.Standing
@@ -245,7 +246,7 @@ class ContactsViewModel(
                 var attempt = 0
                 while (true) {
                     attempt++
-                    val result = searchRepository.search(character.characterId, _state.value.searchCategories, _state.value.search).mapResult {
+                    val result = searchRepository.search(Originator.Contacts, character.characterId, _state.value.searchCategories, _state.value.search).mapResult {
                         if (it.values.flatten().isEmpty()) Result.Failure(EsiErrorException(EsiErrorResponse("No results"), 0)) else Result.Success(it)
                     }
                     if (result.isFailure && attempt < 3 && result.failure !is EsiErrorException) continue
@@ -260,7 +261,7 @@ class ContactsViewModel(
 
     private fun onEdit(id: Int, type: EntityType) {
         viewModelScope.launch {
-            namesRepository.resolveNames(listOf(id))
+            namesRepository.resolveNames(Originator.Contacts, listOf(id))
             val name = namesRepository.getName(id) ?: id.toString()
             onEdit(Entity(id, name, type), null)
         }

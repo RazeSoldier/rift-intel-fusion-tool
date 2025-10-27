@@ -15,6 +15,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
@@ -230,7 +231,7 @@ class ChatMessageParser(
         incompleteParsings += Parsing(tokens = emptyList(), remainingWords = words)
 
         val possibleCharacterNames = getPossibleCharacterNames(words)
-        val characterNamesStatus = charactersRepository.getCharacterNamesStatus(possibleCharacterNames)
+        val characterNamesStatus = charactersRepository.getCharacterNamesStatus(Originator.ChatLogs, possibleCharacterNames)
 
         while (incompleteParsings.isNotEmpty()) {
             if (incompleteParsings.size > MAX_INCOMPLETE_TOKENIZATIONS) {

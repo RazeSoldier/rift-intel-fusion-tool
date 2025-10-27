@@ -165,7 +165,7 @@ private fun EditContactDialogContent(
                     items = dialog.characters,
                     selectedItem = selectedCharacter,
                     onItemSelected = { selectedCharacter = it },
-                    getItemName = { it.info.success?.name ?: "${it.characterId}" },
+                    getItemName = { it.info?.name ?: "${it.characterId}" },
                     modifier = Modifier.padding(top = Spacing.small),
                 )
 

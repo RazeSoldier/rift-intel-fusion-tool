@@ -125,7 +125,7 @@ class JabberClient(
                     connect()
                     login()
 
-                    multiUserChatController.joinBookmarkedChats()
+                    multiUserChatController.joinSavedChats()
 
                     session = JabberSession(
                         connection = this,

@@ -40,8 +40,6 @@ import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.fadingRightEdge
-import dev.nohus.rift.compose.modifyIf
-import dev.nohus.rift.compose.modifyIfNotNull
 import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.Cursors

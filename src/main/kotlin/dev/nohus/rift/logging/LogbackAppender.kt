@@ -55,7 +55,7 @@ class LogbackAppender : AppenderBase<ILoggingEvent>() {
         try {
             diagnosticsFile.deleteIfExists()
             diagnosticsFile.createNewFile()
-        } catch (ignore: IOException) {}
+        } catch (_: IOException) {}
         super.start()
     }
 
@@ -110,7 +110,7 @@ class LogbackAppender : AppenderBase<ILoggingEvent>() {
                         diagnosticsLines = MAX_DIAGNOSTICS_LINES
                         diagnosticsFile.writeText(diagnosticsFile.readLines().takeLast(MAX_DIAGNOSTICS_LINES).joinToString("\n") + "\n")
                     }
-                } catch (ignored: IOException) {}
+                } catch (_: IOException) {}
             }
         }
     }

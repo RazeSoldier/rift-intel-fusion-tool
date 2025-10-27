@@ -691,11 +691,11 @@ private fun getAlertText(
                         is IntelReportLocation.AnyOwnedCharacter if location.onlyUndocked -> "${getRangePrefixText(location.jumpsRange)} any undocked character's location"
                         is IntelReportLocation.AnyOwnedCharacter -> "${getRangePrefixText(location.jumpsRange)} any online character's location"
                         is IntelReportLocation.OwnedCharacter if location.onlyUndocked -> {
-                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.success?.name ?: location.characterId.toString()
+                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name ?: location.characterId.toString()
                             "${getRangePrefixText(location.jumpsRange)} $character's undocked location"
                         }
                         is IntelReportLocation.OwnedCharacter -> {
-                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.success?.name ?: location.characterId.toString()
+                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name ?: location.characterId.toString()
                             "${getRangePrefixText(location.jumpsRange)} $character's location"
                         }
                     }

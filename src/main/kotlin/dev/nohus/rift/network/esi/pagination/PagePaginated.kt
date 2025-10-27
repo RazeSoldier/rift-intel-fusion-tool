@@ -1,9 +1,9 @@
 package dev.nohus.rift.network.esi.pagination
 
-import dev.nohus.rift.network.Reply
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
+import dev.nohus.rift.network.requests.Reply
 import kotlin.collections.plusAssign
 import kotlin.text.toIntOrNull
 

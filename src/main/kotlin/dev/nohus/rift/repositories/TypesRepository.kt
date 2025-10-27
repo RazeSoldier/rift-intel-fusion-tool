@@ -5,7 +5,7 @@ import dev.nohus.rift.database.static.TypeCategories
 import dev.nohus.rift.database.static.TypeDogmas
 import dev.nohus.rift.database.static.TypeGroups
 import dev.nohus.rift.database.static.Types
-import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.requests.Originator
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -177,7 +177,7 @@ class TypesRepository(
         }
     }
 
-    suspend fun resolveNamesFromEsi(ids: List<Int>) {
-        namesRepository.resolveNames(ids)
+    suspend fun resolveNamesFromEsi(originator: Originator, ids: List<Int>) {
+        namesRepository.resolveNames(originator, ids)
     }
 }

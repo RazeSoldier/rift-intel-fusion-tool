@@ -1,18 +1,26 @@
 package dev.nohus.rift.debug
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,24 +31,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftRadioButtonWithLabel
+import dev.nohus.rift.compose.RiftTabBar
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
+import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.VerticalDivider
 import dev.nohus.rift.compose.animateBackgroundHover
 import dev.nohus.rift.compose.animateWindowBackgroundSecondaryHover
+import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.pointerInteraction
+import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.debug.DebugViewModel.DebugTab
 import dev.nohus.rift.debug.DebugViewModel.UiState
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_log
+import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -57,6 +76,13 @@ fun DebugWindow(
         icon = Res.drawable.window_log,
         state = windowState,
         onCloseClick = onCloseRequest,
+        titleBarContent = { height ->
+            ToolbarRow(
+                state = state,
+                fixedHeight = height,
+                onTabSelected = viewModel::onTabClick,
+            )
+        },
     ) {
         DebugWindowContent(
             state = state,
@@ -65,60 +91,236 @@ fun DebugWindow(
 }
 
 @Composable
+private fun ToolbarRow(
+    state: UiState,
+    fixedHeight: Dp,
+    onTabSelected: (DebugTab) -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val tabs = remember {
+            DebugTab.entries.mapIndexed { index, tab ->
+                val title = when (tab) {
+                    DebugTab.Logs -> "Logs"
+                    DebugTab.Network -> "Network Statistics"
+                }
+                Tab(id = index, title = title, isCloseable = false)
+            }
+        }
+        RiftTabBar(
+            tabs = tabs,
+            selectedTab = DebugTab.entries.indexOf(state.tab),
+            onTabSelected = { onTabSelected(DebugTab.entries[it]) },
+            onTabClosed = {},
+            withUnderline = false,
+            withWideTabs = true,
+            fixedHeight = fixedHeight,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
 private fun DebugWindowContent(
     state: UiState,
 ) {
-    Column {
-        Text(
-            text = "${state.version} (${state.operatingSystem}), ${state.vmVersion}",
-            style = RiftTheme.typography.bodyPrimary,
-            modifier = Modifier.padding(bottom = Spacing.medium),
-        )
+    AnimatedContent(state.tab) { selectedTab ->
+        when (selectedTab) {
+            DebugTab.Logs -> {
+                Column(
+                    modifier = Modifier.padding(top = Spacing.large),
+                ) {
+                    Text(
+                        text = "${state.version} (${state.operatingSystem}), ${state.vmVersion}",
+                        style = RiftTheme.typography.bodyPrimary,
+                        modifier = Modifier.padding(bottom = Spacing.medium),
+                    )
 
-        Text(
-            text = "Jabber ${state.isJabberConnected.connected}",
-            style = RiftTheme.typography.bodyPrimary,
-            modifier = Modifier.padding(bottom = Spacing.medium),
-        )
+                    Text(
+                        text = "Jabber ${state.isJabberConnected.connected}",
+                        style = RiftTheme.typography.bodyPrimary,
+                        modifier = Modifier.padding(bottom = Spacing.medium),
+                    )
 
-        var minLevel by remember { mutableStateOf(Level.ALL) }
-        var isAutoScrolling by remember { mutableStateOf(true) }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-            modifier = Modifier.padding(bottom = Spacing.medium),
-        ) {
-            Text(
-                text = "Level:",
-                style = RiftTheme.typography.bodyPrimary,
-            )
-            RiftRadioButtonWithLabel(
-                label = "All",
-                isChecked = minLevel == Level.ALL,
-                onChecked = { minLevel = Level.ALL },
-            )
-            RiftRadioButtonWithLabel(
-                label = "Info",
-                isChecked = minLevel == Level.INFO,
-                onChecked = { minLevel = Level.INFO },
-            )
-            RiftRadioButtonWithLabel(
-                label = "Warn",
-                isChecked = minLevel == Level.WARN,
-                onChecked = { minLevel = Level.WARN },
-            )
-            RiftRadioButtonWithLabel(
-                label = "Error",
-                isChecked = minLevel == Level.ERROR,
-                onChecked = { minLevel = Level.ERROR },
-            )
-            RiftCheckboxWithLabel(
-                label = "Autoscroll",
-                isChecked = isAutoScrolling,
-                onCheckedChange = { isAutoScrolling = it },
-            )
+                    var minLevel by remember { mutableStateOf(Level.ALL) }
+                    var isAutoScrolling by remember { mutableStateOf(true) }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                        modifier = Modifier.padding(bottom = Spacing.medium),
+                    ) {
+                        Text(
+                            text = "Level:",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                        RiftRadioButtonWithLabel(
+                            label = "All",
+                            isChecked = minLevel == Level.ALL,
+                            onChecked = { minLevel = Level.ALL },
+                        )
+                        RiftRadioButtonWithLabel(
+                            label = "Info",
+                            isChecked = minLevel == Level.INFO,
+                            onChecked = { minLevel = Level.INFO },
+                        )
+                        RiftRadioButtonWithLabel(
+                            label = "Warn",
+                            isChecked = minLevel == Level.WARN,
+                            onChecked = { minLevel = Level.WARN },
+                        )
+                        RiftRadioButtonWithLabel(
+                            label = "Error",
+                            isChecked = minLevel == Level.ERROR,
+                            onChecked = { minLevel = Level.ERROR },
+                        )
+                        RiftCheckboxWithLabel(
+                            label = "Autoscroll",
+                            isChecked = isAutoScrolling,
+                            onCheckedChange = { isAutoScrolling = it },
+                        )
+                    }
+                    LogsView(state, minLevel, isAutoScrolling)
+                }
+            }
+            DebugTab.Network -> {
+                Column(
+                    modifier = Modifier.padding(top = Spacing.medium),
+                ) {
+                    Text(
+                        text = "Network requests per second",
+                        style = RiftTheme.typography.headerPrimary,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
+                    val now = getNow()
+                    Box(Modifier.animateContentSize().weight(1f)) {
+                        NetworkChart(
+                            buckets = state.buckets,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                    Spacer(Modifier.height(Spacing.large))
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                        modifier = Modifier.animateContentSize(),
+                    ) {
+                        val oldestEpochSecond = now.epochSecond - RequestStatisticsInterceptor.MAX_BUCKETS
+                        val requests = state.buckets
+                            .flatMap { it.requests }
+                            .takeLastWhile { it.timestamp.epochSecond >= oldestEpochSecond }
+                        val inflightRequests = requests.filter { it.response == null }
+
+                        Text(
+                            text = buildAnnotatedString {
+                                append("Requests by originating feature in the last 2 minutes: ")
+                                withStyle(RiftTheme.typography.headerPrimary.copy(fontWeight = FontWeight.Bold).toSpanStyle()) {
+                                    append("${requests.size}")
+                                    val failuresCount = requests.count { it.response?.isSuccess == false }
+                                    if (failuresCount > 0) {
+                                        append(" ")
+                                        withColor(EveColors.dangerRed) {
+                                            append("($failuresCount)")
+                                        }
+                                    }
+                                }
+                            },
+                            style = RiftTheme.typography.headerPrimary,
+                        )
+                        Divider(color = RiftTheme.colors.divider)
+                        if (requests.isNotEmpty()) {
+                            requests.groupBy { it.originator }.entries.sortedByDescending { it.value.size }.forEach { (originator, requests) ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .border(1.dp, RiftTheme.colors.borderGreyLight)
+                                            .size(16.dp)
+                                            .background(originator.color),
+                                    ) {}
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            append("${originator.name}: ")
+                                            withColor(RiftTheme.colors.textHighlighted) {
+                                                append("${requests.size}")
+                                            }
+                                        },
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(Spacing.large),
+                                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                        modifier = Modifier.padding(start = Spacing.medium),
+                                    ) {
+                                        requests.groupBy { it.endpoint }.entries.sortedByDescending { it.value.size }.forEach { (endpoint, requests) ->
+                                            Text(
+                                                text = buildAnnotatedString {
+                                                    append("$endpoint: ")
+                                                    withStyle(RiftTheme.typography.bodyPrimary.copy(fontWeight = FontWeight.Bold).toSpanStyle()) {
+                                                        append("${requests.size}")
+                                                        val failuresCount = requests.count { it.response?.isSuccess == false }
+                                                        if (failuresCount > 0) {
+                                                            append(" ")
+                                                            withColor(EveColors.dangerRed) {
+                                                                append("($failuresCount)")
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                style = RiftTheme.typography.bodySecondary,
+                                            )
+                                        }
+                                    }
+                                }
+                                Divider(color = RiftTheme.colors.divider)
+                            }
+                        } else {
+                            Text(
+                                text = "–",
+                                style = RiftTheme.typography.bodyPrimary,
+                            )
+                            Divider(color = RiftTheme.colors.divider)
+                        }
+
+                        Text(
+                            text = buildAnnotatedString {
+                                append("In-flight requests: ")
+                                withColor(RiftTheme.colors.textHighlighted) {
+                                    append("${inflightRequests.size}")
+                                }
+                            },
+                            style = RiftTheme.typography.headerPrimary,
+                        )
+                        if (inflightRequests.isNotEmpty()) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.large),
+                                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                            ) {
+                                inflightRequests.groupBy { it.endpoint }.entries.sortedByDescending { it.value.size }.forEach { (endpoint, requests) ->
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            append("$endpoint: ")
+                                            withColor(RiftTheme.colors.textHighlighted) {
+                                                append("${requests.size}")
+                                            }
+                                        },
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "–",
+                                style = RiftTheme.typography.bodyPrimary,
+                            )
+                        }
+                    }
+                }
+            }
         }
-        LogsView(state, minLevel, isAutoScrolling)
     }
 }
 

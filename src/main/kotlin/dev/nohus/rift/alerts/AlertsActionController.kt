@@ -8,6 +8,7 @@ import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogAction
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.logs.parse.ChannelChatMessage
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.notifications.NotificationsController
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.notifications.system.SendNotificationUseCase
@@ -82,9 +83,9 @@ class AlertsActionController(
 
     fun triggerChatMessageAlert(alert: Alert, chatMessage: ChannelChatMessage, highlight: String?) {
         scope.launch {
-            val characterId = charactersRepository.getCharacterId(chatMessage.chatMessage.author)
+            val characterId = charactersRepository.getCharacterId(Originator.Alerts, chatMessage.chatMessage.author)
             val standing = if (characterId != null) {
-                characterDetailsRepository.getCharacterDetails(characterId)?.standingLevel
+                characterDetailsRepository.getCharacterDetails(Originator.Alerts, characterId)?.standingLevel
             } else {
                 null
             }

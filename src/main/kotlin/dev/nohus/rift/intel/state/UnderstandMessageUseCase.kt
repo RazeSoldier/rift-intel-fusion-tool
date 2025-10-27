@@ -15,6 +15,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser
 import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import kotlinx.coroutines.async
@@ -66,7 +67,7 @@ class UnderstandMessageUseCase(
             .filterIsInstance<TokenType.Character>()
             .map { it.characterId }
             .distinct()
-            .map { async { characterDetailsRepository.getCharacterDetails(it) } }
+            .map { async { characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, it) } }
             .toList()
         entities += understandRemoteDscanUseCase(tokens)
         val characterDetails = deferredCharacterDetails.awaitAll().filterNotNull().associateBy { it.characterId }

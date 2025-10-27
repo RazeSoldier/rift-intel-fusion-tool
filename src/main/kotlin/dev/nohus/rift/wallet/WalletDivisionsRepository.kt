@@ -2,6 +2,7 @@ package dev.nohus.rift.wallet
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.settings.persistence.Settings
 import org.koin.core.annotation.Single
 
@@ -13,8 +14,8 @@ class WalletDivisionsRepository(
 
     suspend fun load(directors: List<LocalCharactersRepository.LocalCharacter>) {
         val newCorporationIdToDivisions = directors.mapNotNull { director ->
-            val corporationId = director.info.success?.corporationId ?: return@mapNotNull null
-            val divisions = esiApi.getCorporationsCorporationIdDivisions(director.characterId, corporationId).success?.walletDivisions
+            val corporationId = director.info?.corporationId ?: return@mapNotNull null
+            val divisions = esiApi.getCorporationsCorporationIdDivisions(Originator.Wallets, director.characterId, corporationId).success?.walletDivisions
             val divisionNames = divisions?.mapNotNull {
                 val id = it.id?.toInt() ?: return@mapNotNull null
                 val name = it.name ?: return@mapNotNull null

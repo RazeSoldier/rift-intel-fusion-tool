@@ -5,6 +5,7 @@ import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.adashboardinfo.AdashboardInfoApi
 import dev.nohus.rift.network.dscaninfo.DscanInfoApi
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.ShipTypesRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
@@ -48,7 +49,7 @@ class UnderstandRemoteDscanUseCase(
     }
 
     private suspend fun getDscanInfoScan(id: String): List<SystemEntity> {
-        return when (val response = dscanInfoApi.getScan(id)) {
+        return when (val response = dscanInfoApi.getScan(Originator.ChatLogs, id)) {
             is Success -> {
                 response.data.ships?.mapNotNull { ship ->
                     shipTypesRepository.getFuzzyShip(ship.name)?.let { type ->
@@ -67,7 +68,7 @@ class UnderstandRemoteDscanUseCase(
     }
 
     private suspend fun getAdashboardInfoScan(id: String): List<SystemEntity> {
-        return when (val response = adashboardInfoApi.getScan(id)) {
+        return when (val response = adashboardInfoApi.getScan(Originator.ChatLogs, id)) {
             is Success -> {
                 val document = Jsoup.parse(response.data)
                 val allShipsTitle = document.getElementsContainingOwnText("All ships").singleOrNull()

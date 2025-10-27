@@ -1,8 +1,9 @@
 package dev.nohus.rift.network.evescout
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import dev.nohus.rift.network.RequestExecutor
 import dev.nohus.rift.network.Result
+import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.requests.RequestExecutor
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -14,7 +15,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 @Single
 class EveScoutRescueApi(
     @Named("network") json: Json,
-    client: OkHttpClient,
+    @Named("api") client: OkHttpClient,
     requestExecutor: RequestExecutor,
 ) : RequestExecutor by requestExecutor {
 
@@ -27,11 +28,11 @@ class EveScoutRescueApi(
         .build()
     private val service = retrofit.create(EveScoutRescueService::class.java)
 
-    suspend fun getObservations(): Result<List<Observation>> {
-        return execute { service.getObservations() }
+    suspend fun getObservations(originator: Originator): Result<List<Observation>> {
+        return execute { service.getObservations(originator) }
     }
 
-    suspend fun getSignatures(): Result<List<Signature>> {
-        return execute { service.getSignatures() }
+    suspend fun getSignatures(originator: Originator): Result<List<Signature>> {
+        return execute { service.getSignatures(originator) }
     }
 }

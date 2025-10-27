@@ -9,6 +9,7 @@ import dev.nohus.rift.network.esi.models.CharactersIdAssetLocationType
 import dev.nohus.rift.network.esi.models.UniverseStationsId
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -183,12 +184,12 @@ class AssetsRepository(
                 }
             }
         val stationsByIdDeferred = stationIds.map { stationId ->
-            async { stationId to esiApi.getUniverseStationsId(stationId.toInt()) }
+            async { stationId to esiApi.getUniverseStationsId(Originator.Assets, stationId.toInt()) }
         }
         val structuresByIdDeferred = structureIds.map { structureId ->
             async {
                 val characterId = allAssets.first { it.asset.locationId == structureId }.characterId
-                structureId to esiApi.getUniverseStructuresId(structureId, characterId)
+                structureId to esiApi.getUniverseStructuresId(Originator.Assets, structureId, characterId)
             }
         }
         val stationsById = stationsByIdDeferred.awaitAll().associate { (id, result) ->
@@ -224,19 +225,19 @@ class AssetsRepository(
             async {
                 val assets = when (
                     val result = fetchPagePaginated {
-                        esiApi.getCharactersIdAssets(it, characterId)
+                        esiApi.getCharactersIdAssets(Originator.Assets, it, characterId)
                     }
                 ) {
                     is Result.Success -> result.data
                     is Result.Failure -> return@async result
                 }
-                typesRepository.resolveNamesFromEsi(assets.map { it.typeId })
+                typesRepository.resolveNamesFromEsi(Originator.Assets, assets.map { it.typeId })
                 val names = assets
                     .map { it.itemId }
                     .distinct()
                     .chunked(1000)
                     .flatMap { itemIds ->
-                        when (val result = esiApi.getCharactersIdAssetsNames(characterId, itemIds)) {
+                        when (val result = esiApi.getCharactersIdAssetsNames(Originator.Assets, characterId, itemIds)) {
                             is Result.Success -> result.data
                             is Result.Failure -> {
                                 logger.error { "Failed loading asset names: ${result.cause}" }

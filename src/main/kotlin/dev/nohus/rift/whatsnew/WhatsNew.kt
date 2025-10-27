@@ -690,6 +690,15 @@ object WhatsNew {
                 - Optimized killmail fetching, made possible by new capabilities of zKillboard's killmail stream
                 """.trimIndent(),
             )
+            add(
+                "5.6.0" description """
+                - Overhauled networking for better performance when sending requests to ESI and other APIs
+                - For those interested, in the Debug window – accessible from the About window – there is now a Network Statistics tab with a live network requests chart breaking down sent requests by feature
+                - In Planetary Industry spreadsheet exports, commodity-specific columns are now sorted by name
+                - In Wallets there are now more options for visible timespans, including shorter timestamps like last 2 hours
+                - In Jabber, longer channel MOTDs now scroll instead of taking a lot of space
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

@@ -12,6 +12,9 @@ import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.wallet.WalletFilters
 import dev.nohus.rift.wallet.WalletViewModel
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.toList
 import java.time.Duration
 import java.time.Instant
 
@@ -26,22 +29,16 @@ fun TimespanDropdown(
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         modifier = modifier,
     ) {
-        val timespanDays = state.journalHistoryFrom?.let { from ->
-            Duration.between(from, Instant.now()).toDays().toInt() + 1
-        } ?: 0
         RiftDropdown(
-            items = buildList {
-                repeat(timespanDays / 30) {
-                    add((it + 1) * 30)
-                }
-                if (timespanDays % 30 != 0) {
-                    add(timespanDays)
-                }
-            },
-            selectedItem = state.filters.timeSpanDays,
-            onItemSelected = { onFiltersUpdate(state.filters.copy(timeSpanDays = it)) },
+            items = state.availableTimestamps,
+            selectedItem = state.filters.timeSpan,
+            onItemSelected = { onFiltersUpdate(state.filters.copy(timeSpan = it)) },
             getItemName = {
-                if (it != Int.MAX_VALUE) "Last $it days" else "All"
+                if (it < Duration.ofDays(2)) {
+                    "Last ${it.toHours()} hours"
+                } else {
+                    "Last ${it.toDays()} days"
+                }
             },
         )
 

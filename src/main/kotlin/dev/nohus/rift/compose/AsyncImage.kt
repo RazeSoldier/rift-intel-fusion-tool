@@ -4,15 +4,18 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.missing
 import dev.nohus.rift.generated.resources.missing_blueprint
 import dev.nohus.rift.generated.resources.missing_skin
-import dev.nohus.rift.network.UserAgentInterceptor.Companion.USER_AGENT
-import dev.nohus.rift.network.UserAgentInterceptor.Companion.USER_AGENT_KEY
+import dev.nohus.rift.network.interceptors.UserAgentInterceptor
+import dev.nohus.rift.network.interceptors.UserAgentInterceptor.Companion.USER_AGENT_KEY
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.TypesRepository.Type
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kamel.core.utils.cacheControl
@@ -36,9 +39,10 @@ fun AsyncImage(
     fallbackIcon: @Composable () -> Unit = { FallbackIcon() },
     withAnimatedLoading: Boolean = true,
 ) {
+    val userAgentInterceptor: UserAgentInterceptor = remember { koin.get() }
     val painter = asyncPainterResource(url) {
         requestBuilder {
-            header(USER_AGENT_KEY, USER_AGENT)
+            header(USER_AGENT_KEY, userAgentInterceptor.getUserAgent(Originator.UiImage))
             cacheControl(CacheControl.MAX_AGE)
         }
     }

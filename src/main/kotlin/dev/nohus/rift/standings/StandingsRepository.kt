@@ -80,7 +80,7 @@ class StandingsRepository(
 
     private fun updateStandings() {
         val contacts = contactsRepository.contacts.value.contacts
-        val characterDetails = charactersRepository.characters.value.mapNotNull { it.info.success }
+        val characterDetails = charactersRepository.characters.value.mapNotNull { it.info }
         val standings = getStandings(contacts, characterDetails)
         settings.standings = standings
     }

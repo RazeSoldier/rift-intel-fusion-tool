@@ -7,7 +7,6 @@ import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
-import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -36,7 +35,7 @@ class CharacterSettingsViewModel(
         val characterId: Int,
         val accountId: Int?,
         val settingsFiles: Map<String, Path>,
-        val info: AsyncResource<CharacterInfo>,
+        val info: CharacterInfo?,
     )
 
     data class UiState(
@@ -126,7 +125,7 @@ class CharacterSettingsViewModel(
 
     fun onCopySourceClick(characterId: Int) {
         val character = _state.value.characters.firstOrNull { it.characterId == characterId } ?: return
-        val name = character.info.success?.name ?: return
+        val name = character.info?.name ?: return
         val profiles = character.settingsFiles.keys.takeIf { it.isNotEmpty() }?.toList() ?: return
         if (profiles.size > 1) {
             // This character has settings in more than 1 profile, so we need to select the source profile
@@ -151,7 +150,7 @@ class CharacterSettingsViewModel(
     fun onCopyDestinationClick(characterId: Int) {
         val state = _state.value.copying
         if (state is CopyingState.SelectingDestination) {
-            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
+            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.name ?: return
             _state.update {
                 it.copy(
                     copying = CopyingState.DestinationSelected(
@@ -162,7 +161,7 @@ class CharacterSettingsViewModel(
                 )
             }
         } else if (state is CopyingState.DestinationSelected) {
-            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: return
+            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.name ?: return
             val destinations = state.destination + CopyingCharacter(characterId, destinationName)
             _state.update {
                 it.copy(

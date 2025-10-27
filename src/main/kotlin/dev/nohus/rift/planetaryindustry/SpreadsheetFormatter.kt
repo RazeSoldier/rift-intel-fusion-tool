@@ -199,7 +199,7 @@ object SpreadsheetFormatter {
     private fun getAllTypes(items: List<ColonyItem>): List<Type> {
         return items.flatMap { item ->
             item.colony.pins.flatMap { it.contents.keys }
-        }.distinct()
+        }.distinct().sortedBy { it.name }
     }
 
     private fun getColonyContents(colony: Colony): Map<Type, Long> {
@@ -212,7 +212,7 @@ object SpreadsheetFormatter {
     private fun getAllExtractedTypes(items: List<ColonyItem>): List<Type> {
         return items.flatMap { item ->
             item.colony.pins.filterIsInstance<Pin.Extractor>().mapNotNull { it.productType }
-        }.distinct()
+        }.distinct().sortedBy { it.name }
     }
 
     private fun getAveragesPerHourExtracted(colony: Colony): Map<Type, Int> {

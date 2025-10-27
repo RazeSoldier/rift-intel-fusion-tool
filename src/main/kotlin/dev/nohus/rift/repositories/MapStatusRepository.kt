@@ -16,6 +16,7 @@ import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.Storm
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.Wormhole
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.PlanetsRepository.Planet
 import dev.nohus.rift.repositories.RatsRepository.RatType
@@ -212,8 +213,8 @@ class MapStatusRepository(
     }
 
     private suspend fun loadUniverseSystemStatus() {
-        val jumps = esiApi.getUniverseSystemJumps().success?.associateBy { it.systemId } ?: return
-        val kills = esiApi.getUniverseSystemKills().success?.associateBy { it.systemId } ?: return
+        val jumps = esiApi.getUniverseSystemJumps(Originator.Map).success?.associateBy { it.systemId } ?: return
+        val kills = esiApi.getUniverseSystemKills(Originator.Map).success?.associateBy { it.systemId } ?: return
         val systems = (jumps.keys + kills.keys).distinct()
         universeSystemStatus.value = systems.associateWith { systemId ->
             UniverseSystemStatus(
@@ -226,7 +227,7 @@ class MapStatusRepository(
     }
 
     private suspend fun loadIncursions() {
-        val response = esiApi.getIncursions().success ?: return
+        val response = esiApi.getIncursions(Originator.Map).success ?: return
         val systems = response.flatMap { it.infestedSolarSystems }.distinct()
         incursions.value = systems.associateWith { systemId ->
             response.first { systemId in it.infestedSolarSystems }
@@ -234,36 +235,36 @@ class MapStatusRepository(
     }
 
     private suspend fun loadFactionWarfare() {
-        val response = esiApi.getFactionWarfareSystems().success ?: return
+        val response = esiApi.getFactionWarfareSystems(Originator.Map).success ?: return
         factionWarfare.value = response
             .also {
                 val ids = it.flatMap { listOf(it.ownerFactionId, it.occupierFactionId) }
-                namesRepository.resolveNames(ids)
+                namesRepository.resolveNames(Originator.Map, ids)
             }
             .associateBy { it.solarSystemId }
     }
 
     private suspend fun loadSovereignty() {
-        val response = esiApi.getSovereigntyMap().success ?: return
+        val response = esiApi.getSovereigntyMap(Originator.Map).success ?: return
         sovereignty.value = response
             .filter { it.factionId != null || it.allianceId != null || it.corporationId != null }
             .also {
                 val ids = it.flatMap { listOfNotNull(it.factionId, it.allianceId, it.corporationId) }
-                namesRepository.resolveNames(ids)
+                namesRepository.resolveNames(Originator.Map, ids)
             }
             .associateBy { it.systemId }
     }
 
     private suspend fun loadMetaliminalStorms() {
-        storms.value = getMetaliminalStormsUseCase()
+        storms.value = getMetaliminalStormsUseCase(Originator.Map)
     }
 
     private suspend fun loadPublicWormholes() {
-        wormholes.value = getPublicWormholesUseCase()
+        wormholes.value = getPublicWormholesUseCase(Originator.Map)
     }
 
     private suspend fun loadIndustryIndices() {
-        val response = esiApi.getIndustrySystems().success ?: return
+        val response = esiApi.getIndustrySystems(Originator.Map).success ?: return
         industryIndices.value = response.associate { industrySystem ->
             val indices = industrySystem.indices.associate { index -> index.activity to index.costIndex }
             industrySystem.solarSystemId to indices

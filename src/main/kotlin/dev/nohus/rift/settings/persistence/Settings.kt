@@ -115,6 +115,10 @@ class Settings(
         get() = model.jabberIsUsingBiggerFontSize
         set(value) = update { copy(jabberIsUsingBiggerFontSize = value) }
 
+    var jabberConferences: List<String>
+        get() = model.jabberConferences
+        set(value) = update { copy(jabberConferences = value) }
+
     var isSettingsReadFailure: Boolean
         get() = model.isSettingsReadFailure
         set(value) = update { copy(isSettingsReadFailure = value) }

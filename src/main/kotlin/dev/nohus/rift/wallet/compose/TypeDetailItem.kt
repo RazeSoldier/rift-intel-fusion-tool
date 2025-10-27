@@ -22,7 +22,6 @@ import dev.nohus.rift.compose.ClickableType
 import dev.nohus.rift.compose.LocationDetails
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.SystemDetails
-import dev.nohus.rift.compose.SystemEntityInfoRow
 import dev.nohus.rift.compose.VerticalDivider
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing

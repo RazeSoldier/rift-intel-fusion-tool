@@ -4,6 +4,7 @@ import dev.nohus.rift.database.local.Characters2
 import dev.nohus.rift.database.local.LocalDatabase
 import dev.nohus.rift.logs.parse.CharacterNameValidator
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.requests.Originator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -35,12 +36,12 @@ class CharactersRepository(
         val checkTimestamp: Long,
     )
 
-    suspend fun getCharacterNamesStatus(names: List<String>): Map<String, CharacterStatus> {
+    suspend fun getCharacterNamesStatus(originator: Originator, names: List<String>): Map<String, CharacterStatus> {
         val databaseCharacters = getCharactersFromDatabase(names)
 
         val missing = names.filter { it !in databaseCharacters.keys }
         val esiCharacters: Map<String, CharacterStatus> = if (missing.isNotEmpty()) {
-            val characters = getCharactersFromEsi(missing)
+            val characters = getCharactersFromEsi(originator, missing)
             saveCharactersToDatabase(characters)
             characters
                 .filter { it.name in missing }
@@ -56,20 +57,20 @@ class CharactersRepository(
         return databaseCharacters + esiCharacters
     }
 
-    suspend fun getCharacterId(name: String): Int? {
+    suspend fun getCharacterId(originator: Originator, name: String): Int? {
         if (!characterNameValidator.isValid(name)) {
             return null
         }
-        return when (val status = getCharacterNamesStatus(listOf(name)).entries.single().value) {
+        return when (val status = getCharacterNamesStatus(originator, listOf(name)).entries.single().value) {
             is CharacterStatus.Exists -> status.characterId
             CharacterStatus.DoesNotExist -> null
         }
     }
 
-    private suspend fun getCharactersFromEsi(names: List<String>): List<Character> = withContext(Dispatchers.IO) {
+    private suspend fun getCharactersFromEsi(originator: Originator, names: List<String>): List<Character> = withContext(Dispatchers.IO) {
         val now = Instant.now().toEpochMilli()
-        val esiCharacters = esiApi.postUniverseIds(names).success?.characters.orEmpty()
-            .map { async { it to characterActivityRepository.getActivityStatus(it.id) } }
+        val esiCharacters = esiApi.postUniverseIds(originator, names).success?.characters.orEmpty()
+            .map { async { it to characterActivityRepository.getActivityStatus(originator, it.id) } }
             .awaitAll()
             .map { (character, status) ->
                 Character(character.name, character.id, status, now)

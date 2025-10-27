@@ -2,6 +2,7 @@ package dev.nohus.rift.characters.repositories
 
 import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.openwindows.GetOpenEveClientsUseCase
 import kotlinx.coroutines.Dispatchers
@@ -101,7 +102,7 @@ class OnlineCharactersRepository(
         if (characterNames.isNotEmpty()) {
             val now = Instant.now()
             characterIds = localCharactersRepository.characters.value
-                .filter { it.info.success?.name in characterNames }
+                .filter { it.info?.name in characterNames }
                 .map { it.characterId }
                 .toSet()
             characterIds.forEach { characterId ->
@@ -135,7 +136,7 @@ class OnlineCharactersRepository(
                 .filter { ScopeGroups.readOnlineStatus in it.scopes } // No point checking unauthenticated characters
                 .map {
                     async {
-                        it.characterId to esiApi.getCharacterIdOnline(it.characterId)
+                        it.characterId to esiApi.getCharacterIdOnline(Originator.LocalCharacters, it.characterId)
                     }
                 }.awaitAll().forEach { (characterId, result) ->
                     if (result.success?.isOnline == true) {

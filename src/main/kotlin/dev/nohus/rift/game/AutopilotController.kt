@@ -6,6 +6,7 @@ import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.loglite.ClientLogLiteAction
 import dev.nohus.rift.loglite.LogLiteAction
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.GetRouteUseCase
 import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -116,6 +117,7 @@ class AutopilotController(
         if (useIndividualWaypoints) {
             for ((index, system) in route.appended.systems.withIndex()) {
                 val result = esiApi.postUiAutopilotWaypoint(
+                    Originator.Autopilot,
                     destinationId = system.toLong(),
                     clearOtherWaypoints = if (index == 0) !addWaypoint else false,
                     characterId = characterId,
@@ -127,6 +129,7 @@ class AutopilotController(
             }
             if (route.appended.systems.lastOrNull()?.toLong() != destinationId) {
                 val result = esiApi.postUiAutopilotWaypoint(
+                    Originator.Autopilot,
                     destinationId = destinationId,
                     clearOtherWaypoints = false,
                     characterId = characterId,
@@ -137,6 +140,7 @@ class AutopilotController(
             }
         } else {
             val result = esiApi.postUiAutopilotWaypoint(
+                Originator.Autopilot,
                 destinationId = destinationId,
                 clearOtherWaypoints = !addWaypoint,
                 characterId = characterId,

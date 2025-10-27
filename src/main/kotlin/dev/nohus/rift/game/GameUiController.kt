@@ -13,6 +13,7 @@ import dev.nohus.rift.infodialog.InfoDialogInputModel
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.NewMailRequest
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -43,7 +44,7 @@ class GameUiController(
     ) {
         scope.launch {
             val characterId = getTargetCharacter() ?: return@launch
-            esiApi.postUiOpenWindowInformation(characterId, entityId.toLong()).handleError()
+            esiApi.postUiOpenWindowInformation(Originator.GameUi, characterId, entityId.toLong()).handleError()
         }
     }
 
@@ -56,7 +57,7 @@ class GameUiController(
     ) {
         scope.launch {
             val characterId = getTargetCharacter() ?: return@launch
-            esiApi.postUiOpenWindowMarketDetails(characterId, typeId).handleError()
+            esiApi.postUiOpenWindowMarketDetails(Originator.GameUi, characterId, typeId).handleError()
         }
     }
 
@@ -107,7 +108,7 @@ class GameUiController(
                 recipients = listOf(0),
                 subject = subject,
             )
-            esiApi.postUiOpenWindowNewMail(characterId, request).handleError()
+            esiApi.postUiOpenWindowNewMail(Originator.GameUi, characterId, request).handleError()
         }
     }
 
@@ -134,7 +135,7 @@ class GameUiController(
                     append("You need to reauthenticate character ")
                     withColor(Highlighted) {
                         withWeight(FontWeight.Bold) {
-                            append(targetCharacter.info.success?.name ?: targetCharacter.characterId.toString())
+                            append(targetCharacter.info?.name ?: targetCharacter.characterId.toString())
                         }
                     }
                     append(" in the Characters window.")
