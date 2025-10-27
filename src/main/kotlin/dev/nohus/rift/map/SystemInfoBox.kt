@@ -187,7 +187,7 @@ fun SystemInfoBox(
                             modifier = Modifier.modifyIf(intelGroups != null) { padding(bottom = 1.dp) },
                         ) {
                             SystemInfoTypes(system, infoTypes, systemStatus)
-                            onlineCharacters.forEach { onlineCharacterLocation ->
+                            onlineCharacters.singleOrNull()?.let { onlineCharacterLocation ->
                                 ClickableCharacter(onlineCharacterLocation.id) {
                                     SystemEntityInfoRow(32.dp, hasBorder = false) {
                                         AsyncPlayerPortrait(
@@ -201,6 +201,31 @@ fun SystemInfoBox(
                                             modifier = Modifier.padding(4.dp),
                                         )
                                     }
+                                }
+                            }
+                            if (onlineCharacters.size > 1) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    onlineCharacters.forEach { onlineCharacterLocation ->
+                                        RiftTooltipArea(
+                                            text = onlineCharacterLocation.name,
+                                        ) {
+                                            ClickableCharacter(onlineCharacterLocation.id) {
+                                                AsyncPlayerPortrait(
+                                                    characterId = onlineCharacterLocation.id,
+                                                    size = 32,
+                                                    modifier = Modifier.size(32.dp),
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Text(
+                                        text = "${onlineCharacters.size} characters",
+                                        style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.successGreen),
+                                        modifier = Modifier.padding(end = 4.dp),
+                                    )
                                 }
                             }
                         }

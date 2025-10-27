@@ -32,6 +32,7 @@ import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
+import dev.nohus.rift.network.esi.models.KillmailIdHash
 import dev.nohus.rift.network.esi.models.LoyaltyPoints
 import dev.nohus.rift.network.esi.models.MarketsPrice
 import dev.nohus.rift.network.esi.models.NewMailRequest
@@ -468,6 +469,16 @@ class EsiApi(
     ): Result<Unit> {
         return execute {
             service.postUiOpenWindowNewMail(originator, request, characterId.authorization)
+        }
+    }
+
+    suspend fun getKillmailIdHash(
+        originator: Originator,
+        killmailId: Long,
+        killmailHash: String,
+    ): Result<KillmailIdHash> {
+        return execute {
+            service.getKillmailIdHash(originator, killmailId, killmailHash)
         }
     }
 }

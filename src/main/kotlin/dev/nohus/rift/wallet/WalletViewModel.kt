@@ -266,12 +266,10 @@ class WalletViewModel(
             var oldest = Instant.now()
             loaded?.map { loaded ->
                 coroutineScope {
-                    launch {
-                        loaded.journal.minOfOrNull { it.date }?.also { if (oldest == null || it < oldest) oldest = it }
-                        _state.update { it.copy(availableTimestamps = getAvailableTimespans(oldest)) }
-                        if (_state.value.filters.timeSpan == Duration.ZERO) {
-                            _state.update { it.copy(filters = it.filters.copy(timeSpan = it.availableTimestamps.lastOrNull() ?: Duration.ZERO)) }
-                        }
+                    loaded.journal.minOfOrNull { it.date }?.also { if (oldest == null || it < oldest) oldest = it }
+                    _state.update { it.copy(availableTimestamps = getAvailableTimespans(oldest)) }
+                    if (_state.value.filters.timeSpan == Duration.ZERO) {
+                        _state.update { it.copy(filters = it.filters.copy(timeSpan = it.availableTimestamps.lastOrNull() ?: Duration.ZERO)) }
                     }
                     val journals = filterJournalsByAge(filterJournalsByWallet(loaded.journal))
                         .sortedByDescending { it.date }

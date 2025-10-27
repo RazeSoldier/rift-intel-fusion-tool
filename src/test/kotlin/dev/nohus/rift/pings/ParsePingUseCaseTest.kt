@@ -1,5 +1,6 @@
 package dev.nohus.rift.pings
 
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
@@ -31,12 +32,12 @@ class ParsePingUseCaseTest : FreeSpec({
         standingsRepository = mockStandingsRepository,
     )
 
-    coEvery { mockCharactersRepository.getCharacterId("Havish Montak") } returns 1
-    coEvery { mockCharactersRepository.getCharacterId("Mrbluff343") } returns 2
-    coEvery { mockCharactersRepository.getCharacterId("Mist Amatin") } returns 3
-    coEvery { mockCharactersRepository.getCharacterId("Asher Elias") } returns 4
-    coEvery { mockCharactersRepository.getCharacterId("Lodena Minax") } returns 5
-    coEvery { mockCharactersRepository.getCharacterId("Arkadios Sol") } returns 6
+    coEvery { mockCharactersRepository.getCharacterId(Originator.Pings, "Havish Montak") } returns 1
+    coEvery { mockCharactersRepository.getCharacterId(Originator.Pings, "Mrbluff343") } returns 2
+    coEvery { mockCharactersRepository.getCharacterId(Originator.Pings, "Mist Amatin") } returns 3
+    coEvery { mockCharactersRepository.getCharacterId(Originator.Pings, "Asher Elias") } returns 4
+    coEvery { mockCharactersRepository.getCharacterId(Originator.Pings, "Lodena Minax") } returns 5
+    coEvery { mockCharactersRepository.getCharacterId(Originator.Pings, "Arkadios Sol") } returns 6
     val system1Dq1: MapSolarSystem = mockk { every { id } returns 100000001 }
     val systemUalx: MapSolarSystem = mockk { every { id } returns 100000002 }
     val system0sht: MapSolarSystem = mockk { every { id } returns 100000003 }
