@@ -54,7 +54,7 @@ import dev.nohus.rift.generated.resources.flag_background
 import dev.nohus.rift.generated.resources.window_locations
 import dev.nohus.rift.map.markers.MapMarkersViewModel.UiState
 import dev.nohus.rift.repositories.SolarSystemsRepository
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import java.util.UUID

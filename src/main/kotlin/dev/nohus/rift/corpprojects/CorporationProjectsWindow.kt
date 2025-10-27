@@ -109,8 +109,8 @@ import dev.nohus.rift.utils.formatIskCompact
 import dev.nohus.rift.utils.formatIskReadable
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.plural
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
 import java.time.Duration

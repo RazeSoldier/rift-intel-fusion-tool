@@ -3,6 +3,7 @@ package dev.nohus.rift.wallet
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.contacts.ContactsRepository
+import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.LocationRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
@@ -15,11 +16,15 @@ import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.FactionNames
+import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.StationsRepository
+import dev.nohus.rift.repositories.StationsRepository.Station
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.mapAsync
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -62,6 +67,10 @@ class WalletRepository(
     private val namesRepository: NamesRepository,
     private val celestialsRepository: CelestialsRepository,
     private val walletDivisionsRepository: WalletDivisionsRepository,
+    private val stationsRepository: StationsRepository,
+    private val characterLocationRepository: CharacterLocationRepository,
+    private val getSystemDistanceUseCase: GetSystemDistanceUseCase,
+    private val settings: Settings,
 ) {
 
     data class State(
@@ -72,6 +81,7 @@ class WalletRepository(
     data class LoadedState(
         val journal: List<WalletJournalItem>,
         val balances: List<WalletBalance>,
+        val loyaltyPoints: List<CharacterLoyaltyPoints>,
         val characters: List<Character>,
         val corporations: List<Corporation>,
     )
@@ -134,6 +144,18 @@ class WalletRepository(
             override val balance: Double,
         ) : WalletBalance(balance)
     }
+
+    data class CharacterLoyaltyPoints(
+        val characterId: Int,
+        val balances: List<LoyaltyPoints>,
+    )
+
+    data class LoyaltyPoints(
+        val corporationId: Int,
+        val corporationName: String,
+        val closestLoyaltyPointStore: Station?,
+        val balance: Long,
+    )
 
     data class Character(
         val id: Int,
@@ -210,6 +232,8 @@ class WalletRepository(
 
             val charactersWithWalletScopes = localCharacters
                 .filter { ScopeGroups.readWallet in it.scopes }
+            val charactersWithLoyaltyPointScopes = localCharacters
+                .filter { ScopeGroups.readLoyaltyPoints in it.scopes }
             val characterWithCorpWalletScopes = localCharacters
                 .filter { ScopeGroups.readCorporationWallet in it.scopes }
 
@@ -261,7 +285,8 @@ class WalletRepository(
                 .groupBy { it.first }
                 .mapValues { it.value.map { it.second }.first() }
 
-            val walletBalances = async { getWalletBalances(charactersWithWalletScopes, corporationsToAccountantIds) }
+            val walletBalancesDeferred = async { getWalletBalances(charactersWithWalletScopes, corporationsToAccountantIds) }
+            val loyaltyPointBalancesDeferred = async { getLoyaltyPoints(charactersWithLoyaltyPointScopes) }
 
             updateDatabaseFromEsi(charactersWithWalletScopes, corporationsToAccountantIds)
 
@@ -297,7 +322,7 @@ class WalletRepository(
                 }
             }.awaitAll().flatten()
 
-            val characters = charactersWithWalletScopes.map {
+            val characters = (charactersWithWalletScopes + charactersWithLoyaltyPointScopes).distinct().map {
                 Character(it.characterId, it.info?.name ?: it.characterId.toString())
             }
             val corporations = corporationsToAccountantIds.keys.toList()
@@ -305,13 +330,15 @@ class WalletRepository(
             _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingDivisionNames)) }
             divisionNamesJob.join()
             _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingBalances)) }
-            val balances = walletBalances.await()
+            val walletBalances = walletBalancesDeferred.await()
+            val loyaltyPointBalances = loyaltyPointBalancesDeferred.await()
             _state.update {
                 it.copy(
                     loadedState = Result.Success(
                         LoadedState(
                             journal = items,
-                            balances = balances,
+                            balances = walletBalances,
+                            loyaltyPoints = loyaltyPointBalances,
                             characters = characters,
                             corporations = corporations,
                         ),
@@ -346,6 +373,41 @@ class WalletRepository(
             val characterWallets = characterWalletsDeferred.awaitAll().filterNotNull()
             val corporationWallets = corporationWalletsDeferred.awaitAll().filterNotNull().flatten()
             characterWallets + corporationWallets
+        }
+    }
+
+    private suspend fun getLoyaltyPoints(
+        charactersToLoad: List<LocalCharacter>,
+    ): List<CharacterLoyaltyPoints> {
+        return coroutineScope {
+            val loyaltyPointsByCharacterId = charactersToLoad.map { character ->
+                async {
+                    character.characterId to esiApi.getCharactersIdLoyaltyPoints(Originator.Wallets, character.characterId).success
+                }
+            }.awaitAll().filter { it.second != null }.associate { it.first to it.second!! }
+            val corporationNamesById = loyaltyPointsByCharacterId.values.flatten().map { it.corporationId }.distinct()
+                .associateWith { corporationId -> esiApi.getCorporationsId(Originator.Wallets, corporationId.toInt()).success?.name }
+            loyaltyPointsByCharacterId.map { (characterId, loyaltyPoints) ->
+                val characterSolarSystemId = characterLocationRepository.locations.value[characterId]?.solarSystemId
+                CharacterLoyaltyPoints(
+                    characterId = characterId,
+                    balances = loyaltyPoints.map {
+                        val store = stationsRepository.getLoyaltyPointStores(it.corporationId.toInt()).minByOrNull {
+                            if (characterSolarSystemId != null) {
+                                getSystemDistanceUseCase(characterSolarSystemId, it.systemId, settings.isUsingJumpBridgesForDistance) ?: Int.MAX_VALUE
+                            } else {
+                                Int.MAX_VALUE
+                            }
+                        }
+                        LoyaltyPoints(
+                            corporationId = it.corporationId.toInt(),
+                            corporationName = corporationNamesById[it.corporationId] ?: it.corporationId.toString(),
+                            closestLoyaltyPointStore = store,
+                            balance = it.loyaltyPoints,
+                        )
+                    },
+                )
+            }
         }
     }
 

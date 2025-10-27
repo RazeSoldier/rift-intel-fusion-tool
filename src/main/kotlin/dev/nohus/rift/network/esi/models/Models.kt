@@ -7,6 +7,19 @@ import kotlinx.serialization.Serializable
 import java.time.Instant
 
 @Serializable
+data class Status(
+    @SerialName("players")
+    val playersOnline: Int,
+    @SerialName("server_version")
+    val serverVersion: String,
+    @SerialName("start_time")
+    @Serializable(with = IsoDateTimeSerializer::class)
+    val startTime: Instant,
+    @SerialName("vip")
+    val isVip: Boolean? = null,
+)
+
+@Serializable
 data class UniverseIdsResponse(
     @SerialName("characters")
     val characters: List<UniverseIdsCharacter>? = null,
@@ -805,4 +818,12 @@ data class WalletDivision(
     val id: Long? = null,
     @SerialName("name")
     val name: String? = null,
+)
+
+@Serializable
+data class LoyaltyPoints(
+    @SerialName("corporation_id")
+    val corporationId: Long,
+    @SerialName("loyalty_points")
+    val loyaltyPoints: Long,
 )

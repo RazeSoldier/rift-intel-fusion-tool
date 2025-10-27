@@ -79,7 +79,7 @@ import dev.nohus.rift.utils.formatIskCompact
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import java.text.NumberFormat

@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.time.Duration
 import java.time.Instant
 
-@Single
+@Factory
 class CorporationProjectsViewModel(
     private val corporationProjectsRepository: CorporationProjectsRepository,
     private val gameUiController: GameUiController,

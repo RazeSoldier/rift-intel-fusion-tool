@@ -15,7 +15,9 @@ import dev.nohus.rift.generated.resources.missing_blueprint
 import dev.nohus.rift.generated.resources.missing_skin
 import dev.nohus.rift.network.interceptors.UserAgentInterceptor
 import dev.nohus.rift.network.interceptors.UserAgentInterceptor.Companion.USER_AGENT_KEY
+import dev.nohus.rift.network.requests.Endpoint
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.repositories.TypesRepository.Type
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kamel.core.utils.cacheControl
@@ -40,7 +42,9 @@ fun AsyncImage(
     withAnimatedLoading: Boolean = true,
 ) {
     val userAgentInterceptor: UserAgentInterceptor = remember { koin.get() }
+    val requestStatisticsInterceptor: RequestStatisticsInterceptor = remember { koin.get() }
     val painter = asyncPainterResource(url) {
+        requestStatisticsInterceptor.addExternalRequest(Originator.UiImage, Endpoint.ImageServiceAsset)
         requestBuilder {
             header(USER_AGENT_KEY, userAgentInterceptor.getUserAgent(Originator.UiImage))
             cacheControl(CacheControl.MAX_AGE)
@@ -51,7 +55,7 @@ fun AsyncImage(
         contentDescription = null,
         contentScale = contentScale,
         onFailure = {
-            logger.error { "Failed to load AsyncImage: $url" }
+            logger.error { "Failed to load AsyncImage: $url, ${it.message}" }
             fallbackIcon()
         },
         animationSpec = if (withAnimatedLoading) tween() else null,

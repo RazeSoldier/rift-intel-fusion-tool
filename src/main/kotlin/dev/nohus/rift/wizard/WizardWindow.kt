@@ -48,7 +48,7 @@ import dev.nohus.rift.generated.resources.tray_tray_64
 import dev.nohus.rift.generated.resources.window_agent
 import dev.nohus.rift.get
 import dev.nohus.rift.settings.persistence.ConfigurationPack
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import dev.nohus.rift.wizard.WizardViewModel.EveInstallationState
 import dev.nohus.rift.wizard.WizardViewModel.UiState

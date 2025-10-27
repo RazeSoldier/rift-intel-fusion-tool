@@ -43,7 +43,7 @@ import dev.nohus.rift.generated.resources.purchase_fail_fg
 import dev.nohus.rift.generated.resources.window_browser
 import dev.nohus.rift.sso.SsoViewModel.UiState
 import dev.nohus.rift.sso.scopes.ScopeGroup
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 

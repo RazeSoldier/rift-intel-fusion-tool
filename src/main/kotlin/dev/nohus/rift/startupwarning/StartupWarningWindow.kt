@@ -22,7 +22,7 @@ import dev.nohus.rift.generated.resources.window_warning
 import dev.nohus.rift.get
 import dev.nohus.rift.startupwarning.StartupWarningViewModel.UiState
 import dev.nohus.rift.utils.toggle
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 
 @Composable

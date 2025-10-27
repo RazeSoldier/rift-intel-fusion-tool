@@ -55,8 +55,8 @@ import dev.nohus.rift.generated.resources.copy_16px
 import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.recall_drones_16px
 import dev.nohus.rift.generated.resources.window_character_settings
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import java.time.ZoneId

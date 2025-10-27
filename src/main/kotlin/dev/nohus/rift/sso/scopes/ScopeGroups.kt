@@ -96,6 +96,15 @@ object ScopeGroups {
             EsiScope.Corporations.ReadDivisions,
         ),
     )
+    val readLoyaltyPoints = ScopeGroup(
+        name = "Read loyalty points",
+        reasons = listOf(
+            "Needed to show your loyalty point balances in the Wallets window",
+        ),
+        scopes = listOf(
+            EsiScope.Characters.ReadLoyalty,
+        ),
+    )
     val readStructures = ScopeGroup(
         name = "Read structures",
         reasons = listOf(
@@ -163,9 +172,10 @@ object ScopeGroups {
         readOnlineStatus,
         readCharacterLocation,
         readCurrentShip,
+        readPlanetaryIndustryColonies,
         readWallet,
         readCorporationWallet,
-        readPlanetaryIndustryColonies,
+        readLoyaltyPoints,
         readStructures,
         updateAutopilot,
         openWindow,

@@ -17,10 +17,10 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.nio.file.Path
 
-@Single
+@Factory
 class CharacterSettingsViewModel(
     private val copyEveCharacterSettingsUseCase: CopyEveCharacterSettingsUseCase,
     private val localCharactersRepository: LocalCharactersRepository,

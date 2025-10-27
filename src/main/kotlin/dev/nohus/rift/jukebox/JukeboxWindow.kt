@@ -82,7 +82,7 @@ import dev.nohus.rift.jukebox.JukeboxViewModel.PlayState.Paused
 import dev.nohus.rift.jukebox.JukeboxViewModel.PlayState.Playing
 import dev.nohus.rift.jukebox.JukeboxViewModel.PlayState.Stopped
 import dev.nohus.rift.jukebox.JukeboxViewModel.UiState
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource

@@ -102,8 +102,8 @@ import dev.nohus.rift.sso.SsoAuthority
 import dev.nohus.rift.sso.SsoDialog
 import dev.nohus.rift.utils.article
 import dev.nohus.rift.utils.formatIskCompact
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 

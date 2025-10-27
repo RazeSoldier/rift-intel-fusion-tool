@@ -34,6 +34,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.PointerInteractionStateHolder
@@ -103,7 +104,7 @@ fun WalletCard(
                     } else {
                         Text(
                             text = name,
-                            style = RiftTheme.typography.bodyPrimary,
+                            style = RiftTheme.typography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
                             maxLines = 1,
                             overflow = TextOverflow.Visible,
                             softWrap = false,

@@ -4,6 +4,7 @@ sealed class Endpoint(
     val isCounted: Boolean = true,
 ) {
     // ESI
+    data object GetStatus : Endpoint()
     data object PostUniverseIds : Endpoint()
     data object PostUniverseNames : Endpoint()
     data object GetCharactersId : Endpoint()
@@ -32,6 +33,7 @@ sealed class Endpoint(
     data object GetCharactersIdSearch : Endpoint()
     data object GetCharactersIdClones : Endpoint()
     data object GetCharactersIdImplants : Endpoint()
+    data object GetCharactersIdLoyaltyPoints : Endpoint()
     data object GetUniverseStationsId : Endpoint()
     data object GetUniverseStructuresId : Endpoint()
     data object GetUniverseSystemJumps : Endpoint()
@@ -63,6 +65,7 @@ sealed class Endpoint(
     data object ImageServiceHeadCharacterPortrait : Endpoint()
     data object ImageServiceGetAllianceLogo : Endpoint()
     data object ImageServiceGetCorporationLogo : Endpoint()
+    data object ImageServiceAsset : Endpoint()
 
     // Other APIs
     data object ADashboard : Endpoint()

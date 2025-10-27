@@ -2,12 +2,14 @@ package dev.nohus.rift.di
 
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
+import dev.nohus.rift.network.interceptors.EsiAuthorizationInterceptor
 import dev.nohus.rift.network.interceptors.EsiCompatibilityInterceptor
 import dev.nohus.rift.network.interceptors.EsiErrorLimitInterceptor
+import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor
 import dev.nohus.rift.network.interceptors.LoggingInterceptor
 import dev.nohus.rift.network.interceptors.RedirectAsSuccessInterceptor
 import dev.nohus.rift.network.interceptors.UserAgentInterceptor
-import dev.nohus.rift.network.requests.RateLimitingInterceptor
+import dev.nohus.rift.network.requests.OriginatorRateLimitInterceptor
 import dev.nohus.rift.network.requests.RequestExecutor
 import dev.nohus.rift.network.requests.RequestExecutorImpl
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
@@ -89,8 +91,8 @@ val factoryModule = module {
         OkHttpClient.Builder()
             .cache(Cache(directory.toFile(), size))
             .addInterceptor(get<UserAgentInterceptor>())
-            .addInterceptor(get<RequestStatisticsInterceptor>())
-            .addInterceptor(get<LoggingInterceptor>())
+            .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
+            .addNetworkInterceptor(get<LoggingInterceptor>())
             .pingInterval(Duration.ofSeconds(10))
             .build()
     }
@@ -105,20 +107,22 @@ val factoryModule = module {
             .cache(Cache(directory.toFile(), size))
             .dispatcher(dispatcher)
             .addInterceptor(get<UserAgentInterceptor>())
-            .addInterceptor(get<RateLimitingInterceptor>())
-            .addInterceptor(get<EsiErrorLimitInterceptor>())
             .addInterceptor(get<EsiCompatibilityInterceptor>())
-            .addInterceptor(get<RequestStatisticsInterceptor>())
-            .addInterceptor(get<LoggingInterceptor>())
+            .addInterceptor(get<EsiAuthorizationInterceptor>())
+            .addNetworkInterceptor(get<OriginatorRateLimitInterceptor>())
+            .addNetworkInterceptor(get<EsiErrorLimitInterceptor>())
+            .addNetworkInterceptor(get<EsiRateLimitInterceptor>())
+            .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
+            .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()
     }
     single<OkHttpClient>(qualifier = named("zkillredisq")) {
         OkHttpClient.Builder()
             .followRedirects(false)
             .addInterceptor(get<UserAgentInterceptor>())
-            .addInterceptor(get<RequestStatisticsInterceptor>())
             .addInterceptor(get<RedirectAsSuccessInterceptor>())
-            .addInterceptor(get<LoggingInterceptor>())
+            .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
+            .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()
     }
     single<Json>(qualifier = named("network")) {
@@ -132,7 +136,7 @@ val factoryModule = module {
             prettyPrint = true
         }
     }
-    single<RequestExecutor> { RequestExecutorImpl(get(), get(), get(named("network"))) }
+    single<RequestExecutor> { RequestExecutorImpl(get(), get(named("network"))) }
     single<User32> { Native.load("user32", User32::class.java) }
     single<Analytics> { Analytics() }
 }

@@ -60,8 +60,8 @@ import dev.nohus.rift.utils.OperatingSystem.MacOs
 import dev.nohus.rift.utils.OperatingSystem.Windows
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import org.jetbrains.compose.resources.painterResource
 

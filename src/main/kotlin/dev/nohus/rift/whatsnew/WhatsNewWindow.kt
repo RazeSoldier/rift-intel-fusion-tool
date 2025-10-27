@@ -27,7 +27,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_redeem
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.whatsnew.WhatsNewViewModel.UiState
 import dev.nohus.rift.whatsnew.WhatsNewViewModel.Version
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState

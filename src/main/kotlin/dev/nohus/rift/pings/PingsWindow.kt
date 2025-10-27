@@ -41,7 +41,7 @@ import dev.nohus.rift.generated.resources.window_sovereignty
 import dev.nohus.rift.pings.PingsViewModel.UiState
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import java.time.ZoneId
 

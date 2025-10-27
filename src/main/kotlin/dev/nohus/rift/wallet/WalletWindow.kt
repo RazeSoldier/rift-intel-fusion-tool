@@ -35,7 +35,7 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_wallet
 import dev.nohus.rift.network.Result
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.wallet.WalletViewModel.InsightsTab
 import dev.nohus.rift.wallet.WalletViewModel.PartyActivity
 import dev.nohus.rift.wallet.WalletViewModel.PartyDailyGoals
@@ -43,6 +43,7 @@ import dev.nohus.rift.wallet.WalletViewModel.PartyTransactions
 import dev.nohus.rift.wallet.WalletViewModel.UiState
 import dev.nohus.rift.wallet.WalletViewModel.WalletTab
 import dev.nohus.rift.wallet.compose.InsightsContent
+import dev.nohus.rift.wallet.compose.LoyaltyPointsContent
 import dev.nohus.rift.wallet.compose.OverviewContent
 import dev.nohus.rift.wallet.compose.TransactionsContent
 import dev.nohus.rift.wallet.compose.WalletLoadingProgress
@@ -99,6 +100,7 @@ private fun ToolbarRow(
                     WalletTab.Overview -> "Overview"
                     WalletTab.Transactions -> "Transactions"
                     WalletTab.Insights -> "Insights"
+                    WalletTab.LoyaltyPoints -> "Loyalty Points"
                 }
                 Tab(id = index, title = title, isCloseable = false)
             }
@@ -182,6 +184,7 @@ private fun WalletWindowContent(
                                     onViewPartyDailyGoals = onViewPartyDailyGoals,
                                     onViewPartyActivity = onViewPartyActivity,
                                 )
+                                WalletTab.LoyaltyPoints -> LoyaltyPointsContent(resource.data)
                             }
                         }
                     }

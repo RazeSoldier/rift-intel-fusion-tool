@@ -27,7 +27,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_info
 import dev.nohus.rift.generated.resources.window_warning
 import dev.nohus.rift.infodialog.InfoDialogViewModel.UiState
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource

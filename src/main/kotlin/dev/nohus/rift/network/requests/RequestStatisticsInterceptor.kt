@@ -61,13 +61,23 @@ class RequestStatisticsInterceptor : Interceptor {
             throw e
         }
 
-        val statisticsResponse = StatisticsResponse(Instant.now(), isSuccess = response.isSuccessful)
+        val statisticsResponse = StatisticsResponse(Instant.now(), isSuccess = response.code in 200..399)
 
         runBlocking {
             addResponse(statisticsRequest, statisticsResponse)
         }
 
         return response
+    }
+
+    /**
+     * Adds a request to the statistics without intercepting it
+     */
+    fun addExternalRequest(originator: Originator, endpoint: Endpoint) = runBlocking {
+        val now = Instant.now()
+        val statisticsResponse = StatisticsResponse(now, isSuccess = true)
+        val statisticsRequest = StatisticsRequest(endpoint, originator, now, statisticsResponse)
+        addRequest(statisticsRequest)
     }
 
     private suspend fun getCurrentBucket(): Bucket {

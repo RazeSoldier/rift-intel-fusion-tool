@@ -5,9 +5,9 @@ import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.utils.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 
-@Single
+@Factory
 class JumpBridgesParser(
     private val solarSystemsRepository: SolarSystemsRepository,
 ) {

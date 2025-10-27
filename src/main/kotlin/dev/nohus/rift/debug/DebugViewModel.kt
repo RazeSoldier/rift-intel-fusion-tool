@@ -5,6 +5,8 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.about.GetVersionUseCase
 import dev.nohus.rift.jabber.client.JabberClient
 import dev.nohus.rift.logging.LoggingRepository
+import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor
+import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor.BucketKey
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.OperatingSystem
@@ -14,16 +16,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.time.ZoneId
 
-@Single
+@Factory
 class DebugViewModel(
     private val settings: Settings,
     getVersionUseCase: GetVersionUseCase,
     private val jabberClient: JabberClient,
     operatingSystem: OperatingSystem,
     private val requestStatisticsInterceptor: RequestStatisticsInterceptor,
+    private val esiRateLimitInterceptor: EsiRateLimitInterceptor,
 ) : ViewModel() {
 
     data class UiState(
@@ -37,11 +40,15 @@ class DebugViewModel(
         val isJabberConnected: Boolean,
         // Network
         val buckets: List<RequestStatisticsInterceptor.Bucket> = emptyList(),
+        // Rate limits
+        val rateLimitBuckets: Map<BucketKey, EsiRateLimitInterceptor.Bucket> = emptyMap(),
+        val spentTokens: Map<BucketKey, List<EsiRateLimitInterceptor.SpentTokens>> = emptyMap(),
     )
 
     enum class DebugTab {
         Logs,
         Network,
+        RateLimits,
     }
 
     private val _state = MutableStateFlow(
@@ -64,6 +71,13 @@ class DebugViewModel(
         viewModelScope.launch {
             requestStatisticsInterceptor.buckets.collectLatest { buckets ->
                 _state.update { it.copy(buckets = buckets.toList()) }
+            }
+        }
+        viewModelScope.launch {
+            while (true) {
+                val (buckets, spendTokens) = esiRateLimitInterceptor.getBuckets()
+                _state.update { it.copy(rateLimitBuckets = buckets, spentTokens = spendTokens) }
+                delay(333)
             }
         }
         viewModelScope.launch {

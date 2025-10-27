@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.util.Locale
 
-@Single
+@Factory
 class PushViewModel(
     private val pushNotificationController: PushNotificationController,
     private val settings: Settings,

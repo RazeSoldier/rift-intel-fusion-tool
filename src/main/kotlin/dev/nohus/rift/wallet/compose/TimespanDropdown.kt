@@ -12,11 +12,7 @@ import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.wallet.WalletFilters
 import dev.nohus.rift.wallet.WalletViewModel
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.toList
 import java.time.Duration
-import java.time.Instant
 
 @Composable
 fun TimespanDropdown(
