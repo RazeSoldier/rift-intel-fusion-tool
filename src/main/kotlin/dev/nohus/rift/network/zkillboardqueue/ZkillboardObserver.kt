@@ -27,7 +27,7 @@ import kotlin.collections.map
 import kotlin.time.TimeSource
 
 private val logger = KotlinLogging.logger {}
-private const val MIN_REQUEST_DELAY = 500L
+private const val MIN_REQUEST_DELAY = 1_000L
 private const val FAILED_REQUEST_DELAY = 5_000L
 
 @Single
@@ -38,7 +38,6 @@ class ZkillboardObserver(
     private val settings: Settings,
 ) {
 
-    private val scope = CoroutineScope(SupervisorJob())
     private val queueId = UUID.randomUUID().toString()
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
     private var maxAge: Duration = Duration.ofMinutes(5)
@@ -53,21 +52,26 @@ class ZkillboardObserver(
         launch {
             val clock = TimeSource.Monotonic
             while (true) {
-                val startTime = clock.markNow()
-                val fromDate = dateFormatter.format(Instant.now() - maxAge)
-                val filter = "killmail_time>=$fromDate"
-                when (val result = zkillboardQueueApi.getKillmailRedirect(Killmails, queueId, 5, filter)) {
-                    is Result.Success -> {
-                        handleRedirect(result.data)
+                try {
+                    val startTime = clock.markNow()
+                    val fromDate = dateFormatter.format(Instant.now() - maxAge)
+                    val filter = "killmail_time>=$fromDate"
+                    when (val result = zkillboardQueueApi.getKillmailRedirect(Killmails, queueId, 5, filter)) {
+                        is Result.Success -> {
+                            handleRedirect(result.data)
+                        }
+                        is Result.Failure -> {
+                            logger.error { "Failed to receive killmail redirect: ${result.cause?.message ?: "unknown error"}" }
+                            delay(FAILED_REQUEST_DELAY)
+                        }
                     }
-                    is Result.Failure -> {
-                        logger.error { "Failed to receive killmail redirect: ${result.cause?.message ?: "unknown error"}" }
-                        delay(FAILED_REQUEST_DELAY)
+                    val duration = startTime.elapsedNow()
+                    if (duration.inWholeMilliseconds < MIN_REQUEST_DELAY) {
+                        delay(MIN_REQUEST_DELAY - duration.inWholeMilliseconds)
                     }
-                }
-                val duration = startTime.elapsedNow()
-                if (duration.inWholeMilliseconds < MIN_REQUEST_DELAY) {
-                    delay(MIN_REQUEST_DELAY - duration.inWholeMilliseconds)
+                } catch (e: Exception) {
+                    logger.error(e) { "An error occurred while processing the killmail queue" }
+                    delay(FAILED_REQUEST_DELAY)
                 }
             }
         }
@@ -86,6 +90,7 @@ class ZkillboardObserver(
                     }
                     is Result.Failure -> {
                         logger.error { "Failed to receive killmail object: ${result.cause?.message ?: "unknown error"}" }
+                        delay(FAILED_REQUEST_DELAY)
                     }
                 }
             } else {
@@ -97,13 +102,11 @@ class ZkillboardObserver(
         }
     }
 
-    private fun handlePackage(payload: Package) {
-        scope.launch {
-            when (val killmail = getKillmail(payload)) {
-                is Result.Success -> killmailProcessor.submit(killmail.data)
-                is Result.Failure -> {
-                    logger.error { "Failed to get killmail from ESI: ${killmail.cause?.message ?: "unknown error"}" }
-                }
+    private suspend fun handlePackage(payload: Package) {
+        when (val killmail = getKillmail(payload)) {
+            is Result.Success -> killmailProcessor.submit(killmail.data)
+            is Result.Failure -> {
+                logger.error { "Failed to get killmail from ESI: ${killmail.cause?.message ?: "unknown error"}" }
             }
         }
     }
