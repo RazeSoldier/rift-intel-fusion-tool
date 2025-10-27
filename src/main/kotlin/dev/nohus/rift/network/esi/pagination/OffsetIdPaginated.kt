@@ -9,6 +9,7 @@ interface OffsetId {
 }
 
 suspend fun <T : OffsetId> fetchOffsetIdPaginated(
+    onProgressUpdate: suspend (loadedItems: Int) -> Unit = { _ -> },
     request: suspend (fromId: Long?) -> Result<List<T>>,
 ): Result<List<T>> {
     val items = mutableListOf<T>()
@@ -18,6 +19,7 @@ suspend fun <T : OffsetId> fetchOffsetIdPaginated(
             is Success -> {
                 val newItems = result.data.filter { it.offsetId != fromId }
                 items += newItems
+                onProgressUpdate(items.size)
                 if (newItems.isEmpty()) break
                 fromId = newItems.minOf { it.offsetId }
             }

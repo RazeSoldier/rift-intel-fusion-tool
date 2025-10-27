@@ -40,8 +40,11 @@ class NamesRepository(
 
     @JvmName("resolveNamesLong")
     suspend fun resolveNames(ids: List<Long>) {
+        resolveNames(ids.toSet())
+    }
+
+    suspend fun resolveNames(ids: Set<Long>) {
         ids
-            .distinct()
             .filter { it !in names }
             .filterNot { IdRanges.isSpawnedItem(it) }
             .chunked(1000)

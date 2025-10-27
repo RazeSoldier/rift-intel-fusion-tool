@@ -3,11 +3,17 @@ package dev.nohus.rift.network.zkillboardqueue
 import dev.nohus.rift.killboard.KillmailConverter
 import dev.nohus.rift.killboard.KillmailProcessor
 import dev.nohus.rift.network.Result
+import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.time.TimeSource
 
@@ -20,25 +26,53 @@ class ZkillboardObserver(
     private val zkillboardQueueApi: ZkillboardQueueApi,
     private val killmailConverter: KillmailConverter,
     private val killmailProcessor: KillmailProcessor,
+    private val settings: Settings,
 ) {
 
     private val queueId = UUID.randomUUID().toString()
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
+    private var maxAge: Duration = Duration.ofMinutes(5)
 
     suspend fun start() = coroutineScope {
+        launch {
+            settings.updateFlow.map { it.intelExpireSeconds }.collect {
+                maxAge = Duration.ofSeconds(it.toLong())
+            }
+        }
+
         launch {
             val clock = TimeSource.Monotonic
             while (true) {
                 val startTime = clock.markNow()
-                when (val result = zkillboardQueueApi.getKillmail(queueId, 5)) {
+                val fromDate = dateFormatter.format(Instant.now() - maxAge)
+                val filter = "killmail_time>=$fromDate"
+                when (val result = zkillboardQueueApi.getKillmailRedirect(queueId, 5, filter)) {
                     is Result.Success -> {
-                        val payload = result.data.payload
-                        if (payload != null) {
-                            val killmail = killmailConverter.convert(payload)
-                            killmailProcessor.submit(killmail)
+                        val location = result.data.headers["Location"]
+                        if (location != null) {
+                            if ("objectID=null" !in location) {
+                                when (val result = zkillboardQueueApi.getKillmail(location)) {
+                                    is Result.Success -> {
+                                        val payload = result.data.payload
+                                        if (payload != null) {
+                                            val killmail = killmailConverter.convert(payload)
+                                            killmailProcessor.submit(killmail)
+                                        }
+                                    }
+                                    is Result.Failure -> {
+                                        logger.error { "Failed to receive killmail object: ${result.cause?.message ?: "unknown error"}" }
+                                    }
+                                }
+                            } else {
+                                // No new killmail
+                            }
+                        } else {
+                            logger.error { "No location header in killmail redirect response" }
+                            delay(FAILED_REQUEST_DELAY)
                         }
                     }
                     is Result.Failure -> {
-                        logger.error { "Failed to receive killmail: ${result.cause?.message ?: "unknown error"}" }
+                        logger.error { "Failed to receive killmail redirect: ${result.cause?.message ?: "unknown error"}" }
                         delay(FAILED_REQUEST_DELAY)
                     }
                 }

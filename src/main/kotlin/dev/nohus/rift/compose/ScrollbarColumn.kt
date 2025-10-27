@@ -25,6 +25,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.onSizeChanged
@@ -36,6 +38,7 @@ fun ScrollbarColumn(
     scrollState: ScrollState = rememberScrollState(),
     modifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     scrollbarModifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     isScrollbarConditional: Boolean = false,
@@ -51,6 +54,7 @@ fun ScrollbarColumn(
         var scrollbarHeight by remember { mutableStateOf(0.dp) }
         Column(
             verticalArrangement = verticalArrangement,
+            horizontalAlignment = horizontalAlignment,
             modifier = Modifier
                 .modifyIf(isFillWidth) { weight(1f) }
                 .verticalScroll(scrollState)

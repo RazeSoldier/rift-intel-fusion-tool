@@ -1,6 +1,7 @@
 package dev.nohus.rift.network.zkillboardqueue
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import dev.nohus.rift.network.Reply
 import dev.nohus.rift.network.RequestExecutor
 import dev.nohus.rift.network.Result
 import kotlinx.serialization.json.Json
@@ -13,7 +14,7 @@ import retrofit2.Retrofit
 @Single
 class ZkillboardQueueApi(
     @Named("network") json: Json,
-    client: OkHttpClient,
+    @Named("zkillredisq") client: OkHttpClient,
     requestExecutor: RequestExecutor,
 ) : RequestExecutor by requestExecutor {
 
@@ -25,7 +26,11 @@ class ZkillboardQueueApi(
         .build()
     private val service = retrofit.create(ZkillboardQueueService::class.java)
 
-    suspend fun getKillmail(queueId: String, timeToWait: Int): Result<ZkillboardQueueResponse> {
-        return execute { service.getKillmail(queueId, timeToWait) }
+    suspend fun getKillmailRedirect(queueId: String, timeToWait: Int, filter: String): Result<Reply<Unit>> {
+        return executeWithHeaders { service.getKillmailRedirect(queueId, timeToWait, filter) }
+    }
+
+    suspend fun getKillmail(path: String): Result<ZkillboardQueueResponse> {
+        return execute { service.getKillmail(path) }
     }
 }

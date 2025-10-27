@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import okhttp3.Headers
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
@@ -32,6 +33,7 @@ data class Reply<T>(
 
 interface RequestExecutor {
     suspend fun <R : Any> execute(request: suspend () -> R): Result<R>
+    suspend fun <R : Any> executeWithHeaders(request: suspend () -> Response<R>): Result<Reply<R>>
     suspend fun <R : Any> executeEveAuthorized(characterId: Int, scope: EsiScope?, request: suspend (authentication: String) -> R): Result<R>
     suspend fun <R : Any> executeEveAuthorizedWithHeaders(characterId: Int, scope: EsiScope?, request: suspend (authorization: String) -> Response<R>): Result<Reply<R>>
 }
@@ -47,6 +49,24 @@ class RequestExecutorImpl(
     ): Result<R> {
         return try {
             Success(withContext(Dispatchers.IO) { request() })
+        } catch (e: Exception) {
+            handleError(e)
+        }
+    }
+
+    override suspend fun <R : Any> executeWithHeaders(request: suspend () -> Response<R>): Result<Reply<R>> {
+        return try {
+            val response = withContext(Dispatchers.IO) { request() }
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    Success(Reply(body, response.headers()))
+                } else {
+                    handleError(SerializationException("Response body was null"))
+                }
+            } else {
+                handleError(HttpException(response))
+            }
         } catch (e: Exception) {
             handleError(e)
         }
