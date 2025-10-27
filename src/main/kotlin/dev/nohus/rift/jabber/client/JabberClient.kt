@@ -225,7 +225,13 @@ class JabberClient(
             IQ.Type.get -> logger.info { "IQ Get Stanza received: $iq" }
             IQ.Type.set -> logger.info { "IQ Set Stanza received: $iq" }
             IQ.Type.result -> {}
-            IQ.Type.error -> logger.info { "IQ Error Stanza received: $iq, ${iq.childElementXML}" }
+            IQ.Type.error -> {
+                if (iq.childElementNamespace == "vcard-temp") {
+                    // Expected
+                } else {
+                    logger.info { "IQ Error Stanza received: $iq, ${iq.childElementXML}" }
+                }
+            }
         }
     }
 

@@ -93,7 +93,6 @@ val factoryModule = module {
             .addInterceptor(get<UserAgentInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
-            .pingInterval(Duration.ofSeconds(10))
             .build()
     }
     single<OkHttpClient>(qualifier = named("esi")) {
