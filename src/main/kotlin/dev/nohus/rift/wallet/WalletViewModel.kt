@@ -10,14 +10,18 @@ import dev.nohus.rift.utils.toHsb
 import dev.nohus.rift.wallet.WalletRepository.Character
 import dev.nohus.rift.wallet.WalletRepository.CharacterLoyaltyPoints
 import dev.nohus.rift.wallet.WalletRepository.Corporation
+import dev.nohus.rift.wallet.WalletRepository.LoadedState
 import dev.nohus.rift.wallet.WalletRepository.LoadingState
-import dev.nohus.rift.wallet.WalletRepository.State
 import dev.nohus.rift.wallet.WalletRepository.WalletBalance
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,8 +30,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.math.absoluteValue
 
 @Factory
@@ -42,6 +44,7 @@ class WalletViewModel(
         val filters: WalletFilters = WalletFilters(),
         val availableWalletFilters: AvailableWalletFilters = AvailableWalletFilters(),
         val loading: LoadingState = LoadingState(),
+        val isProcessing: Boolean = false,
         val tab: WalletTab = WalletTab.Wallets,
         val insightsTab: InsightsTab = InsightsTab.IncomeByParty,
         val availableTimestamps: List<Duration> = emptyList(),
@@ -142,14 +145,22 @@ class WalletViewModel(
 
     init {
         viewModelScope.launch {
-            walletRepository.state.collect { wallets ->
+            walletRepository.state.map { it.loadedState }.distinctUntilChanged().collect { loadedState ->
                 _state.update {
                     it.copy(
-                        availableWalletFilters = getAvailableWalletFilters(wallets),
-                        loading = wallets.loading,
+                        availableWalletFilters = getAvailableWalletFilters(loadedState),
                     )
                 }
                 updateJournalsFlow.emit(Unit)
+            }
+        }
+        viewModelScope.launch {
+            walletRepository.state.map { it.loading }.collect { loading ->
+                _state.update {
+                    it.copy(
+                        loading = loading,
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -164,7 +175,9 @@ class WalletViewModel(
         }
         viewModelScope.launch {
             updateJournalsFlow.collectLatest {
+                _state.update { it.copy(isProcessing = true) }
                 updateJournals()
+                _state.update { it.copy(isProcessing = false) }
             }
         }
     }
@@ -238,8 +251,8 @@ class WalletViewModel(
         _state.update { it.copy(tab = tab) }
     }
 
-    private fun getAvailableWalletFilters(state: State): AvailableWalletFilters {
-        val loaded = state.loadedState?.success
+    private fun getAvailableWalletFilters(loadedState: Result<LoadedState>?): AvailableWalletFilters {
+        val loaded = loadedState?.success
         return AvailableWalletFilters(
             characters = loaded?.characters ?: emptyList(),
             corporations = loaded?.corporations ?: emptyList(),
@@ -251,68 +264,108 @@ class WalletViewModel(
         val loaded = walletRepository.state.value.loadedState
         val data = withContext(Dispatchers.Default) {
             var oldest = Instant.now()
-            val data = loaded?.map { loaded ->
-                loaded.journal.minOfOrNull { it.date }?.also { if (oldest == null || it < oldest) oldest = it }
-                _state.update { it.copy(availableTimestamps = getAvailableTimespans(oldest)) }
-                if (_state.value.filters.timeSpan == Duration.ZERO) {
-                    _state.update { it.copy(filters = it.filters.copy(timeSpan = it.availableTimestamps.lastOrNull() ?: Duration.ZERO)) }
+            loaded?.map { loaded ->
+                coroutineScope {
+                    launch {
+                        loaded.journal.minOfOrNull { it.date }?.also { if (oldest == null || it < oldest) oldest = it }
+                        _state.update { it.copy(availableTimestamps = getAvailableTimespans(oldest)) }
+                        if (_state.value.filters.timeSpan == Duration.ZERO) {
+                            _state.update { it.copy(filters = it.filters.copy(timeSpan = it.availableTimestamps.lastOrNull() ?: Duration.ZERO)) }
+                        }
+                    }
+                    val journals = filterJournalsByAge(filterJournalsByWallet(loaded.journal))
+                        .sortedByDescending { it.date }
+                    val filteredJournals = async { filterJournalsByTypeDirectionPartySearch(journals) }
+                    val statistics = async { getStatistics(journals) }
+                    LoadedData(
+                        filteredJournal = filteredJournals.await(),
+                        balances = loaded.balances,
+                        loyaltyPointBalances = loaded.loyaltyPoints,
+                        statistics = statistics.await(),
+                        characters = loaded.characters,
+                        corporations = loaded.corporations,
+                    )
                 }
-                val journals = filterJournalsByAge(filterJournalsByWallet(loaded.journal))
-                    .sortedByDescending { it.date }
-                LoadedData(
-                    filteredJournal = filterJournalsByTypeDirectionPartySearch(journals),
-                    balances = loaded.balances,
-                    loyaltyPointBalances = loaded.loyaltyPoints,
-                    statistics = getStatistics(journals),
-                    characters = loaded.characters,
-                    corporations = loaded.corporations,
-                )
             }
-            data
         }
         _state.update { it.copy(loadedData = data) }
     }
 
-    private fun getStatistics(journal: List<WalletJournalItem>): Statistics {
-        val incomes = journal.filter { it.amount > 0 }
-        val expenses = journal.filter { it.amount < 0 }
+    private suspend fun getStatistics(journal: List<WalletJournalItem>): Statistics {
+        val incomes = mutableListOf<WalletJournalItem>()
+        val expenses = mutableListOf<WalletJournalItem>()
+        val parties = mutableSetOf<TypeDetail>()
+        val journalByParty = mutableMapOf<TypeDetail, MutableList<WalletJournalItem>>()
+        var incomeSum = 0.0
+        var expenseSum = 0.0
+        var balance = 0.0
 
-        val parties = journal
-            .flatMap { listOfNotNull(it.firstParty, it.secondParty) }
-            .toSet()
-        val incomeByParty = getPartyTransactions(incomes, parties, TransferDirection.Income)
-        val expensesByParty = getPartyTransactions(expenses, parties, TransferDirection.Expense)
-        val balanceByParty = getPartyTransactions(journal, parties, null)
-        val destroyedRatsByParty = getDestroyedRatsByParty(incomes)
-        val dailyGoals = getDailyGoals(incomes)
-        val activity = getActivity(journal, parties)
+        journal.forEach { item ->
+            if (item.amount > 0) {
+                incomes.add(item)
+                incomeSum += item.amount
+            } else if (item.amount < 0) {
+                expenses.add(item)
+                expenseSum += item.amount
+            }
+            balance += item.amount
+            item.firstParty?.let {
+                parties += it
+                journalByParty.getOrPut(it) { mutableListOf() }.add(item)
+            }
+            item.secondParty?.let {
+                parties += it
+                journalByParty.getOrPut(it) { mutableListOf() }.add(item)
+            }
+        }
 
-        return Statistics(
-            journal = journal,
-            income = incomes.sumOf { it.amount },
-            expenses = expenses.sumOf { it.amount },
-            balance = journal.sumOf { it.amount },
-            incomeGroupSegments = getGroupSegments(incomes),
-            expensesGroupSegments = getGroupSegments(expenses),
-            incomeSegments = getSegments(incomes),
-            expensesSegments = getSegments(expenses),
-            incomeByParty = incomeByParty,
-            expensesByParty = expensesByParty,
-            balanceByParty = balanceByParty,
-            destroyedRatsByParty = destroyedRatsByParty,
-            dailyGoals = dailyGoals,
-            activity = activity,
-        )
+        return coroutineScope {
+            val incomeByParty = async { getPartyTransactions(journalByParty, parties, TransferDirection.Income) }
+            val expensesByParty = async { getPartyTransactions(journalByParty, parties, TransferDirection.Expense) }
+            val balanceByParty = async { getPartyTransactions(journalByParty, parties, null) }
+            val destroyedRatsByParty = async { getDestroyedRatsByParty(incomes) }
+            val dailyGoals = async { getDailyGoals(incomes) }
+            val activity = async { getActivity(journalByParty, parties) }
+            val incomeGroupSegments = async { getGroupSegments(incomes) }
+            val expensesGroupSegments = async { getGroupSegments(expenses) }
+            val incomeSegments = async { getSegments(incomes) }
+            val expensesSegments = async { getSegments(expenses) }
+
+            Statistics(
+                journal = journal,
+                income = incomeSum,
+                expenses = expenseSum,
+                balance = balance,
+                incomeGroupSegments = incomeGroupSegments.await(),
+                expensesGroupSegments = expensesGroupSegments.await(),
+                incomeSegments = incomeSegments.await(),
+                expensesSegments = expensesSegments.await(),
+                incomeByParty = incomeByParty.await(),
+                expensesByParty = expensesByParty.await(),
+                balanceByParty = balanceByParty.await(),
+                destroyedRatsByParty = destroyedRatsByParty.await(),
+                dailyGoals = dailyGoals.await(),
+                activity = activity.await(),
+            )
+        }
     }
 
     private fun getPartyTransactions(
-        journal: List<WalletJournalItem>,
+        journalByParty: Map<TypeDetail, List<WalletJournalItem>>,
         parties: Set<TypeDetail>,
         transferDirection: TransferDirection?,
     ): List<PartyTransactions> {
         return parties
             .map { party ->
-                val items = journal
+                val partyItems = journalByParty[party] ?: emptyList()
+                val items = partyItems
+                    .filter {
+                        when (transferDirection) {
+                            TransferDirection.Income -> it.amount > 0
+                            TransferDirection.Expense -> it.amount < 0
+                            else -> true
+                        }
+                    }
                     .filter {
                         when (it.wallet) {
                             is Wallet.Character -> {
@@ -330,7 +383,6 @@ class WalletViewModel(
                         }
                         return@filter true
                     }
-                    .filter { it.firstParty == party || it.secondParty == party }
                 val total = items.sumOf { it.amount }
                 val refTypes = items
                     .groupingBy { it.refType }
@@ -401,13 +453,12 @@ class WalletViewModel(
     }
 
     private fun getActivity(
-        journal: List<WalletJournalItem>,
+        journalByParty: Map<TypeDetail, List<WalletJournalItem>>,
         parties: Set<TypeDetail>,
     ): List<PartyActivity> {
         return parties
             .map { party ->
-                val items = journal
-                    .filter { it.firstParty == party || it.secondParty == party }
+                val items = journalByParty[party] ?: emptyList()
                 val total = items.sumOf { it.amount }
                 val transactions = items
                     .groupBy { it.date.toEveLocalDate() }

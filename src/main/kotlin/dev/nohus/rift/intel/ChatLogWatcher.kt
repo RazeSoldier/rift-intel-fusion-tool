@@ -16,6 +16,7 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.mapAsync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.sentry.Sentry
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -117,6 +118,8 @@ class ChatLogWatcher(
                                         (previous + parsed).sortedBy { it.chatMessage.timestamp }
                                     }
                                 }
+                            } catch (e: CancellationException) {
+                                throw e
                             } catch (e: Exception) {
                                 Sentry.captureException(IOException("Could not parse: \"${channelChatMessage.chatMessage.message}\", regions: \"$regions\"", e))
                             }

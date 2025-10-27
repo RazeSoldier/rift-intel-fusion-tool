@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.annotation.Single
 import java.nio.file.Path
+import java.time.Instant
 import java.time.ZoneId
 import kotlin.io.path.pathString
 
@@ -285,4 +286,8 @@ class Settings(
     var corpWalletDivisionNames: Map<Int, Map<Int, String>>
         get() = model.corpWalletDivisionNames
         set(value) = update { copy(corpWalletDivisionNames = value) }
+
+    var newVersionSeenTimestamp: Instant?
+        get() = model.newVersionSeenTimestamp?.let { Instant.ofEpochMilli(it) }
+        set(value) = update { copy(newVersionSeenTimestamp = value?.toEpochMilli()) }
 }

@@ -146,13 +146,16 @@ class WalletRepository(
     }
 
     data class CharacterLoyaltyPoints(
-        val characterId: Int,
+        /**
+         * Character the LP belong to, or null if this is a total from all characters
+         */
+        val characterId: Int?,
         val balances: List<LoyaltyPoints>,
     )
 
     data class LoyaltyPoints(
         val corporationId: Int,
-        val corporationName: String,
+        val name: String,
         val closestLoyaltyPointStore: Station?,
         val balance: Long,
     )
@@ -383,11 +386,14 @@ class WalletRepository(
             val loyaltyPointsByCharacterId = charactersToLoad.map { character ->
                 async {
                     character.characterId to esiApi.getCharactersIdLoyaltyPoints(Originator.Wallets, character.characterId).success
+                        ?.filter { it.loyaltyPoints > 0 }
                 }
-            }.awaitAll().filter { it.second != null }.associate { it.first to it.second!! }
+            }.awaitAll().associate {
+                it.first to (it.second ?: emptyList())
+            }
             val corporationNamesById = loyaltyPointsByCharacterId.values.flatten().map { it.corporationId }.distinct()
                 .associateWith { corporationId -> esiApi.getCorporationsId(Originator.Wallets, corporationId.toInt()).success?.name }
-            loyaltyPointsByCharacterId.map { (characterId, loyaltyPoints) ->
+            val characterLoyaltyPoints = loyaltyPointsByCharacterId.map { (characterId, loyaltyPoints) ->
                 val characterSolarSystemId = characterLocationRepository.locations.value[characterId]?.solarSystemId
                 CharacterLoyaltyPoints(
                     characterId = characterId,
@@ -399,15 +405,33 @@ class WalletRepository(
                                 Int.MAX_VALUE
                             }
                         }
+                        val name = if (it.corporationId == 1000419L) "EverMarks" else corporationNamesById[it.corporationId] ?: it.corporationId.toString()
                         LoyaltyPoints(
                             corporationId = it.corporationId.toInt(),
-                            corporationName = corporationNamesById[it.corporationId] ?: it.corporationId.toString(),
+                            name = name,
                             closestLoyaltyPointStore = store,
                             balance = it.loyaltyPoints,
                         )
                     },
                 )
             }
+            val totalLoyaltyPoints = characterLoyaltyPoints
+                .flatMap { it.balances }
+                .groupBy { it.corporationId }
+                .mapValues { (corporationId, balances) ->
+                    LoyaltyPoints(
+                        corporationId = corporationId,
+                        name = balances.first().name,
+                        closestLoyaltyPointStore = null,
+                        balance = balances.sumOf { it.balance },
+                    )
+                }.values.toList().let {
+                    CharacterLoyaltyPoints(
+                        characterId = null,
+                        balances = it,
+                    )
+                }
+            listOf(totalLoyaltyPoints) + characterLoyaltyPoints
         }
     }
 

@@ -16,6 +16,7 @@ class GetStartupWarningsUseCase(
     private val getAccountsWithDisabledChatLogs: GetAccountsWithDisabledChatLogsUseCase,
     private val isMissingXWinInfo: IsMissingXWinInfoUseCase,
     private val hasIncorrectSystemTimeUseCase: HasIncorrectSystemTimeUseCase,
+    private val isRunningOldVersionUseCase: IsRunningOldVersionUseCase,
     private val settings: Settings,
 ) {
 
@@ -114,6 +115,17 @@ class GetStartupWarningsUseCase(
                         title = "Missing dependency",
                         description = """
                             You don't have "xwininfo", "xprop", or "wmctrl" installed. Usually they are in a "x11-utils" package, "wmctrl" package, or similar. Without them, RIFT won't be able to check the online status of your characters.
+                        """.trimIndent(),
+                    ),
+                )
+            }
+            if (isRunningOldVersionUseCase()) {
+                add(
+                    StartupWarning(
+                        id = "old version",
+                        title = "Outdated version",
+                        description = """
+                            You are running an outdated version of RIFT. Please check the About window to update to the latest version.
                         """.trimIndent(),
                     ),
                 )

@@ -709,6 +709,14 @@ object WhatsNew {
                 - Implemented handling for the newly introduced ESI rate limits which will become active in the coming weeks. This means RIFT will be staying well within them.
                 """.trimIndent(),
             )
+            add(
+                "5.8.0" description """
+                - Added Loyalty Points totals showing your LP summed up from all characters
+                - Added Loyalty Points search to filter by name
+                - Greatly improved the speed of processing wallet transactions, especially for people with hundreds of thousands of them
+                - Added a popup informing of updates being available when using old versions of the app
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }
