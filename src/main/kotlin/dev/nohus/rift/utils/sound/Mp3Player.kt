@@ -7,11 +7,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
@@ -19,7 +20,7 @@ import kotlin.io.path.inputStream
 
 private val logger = KotlinLogging.logger {}
 
-@Single
+@Factory
 class Mp3Player {
 
     private val scope = CoroutineScope(SupervisorJob())
@@ -111,5 +112,13 @@ class Mp3Player {
     fun setVolume(volume: Double) {
         this.volume = volume
         session?.player?.setVolume(volume)
+    }
+
+    fun close() {
+        session?.let {
+            it.player.close()
+            it.job.cancel()
+        }
+        scope.cancel()
     }
 }

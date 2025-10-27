@@ -96,8 +96,8 @@ import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingUtils.formatStanding
 import dev.nohus.rift.utils.toggle
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource

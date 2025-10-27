@@ -43,7 +43,7 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.tray.TrayMenuItem.Separator
 import dev.nohus.rift.tray.TrayMenuItem.TrayMenuTextItem
 import dev.nohus.rift.utils.OperatingSystem
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import dorkbox.systemTray.MenuItem
 import dorkbox.systemTray.SystemTray

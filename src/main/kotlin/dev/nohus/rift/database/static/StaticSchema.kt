@@ -99,6 +99,8 @@ object Stations : Table() {
     val typeId = integer("typeId")
     val systemId = integer("systemId")
     val name = varchar("name", 100)
+    val corporationId = integer("corporationId")
+    val hasLoyaltyPointsStore = bool("hasLoyaltyPointsStore")
     override val primaryKey = PrimaryKey(id)
 }
 

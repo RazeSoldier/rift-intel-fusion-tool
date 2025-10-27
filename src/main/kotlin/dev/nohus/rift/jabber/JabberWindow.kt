@@ -49,6 +49,7 @@ import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuArea
 import dev.nohus.rift.compose.RiftTabBar
 import dev.nohus.rift.compose.RiftTextField
+import dev.nohus.rift.compose.RiftWarningBanner
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -57,10 +58,12 @@ import dev.nohus.rift.compose.annotateLinks
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.bee
 import dev.nohus.rift.generated.resources.logout
 import dev.nohus.rift.generated.resources.window_chatchannels
+import dev.nohus.rift.jabber.JabberAccountRepository.JabberAccountResult.JabberAccount
 import dev.nohus.rift.jabber.JabberViewModel.ContactListState
 import dev.nohus.rift.jabber.JabberViewModel.TabModel
 import dev.nohus.rift.jabber.JabberViewModel.UiState
@@ -70,7 +73,7 @@ import dev.nohus.rift.jabber.client.UserChatController.UserChat
 import dev.nohus.rift.jabber.client.UserChatController.UserMessage
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import org.jivesoftware.smack.chat2.Chat
@@ -297,7 +300,9 @@ private fun LoginContent(
     Column(
         modifier = Modifier.padding(Spacing.medium),
     ) {
-        var jidLocalPart by remember { mutableStateOf("") }
+        val account = remember { koin.get<JabberAccountRepository>().getAccount() as? JabberAccount }
+        var jidLocalPart by remember { mutableStateOf(account?.jid?.substringBeforeLast("@") ?: "") }
+        val savedPassword = remember { account?.password }
         var password by remember { mutableStateOf("") }
         Box(
             contentAlignment = Alignment.Center,
@@ -319,9 +324,8 @@ private fun LoginContent(
                     textAlign = TextAlign.Center,
                 )
                 if (state.errorMessage != null) {
-                    Text(
+                    RiftWarningBanner(
                         text = state.errorMessage,
-                        style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.borderError),
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
                 }
@@ -348,7 +352,7 @@ private fun LoginContent(
                     )
                     RiftTextField(
                         text = password,
-                        placeholder = "Type your password",
+                        placeholder = if (savedPassword != null) "(unchanged)" else "Type your password",
                         isPassword = true,
                         onTextChanged = { password = it },
                         modifier = Modifier
@@ -366,7 +370,10 @@ private fun LoginContent(
         RiftButton(
             text = "Connect",
             cornerCut = ButtonCornerCut.Both,
-            onClick = { onConnectClick(jidLocalPart, password) },
+            onClick = {
+                val effectivePassword = password.takeIf { it.isNotEmpty() } ?: savedPassword ?: password
+                onConnectClick(jidLocalPart, effectivePassword)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = Spacing.medium),
@@ -541,16 +548,24 @@ private fun AddContact(
             style = RiftTheme.typography.headerPrimary,
         )
         var jidLocalPart by remember { mutableStateOf("") }
-        RiftTextField(
-            text = jidLocalPart,
-            placeholder = "Jabber username",
-            onTextChanged = {
-                jidLocalPart = it
-            },
-            modifier = Modifier.fillMaxWidth(),
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RiftTextField(
+                text = jidLocalPart,
+                placeholder = "Jabber username",
+                onTextChanged = {
+                    jidLocalPart = it
+                },
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "@goonfleet.com",
+                style = RiftTheme.typography.bodyPrimary,
+            )
+        }
         Text(
-            text = "Choose nickname",
+            text = "Choose nickname (optional)",
             style = RiftTheme.typography.headerPrimary,
         )
         var name by remember { mutableStateOf("") }
@@ -594,7 +609,10 @@ private fun AddContact(
             RiftButton(
                 text = "Add contact",
                 cornerCut = ButtonCornerCut.BottomRight,
-                onClick = { onAddContactSubmitClick(jidLocalPart, name, listOf(group)) },
+                onClick = {
+                    val name = name.takeIf { it.isNotBlank() } ?: jidLocalPart
+                    onAddContactSubmitClick(jidLocalPart, name, listOf(group))
+                },
                 modifier = Modifier.weight(1f),
             )
         }

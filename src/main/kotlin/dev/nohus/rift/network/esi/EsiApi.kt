@@ -32,9 +32,11 @@ import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
+import dev.nohus.rift.network.esi.models.LoyaltyPoints
 import dev.nohus.rift.network.esi.models.MarketsPrice
 import dev.nohus.rift.network.esi.models.NewMailRequest
 import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.Status
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
 import dev.nohus.rift.network.esi.models.UniverseName
 import dev.nohus.rift.network.esi.models.UniverseStationsId
@@ -43,16 +45,17 @@ import dev.nohus.rift.network.esi.models.UniverseSystemJumps
 import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import dev.nohus.rift.network.esi.models.WalletJournalEntry
 import dev.nohus.rift.network.esi.models.WalletTransaction
+import dev.nohus.rift.network.requests.Character
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.network.requests.RequestExecutor
-import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
+import java.util.UUID
 
 @Single
 class EsiApi(
@@ -68,6 +71,12 @@ class EsiApi(
         .addConverterFactory(json.asConverterFactory(contentType))
         .build()
     private val service = retrofit.create(EsiService::class.java)
+
+    private val Int.authorization get() = Character(this)
+
+    suspend fun getStatus(originator: Originator, characterId: Int): Result<Status> {
+        return execute { service.getStatus(originator, UUID.randomUUID().toString(), characterId.authorization) }
+    }
 
     suspend fun postUniverseIds(originator: Originator, names: List<String>): Result<UniverseIdsResponse> {
         return execute { service.postUniverseIds(originator, names) }
@@ -94,39 +103,27 @@ class EsiApi(
     }
 
     suspend fun getAlliancesIdContacts(originator: Originator, characterId: Int, allianceId: Int): Result<List<Contact>> {
-        return executeEveAuthorized(characterId, EsiScope.Alliances.ReadContacts) { authorization ->
-            service.getAlliancesIdContacts(originator, allianceId, authorization)
-        }
+        return execute { service.getAlliancesIdContacts(originator, allianceId, characterId.authorization) }
     }
 
     suspend fun getCorporationsIdContacts(originator: Originator, characterId: Int, corporationId: Int): Result<List<Contact>> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadContacts) { authorization ->
-            service.getCorporationsIdContacts(originator, corporationId, authorization)
-        }
+        return execute { service.getCorporationsIdContacts(originator, corporationId, characterId.authorization) }
     }
 
     suspend fun getCharactersIdContacts(originator: Originator, characterId: Int): Result<List<Contact>> {
-        return executeEveAuthorized(characterId, EsiScope.Characters.ReadContacts) { authorization ->
-            service.getCharactersIdContacts(originator, characterId, authorization)
-        }
+        return execute { service.getCharactersIdContacts(originator, characterId, characterId.authorization) }
     }
 
     suspend fun getAlliancesIdContactsLabels(originator: Originator, characterId: Int, allianceId: Int): Result<List<ContactsLabel>> {
-        return executeEveAuthorized(characterId, EsiScope.Alliances.ReadContacts) { authorization ->
-            service.getAlliancesIdContactsLabels(originator, allianceId, authorization)
-        }
+        return execute { service.getAlliancesIdContactsLabels(originator, allianceId, characterId.authorization) }
     }
 
     suspend fun getCorporationsIdContactsLabels(originator: Originator, characterId: Int, corporationId: Int): Result<List<ContactsLabel>> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadContacts) { authorization ->
-            service.getCorporationsIdContactsLabels(originator, corporationId, authorization)
-        }
+        return execute { service.getCorporationsIdContactsLabels(originator, corporationId, characterId.authorization) }
     }
 
     suspend fun getCharactersIdContactsLabels(originator: Originator, characterId: Int): Result<List<ContactsLabel>> {
-        return executeEveAuthorized(characterId, EsiScope.Characters.ReadContacts) { authorization ->
-            service.getCharactersIdContactsLabels(originator, characterId, authorization)
-        }
+        return execute { service.getCharactersIdContactsLabels(originator, characterId, characterId.authorization) }
     }
 
     suspend fun deleteCharactersIdContacts(
@@ -134,12 +131,12 @@ class EsiApi(
         characterId: Int,
         contactIds: List<Int>,
     ): Result<Unit> {
-        return executeEveAuthorized(characterId, EsiScope.Characters.WriteContacts) { authorization ->
+        return execute {
             service.deleteCharactersIdContacts(
                 originator = originator,
                 characterId = characterId,
                 contactIds = contactIds,
-                authorization = authorization,
+                characterId.authorization,
             )
         }
     }
@@ -152,14 +149,14 @@ class EsiApi(
         watched: Boolean?,
         contactIds: List<Int>,
     ): Result<List<Int>> {
-        return executeEveAuthorized(characterId, EsiScope.Characters.WriteContacts) { authorization ->
+        return execute {
             service.postCharactersIdContacts(
                 originator = originator,
                 characterId = characterId,
                 labelIds = labelIds,
                 standing = standing,
                 watched = watched,
-                authorization = authorization,
+                characterId.authorization,
                 contactIds = contactIds,
             )
         }
@@ -173,32 +170,26 @@ class EsiApi(
         watched: Boolean?,
         contactIds: List<Int>,
     ): Result<Unit> {
-        return executeEveAuthorized(characterId, EsiScope.Characters.WriteContacts) { authorization ->
-            service.putCharactersIdContacts(originator, characterId, labelIds, standing, watched, authorization, contactIds)
+        return execute {
+            service.putCharactersIdContacts(originator, characterId, labelIds, standing, watched, characterId.authorization, contactIds)
         }
     }
 
     suspend fun getCharacterIdOnline(originator: Originator, characterId: Int): Result<CharacterIdOnline> {
-        return executeEveAuthorized(characterId, EsiScope.Locations.ReadOnline) { authorization ->
-            service.getCharacterIdOnline(originator, characterId, authorization)
-        }
+        return execute { service.getCharacterIdOnline(originator, characterId, characterId.authorization) }
     }
 
     suspend fun getCharacterIdShip(originator: Originator, characterId: Int): Result<CharacterIdShip> {
-        return executeEveAuthorized(characterId, EsiScope.Locations.ReadShipType) { authorization ->
-            service.getCharacterIdShip(originator, characterId, authorization)
-        }
+        return execute { service.getCharacterIdShip(originator, characterId, characterId.authorization) }
     }
 
     suspend fun getCharacterIdLocation(originator: Originator, characterId: Int): Result<CharacterIdLocation> {
-        return executeEveAuthorized(characterId, EsiScope.Locations.ReadLocation) { authorization ->
-            service.getCharacterIdLocation(originator, characterId, authorization)
-        }
+        return execute { service.getCharacterIdLocation(originator, characterId, characterId.authorization) }
     }
 
     suspend fun getCharacterIdWallet(originator: Originator, characterId: Int): Result<Double> {
-        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
-            service.getCharactersIdWallet(originator, characterId, authorization)
+        return execute {
+            service.getCharactersIdWallet(originator, characterId, characterId.authorization)
         }
     }
 
@@ -207,8 +198,8 @@ class EsiApi(
         characterId: Int,
         page: Int? = null,
     ): Result<Reply<List<WalletJournalEntry>>> {
-        return executeEveAuthorizedWithHeaders(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
-            service.getCharactersIdWalletJournal(originator, characterId, page, authorization)
+        return executeWithHeaders {
+            service.getCharactersIdWalletJournal(originator, characterId, page, characterId.authorization)
         }
     }
 
@@ -217,8 +208,8 @@ class EsiApi(
         characterId: Int,
         fromId: Long? = null,
     ): Result<List<WalletTransaction>> {
-        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
-            service.getCharactersIdWalletTransactions(originator, characterId, fromId, authorization)
+        return execute {
+            service.getCharactersIdWalletTransactions(originator, characterId, fromId, characterId.authorization)
         }
     }
 
@@ -227,8 +218,8 @@ class EsiApi(
         characterId: Int,
         corporationId: Int,
     ): Result<List<CorporationWalletBalance>> {
-        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
-            service.getCorporationsCorporationIdWallets(originator, corporationId, authorization)
+        return execute {
+            service.getCorporationsCorporationIdWallets(originator, corporationId, characterId.authorization)
         }
     }
 
@@ -239,8 +230,8 @@ class EsiApi(
         division: Int,
         page: Int? = null,
     ): Result<Reply<List<WalletJournalEntry>>> {
-        return executeEveAuthorizedWithHeaders(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
-            service.getCorporationsCorporationIdWalletsDivisionJournal(originator, corporationId, division, page, authorization)
+        return executeWithHeaders {
+            service.getCorporationsCorporationIdWalletsDivisionJournal(originator, corporationId, division, page, characterId.authorization)
         }
     }
 
@@ -251,8 +242,8 @@ class EsiApi(
         division: Int,
         fromId: Long? = null,
     ): Result<List<WalletTransaction>> {
-        return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
-            service.getCorporationsCorporationIdWalletsDivisionTransactions(originator, corporationId, division, fromId, authorization)
+        return execute {
+            service.getCorporationsCorporationIdWalletsDivisionTransactions(originator, corporationId, division, fromId, characterId.authorization)
         }
     }
 
@@ -261,26 +252,30 @@ class EsiApi(
         characterId: Int,
         corporationId: Int,
     ): Result<CorporationDivisions> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadDivisions) { authorization ->
-            service.getCorporationsCorporationIdDivisions(originator, corporationId, authorization)
-        }
+        return execute { service.getCorporationsCorporationIdDivisions(originator, corporationId, characterId.authorization) }
     }
 
     suspend fun getCharactersIdSearch(originator: Originator, characterId: Int, categories: List<String>, strict: Boolean, search: String): Result<CharactersIdSearch> {
-        return executeEveAuthorized(characterId, EsiScope.Search.SearchStructures) { authorization ->
-            service.getCharactersIdSearch(originator, characterId, categories, strict, search, authorization)
+        return execute {
+            service.getCharactersIdSearch(originator, characterId, categories, strict, search, characterId.authorization)
         }
     }
 
     suspend fun getCharactersIdClones(originator: Originator, characterId: Int): Result<CharactersIdClones> {
-        return executeEveAuthorized(characterId, EsiScope.Clones.ReadClones) { authorization ->
-            service.getCharactersIdClones(originator, characterId, authorization)
+        return execute {
+            service.getCharactersIdClones(originator, characterId, characterId.authorization)
         }
     }
 
     suspend fun getCharactersIdImplants(originator: Originator, characterId: Int): Result<List<Int>> {
-        return executeEveAuthorized(characterId, EsiScope.Clones.ReadImplants) { authorization ->
-            service.getCharactersIdImplants(originator, characterId, authorization)
+        return execute {
+            service.getCharactersIdImplants(originator, characterId, characterId.authorization)
+        }
+    }
+
+    suspend fun getCharactersIdLoyaltyPoints(originator: Originator, characterId: Int): Result<List<LoyaltyPoints>> {
+        return execute {
+            service.getCharactersIdLoyaltyPoints(originator, characterId, characterId.authorization)
         }
     }
 
@@ -289,8 +284,8 @@ class EsiApi(
     }
 
     suspend fun getUniverseStructuresId(originator: Originator, structureId: Long, characterId: Int): Result<UniverseStructuresId> {
-        return executeEveAuthorized(characterId, EsiScope.Universe.ReadStructures) { authorization ->
-            service.getUniverseStructuresId(originator, structureId, authorization)
+        return execute {
+            service.getUniverseStructuresId(originator, structureId, characterId.authorization)
         }
     }
 
@@ -320,32 +315,32 @@ class EsiApi(
         clearOtherWaypoints: Boolean,
         characterId: Int,
     ): Result<Unit> {
-        return executeEveAuthorized(characterId, EsiScope.Ui.WriteWaypoint) { authorization ->
+        return execute {
             service.postUiAutopilotWaypoint(
                 originator = originator,
                 addToBeginning = false,
                 clearOtherWaypoints = clearOtherWaypoints,
                 destinationId = destinationId,
-                authorization = authorization,
+                characterId.authorization,
             )
         }
     }
 
     suspend fun getCharactersIdAssets(originator: Originator, page: Int, characterId: Int): Result<Reply<List<CharactersIdAsset>>> {
-        return executeEveAuthorizedWithHeaders(characterId, EsiScope.Assets.ReadAssets) { authorization ->
-            service.getCharactersIdAssets(originator, characterId, page, authorization)
+        return executeWithHeaders {
+            service.getCharactersIdAssets(originator, characterId, page, characterId.authorization)
         }
     }
 
     suspend fun getCharactersIdAssetsNames(originator: Originator, characterId: Int, assets: List<Long>): Result<List<CharactersIdAssetsName>> {
-        return executeEveAuthorized(characterId, EsiScope.Assets.ReadAssets) { authorization ->
-            service.getCharactersIdAssetsNames(originator, characterId, assets, authorization)
+        return execute {
+            service.getCharactersIdAssetsNames(originator, characterId, assets, characterId.authorization)
         }
     }
 
     suspend fun getCharactersIdAssetsLocations(originator: Originator, characterId: Int, itemIds: List<Long>): Result<List<CharactersIdAssetsLocation>> {
-        return executeEveAuthorized(characterId, EsiScope.Assets.ReadAssets) { authorization ->
-            service.getCharactersIdAssetsLocations(originator, characterId, itemIds, authorization)
+        return execute {
+            service.getCharactersIdAssetsLocations(originator, characterId, itemIds, characterId.authorization)
         }
     }
 
@@ -354,32 +349,32 @@ class EsiApi(
     }
 
     suspend fun getCharactersIdFleet(originator: Originator, characterId: Int): Result<CharactersIdFleet> {
-        return executeEveAuthorized(characterId, EsiScope.Fleets.ReadFleet) { authorization ->
-            service.getCharactersIdFleet(originator, characterId, authorization)
+        return execute {
+            service.getCharactersIdFleet(originator, characterId, characterId.authorization)
         }
     }
 
     suspend fun getFleetsId(originator: Originator, characterId: Int, fleetId: Long): Result<FleetsId> {
-        return executeEveAuthorized(characterId, EsiScope.Fleets.ReadFleet) { authorization ->
-            service.getFleetsId(originator, fleetId, authorization)
+        return execute {
+            service.getFleetsId(originator, fleetId, characterId.authorization)
         }
     }
 
     suspend fun getFleetsIdMembers(originator: Originator, characterId: Int, fleetId: Long): Result<List<FleetMember>> {
-        return executeEveAuthorized(characterId, EsiScope.Fleets.ReadFleet) { authorization ->
-            service.getFleetsIdMembers(originator, fleetId, authorization)
+        return execute {
+            service.getFleetsIdMembers(originator, fleetId, characterId.authorization)
         }
     }
 
     suspend fun getCharactersIdPlanets(originator: Originator, characterId: Int): Result<List<CharactersIdPlanet>> {
-        return executeEveAuthorized(characterId, EsiScope.Planets.ManagePlanets) { authorization ->
-            service.getCharactersIdPlanets(originator, characterId, authorization)
+        return execute {
+            service.getCharactersIdPlanets(originator, characterId, characterId.authorization)
         }
     }
 
     suspend fun getCharactersIdPlanetsId(originator: Originator, characterId: Int, planetId: Int): Result<CharactersIdPlanetsId> {
-        return executeEveAuthorized(characterId, EsiScope.Planets.ManagePlanets) { authorization ->
-            service.getCharactersIdPlanetsId(originator, characterId, planetId, authorization)
+        return execute {
+            service.getCharactersIdPlanetsId(originator, characterId, planetId, characterId.authorization)
         }
     }
 
@@ -396,8 +391,8 @@ class EsiApi(
         limit: Int? = 100,
         state: CorporationProjectsQueryState?,
     ): Result<CorporationsIdProjects> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjects(originator, corporationId, before, after, limit, state, authorization)
+        return execute {
+            service.getCorporationsIdProjects(originator, corporationId, before, after, limit, state, characterId.authorization)
         }
     }
 
@@ -407,8 +402,8 @@ class EsiApi(
         corporationId: Int,
         projectId: String,
     ): Result<CorporationsIdProjectsId> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjectsId(originator, corporationId, projectId, authorization)
+        return execute {
+            service.getCorporationsIdProjectsId(originator, corporationId, projectId, characterId.authorization)
         }
     }
 
@@ -418,8 +413,8 @@ class EsiApi(
         corporationId: Int,
         projectId: String,
     ): Result<CorporationsIdProjectsIdContribution> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, authorization)
+        return execute {
+            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, characterId.authorization)
         }
     }
 
@@ -432,8 +427,8 @@ class EsiApi(
         after: String?,
         limit: Int? = 100,
     ): Result<CorporationsIdProjectsIdContributors> {
-        return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, authorization)
+        return execute {
+            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, characterId.authorization)
         }
     }
 
@@ -441,8 +436,8 @@ class EsiApi(
         originator: Originator,
         characterId: Int,
     ): Result<CharactersIdRoles> {
-        return executeEveAuthorized(characterId, EsiScope.Characters.ReadCorporationRoles) { authorization ->
-            service.getCharactersIdRoles(originator, characterId, authorization)
+        return execute {
+            service.getCharactersIdRoles(originator, characterId, characterId.authorization)
         }
     }
 
@@ -451,8 +446,8 @@ class EsiApi(
         characterId: Int,
         id: Long,
     ): Result<Unit> {
-        return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
-            service.postUiOpenWindowInformation(originator, id, authorization)
+        return execute {
+            service.postUiOpenWindowInformation(originator, id, characterId.authorization)
         }
     }
 
@@ -461,8 +456,8 @@ class EsiApi(
         characterId: Int,
         typeId: Long,
     ): Result<Unit> {
-        return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
-            service.postUiOpenWindowMarketDetails(originator, typeId, authorization)
+        return execute {
+            service.postUiOpenWindowMarketDetails(originator, typeId, characterId.authorization)
         }
     }
 
@@ -471,8 +466,8 @@ class EsiApi(
         characterId: Int,
         request: NewMailRequest,
     ): Result<Unit> {
-        return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
-            service.postUiOpenWindowNewMail(originator, request, authorization)
+        return execute {
+            service.postUiOpenWindowNewMail(originator, request, characterId.authorization)
         }
     }
 }

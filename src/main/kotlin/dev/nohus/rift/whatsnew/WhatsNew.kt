@@ -699,6 +699,16 @@ object WhatsNew {
                 - In Jabber, longer channel MOTDs now scroll instead of taking a lot of space
                 """.trimIndent(),
             )
+            add(
+                "5.7.0" description """
+                -! New feature: Loyalty Points
+                - In the Wallets window, there is now a Loyalty Points tab showing your LP and EverMarks for all characters
+                - With each LP type, you can also see the closest LP store for that corporation, and view it on the map or set it as your autopilot destination
+                
+                - Added several optimizations to memory usage when using RIFT for longer periods of time.
+                - Implemented handling for the newly introduced ESI rate limits which will become active in the coming weeks. This means RIFT will be staying well within them.
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

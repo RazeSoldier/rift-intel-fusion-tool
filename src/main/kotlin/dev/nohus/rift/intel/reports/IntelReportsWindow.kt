@@ -36,7 +36,7 @@ import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.reports.IntelReportsViewModel.UiState
 import dev.nohus.rift.intel.reports.settings.IntelReportsSettings
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import java.time.Instant
 

@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.nio.file.Path
 import java.time.Duration
 import java.util.UUID
 import kotlin.io.path.nameWithoutExtension
 
-@Single
+@Factory
 class JukeboxViewModel(
     private val tracksRepository: TracksRepository,
     private val player: Mp3Player,
@@ -280,5 +280,9 @@ class JukeboxViewModel(
             _state.update { it.copy(playState = PlayState.Paused(playing.track)) }
             player.pause()
         }
+    }
+
+    override fun onClose() {
+        player.close()
     }
 }

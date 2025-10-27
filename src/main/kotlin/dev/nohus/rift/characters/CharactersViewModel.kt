@@ -24,14 +24,14 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.deleteExisting
 
 private val logger = KotlinLogging.logger {}
 
-@Single
+@Factory
 class CharactersViewModel(
     private val onlineCharactersRepository: OnlineCharactersRepository,
     private val localCharactersRepository: LocalCharactersRepository,

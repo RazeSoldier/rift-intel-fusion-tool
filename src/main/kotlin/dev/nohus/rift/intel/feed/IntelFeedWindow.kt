@@ -77,7 +77,7 @@ import dev.nohus.rift.settings.persistence.DistanceFilter
 import dev.nohus.rift.settings.persistence.EntityFilter
 import dev.nohus.rift.settings.persistence.LocationFilter
 import dev.nohus.rift.settings.persistence.SortingFilter
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 
 @Composable

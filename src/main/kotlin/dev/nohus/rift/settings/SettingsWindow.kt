@@ -92,8 +92,8 @@ import dev.nohus.rift.utils.OperatingSystem.MacOs
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.toURIOrNull
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import javax.swing.JFileChooser
 import kotlin.io.path.absolutePathString

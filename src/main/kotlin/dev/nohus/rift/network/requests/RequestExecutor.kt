@@ -7,9 +7,7 @@ import dev.nohus.rift.network.esi.EsiErrorException
 import dev.nohus.rift.network.esi.EsiErrorResponse
 import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.authentication.NoAuthenticationException
-import dev.nohus.rift.sso.authentication.SsoAuthenticator
 import dev.nohus.rift.sso.authentication.SsoException
-import dev.nohus.rift.sso.scopes.EsiScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -39,22 +37,9 @@ interface RequestExecutor {
     suspend fun <R : Any> executeWithHeaders(
         request: suspend () -> Response<R>,
     ): Result<Reply<R>>
-
-    suspend fun <R : Any> executeEveAuthorized(
-        characterId: Int,
-        scope: EsiScope?,
-        request: suspend (authentication: String) -> R,
-    ): Result<R>
-
-    suspend fun <R : Any> executeEveAuthorizedWithHeaders(
-        characterId: Int,
-        scope: EsiScope?,
-        request: suspend (authorization: String) -> Response<R>,
-    ): Result<Reply<R>>
 }
 
 class RequestExecutorImpl(
-    private val ssoAuthenticator: SsoAuthenticator,
     private val eveSsoRepository: EveSsoRepository,
     private val json: Json,
 ) : RequestExecutor {
@@ -86,42 +71,6 @@ class RequestExecutorImpl(
             }
         } catch (e: Exception) {
             handleError(e)
-        }
-    }
-
-    override suspend fun <R : Any> executeEveAuthorized(
-        characterId: Int,
-        scope: EsiScope?,
-        request: suspend (authorization: String) -> R,
-    ): Result<R> {
-        return try {
-            val accessToken = ssoAuthenticator.getValidEveAccessToken(characterId, scope)
-            Success(withContext(Dispatchers.IO) { request("Bearer $accessToken") })
-        } catch (e: Exception) {
-            handleError(e, characterId)
-        }
-    }
-
-    override suspend fun <R : Any> executeEveAuthorizedWithHeaders(
-        characterId: Int,
-        scope: EsiScope?,
-        request: suspend (authorization: String) -> Response<R>,
-    ): Result<Reply<R>> {
-        return try {
-            val accessToken = ssoAuthenticator.getValidEveAccessToken(characterId, scope)
-            val response = withContext(Dispatchers.IO) { request("Bearer $accessToken") }
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body != null) {
-                    Success(Reply(body, response.headers()))
-                } else {
-                    handleError(SerializationException("Response body was null"))
-                }
-            } else {
-                handleError(HttpException(response))
-            }
-        } catch (e: Exception) {
-            handleError(e, characterId)
         }
     }
 

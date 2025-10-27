@@ -20,7 +20,6 @@ import dev.nohus.rift.notifications.NotificationsController
 import dev.nohus.rift.singleinstance.SingleInstanceWrapper
 import dev.nohus.rift.splash.SplashWindowWrapper
 import dev.nohus.rift.tray.RiftTray
-import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.wizard.WizardWindowWrapper
 import io.kamel.image.config.LocalKamelConfig

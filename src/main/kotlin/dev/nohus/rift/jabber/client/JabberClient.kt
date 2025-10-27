@@ -43,6 +43,7 @@ class JabberClient(
 
     data class JabberState(
         val isConnected: Boolean = false,
+        val loginResult: LoginResult? = null,
         val users: Map<BareJid, RosterUser>,
         val multiUserChats: List<MultiUserChat>,
         val openMultiUserChats: List<EntityBareJid>,
@@ -54,6 +55,7 @@ class JabberClient(
 
     private data class JabberClientState(
         val isConnected: Boolean = false,
+        val loginResult: LoginResult? = null,
     )
 
     private val _state = MutableStateFlow(JabberClientState())
@@ -65,6 +67,7 @@ class JabberClient(
     ) { state, users, multiUserChats, userChats ->
         JabberState(
             isConnected = state.isConnected,
+            loginResult = state.loginResult,
             users = users,
             multiUserChats = multiUserChats.chats,
             openMultiUserChats = multiUserChats.openChats,
@@ -85,13 +88,20 @@ class JabberClient(
 
     sealed interface LoginResult {
         data object Success : LoginResult
+        data object NoAccount : LoginResult
         data object IncorrectPassword : LoginResult
         data object AuthenticationFailure : LoginResult
         data object ConnectionFailure : LoginResult
         data class Error(val cause: Exception) : LoginResult
     }
 
-    suspend fun login(jid: String, password: String): LoginResult = withContext(Dispatchers.IO) {
+    suspend fun login(jid: String, password: String): LoginResult {
+        val result = loginImpl(jid, password)
+        _state.update { it.copy(loginResult = result) }
+        return result
+    }
+
+    private suspend fun loginImpl(jid: String, password: String): LoginResult = withContext(Dispatchers.IO) {
         loginMutex.withLock {
             try {
                 logout()

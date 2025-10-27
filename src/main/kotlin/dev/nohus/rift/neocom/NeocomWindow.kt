@@ -55,7 +55,7 @@ import dev.nohus.rift.generated.resources.window_satellite
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_sovereignty
 import dev.nohus.rift.generated.resources.window_wallet
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import org.jetbrains.compose.resources.DrawableResource
@@ -77,7 +77,6 @@ fun NeocomWindow(
         icon = Res.drawable.window_rift_64,
         state = windowState,
         onCloseClick = {
-            viewModel.onClose()
             onCloseRequest()
         },
         titleBarStyle = TitleBarStyle.Small,

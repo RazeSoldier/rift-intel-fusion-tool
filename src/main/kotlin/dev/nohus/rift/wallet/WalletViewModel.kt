@@ -8,12 +8,12 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.toColor
 import dev.nohus.rift.utils.toHsb
 import dev.nohus.rift.wallet.WalletRepository.Character
+import dev.nohus.rift.wallet.WalletRepository.CharacterLoyaltyPoints
 import dev.nohus.rift.wallet.WalletRepository.Corporation
 import dev.nohus.rift.wallet.WalletRepository.LoadingState
 import dev.nohus.rift.wallet.WalletRepository.State
 import dev.nohus.rift.wallet.WalletRepository.WalletBalance
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Factory
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -30,7 +30,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.math.absoluteValue
 
-@Single
+@Factory
 class WalletViewModel(
     private val walletRepository: WalletRepository,
     private val typesRepository: TypesRepository,
@@ -53,6 +53,7 @@ class WalletViewModel(
     data class LoadedData(
         val filteredJournal: List<WalletJournalItem>,
         val balances: List<WalletBalance>,
+        val loyaltyPointBalances: List<CharacterLoyaltyPoints>,
         val statistics: Statistics,
         val characters: List<Character>,
         val corporations: List<Corporation>,
@@ -118,6 +119,7 @@ class WalletViewModel(
         Overview,
         Transactions,
         Insights,
+        LoyaltyPoints,
     }
 
     enum class InsightsTab {
@@ -260,6 +262,7 @@ class WalletViewModel(
                 LoadedData(
                     filteredJournal = filterJournalsByTypeDirectionPartySearch(journals),
                     balances = loaded.balances,
+                    loyaltyPointBalances = loaded.loyaltyPoints,
                     statistics = getStatistics(journals),
                     characters = loaded.characters,
                     corporations = loaded.corporations,

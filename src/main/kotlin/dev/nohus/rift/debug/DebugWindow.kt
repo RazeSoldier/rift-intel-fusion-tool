@@ -1,6 +1,7 @@
 package dev.nohus.rift.debug
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,8 +39,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
+import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftCheckboxWithLabel
+import dev.nohus.rift.compose.RiftProgressBar
 import dev.nohus.rift.compose.RiftRadioButtonWithLabel
 import dev.nohus.rift.compose.RiftTabBar
 import dev.nohus.rift.compose.RiftWindow
@@ -57,10 +60,14 @@ import dev.nohus.rift.debug.DebugViewModel.DebugTab
 import dev.nohus.rift.debug.DebugViewModel.UiState
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_log
+import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor.BucketKey
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import kotlinx.coroutines.delay
+import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -104,6 +111,7 @@ private fun ToolbarRow(
                 val title = when (tab) {
                     DebugTab.Logs -> "Logs"
                     DebugTab.Network -> "Network Statistics"
+                    DebugTab.RateLimits -> "Rate Limits"
                 }
                 Tab(id = index, title = title, isCloseable = false)
             }
@@ -215,7 +223,7 @@ private fun DebugWindowContent(
                             text = buildAnnotatedString {
                                 append("Requests by originating feature in the last 2 minutes: ")
                                 withStyle(RiftTheme.typography.headerPrimary.copy(fontWeight = FontWeight.Bold).toSpanStyle()) {
-                                    append("${requests.size}")
+                                    append(formatNumber(requests.size))
                                     val failuresCount = requests.count { it.response?.isSuccess == false }
                                     if (failuresCount > 0) {
                                         append(" ")
@@ -243,8 +251,8 @@ private fun DebugWindowContent(
                                     Text(
                                         text = buildAnnotatedString {
                                             append("${originator.name}: ")
-                                            withColor(RiftTheme.colors.textHighlighted) {
-                                                append("${requests.size}")
+                                            withStyle(RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold).toSpanStyle()) {
+                                                append(formatNumber(requests.size))
                                             }
                                         },
                                         style = RiftTheme.typography.bodyPrimary,
@@ -260,7 +268,7 @@ private fun DebugWindowContent(
                                                 text = buildAnnotatedString {
                                                     append("$endpoint: ")
                                                     withStyle(RiftTheme.typography.bodyPrimary.copy(fontWeight = FontWeight.Bold).toSpanStyle()) {
-                                                        append("${requests.size}")
+                                                        append(formatNumber(requests.size))
                                                         val failuresCount = requests.count { it.response?.isSuccess == false }
                                                         if (failuresCount > 0) {
                                                             append(" ")
@@ -316,6 +324,120 @@ private fun DebugWindowContent(
                                 text = "–",
                                 style = RiftTheme.typography.bodyPrimary,
                             )
+                        }
+                    }
+                }
+            }
+            DebugTab.RateLimits -> {
+                Column(
+                    modifier = Modifier.padding(top = Spacing.medium),
+                ) {
+                    Text(
+                        text = "Remaining tokens per rate limit bucket",
+                        style = RiftTheme.typography.headerPrimary,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
+                    Spacer(Modifier.height(Spacing.medium))
+                    val now = getNow()
+                    var previousTokens by remember { mutableStateOf(mapOf<BucketKey, Int>()) }
+                    val buckets = remember(now) {
+                        state.rateLimitBuckets.mapValues { (bucketKey, bucket) ->
+                            val spentTokens = state.spentTokens[bucketKey] ?: emptyList()
+                            val tokensRegeneratedSinceLastRequest = spentTokens
+                                .takeWhile { it.returnTimestamp.isBefore(now) }
+                                .sumOf { it.tokens }
+                            val tokensRemaining = bucket.remaining + tokensRegeneratedSinceLastRequest
+                            bucket.copy(remaining = tokensRemaining)
+                        }
+                    }
+                    val sortedBuckets = buckets.entries.toList().sortedBy { (_, bucket) -> bucket.remaining }
+
+                    ScrollbarLazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                    ) {
+                        items(sortedBuckets, key = { it.key }) { (bucketKey, bucket) ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                modifier = Modifier.animateItem(),
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        append("Group ")
+                                        withColor(RiftTheme.colors.textPrimary) {
+                                            append(bucketKey.group.name)
+                                        }
+                                    },
+                                    style = RiftTheme.typography.bodySecondary,
+                                )
+                                if (bucketKey.character != null) {
+                                    AsyncPlayerPortrait(
+                                        characterId = bucketKey.character.id,
+                                        size = 32,
+                                        modifier = Modifier
+                                            .border(1.dp, RiftTheme.colors.borderGreyLight)
+                                            .size(32.dp),
+                                    )
+                                } else {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .border(1.dp, RiftTheme.colors.borderGreyLight)
+                                            .background(RiftTheme.colors.backgroundPrimaryDark)
+                                            .size(32.dp),
+                                    ) {
+                                        Text(
+                                            text = "IP",
+                                            style = RiftTheme.typography.bodyPrimary,
+                                        )
+                                    }
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .height(IntrinsicSize.Min)
+                                        .weight(1f),
+                                ) {
+                                    val spendTokens = state.spentTokens[bucketKey] ?: emptyList()
+                                    val tokensRegeneratedSinceLastRequest = spendTokens
+                                        .takeWhile { it.returnTimestamp.isBefore(now) }
+                                        .sumOf { it.tokens }
+                                    val tokensRemaining = bucket.remaining + tokensRegeneratedSinceLastRequest
+                                    val previousTokensRemaining = previousTokens[bucketKey] ?: 0
+                                    previousTokens = previousTokens + (bucketKey to tokensRemaining)
+
+                                    val defaultColor = RiftTheme.colors.primary
+                                    var targetColor by remember { mutableStateOf(defaultColor) }
+                                    LaunchedEffect(tokensRemaining) {
+                                        if (previousTokensRemaining > tokensRemaining) {
+                                            targetColor = EveColors.hotRed
+                                        } else if (previousTokensRemaining < tokensRemaining) {
+                                            targetColor = EveColors.successGreen
+                                        }
+                                        delay(1000)
+                                        targetColor = defaultColor
+                                    }
+                                    val color by animateColorAsState(targetColor.copy(alpha = 0.3f))
+                                    RiftProgressBar(
+                                        percentage = tokensRemaining / bucket.limit.tokens.toFloat(),
+                                        color = color,
+                                        modifier = Modifier
+                                            .height(20.dp)
+                                            .fillMaxWidth(),
+                                    )
+                                    val nextReturnIn = spendTokens.firstOrNull { it.returnTimestamp.isAfter(now) }?.returnTimestamp?.let { Duration.between(now, it) }
+                                    val returnText = if (nextReturnIn != null) {
+                                        ", ${nextReturnIn.seconds}s"
+                                    } else {
+                                        ""
+                                    }
+                                    Text(
+                                        text = "$tokensRemaining / ${bucket.limit.tokens} tokens$returnText",
+                                        style = RiftTheme.typography.bodyPrimary,
+                                        modifier = Modifier.align(Alignment.Center),
+                                        maxLines = 1,
+                                    )
+                                }
+                            }
                         }
                     }
                 }

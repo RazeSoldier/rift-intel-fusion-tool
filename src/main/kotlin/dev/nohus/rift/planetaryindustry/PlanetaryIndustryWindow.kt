@@ -93,7 +93,7 @@ import dev.nohus.rift.settings.persistence.ColonySortingFilter
 import dev.nohus.rift.settings.persistence.ColonyView
 import dev.nohus.rift.utils.invertedPlural
 import dev.nohus.rift.utils.plural
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import java.time.Instant

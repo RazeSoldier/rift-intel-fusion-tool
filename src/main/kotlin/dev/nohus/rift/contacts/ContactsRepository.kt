@@ -245,7 +245,7 @@ class ContactsRepository(
             _finishedLoading.update { true }
             return
         }
-        if (contacts.value.contacts != originalContacts) {
+        if (contactsResponse.contacts != originalContacts) {
             originalContacts = contactsResponse.contacts
             _contacts.update { it.copy(contacts = contactsResponse.contacts, labels = contactsResponse.labels, isLoading = false) }
             logger.info { "Updated contacts" }

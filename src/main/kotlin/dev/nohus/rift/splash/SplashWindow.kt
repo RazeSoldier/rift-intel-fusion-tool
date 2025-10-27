@@ -51,7 +51,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.splash
 import dev.nohus.rift.generated.resources.window_rift_64
 import dev.nohus.rift.splash.SplashViewModel.UiState
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 

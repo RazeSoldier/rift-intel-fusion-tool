@@ -22,9 +22,10 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun RiftWarningBanner(
     text: String,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier.background(RiftTheme.colors.warningBackground),
+        modifier = modifier.background(RiftTheme.colors.warningBackground),
     ) {
         Image(
             painter = painterResource(Res.drawable.warningtriangle),

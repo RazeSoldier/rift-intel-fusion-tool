@@ -43,7 +43,7 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_log
 import dev.nohus.rift.loglite.LogLiteViewModel.UiState
-import dev.nohus.rift.utils.viewModel
+import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
