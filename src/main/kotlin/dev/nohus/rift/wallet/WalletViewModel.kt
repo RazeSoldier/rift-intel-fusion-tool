@@ -9,6 +9,7 @@ import dev.nohus.rift.utils.toColor
 import dev.nohus.rift.utils.toHsb
 import dev.nohus.rift.wallet.WalletRepository.Character
 import dev.nohus.rift.wallet.WalletRepository.Corporation
+import dev.nohus.rift.wallet.WalletRepository.LoadingState
 import dev.nohus.rift.wallet.WalletRepository.State
 import dev.nohus.rift.wallet.WalletRepository.WalletBalance
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,6 @@ import kotlin.math.absoluteValue
 class WalletViewModel(
     private val walletRepository: WalletRepository,
     private val typesRepository: TypesRepository,
-    private val getNpcShipGroupUseCase: GetNpcShipGroupUseCase,
     private val settings: Settings,
 ) : ViewModel() {
 
@@ -41,7 +41,7 @@ class WalletViewModel(
         val loadedData: Result<LoadedData>? = null,
         val filters: WalletFilters = WalletFilters(),
         val availableWalletFilters: AvailableWalletFilters = AvailableWalletFilters(),
-        val isLoading: Boolean = false,
+        val loading: LoadingState = LoadingState(),
         val tab: WalletTab = WalletTab.Wallets,
         val insightsTab: InsightsTab = InsightsTab.IncomeByParty,
         val journalHistoryFrom: Instant? = null,
@@ -144,7 +144,7 @@ class WalletViewModel(
                 _state.update {
                     it.copy(
                         availableWalletFilters = getAvailableWalletFilters(wallets),
-                        isLoading = wallets.isLoading,
+                        loading = wallets.loading,
                     )
                 }
                 updateJournalsFlow.emit(Unit)

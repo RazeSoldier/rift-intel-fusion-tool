@@ -5,6 +5,7 @@ import dev.nohus.rift.logging.analytics.Analytics
 import dev.nohus.rift.network.EsiCompatibilityInterceptor
 import dev.nohus.rift.network.EsiErrorLimitInterceptor
 import dev.nohus.rift.network.LoggingInterceptor
+import dev.nohus.rift.network.RedirectAsSuccessInterceptor
 import dev.nohus.rift.network.RequestExecutor
 import dev.nohus.rift.network.RequestExecutorImpl
 import dev.nohus.rift.network.UserAgentInterceptor
@@ -97,6 +98,14 @@ val factoryModule = module {
             .addInterceptor(get<UserAgentInterceptor>())
             .addInterceptor(get<EsiErrorLimitInterceptor>())
             .addInterceptor(get<EsiCompatibilityInterceptor>())
+            .addInterceptor(get<LoggingInterceptor>())
+            .build()
+    }
+    single<OkHttpClient>(qualifier = named("zkillredisq")) {
+        OkHttpClient.Builder()
+            .followRedirects(false)
+            .addInterceptor(get<UserAgentInterceptor>())
+            .addInterceptor(get<RedirectAsSuccessInterceptor>())
             .addInterceptor(get<LoggingInterceptor>())
             .build()
     }

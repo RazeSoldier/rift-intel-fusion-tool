@@ -16,13 +16,11 @@ import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.FactionNames
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.NamesRepository
-import dev.nohus.rift.repositories.PlanetsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.mapAsync
-import dorkbox.util.Sys
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -38,14 +36,16 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
+import kotlin.Int
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,7 +66,7 @@ class WalletRepository(
 
     data class State(
         val loadedState: Result<LoadedState>? = null,
-        val isLoading: Boolean = false,
+        val loading: LoadingState = LoadingState(),
     )
 
     data class LoadedState(
@@ -76,11 +76,58 @@ class WalletRepository(
         val corporations: List<Corporation>,
     )
 
+    data class LoadingState(
+        val stage: LoadingStage? = null,
+        val characters: List<LoadingCharacter> = emptyList(),
+        val corporationDivisions: List<LoadingCorporationDivision> = emptyList(),
+        val totalJournalItems: Int = 0,
+        val typeDetails: LoadingTypeDetails = LoadingTypeDetails(),
+    )
+
+    data class LoadingCharacter(
+        val characterId: Int,
+        val name: String,
+        val hasCorpWalletScopes: Boolean,
+        val loadedJournalItems: Int = 0,
+        val loadedTransactions: Int = 0,
+        val isJournalLoaded: Boolean = false,
+    )
+
+    data class LoadingCorporationDivision(
+        val corporationId: Int,
+        val divisionId: Int,
+        val name: String,
+        val loadedJournalItems: Int = 0,
+        val loadedTransactions: Int = 0,
+        val isJournalLoaded: Boolean = false,
+    )
+
+    data class LoadingTypeDetails(
+        val structureIds: Int = 0,
+        val characterIds: Int = 0,
+        val groupIds: Int = 0,
+        val systemIds: Int = 0,
+        val typeIds: Int = 0,
+        val isStructuresLoaded: Boolean = false,
+        val isCharactersLoaded: Boolean = false,
+        val isGroupsLoaded: Boolean = false,
+    )
+
+    sealed interface LoadingStage {
+        data object CheckingRoles : LoadingStage
+        data object LoadingJournal : LoadingStage
+        data object LoadingDatabase : LoadingStage
+        data object LoadingTypeDetails : LoadingStage
+        data object LoadingDivisionNames : LoadingStage
+        data object LoadingBalances : LoadingStage
+    }
+
     sealed class WalletBalance(open val balance: Double) {
         data class Character(
             val characterId: Int,
             override val balance: Double,
         ) : WalletBalance(balance)
+
         data class Corporation(
             val corporationId: Int,
             val divisionId: Int,
@@ -98,10 +145,20 @@ class WalletRepository(
         val name: String,
     )
 
+    /**
+     * All raw entries in a wallet, and responsible character (owner of a personal wallet or accountant of a corp division wallet)
+     */
+    private data class WalletEntries(
+        val wallet: Wallet,
+        val characterId: Int,
+        val journal: List<WalletJournalEntry>,
+        val transactions: List<WalletTransaction>,
+    )
+
     private val _state = MutableStateFlow<State>(State())
     val state = _state.asStateFlow()
 
-    private val reloadFlow = MutableSharedFlow<Boolean>()
+    private val reloadFlow = MutableSharedFlow<Unit>()
     private val loadingMutex = Mutex()
     private var isRealtime = false
 
@@ -110,52 +167,69 @@ class WalletRepository(
         launch {
             while (true) {
                 delay(1.minutes)
-                if (isRealtime) reloadFlow.emit(true)
+                if (isRealtime) reloadFlow.emit(Unit)
             }
         }
-        launch {
-            while (true) {
-                delay(15.minutes)
-                reloadFlow.emit(true)
-            }
-        }
+        // TODO: Background loading of data temporarily disabled
+//        launch {
+//            while (true) {
+//                delay(15.minutes)
+//                reloadFlow.emit(Unit)
+//            }
+//        }
         launch {
             localCharactersRepository.characters.debounce(500).collectLatest { characters ->
                 // Wait for contacts to load before loading wallets, unless they take too long
                 withTimeoutOrNull(10_000) {
                     contactsRepository.finishedLoading.filter { it }.first()
                 }
-                reloadFlow.emit(false)
-                reloadFlow.emit(true)
+                if (isRealtime) reloadFlow.emit(Unit)
             }
         }
         launch {
             reloadFlow.collect {
-                load(isLoadingFromEsi = it)
+                load()
             }
         }
     }
 
     suspend fun reload() {
-        if (!loadingMutex.isLocked) reloadFlow.emit(true)
+        if (!loadingMutex.isLocked) reloadFlow.emit(Unit)
     }
 
-    fun setNeedsRealtimeUpdates(isRealtime: Boolean) {
+    suspend fun setNeedsRealtimeUpdates(isRealtime: Boolean) {
         this.isRealtime = isRealtime
+        if (isRealtime && _state.value.loadedState == null && _state.value.loading.stage == null) {
+            reloadFlow.emit(Unit)
+        }
     }
 
-    private suspend fun load(
-        isLoadingFromEsi: Boolean,
-    ) = withContext(Dispatchers.IO) {
+    private suspend fun load() = withContext(Dispatchers.Default) {
         loadingMutex.withLock {
-            _state.update { it.copy(isLoading = true) }
             val localCharacters = localCharactersRepository.characters.value
             if (localCharacters.isEmpty()) return@withContext
 
+            val charactersWithWalletScopes = localCharacters
+                .filter { ScopeGroups.readWallet in it.scopes }
+            val characterWithCorpWalletScopes = localCharacters
+                .filter { ScopeGroups.readCorporationWallet in it.scopes }
+
+            // Update loading progress
+            val loadingCharacters = localCharacters
+                .filter { it in charactersWithWalletScopes || it in characterWithCorpWalletScopes }
+                .map { character ->
+                    LoadingCharacter(
+                        characterId = character.characterId,
+                        name = character.info.success?.name ?: character.characterId.toString(),
+                        hasCorpWalletScopes = characterWithCorpWalletScopes.any { it.characterId == character.characterId },
+                    )
+                }
+            _state.update {
+                it.copy(loading = LoadingState(stage = LoadingStage.CheckingRoles, characters = loadingCharacters))
+            }
+
             val charactersWithRolesDeferred = async {
-                localCharacters.filter {
-                    ScopeGroups.readCorporationWallet in it.scopes
-                }.mapAsync { character ->
+                characterWithCorpWalletScopes.mapAsync { character ->
                     character to esiApi.getCharactersIdRoles(character.characterId)
                 }.mapNotNull { it.first to (it.second.success?.roles ?: return@mapNotNull null) }
             }
@@ -170,64 +244,76 @@ class WalletRepository(
                 }.filter { it.second }.map { it.first }
             }
             val divisionNamesJob = launch {
-                if (isLoadingFromEsi) {
-                    walletDivisionsRepository.load(directorsDeferred.await())
-                }
+                walletDivisionsRepository.load(directorsDeferred.await())
             }
 
             val accountants = accountantsDeferred.await()
-            val corporationsIdsToAccountantIds = localCharacters
+            val corporationsToAccountantIds = localCharacters
                 .filter { it.characterId in accountants }
                 .mapNotNull { character ->
                     val corporationId = character.info.success?.corporationId ?: return@mapNotNull null
-                    corporationId to character.characterId
+                    val corporationName = character.info.success?.corporationName ?: return@mapNotNull null
+                    Corporation(corporationId, corporationName) to character.characterId
                 }
                 .groupBy { it.first }
                 .mapValues { it.value.map { it.second }.first() }
 
-            val charactersToLoad = localCharacters
-                .filter { ScopeGroups.readWallet in it.scopes }
+            val walletBalances = async { getWalletBalances(charactersWithWalletScopes, corporationsToAccountantIds) }
 
-            val walletBalances = async { getWalletBalances(charactersToLoad, corporationsIdsToAccountantIds) }
+            updateDatabaseFromEsi(charactersWithWalletScopes, corporationsToAccountantIds)
 
-            if (isLoadingFromEsi) {
-                updateDatabaseFromEsi(charactersToLoad, corporationsIdsToAccountantIds)
-            }
-
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingDatabase)) }
             val journalEntriesPerWallet = walletLocalRepository.loadJournalEntries()
             val transactions = walletLocalRepository.loadTransactions()
-            val items = journalEntriesPerWallet.mapNotNull { (wallet, journalEntries) ->
+
+            val walletEntries = journalEntriesPerWallet.mapNotNull { (wallet, journalEntries) ->
+                val characterId = when (wallet) {
+                    is Wallet.Character -> wallet.characterId
+                    is Wallet.Corporation ->
+                        corporationsToAccountantIds.entries
+                            .firstOrNull { it.key.id == wallet.corporationId }?.value ?: return@mapNotNull null
+                }
+                val journalEntryIds = journalEntries.map { it.id }
+                val walletTransactions = transactions.filter { it.journalRefId in journalEntryIds }
+                WalletEntries(wallet, characterId, journalEntries, walletTransactions)
+            }
+
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        stage = LoadingStage.LoadingTypeDetails,
+                        totalJournalItems = journalEntriesPerWallet.values.sumOf { it.size },
+                    ),
+                )
+            }
+            val details = loadTypeDetails(walletEntries)
+
+            val items = walletEntries.map {
                 async {
-                    val characterId = when (wallet) {
-                        is Wallet.Character -> wallet.characterId
-                        is Wallet.Corporation -> corporationsIdsToAccountantIds[wallet.corporationId] ?: return@async emptyList()
-                    }
-                    buildItems(wallet, characterId, journalEntries, transactions)
+                    buildItems(it.wallet, it.journal, it.transactions, details)
                 }
             }.awaitAll().flatten()
 
-            val characters = charactersToLoad.map {
+            val characters = charactersWithWalletScopes.map {
                 Character(it.characterId, it.info.success?.name ?: it.characterId.toString())
             }
-            val corporations = corporationsIdsToAccountantIds.map { (corporationId, accountantId) ->
-                val name = localCharacters
-                    .firstOrNull { it.characterId == accountantId }?.info?.success?.corporationName
-                    ?: corporationId.toString()
-                Corporation(corporationId, name)
-            }
+            val corporations = corporationsToAccountantIds.keys.toList()
 
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingDivisionNames)) }
             divisionNamesJob.join()
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingBalances)) }
+            val balances = walletBalances.await()
             _state.update {
                 it.copy(
                     loadedState = Result.Success(
                         LoadedState(
                             journal = items,
-                            balances = walletBalances.await(),
+                            balances = balances,
                             characters = characters,
                             corporations = corporations,
                         ),
                     ),
-                    isLoading = false,
+                    loading = LoadingState(),
                 )
             }
         }
@@ -235,7 +321,7 @@ class WalletRepository(
 
     private suspend fun getWalletBalances(
         charactersToLoad: List<LocalCharacter>,
-        corporationsIdsToAccountantIds: Map<Int, Int>,
+        corporationsToAccountantIds: Map<Corporation, Int>,
     ): List<WalletBalance> {
         return coroutineScope {
             val characterWalletsDeferred = charactersToLoad.map { character ->
@@ -245,11 +331,11 @@ class WalletRepository(
                     }.success
                 }
             }
-            val corporationWalletsDeferred = corporationsIdsToAccountantIds.map { (corporationId, accountantId) ->
+            val corporationWalletsDeferred = corporationsToAccountantIds.map { (corporation, accountantId) ->
                 async {
-                    esiApi.getCorporationsCorporationIdWallet(accountantId, corporationId).map { wallets ->
+                    esiApi.getCorporationsCorporationIdWallet(accountantId, corporation.id).map { wallets ->
                         wallets.map { wallet ->
-                            WalletBalance.Corporation(corporationId, wallet.divisionId, wallet.balance)
+                            WalletBalance.Corporation(corporation.id, wallet.divisionId, wallet.balance)
                         }
                     }.success
                 }
@@ -260,35 +346,90 @@ class WalletRepository(
         }
     }
 
+    private suspend fun updateLoadingCharacter(characterId: Int, update: LoadingCharacter.() -> LoadingCharacter) {
+        withContext(MainUIDispatcher) {
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        characters = it.loading.characters.map {
+                            if (it.characterId == characterId) {
+                                it.update()
+                            } else {
+                                it
+                            }
+                        },
+                    ),
+                )
+            }
+        }
+    }
+
+    private suspend fun updateLoadingCorporationDivision(corporationId: Int, divisionId: Int, update: LoadingCorporationDivision.() -> LoadingCorporationDivision) {
+        withContext(MainUIDispatcher) {
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        corporationDivisions = it.loading.corporationDivisions.map {
+                            if (it.corporationId == corporationId && it.divisionId == divisionId) {
+                                it.update()
+                            } else {
+                                it
+                            }
+                        },
+                    ),
+                )
+            }
+        }
+    }
+
     /**
      * Gets new journal entries and transactions from ESI and saves them to the database
      */
     private suspend fun updateDatabaseFromEsi(
         charactersToLoad: List<LocalCharacter>,
-        corporationsIdsToAccountantIds: Map<Int, Int>,
+        corporationsToAccountantIds: Map<Corporation, Int>,
     ) {
+        _state.update {
+            it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingJournal))
+        }
         coroutineScope {
             charactersToLoad.forEach { character ->
                 val wallet = Wallet.Character(character.characterId)
                 launch {
                     val characterId = character.characterId
                     val deferredJournal = async {
-                        fetchPagePaginated {
+                        fetchPagePaginated(
+                            onProgressUpdate = { loadedItems ->
+                                updateLoadingCharacter(characterId) {
+                                    copy(loadedJournalItems = loadedItems)
+                                }
+                            },
+                        ) {
                             esiApi.getCharactersIdWalletJournal(characterId, it)
                         }
                     }
                     val deferredTransactions = async {
-                        fetchOffsetIdPaginated {
+                        fetchOffsetIdPaginated(
+                            onProgressUpdate = { loadedItems ->
+                                updateLoadingCharacter(characterId) {
+                                    copy(loadedTransactions = loadedItems)
+                                }
+                            },
+                        ) {
                             esiApi.getCharactersIdWalletTransactions(characterId, it)
                         }
                     }
                     val journalEntries = deferredJournal.await()
                     val transactions = deferredTransactions.await()
+                    updateLoadingCharacter(characterId) {
+                        copy(isJournalLoaded = true)
+                    }
 
                     if (transactions is Result.Success && journalEntries is Result.Success) {
                         walletLocalRepository.save(wallet, journalEntries.data)
                         walletLocalRepository.save(transactions.data)
                     } else {
+                        // TODO
                         if (journalEntries is Result.Failure) {
                             logger.error { "Failed to fetch journal entries for character $characterId: ${journalEntries.cause}" }
                         }
@@ -299,33 +440,64 @@ class WalletRepository(
                 }
             }
 
-            corporationsIdsToAccountantIds.forEach { (corporationId, accountantId) ->
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        corporationDivisions = corporationsToAccountantIds.keys.flatMap { corporation ->
+                            (1..7).map { divisionId ->
+                                LoadingCorporationDivision(
+                                    corporationId = corporation.id,
+                                    divisionId = divisionId,
+                                    name = "${corporation.name}, Division $divisionId",
+                                )
+                            }
+                        },
+                    ),
+                )
+            }
+            corporationsToAccountantIds.forEach { (corporation, accountantId) ->
                 launch {
                     (1..7).forEach { divisionId ->
-                        val wallet = Wallet.Corporation(corporationId, divisionId)
+                        val wallet = Wallet.Corporation(corporation.id, divisionId)
                         launch {
                             val deferredJournal = async {
-                                fetchPagePaginated {
-                                    esiApi.getCorporationsCorporationIdWalletsDivisionJournal(accountantId, corporationId, divisionId, it)
+                                fetchPagePaginated(
+                                    onProgressUpdate = { loadedItems ->
+                                        updateLoadingCorporationDivision(corporation.id, divisionId) {
+                                            copy(loadedJournalItems = loadedItems)
+                                        }
+                                    },
+                                ) {
+                                    esiApi.getCorporationsCorporationIdWalletsDivisionJournal(accountantId, corporation.id, divisionId, it)
                                 }
                             }
                             val deferredTransactions = async {
-                                fetchOffsetIdPaginated {
-                                    esiApi.getCorporationsCorporationIdWalletsDivisionTransactions(accountantId, corporationId, divisionId, it)
+                                fetchOffsetIdPaginated(
+                                    onProgressUpdate = { loadedItems ->
+                                        updateLoadingCorporationDivision(corporation.id, divisionId) {
+                                            copy(loadedTransactions = loadedItems)
+                                        }
+                                    },
+                                ) {
+                                    esiApi.getCorporationsCorporationIdWalletsDivisionTransactions(accountantId, corporation.id, divisionId, it)
                                 }
                             }
                             val journalEntries = deferredJournal.await()
                             val transactions = deferredTransactions.await()
+                            updateLoadingCorporationDivision(corporation.id, divisionId) {
+                                copy(isJournalLoaded = true)
+                            }
 
                             if (transactions is Result.Success && journalEntries is Result.Success) {
                                 walletLocalRepository.save(wallet, journalEntries.data)
                                 walletLocalRepository.save(transactions.data)
                             } else {
+                                // TODO
                                 if (journalEntries is Result.Failure) {
-                                    logger.error { "Failed to fetch journal entries for corporation $corporationId division $divisionId: ${journalEntries.cause}" }
+                                    logger.error { "Failed to fetch journal entries for corporation $corporation division $divisionId: ${journalEntries.cause}" }
                                 }
                                 if (transactions is Result.Failure) {
-                                    logger.error { "Failed to fetch transactions for corporation $corporationId division $divisionId: ${transactions.cause}" }
+                                    logger.error { "Failed to fetch transactions for corporation $corporation division $divisionId: ${transactions.cause}" }
                                 }
                             }
                         }
@@ -337,28 +509,26 @@ class WalletRepository(
 
     /**
      * Builds a list of [WalletJournalItem]s from the given journal entries and transactions.
-     * characterId is for fetching structure details
      */
-    private suspend fun buildItems(
+    private fun buildItems(
         wallet: Wallet,
-        characterId: Int,
         journalEntries: List<WalletJournalEntry>,
         transactions: List<WalletTransaction>,
+        typeDetails: TypeDetails,
     ): List<WalletJournalItem> {
         val entries = fixJournalEntries(journalEntries)
-        val details = loadTypeDetails(characterId, entries, transactions)
         val transactionsByJournalId = transactions.associateBy { it.journalRefId }
         val items = entries.map { entry ->
             val transaction = transactionsByJournalId[entry.id]?.let {
                 WalletTransactionItem(
-                    client = details[it.clientId],
+                    client = typeDetails[it.clientId],
                     date = it.date,
                     isBuy = it.isBuy,
                     isPersonal = it.isPersonal,
-                    location = details[it.locationId],
+                    location = typeDetails[it.locationId],
                     quantity = it.quantity,
                     transactionId = it.transactionId,
-                    type = details[it.typeId],
+                    type = typeDetails[it.typeId],
                     unitPrice = it.unitPrice,
                 )
             }
@@ -366,17 +536,17 @@ class WalletRepository(
                 wallet = wallet,
                 amount = entry.amount ?: 0.0,
                 balance = entry.balance,
-                context = details[entry.contextId],
+                context = typeDetails[entry.contextId],
                 date = entry.date,
                 description = entry.description,
                 id = entry.id,
                 reason = entry.reason,
                 reasonTypeDetails = getAdditionalTypeDetails(entry.refType, entry.reason, entry.description),
                 refType = entry.refType,
-                firstParty = details[entry.firstPartyId],
-                secondParty = details[entry.secondPartyId],
+                firstParty = typeDetails[entry.firstPartyId],
+                secondParty = typeDetails[entry.secondPartyId],
                 tax = entry.tax,
-                taxReceiver = details[entry.taxReceiverId],
+                taxReceiver = typeDetails[entry.taxReceiverId],
                 transaction = transaction,
             )
         }
@@ -428,7 +598,10 @@ class WalletRepository(
                 .mapNotNull {
                     val parts = it.split(": ")
                     if (parts.size == 2) {
-                        (parts[0].toIntOrNull() ?: return@mapNotNull null) to (parts[1].toLongOrNull() ?: return@mapNotNull null)
+                        (parts[0].toIntOrNull() ?: return@mapNotNull null) to (
+                            parts[1].toLongOrNull()
+                                ?: return@mapNotNull null
+                            )
                     } else {
                         null
                     }
@@ -469,59 +642,71 @@ class WalletRepository(
     }
 
     /**
-     * Loads details about all the types referenced in the journal entries and transactions.
-     * characterId is for fetching structure details
+     * Loads details about all the types referenced in journal entries and transactions
      */
-    private suspend fun loadTypeDetails(
-        characterId: Int,
-        journalEntries: List<WalletJournalEntry>,
-        transactions: List<WalletTransaction>,
-    ): TypeDetails {
+    private suspend fun loadTypeDetails(wallets: List<WalletEntries>): TypeDetails {
         // Prepare lists of IDs to fetch details about
-        val uncategorizedIds = mutableListOf<Long>()
-        val structureIds = mutableListOf<Long>()
-        val stationIds = mutableListOf<Long>()
-        val characterIds = mutableListOf<Long>()
-        val corporationIds = mutableListOf<Long>()
-        val allianceIds = mutableListOf<Long>()
-        val factionIds = mutableListOf<Long>()
-        val systemIds = mutableListOf<Long>()
-        val typeIds = mutableListOf<Long>()
-        journalEntries.forEach { entry ->
-            if (entry.contextId != null) {
-                when (entry.contextIdType) {
-                    ContextIdType.Structure -> structureIds += entry.contextId
-                    ContextIdType.Station -> stationIds += entry.contextId
-                    ContextIdType.MarketTransaction -> {} // We already have transactions, no need to fetch anything
-                    ContextIdType.Character -> characterIds += entry.contextId
-                    ContextIdType.Corporation -> corporationIds += entry.contextId
-                    ContextIdType.Alliance -> allianceIds += entry.contextId
-                    ContextIdType.EveSystem -> uncategorizedIds += entry.contextId
-                    ContextIdType.IndustryJob -> {} // Not supported
-                    ContextIdType.Contract -> {} // Not supported
-                    ContextIdType.Planet -> {} // Not supported
-                    ContextIdType.System -> systemIds += entry.contextId
-                    ContextIdType.Type -> typeIds += entry.contextId
-                    null -> {}
+        val uncategorizedIds = mutableSetOf<Long>()
+        val structureIdsWithCharacterId = mutableSetOf<Pair<Long, Int>>()
+        val stationIds = mutableSetOf<Long>()
+        val characterIds = mutableSetOf<Long>()
+        val corporationIds = mutableSetOf<Long>()
+        val allianceIds = mutableSetOf<Long>()
+        val factionIds = mutableSetOf<Long>()
+        val systemIds = mutableSetOf<Long>()
+        val typeIds = mutableSetOf<Long>()
+
+        wallets.forEach { (_, characterId, journalEntries, transactions) ->
+            journalEntries.forEach { entry ->
+                if (entry.contextId != null) {
+                    when (entry.contextIdType) {
+                        ContextIdType.Structure -> structureIdsWithCharacterId += entry.contextId to characterId
+                        ContextIdType.Station -> stationIds += entry.contextId
+                        ContextIdType.MarketTransaction -> {} // We already have transactions, no need to fetch anything
+                        ContextIdType.Character -> characterIds += entry.contextId
+                        ContextIdType.Corporation -> corporationIds += entry.contextId
+                        ContextIdType.Alliance -> allianceIds += entry.contextId
+                        ContextIdType.EveSystem -> uncategorizedIds += entry.contextId
+                        ContextIdType.IndustryJob -> {} // Not supported
+                        ContextIdType.Contract -> {} // Not supported
+                        ContextIdType.Planet -> {} // Not supported // TODO
+                        ContextIdType.System -> systemIds += entry.contextId
+                        ContextIdType.Type -> typeIds += entry.contextId
+                        null -> {}
+                    }
                 }
+                uncategorizedIds += listOfNotNull(entry.firstPartyId, entry.secondPartyId)
+                if (entry.taxReceiverId != null) corporationIds += entry.taxReceiverId
             }
-            uncategorizedIds += listOfNotNull(entry.firstPartyId, entry.secondPartyId)
-            if (entry.taxReceiverId != null) corporationIds += entry.taxReceiverId
-        }
-        transactions.forEach { transaction ->
-            uncategorizedIds += transaction.clientId
-            if (IdRanges.isStation(transaction.locationId)) {
-                stationIds += transaction.locationId
-            } else {
-                structureIds += transaction.locationId
+            transactions.forEach { transaction ->
+                uncategorizedIds += transaction.clientId
+                if (IdRanges.isStation(transaction.locationId)) {
+                    stationIds += transaction.locationId
+                } else {
+                    structureIdsWithCharacterId += transaction.locationId to characterId
+                }
+                typeIds += transaction.typeId
             }
-            typeIds += transaction.typeId
+
+            // Spawned items are not supported by ESI for name/category resolution
+            val spawnedItemIds = uncategorizedIds.filter { IdRanges.isSpawnedItem(it) }.toSet()
+            uncategorizedIds -= spawnedItemIds
+            structureIdsWithCharacterId += spawnedItemIds.map { it to characterId }
         }
 
-        // Spawned items are not supported by ESI for name/category resolution
-        val spawnedItemIds = uncategorizedIds.filter { IdRanges.isSpawnedItem(it) }.toSet()
-        uncategorizedIds -= spawnedItemIds
-        structureIds += spawnedItemIds
+        _state.update {
+            it.copy(
+                loading = it.loading.copy(
+                    typeDetails = LoadingTypeDetails(
+                        structureIds = structureIdsWithCharacterId.size + stationIds.size,
+                        characterIds = characterIds.size,
+                        groupIds = corporationIds.size + allianceIds.size + factionIds.size,
+                        systemIds = systemIds.size,
+                        typeIds = typeIds.size,
+                    ),
+                ),
+            )
+        }
 
         // For those IDs where we don't know the category, fetch the categories from ESI
         namesRepository.resolveNames(uncategorizedIds)
@@ -540,12 +725,26 @@ class WalletRepository(
             }
         }
 
+        _state.update {
+            it.copy(
+                loading = it.loading.copy(
+                    typeDetails = LoadingTypeDetails(
+                        structureIds = structureIdsWithCharacterId.size + stationIds.size,
+                        characterIds = characterIds.size,
+                        groupIds = corporationIds.size + allianceIds.size + factionIds.size,
+                        systemIds = systemIds.size,
+                        typeIds = typeIds.size,
+                    ),
+                ),
+            )
+        }
+
         // Fetch details about all the IDs
         val details = mutableMapOf<Long, TypeDetail>()
         coroutineScope {
-            val deferredStructures = structureIds.distinct().map {
+            val deferredStructures = structureIdsWithCharacterId.distinct().map { (structureId, characterId) ->
                 async {
-                    locationRepository.getStructure(it, characterId, fetchOwner = true)
+                    locationRepository.getStructure(structureId, characterId, fetchOwner = true)
                 }
             }
             val deferredStations = stationIds.distinct().map {
@@ -553,11 +752,40 @@ class WalletRepository(
                     locationRepository.getStation(it.toInt(), fetchOwner = true)
                 }
             }
+            deferredStructures.awaitAll().forEach { structure ->
+                structure?.let { details[it.structureId] = TypeDetail.Structure(it) }
+            }
+            deferredStations.awaitAll().forEach { station ->
+                station?.let { details[it.stationId.toLong()] = TypeDetail.Station(it) }
+            }
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        typeDetails = it.loading.typeDetails.copy(
+                            isStructuresLoaded = true,
+                        ),
+                    ),
+                )
+            }
+
             val deferredCharacters = characterIds.distinct().let {
                 async {
                     characterDetailsRepository.getCharacterDetails(it.map(Long::toInt)).values
                 }
             }
+            deferredCharacters.await().forEach { character ->
+                character?.let { details[it.characterId.toLong()] = TypeDetail.Character(it) }
+            }
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        typeDetails = it.loading.typeDetails.copy(
+                            isCharactersLoaded = true,
+                        ),
+                    ),
+                )
+            }
+
             val deferredCorporations = corporationIds.distinct().map { corporationId ->
                 async {
                     characterDetailsRepository.getCorporationDetails(corporationId.toInt())
@@ -569,21 +797,22 @@ class WalletRepository(
                 }
             }
 
-            deferredStructures.awaitAll().forEach { structure ->
-                structure?.let { details[it.structureId] = TypeDetail.Structure(it) }
-            }
-            deferredStations.awaitAll().forEach { station ->
-                station?.let { details[it.stationId.toLong()] = TypeDetail.Station(it) }
-            }
-            deferredCharacters.await().forEach { character ->
-                character?.let { details[it.characterId.toLong()] = TypeDetail.Character(it) }
-            }
             deferredCorporations.awaitAll().forEach { corporation ->
                 corporation?.let { details[corporation.corporationId.toLong()] = TypeDetail.Corporation(corporation) }
             }
             deferredAlliances.awaitAll().forEach { alliance ->
                 alliance?.let { details[alliance.allianceId.toLong()] = TypeDetail.Alliance(alliance) }
             }
+            _state.update {
+                it.copy(
+                    loading = it.loading.copy(
+                        typeDetails = it.loading.typeDetails.copy(
+                            isGroupsLoaded = true,
+                        ),
+                    ),
+                )
+            }
+
             factionIds.distinct().map { id ->
                 details[id] = TypeDetail.Faction(id, FactionNames[id.toInt()])
             }

@@ -1,7 +1,26 @@
 package dev.nohus.rift.wallet
 
 import dev.nohus.rift.repositories.TypesRepository
-import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.*
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Battlecruiser
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Battleship
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.CapitalIndustrialShip
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Carrier
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Cruiser
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Destroyer
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Dreadnought
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Drone
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.FighterBomber
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.FighterDrone
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.ForceAuxiliary
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Freighter
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Frigate
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Hauler
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Industrial
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Shuttle
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Structure
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Supercarrier
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.Titan
+import dev.nohus.rift.wallet.GetNpcShipGroupUseCase.NpcShipGroup.TriglavianRogueDrone
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
 
@@ -30,7 +49,7 @@ class GetNpcShipGroupUseCase {
         Dreadnought("Dreadnought"),
         CapitalIndustrialShip("Capital Industrial Ship"),
         Supercarrier("Supercarrier"),
-        Titan("Titan");
+        Titan("Titan"),
     }
 
     operator fun invoke(type: TypesRepository.Type): NpcShipGroup? {

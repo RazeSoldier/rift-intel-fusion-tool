@@ -682,6 +682,14 @@ object WhatsNew {
                 - Locations, gates and stations (for example in Assets and Intel Feed) are now clickable to open them in-game
                 """.trimIndent(),
             )
+            add(
+                "5.5.0" description """
+                - Optimized wallets data loading
+                - Wallets data now has a detailed progress UI showing what's being loaded
+                - Wallets data is now only loaded when you open the Wallets window, and not on startup
+                - Optimized killmail fetching, made possible by new capabilities of zKillboard's killmail stream
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

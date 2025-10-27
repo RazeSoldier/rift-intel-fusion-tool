@@ -8,6 +8,7 @@ import kotlin.collections.plusAssign
 import kotlin.text.toIntOrNull
 
 suspend fun <T> fetchPagePaginated(
+    onProgressUpdate: suspend (loadedItems: Int) -> Unit = { _ -> },
     request: suspend (page: Int) -> Result<Reply<List<T>>>,
 ): Result<List<T>> {
     val items = mutableListOf<T>()
@@ -17,6 +18,7 @@ suspend fun <T> fetchPagePaginated(
             is Success -> {
                 items += result.data.body
                 val pages = result.data.headers["x-pages"]?.toIntOrNull() ?: 1
+                onProgressUpdate(items.size)
                 if (page >= pages) break
                 page++
             }
