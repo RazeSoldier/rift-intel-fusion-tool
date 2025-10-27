@@ -1,6 +1,5 @@
 package dev.nohus.rift.game
 
-import dev.nohus.rift.corpprojects.Project
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository
 
@@ -14,7 +13,15 @@ object GameLink {
         return "<url=showinfo:5//${system.id}>${system.name}</url>"
     }
 
-    fun forCorporationProject(project: Project): String {
-        return "<url=opportunity:corporation_goals:${project.id}>${project.name}</url>"
+    fun forLocation(locationId: Long, locationTypeId: Int, name: String): String {
+        return "<url=showinfo:$locationTypeId//$locationId>$name</url>"
+    }
+
+    fun forCorporationProject(id: String, name: String): String {
+        return "<url=opportunity:corporation_goals:$id>$name</url>"
+    }
+
+    fun forFreelanceProject(id: String, name: String): String {
+        return "<url=opportunity:freelance_projects:$id>$name</url>"
     }
 }

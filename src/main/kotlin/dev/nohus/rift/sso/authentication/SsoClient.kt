@@ -153,7 +153,11 @@ class SsoClient(
         return when (configuration.authority) {
             SsoAuthority.Eve -> {
                 val characterId = claims.subject.substringAfter("CHARACTER:EVE:").toInt()
-                Authentication.EveAuthentication(characterId, accessToken, refreshToken, expires, scopes)
+                val grantedScopes = claims.getStringListClaimValue("scp").toList().sorted()
+                if (grantedScopes != scopes) {
+                    logger.error { "Scopes granted by SSO don't match requested scopes: $grantedScopes, expected $scopes" }
+                }
+                Authentication.EveAuthentication(characterId, accessToken, refreshToken, expires, grantedScopes)
             }
         }
     }

@@ -39,6 +39,7 @@ data class SettingsModel(
     val isSetupWizardFinished: Boolean = false,
     val isShowSetupWizardOnNextStart: Boolean = false,
     val isDisplayEveTime: Boolean = false,
+    val isShowIskCents: Boolean = false,
     val jabberJidLocalPart: String? = null,
     val jabberPassword: String? = null,
     val jabberCollapsedGroups: List<String> = emptyList(),
@@ -85,6 +86,7 @@ data class SettingsModel(
     val isSovereigntyUpgradesHackImportingEnabled: Boolean = true,
     val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean = false,
     val preferredExternalServices: List<ExternalService> = emptyList(),
+    val corpWalletDivisionNames: Map<Int, Map<Int, String>> = emptyMap(),
 )
 
 @Serializable

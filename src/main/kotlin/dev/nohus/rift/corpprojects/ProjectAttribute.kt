@@ -205,7 +205,12 @@ private fun ProjectAttributeValuesGrid(
                         append(value.station?.name ?: "Unknown Station")
                     },
                     decorator = {
-                        ClickableLocation(value.station?.solarSystemId, value.station?.stationId?.toLong()) {
+                        ClickableLocation(
+                            systemId = value.station?.solarSystemId,
+                            locationId = value.station?.stationId?.toLong(),
+                            locationTypeId = value.station?.typeId,
+                            locationName = value.station?.name,
+                        ) {
                             it()
                         }
                     },
@@ -224,7 +229,12 @@ private fun ProjectAttributeValuesGrid(
                         append(value.structure?.name ?: "Unknown Structure")
                     },
                     decorator = {
-                        ClickableLocation(value.structure?.solarSystemId, value.structure?.structureId) {
+                        ClickableLocation(
+                            systemId = value.structure?.solarSystemId,
+                            locationId = value.structure?.structureId,
+                            locationTypeId = value.structure?.typeId,
+                            locationName = value.structure?.name,
+                        ) {
                             it()
                         }
                     },

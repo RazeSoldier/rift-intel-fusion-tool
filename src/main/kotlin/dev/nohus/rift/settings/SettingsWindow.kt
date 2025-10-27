@@ -43,6 +43,8 @@ import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.LinkText
+import dev.nohus.rift.compose.MulticolorIconType
+import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RequirementIcon
 import dev.nohus.rift.compose.RiftAutocompleteTextField
 import dev.nohus.rift.compose.RiftButton
@@ -53,6 +55,7 @@ import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftFileChooserButton
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
+import dev.nohus.rift.compose.RiftMulticolorIcon
 import dev.nohus.rift.compose.RiftRadioButtonWithLabel
 import dev.nohus.rift.compose.RiftSliderWithLabel
 import dev.nohus.rift.compose.RiftSolarSystemChip
@@ -61,10 +64,12 @@ import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
+import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.SectionTitle
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
+import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.configurationpack.displayName
@@ -409,6 +414,13 @@ private fun UserInterfaceSection(
         tooltip = "Enable to use a dark tray icon,\nif you prefer it.",
         isChecked = state.isUsingDarkTrayIcon,
         onCheckedChange = viewModel::onIsUsingDarkTrayIconChanged,
+        modifier = Modifier.padding(bottom = Spacing.small),
+    )
+    RiftCheckboxWithLabel(
+        label = "Show ISK cents",
+        tooltip = "Enable to show decimal places in ISK amounts",
+        isChecked = state.isShowIskCents,
+        onCheckedChange = viewModel::onIsShowIskCentsChanged,
         modifier = Modifier.padding(bottom = Spacing.small),
     )
     if (koin.get<OperatingSystem>() != MacOs) {
@@ -917,65 +929,126 @@ private fun JumpBridgeNetworkSection(
 ) {
     SectionTitle("Jump Bridge Network", Modifier.padding())
     Column {
-        ScrollbarColumn(
+        val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+        ScrollbarLazyColumn(
             modifier = Modifier
                 .height(140.dp)
                 .border(1.dp, RiftTheme.colors.borderGrey),
             scrollbarModifier = Modifier.padding(vertical = Spacing.small),
             contentPadding = PaddingValues(vertical = Spacing.verySmall),
         ) {
-            AnimatedContent(state.jumpBridgeNetwork) { network ->
-                Column {
-                    if (network.isNotEmpty()) {
-                        val connections = network.sortedBy { it.from.name }
-                        val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
-                        for (connection in connections) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .hoverBackground()
-                                    .padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
-                            ) {
-                                RiftSolarSystemChip(
-                                    state = SolarSystemChipState(
-                                        locationsText = null,
-                                        jumpsText = null,
-                                        name = connection.from.name,
-                                        security = connection.from.security.roundSecurity(),
-                                        region = solarSystemsRepository.getRegionBySystem(connection.from.name)?.name,
-                                    ),
-                                    hasBackground = false,
-                                )
-                                Text(
-                                    text = "→",
-                                    style = RiftTheme.typography.bodyPrimary,
-                                )
-                                RiftSolarSystemChip(
-                                    state = SolarSystemChipState(
-                                        locationsText = null,
-                                        jumpsText = null,
-                                        name = connection.to.name,
-                                        security = connection.to.security.roundSecurity(),
-                                        region = solarSystemsRepository.getRegionBySystem(connection.to.name)?.name,
-                                    ),
-                                    hasBackground = false,
-                                )
-                            }
-                        }
-                    } else {
-                        Text(
-                            text = "No jump bridges imported",
-                            style = RiftTheme.typography.headerPrimary,
-                            textAlign = TextAlign.Center,
+            if (state.jumpBridgeNetwork.isNotEmpty()) {
+                val connections = state.jumpBridgeNetwork.sortedBy { it.from.name }
+                for (connection in connections) {
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = Spacing.large)
-                                .padding(horizontal = Spacing.large),
-                        )
-                        AnimatedContent(state.jumpBridgeCopyState) { copyState ->
-                            when (copyState) {
-                                JumpBridgeCopyState.NotCopied -> {
+                                .hoverBackground()
+                                .padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
+                        ) {
+                            RiftSolarSystemChip(
+                                state = SolarSystemChipState(
+                                    locationsText = null,
+                                    jumpsText = null,
+                                    name = connection.from.name,
+                                    security = connection.from.security.roundSecurity(),
+                                    region = solarSystemsRepository.getRegionBySystem(connection.from.name)?.name,
+                                ),
+                                hasBackground = false,
+                            )
+                            Text(
+                                text = "→",
+                                style = RiftTheme.typography.bodyPrimary,
+                            )
+                            RiftSolarSystemChip(
+                                state = SolarSystemChipState(
+                                    locationsText = null,
+                                    jumpsText = null,
+                                    name = connection.to.name,
+                                    security = connection.to.security.roundSecurity(),
+                                    region = solarSystemsRepository.getRegionBySystem(connection.to.name)?.name,
+                                ),
+                                hasBackground = false,
+                            )
+                        }
+                    }
+                }
+            } else {
+                item {
+                    Text(
+                        text = "No jump bridges imported",
+                        style = RiftTheme.typography.headerPrimary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.large)
+                            .padding(horizontal = Spacing.large),
+                    )
+                    AnimatedContent(state.jumpBridgeCopyState) { copyState ->
+                        when (copyState) {
+                            JumpBridgeCopyState.NotCopied -> {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = Spacing.medium),
+                                ) {
+                                    Text("Import jump bridges by copying a list to clipboard")
+                                    if (state.jumpBridgeNetworkUrl != null) {
+                                        Text("You can press Ctrl+A, Ctrl+C on this page:")
+                                        LinkText(
+                                            text = "Alliance Jump Bridge List",
+                                            onClick = { state.jumpBridgeNetworkUrl.toURIOrNull()?.openBrowser() },
+                                        )
+                                    } else {
+                                        val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
+                                        RiftTooltipArea(
+                                            text = buildAnnotatedString {
+                                                appendLine("Any format will work as long as there are\ntwo system names somewhere in each line:")
+                                                appendLine()
+                                                withColor(RiftTheme.colors.textHighlighted) {
+                                                    appendLine("Jita -> Perimeter")
+                                                    appendLine("New Caldari -> Alikara")
+                                                    append("Hirtamon -> Ikuchi")
+                                                }
+                                            },
+                                        ) {
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                                modifier = Modifier
+                                                    .pointerInteraction(pointerInteractionStateHolder)
+                                                    .padding(vertical = Spacing.small),
+                                            ) {
+                                                Text(
+                                                    text = "Format info",
+                                                    style = RiftTheme.typography.bodySecondary,
+                                                )
+                                                RiftMulticolorIcon(
+                                                    type = MulticolorIconType.Info,
+                                                    parentPointerInteractionStateHolder = pointerInteractionStateHolder,
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            is JumpBridgeCopyState.Copied -> {
+                                val tooltip = buildString {
+                                    val connections = copyState.network.take(5).joinToString("\n") {
+                                        "${it.from.name} → ${it.to.name}"
+                                    }
+                                    append(connections)
+                                    if (copyState.network.size > 5) {
+                                        appendLine()
+                                        append("And more…")
+                                    }
+                                }
+                                RiftTooltipArea(
+                                    text = tooltip,
+                                ) {
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -983,45 +1056,11 @@ private fun JumpBridgeNetworkSection(
                                             .fillMaxWidth()
                                             .padding(top = Spacing.medium),
                                     ) {
-                                        Text("Import jump bridges by copying a list to clipboard")
-                                        if (state.jumpBridgeNetworkUrl != null) {
-                                            Text("You can press Ctrl+A, Ctrl+C on this page:")
-                                            LinkText(
-                                                text = "Alliance Jump Bridge List",
-                                                onClick = { state.jumpBridgeNetworkUrl.toURIOrNull()?.openBrowser() },
-                                            )
-                                        } else {
-                                            Text("You need two system names per line of text")
-                                        }
-                                    }
-                                }
-                                is JumpBridgeCopyState.Copied -> {
-                                    val tooltip = buildString {
-                                        val connections = copyState.network.take(5).joinToString("\n") {
-                                            "${it.from.name} → ${it.to.name}"
-                                        }
-                                        append(connections)
-                                        if (copyState.network.size > 5) {
-                                            appendLine()
-                                            append("And more…")
-                                        }
-                                    }
-                                    RiftTooltipArea(
-                                        text = tooltip,
-                                    ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(top = Spacing.medium),
-                                        ) {
-                                            Text("Copied network")
-                                            RiftButton(
-                                                text = "Import ${copyState.network.size} connections",
-                                                onClick = viewModel::onJumpBridgeImportClick,
-                                            )
-                                        }
+                                        Text("Copied network")
+                                        RiftButton(
+                                            text = "Import ${copyState.network.size} connections",
+                                            onClick = viewModel::onJumpBridgeImportClick,
+                                        )
                                     }
                                 }
                             }
@@ -1148,94 +1187,97 @@ private fun SovereigntyUpgradesSection(
     Column(
         verticalArrangement = Arrangement.spacedBy(Spacing.small),
     ) {
-        ScrollbarColumn(
+        val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+        ScrollbarLazyColumn(
             modifier = Modifier
                 .height(140.dp)
                 .border(1.dp, RiftTheme.colors.borderGrey),
             scrollbarModifier = Modifier.padding(vertical = Spacing.small),
             contentPadding = PaddingValues(vertical = Spacing.verySmall),
         ) {
-            AnimatedContent(state.sovereigntyUpgrades) { sovereigntyUpgrades ->
-                Column {
-                    if (sovereigntyUpgrades.isNotEmpty()) {
-                        val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
-                        for ((system, upgrades) in sovereigntyUpgrades) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .hoverBackground()
-                                    .padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
-                            ) {
-                                RiftSolarSystemChip(
-                                    state = SolarSystemChipState(
-                                        locationsText = null,
-                                        jumpsText = null,
-                                        name = system.name,
-                                        security = system.security,
-                                        region = solarSystemsRepository.getRegionBySystem(system.name)?.name,
-                                    ),
-                                    hasBackground = false,
-                                )
-                                for (type in upgrades) {
-                                    RiftTooltipArea(
-                                        text = type.name,
+            if (state.sovereigntyUpgrades.isNotEmpty()) {
+                for ((system, upgrades) in state.sovereigntyUpgrades) {
+                    item {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .hoverBackground()
+                                .padding(horizontal = Spacing.small, vertical = Spacing.verySmall),
+                        ) {
+                            RiftSolarSystemChip(
+                                state = SolarSystemChipState(
+                                    locationsText = null,
+                                    jumpsText = null,
+                                    name = system.name,
+                                    security = system.security,
+                                    region = solarSystemsRepository.getRegionBySystem(system.name)?.name,
+                                ),
+                                hasBackground = false,
+                            )
+                            for (type in upgrades) {
+                                RiftTooltipArea(
+                                    text = type.name,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    AsyncTypeIcon(
+                                        type = type,
                                         modifier = Modifier.size(32.dp),
-                                    ) {
-                                        AsyncTypeIcon(
-                                            type = type,
-                                            modifier = Modifier.size(32.dp),
-                                        )
-                                    }
+                                    )
                                 }
                             }
                         }
-                    } else {
-                        Text(
-                            text = "No sovereignty upgrades imported",
-                            style = RiftTheme.typography.headerPrimary,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = Spacing.large)
-                                .padding(horizontal = Spacing.large),
-                        )
-                        AnimatedContent(state.sovereigntyUpgradesCopyState) { copyState ->
-                            when (copyState) {
-                                SovereigntyUpgradesCopyState.NotCopied -> {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = Spacing.medium),
-                                    ) {
-                                        Text("Import upgrades by copying a list to clipboard")
-                                        if (state.sovereigntyUpgradesUrl != null) {
-                                            Text("You can press Ctrl+A, Ctrl+C on the list you can find on this page:")
-                                            LinkText(
-                                                text = "Alliance Sovereignty Upgrades List",
-                                                onClick = { state.sovereigntyUpgradesUrl.toURIOrNull()?.openBrowser() },
-                                            )
-                                        } else {
-                                            Text("You need a system name and the upgrade names on each line")
-                                        }
+                    }
+                }
+            } else {
+                item {
+                    Text(
+                        text = "No sovereignty upgrades imported",
+                        style = RiftTheme.typography.headerPrimary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.large)
+                            .padding(horizontal = Spacing.large),
+                    )
+                    AnimatedContent(state.sovereigntyUpgradesCopyState) { copyState ->
+                        when (copyState) {
+                            SovereigntyUpgradesCopyState.NotCopied -> {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = Spacing.medium),
+                                ) {
+                                    Text("Import upgrades by copying a list to clipboard")
+                                    if (state.sovereigntyUpgradesUrl != null) {
+                                        Text(
+                                            text = "You can press Ctrl+A, Ctrl+C on the list\nyou can find on this page:",
+                                            textAlign = TextAlign.Center,
+                                        )
+                                        LinkText(
+                                            text = "Alliance Sovereignty Upgrades List",
+                                            onClick = { state.sovereigntyUpgradesUrl.toURIOrNull()?.openBrowser() },
+                                        )
+                                    } else {
+                                        Text("You need a system name and the upgrade names on each line")
                                     }
                                 }
-                                is SovereigntyUpgradesCopyState.Copied -> {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = Spacing.medium),
-                                    ) {
-                                        Text("Copied upgrades")
-                                        RiftButton(
-                                            text = "Import for ${copyState.upgrades.size} systems",
-                                            onClick = viewModel::onSovereigntyUpgradesImportClick,
-                                        )
-                                    }
+                            }
+                            is SovereigntyUpgradesCopyState.Copied -> {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = Spacing.medium),
+                                ) {
+                                    Text("Copied upgrades")
+                                    RiftButton(
+                                        text = "Import for ${copyState.upgrades.size} systems",
+                                        onClick = viewModel::onSovereigntyUpgradesImportClick,
+                                    )
                                 }
                             }
                         }
@@ -1243,6 +1285,7 @@ private fun SovereigntyUpgradesSection(
                 }
             }
         }
+
         AnimatedContent(state.sovereigntyUpgrades) { upgrades ->
             if (upgrades.isNotEmpty()) {
                 Row(

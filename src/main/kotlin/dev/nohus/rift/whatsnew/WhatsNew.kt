@@ -664,7 +664,23 @@ object WhatsNew {
                 - Set up a complex layout and want to see what will happen in 12 hours? Now you can.
                 
                 - Spreadsheet exports of colonies now include all stored commodities
-                """.trimIndent()
+                """.trimIndent(),
+            )
+            add(
+                "5.4.0" description """
+                -! New feature: Wallets
+                - You can now view and analyze your character and corp wallets in one unified interface
+                - View all your wallets at once or select the ones you are interested in
+                - See an overview of your income and expenses by type with an interactive pie chart
+                - Browse, filter and search through all your transactions at once, with a level of detail and context not available in-game
+                - Get additional insights by transaction party. Who contributes the most to the corp wallet? Which of your alts is a money sink?
+                - See statistics for ratting, showing all the ships you destroyed by type and system
+                - Check your daily goal streaks and quickly find out which characters still haven't completed a goal today
+                - See balance change activity per day, by character or transaction party
+                
+                - Added an info tooltip informing about the jump bridge import format
+                - Locations, gates and stations (for example in Assets and Intel Feed) are now clickable to open them in-game
+                """.trimIndent(),
             )
         }.reversed()
     }

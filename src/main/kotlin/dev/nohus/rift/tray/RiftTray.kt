@@ -37,6 +37,7 @@ import dev.nohus.rift.generated.resources.window_rift_64
 import dev.nohus.rift.generated.resources.window_satellite
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_sovereignty
+import dev.nohus.rift.generated.resources.window_wallet
 import dev.nohus.rift.neocom.NeocomViewModel
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.tray.TrayMenuItem.Separator
@@ -122,6 +123,7 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Intel Reports", Res.drawable.window_bleedchannel) { onButtonClick(RiftWindow.IntelReports) })
         add(TrayMenuTextItem("Characters", Res.drawable.window_characters) { onButtonClick(RiftWindow.Characters) })
         add(TrayMenuTextItem("Assets", Res.drawable.window_assets) { onButtonClick(RiftWindow.Assets) })
+        add(TrayMenuTextItem("Wallets", Res.drawable.window_wallet) { onButtonClick(RiftWindow.Wallet) })
         add(TrayMenuTextItem("Planetary Industry", Res.drawable.window_planets) { onButtonClick(RiftWindow.PlanetaryIndustry) })
         add(TrayMenuTextItem("Corporation Projects", Res.drawable.window_corporation) { onButtonClick(RiftWindow.CorporationProjects) })
         add(TrayMenuTextItem("Contacts", Res.drawable.window_contacts) { onButtonClick(RiftWindow.Contacts) })

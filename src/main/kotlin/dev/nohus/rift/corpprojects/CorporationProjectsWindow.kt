@@ -377,7 +377,7 @@ private fun StatsRow(
             color = if (stats.availableToYou > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
             tooltip = buildAnnotatedString {
                 withStyle(RiftTheme.typography.headlinePrimary.toSpanStyle()) {
-                    appendLine(formatIsk(stats.availableToYou))
+                    appendLine(formatIsk(stats.availableToYou, withCents = false))
                 }
                 withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
                     append(formatIskReadable(stats.availableToYou))
@@ -390,7 +390,7 @@ private fun StatsRow(
             color = if (stats.availableTotal > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
             tooltip = buildAnnotatedString {
                 withStyle(RiftTheme.typography.headlinePrimary.toSpanStyle()) {
-                    appendLine(formatIsk(stats.availableTotal))
+                    appendLine(formatIsk(stats.availableTotal, withCents = false))
                 }
                 withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
                     append(formatIskReadable(stats.availableTotal))
@@ -743,13 +743,13 @@ private fun getProjectBottomContent(project: Project): RiftOpportunityCardBottom
 
             val bottomText = buildAnnotatedString {
                 if (totalRemainingRewardForCharacters != null) {
-                    append(formatIsk(totalRemainingRewardForCharacters))
+                    append(formatIsk(totalRemainingRewardForCharacters, withCents = false))
                     append(" ")
                     withColor(RiftTheme.colors.textSecondary) {
                         append("(${formatNumberCompact(project.reward.remaining)})")
                     }
                 } else {
-                    append(formatIsk(project.reward.remaining))
+                    append(formatIsk(project.reward.remaining, withCents = false))
                 }
             }
             val bottomTextTooltip = buildAnnotatedString {
@@ -758,7 +758,7 @@ private fun getProjectBottomContent(project: Project): RiftOpportunityCardBottom
                         appendLine("Available to you")
                     }
                     withStyle(RiftTheme.typography.headerPrimary.toSpanStyle()) {
-                        appendLine(formatIsk(totalRemainingRewardForCharacters))
+                        appendLine(formatIsk(totalRemainingRewardForCharacters, withCents = false))
                     }
                     withStyle(RiftTheme.typography.detailDisabled.toSpanStyle()) {
                         appendLine(formatIskReadable(totalRemainingRewardForCharacters))
@@ -770,7 +770,7 @@ private fun getProjectBottomContent(project: Project): RiftOpportunityCardBottom
                     appendLine("Available in Project")
                 }
                 withStyle(RiftTheme.typography.headerPrimary.toSpanStyle()) {
-                    appendLine(formatIsk(project.reward.remaining))
+                    appendLine(formatIsk(project.reward.remaining, withCents = false))
                 }
                 withStyle(RiftTheme.typography.detailDisabled.toSpanStyle()) {
                     append(formatIskReadable(project.reward.remaining))

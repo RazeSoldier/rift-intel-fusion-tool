@@ -12,7 +12,6 @@ import androidx.compose.ui.text.AnnotatedString
 import dev.nohus.rift.alerts.AlertsTriggerController.AlertLocationMatch
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.notifications.NotificationsController.Notification.ChatMessageNotification
-import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.Settings

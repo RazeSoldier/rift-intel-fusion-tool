@@ -81,7 +81,6 @@ import dev.nohus.rift.contacts.ContactsViewModel.UiState
 import dev.nohus.rift.contacts.SearchRepository.SearchCategory
 import dev.nohus.rift.contacts.SearchRepository.SearchResult
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.constellation
 import dev.nohus.rift.generated.resources.contact_allcontacts
 import dev.nohus.rift.generated.resources.contact_alliance
 import dev.nohus.rift.generated.resources.contact_blocked
@@ -91,7 +90,6 @@ import dev.nohus.rift.generated.resources.contact_faction
 import dev.nohus.rift.generated.resources.contact_standings
 import dev.nohus.rift.generated.resources.contact_tag
 import dev.nohus.rift.generated.resources.contact_watched
-import dev.nohus.rift.generated.resources.map_region
 import dev.nohus.rift.generated.resources.window_contacts
 import dev.nohus.rift.generated.resources.window_titlebar_tune
 import dev.nohus.rift.network.AsyncResource
@@ -227,7 +225,7 @@ private fun ContactsTabContent(
 }
 
 @Composable
-private fun ToolbarRow(
+fun ToolbarRow(
     state: UiState,
     fixedHeight: Dp,
     onTabSelected: (ContactsTab) -> Unit,
@@ -990,12 +988,12 @@ private fun SearchResultRow(
                     }
                 }
                 SearchCategory.Stations -> {
-                    ClickableLocation(item.systemId, item.id) {
+                    ClickableLocation(item.systemId, item.id, item.typeId, item.name) {
                         textContent()
                     }
                 }
                 SearchCategory.Structures -> {
-                    ClickableLocation(item.systemId, item.id) {
+                    ClickableLocation(item.systemId, item.id, item.typeId, item.name) {
                         textContent()
                     }
                 }

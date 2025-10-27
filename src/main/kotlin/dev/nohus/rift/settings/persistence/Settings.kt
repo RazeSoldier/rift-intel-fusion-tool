@@ -92,6 +92,10 @@ class Settings(
         get() = model.isDisplayEveTime
         set(value) = update { copy(isDisplayEveTime = value) }
 
+    var isShowIskCents: Boolean
+        get() = model.isShowIskCents
+        set(value) = update { copy(isShowIskCents = value) }
+
     val displayTimeZone: ZoneId
         get() = if (model.isDisplayEveTime) ZoneId.of("UTC") else ZoneId.systemDefault()
 
@@ -273,4 +277,8 @@ class Settings(
     var preferredExternalServices: List<ExternalService>
         get() = model.preferredExternalServices
         set(value) = update { copy(preferredExternalServices = value) }
+
+    var corpWalletDivisionNames: Map<Int, Map<Int, String>>
+        get() = model.corpWalletDivisionNames
+        set(value) = update { copy(corpWalletDivisionNames = value) }
 }

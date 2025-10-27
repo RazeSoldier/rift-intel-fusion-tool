@@ -2,6 +2,7 @@ package dev.nohus.rift.repositories
 
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.network.esi.models.UniverseNamesCategory
 import org.koin.core.annotation.Single
 
 @Single
@@ -9,20 +10,40 @@ class NamesRepository(
     private val esiApi: EsiApi,
 ) {
 
-    private val names = mutableMapOf<Int, String>()
+    private val names = mutableMapOf<Long, String>()
+    private val categories = mutableMapOf<Long, UniverseNamesCategory>()
 
     /**
      * Returns an already known name for the ID
      */
     fun getName(id: Int): String? {
+        return names[id.toLong()]
+    }
+
+    @JvmName("getNameLong")
+    fun getName(id: Long): String? {
         return names[id]
     }
 
+    fun getCategory(id: Int): UniverseNamesCategory? {
+        return categories[id.toLong()]
+    }
+
+    @JvmName("getCategoryLong")
+    fun getCategory(id: Long): UniverseNamesCategory? {
+        return categories[id]
+    }
+
     suspend fun resolveNames(ids: List<Int>) {
-        @Suppress("ConvertCallChainIntoSequence")
-        names += ids
+        resolveNames(ids.map { it.toLong() })
+    }
+
+    @JvmName("resolveNamesLong")
+    suspend fun resolveNames(ids: List<Long>) {
+        ids
             .distinct()
             .filter { it !in names }
+            .filterNot { IdRanges.isSpawnedItem(it) }
             .chunked(1000)
             .flatMap { typeIds ->
                 when (val result = esiApi.postUniverseNames(typeIds)) {
@@ -30,6 +51,9 @@ class NamesRepository(
                     is Result.Failure -> emptyList()
                 }
             }
-            .associate { it.id to it.name }
+            .forEach {
+                names += it.id to it.name
+                categories += it.id to it.category
+            }
     }
 }

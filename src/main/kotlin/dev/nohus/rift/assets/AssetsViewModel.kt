@@ -41,6 +41,7 @@ class AssetsViewModel(
 
     data class AssetLocation(
         val locationId: Long,
+        val locationTypeId: Int?,
         val security: Double?,
         val name: String,
         val systemId: Int?,
@@ -274,27 +275,27 @@ class AssetsViewModel(
         }
         return when (location) {
             is AssetsRepository.AssetLocation.Station -> {
-                AssetLocation(location.locationId, system?.security, location.name, systemId, distance)
+                AssetLocation(location.locationId, location.typeId, system?.security, location.name, systemId, distance)
             }
 
             is AssetsRepository.AssetLocation.Structure -> {
-                AssetLocation(location.locationId, system?.security, location.name, systemId, distance)
+                AssetLocation(location.locationId, location.typeId, system?.security, location.name, systemId, distance)
             }
 
             is AssetsRepository.AssetLocation.System -> {
-                AssetLocation(location.locationId, system?.security, "${system?.name}", systemId, distance)
+                AssetLocation(location.locationId, null, system?.security, "${system?.name}", systemId, distance)
             }
 
             is AssetsRepository.AssetLocation.AssetSafety -> {
-                AssetLocation(location.locationId, null, "Asset Safety", null, null)
+                AssetLocation(location.locationId, null, null, "Asset Safety", null, null)
             }
 
             is AssetsRepository.AssetLocation.Unknown -> {
-                AssetLocation(location.locationId, null, "Unknown", null, null)
+                AssetLocation(location.locationId, null, null, "Unknown", null, null)
             }
 
             is AssetsRepository.AssetLocation.CustomsOffice -> {
-                AssetLocation(location.locationId, null, "Customs Office / Skyhook", null, null)
+                AssetLocation(location.locationId, null, null, "Customs Office / Skyhook", null, null)
             }
         }
     }

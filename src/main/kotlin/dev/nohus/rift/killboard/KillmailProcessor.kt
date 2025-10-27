@@ -4,7 +4,6 @@ import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.repositories.CelestialsRepository
-import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.StarGatesRepository
@@ -142,7 +141,7 @@ class KillmailProcessor(
             mutex.withLock {
                 if (message.killmailId !in seenKillmails) {
                     seenKillmails[message.killmailId] = message.killboard
-                    logger.debug { "Kill from ${message.killboard}: ${killmail.ship} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
+                    logger.debug { "Kill from ${message.killboard}: ${killmail.ship?.name} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
                     intelStateController.submitKillmail(processedKillmail)
                     alertsTriggerController.onNewKillmail(processedKillmail)
                 } else {
@@ -162,7 +161,7 @@ class KillmailProcessor(
         if (distanceKm >= 1000) return null
 
         val stargateSystem = starGatesRepository.getStargates(message.solarSystemId)
-            .filter { it.second == closestCelestial.celestial.type.id }
+            .filter { it.second.typeId == closestCelestial.celestial.type.id }
             .mapNotNull { solarSystemsRepository.getSystem(it.first) }
             .singleOrNull { it.name in closestCelestial.celestial.name }
         return if (stargateSystem != null) {

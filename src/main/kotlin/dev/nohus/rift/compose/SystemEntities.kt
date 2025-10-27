@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
@@ -46,9 +45,8 @@ import dev.nohus.rift.intel.state.CharacterBound
 import dev.nohus.rift.intel.state.Clearable
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.repositories.IdRanges
-import dev.nohus.rift.repositories.ShipTypesRepository
-import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.StarGatesRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.standings.getColor
@@ -220,79 +218,7 @@ fun SystemEntities(
             .sortedWith(compareBy({ it.details.allianceId }, { it.details.corporationId }))
             .forEach { character ->
                 SystemEntityInfoRow(rowHeight, isHorizontal) {
-                    ClickableCharacter(character.characterId) {
-                        AsyncPlayerPortrait(
-                            characterId = character.characterId,
-                            size = 32,
-                            modifier = Modifier.size(rowHeight),
-                        )
-                    }
-                    ClickableCorporation(character.details.corporationId) {
-                        RiftTooltipArea(
-                            text = character.details.corporationName ?: "",
-                        ) {
-                            AsyncCorporationLogo(
-                                corporationId = character.details.corporationId,
-                                size = 32,
-                                modifier = Modifier.size(rowHeight),
-                            )
-                        }
-                    }
-                    if (character.details.allianceId != null) {
-                        ClickableAlliance(character.details.allianceId) {
-                            RiftTooltipArea(
-                                text = character.details.allianceName ?: "",
-                            ) {
-                                AsyncAllianceLogo(
-                                    allianceId = character.details.allianceId,
-                                    size = 32,
-                                    modifier = Modifier.size(rowHeight),
-                                )
-                            }
-                        }
-                    }
-
-                    ClickableCharacter(character.characterId) {
-                        val ticker = buildString {
-                            character.details.corporationTicker?.let { append("$it ") }
-                            character.details.allianceTicker?.let { append(it) }
-                        }
-                        var nameStyle = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold)
-                        character.details.standingLevel.getColor()?.let { nameStyle = nameStyle.copy(color = it) }
-                        if (rowHeight < 32.dp) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-                                modifier = Modifier.padding(horizontal = Spacing.small),
-                            ) {
-                                Text(
-                                    text = ticker,
-                                    style = RiftTheme.typography.bodySecondary,
-                                )
-                                Text(
-                                    text = character.name,
-                                    style = nameStyle,
-                                )
-                            }
-                        } else {
-                            Column(
-                                modifier = Modifier.padding(horizontal = Spacing.small),
-                            ) {
-                                Text(
-                                    text = character.name,
-                                    style = nameStyle,
-                                )
-                                Text(
-                                    text = ticker,
-                                    style = RiftTheme.typography.detailSecondary,
-                                )
-                            }
-                        }
-                    }
-
-                    ContactLabelTag(
-                        details = character.details,
-                        modifier = Modifier.padding(end = Spacing.small),
-                    )
+                    CharacterDetails(character.details, rowHeight)
                 }
             }
     }
@@ -487,69 +413,83 @@ private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
 
 @Composable
 private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHeight: Dp, isHorizontal: Boolean) {
-    val systemsRepository: SolarSystemsRepository = remember { koin.get() }
-
-    SystemEntityInfoRow(rowHeight, isHorizontal) {
-        GateIcon(
-            isAnsiblex = entity.isAnsiblex,
-            fromSystem = system.name,
-            toSystem = entity.system2.name,
-            size = rowHeight,
-        )
-        VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-        val gateText = if (entity.isAnsiblex) "Ansiblex" else "Gate"
-        Column(
-            modifier = Modifier.padding(horizontal = Spacing.small),
-        ) {
-            Text(
-                text = "${entity.system2.name} $gateText",
-                style = RiftTheme.typography.bodyHighlighted,
+    val starGatesRepository: StarGatesRepository = remember { koin.get() }
+    val gate = starGatesRepository.getGate(entity.isAnsiblex, system.id, entity.system2.id)
+    val gateText = if (entity.isAnsiblex) "Ansiblex" else "Gate"
+    val name = "${entity.system2.name} $gateText"
+    ClickableLocation(
+        systemId = system.id,
+        locationId = gate.locationId,
+        locationTypeId = gate.typeId,
+        locationName = name,
+    ) {
+        SystemEntityInfoRow(rowHeight, isHorizontal) {
+            AsyncTypeIcon(
+                typeId = gate.typeId,
+                modifier = Modifier.size(rowHeight),
             )
-            if (entity.distanceKm != null && rowHeight >= 32.dp) {
+            VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+            Column(
+                modifier = Modifier.padding(horizontal = Spacing.small),
+            ) {
+                Text(
+                    text = name,
+                    style = RiftTheme.typography.bodyHighlighted,
+                )
+                if (entity.distanceKm != null && rowHeight >= 32.dp) {
+                    Text(
+                        text = "${entity.distanceKm}km",
+                        style = RiftTheme.typography.detailSecondary,
+                    )
+                }
+            }
+            if (entity.distanceKm != null && rowHeight < 32.dp) {
                 Text(
                     text = "${entity.distanceKm}km",
-                    style = RiftTheme.typography.detailSecondary,
+                    style = RiftTheme.typography.bodySecondary,
+                    modifier = Modifier.padding(4.dp),
                 )
             }
-        }
-        if (entity.distanceKm != null && rowHeight < 32.dp) {
-            Text(
-                text = "${entity.distanceKm}km",
-                style = RiftTheme.typography.bodySecondary,
-                modifier = Modifier.padding(4.dp),
-            )
         }
     }
 }
 
 @Composable
 private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHorizontal: Boolean) {
-    SystemEntityInfoRow(rowHeight, isHorizontal) {
-        AsyncTypeIcon(
-            type = entity.celestial.type,
-            modifier = Modifier.size(rowHeight),
-        )
-        VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-        Column(
-            modifier = Modifier.padding(horizontal = Spacing.small),
-        ) {
-            Text(
-                text = entity.celestial.name,
-                style = RiftTheme.typography.bodyHighlighted,
+    ClickableLocation(
+        systemId = entity.celestial.solarSystemId,
+        locationId = entity.celestial.id.toLong(),
+        locationTypeId = entity.celestial.type.id,
+        locationName = entity.celestial.name,
+    ) {
+        SystemEntityInfoRow(rowHeight, isHorizontal) {
+            AsyncTypeIcon(
+                type = entity.celestial.type,
+                modifier = Modifier.size(rowHeight),
             )
-            if (rowHeight >= 32.dp) {
+
+            VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+            Column(
+                modifier = Modifier.padding(horizontal = Spacing.small),
+            ) {
+                Text(
+                    text = entity.celestial.name,
+                    style = RiftTheme.typography.bodyHighlighted,
+                )
+                if (rowHeight >= 32.dp) {
+                    Text(
+                        text = "${entity.distanceKm}km",
+                        style = RiftTheme.typography.detailSecondary,
+                    )
+                }
+            }
+            if (rowHeight < 32.dp) {
                 Text(
                     text = "${entity.distanceKm}km",
-                    style = RiftTheme.typography.detailSecondary,
+                    style = RiftTheme.typography.bodySecondary,
+                    modifier = Modifier.padding(4.dp),
                 )
             }
-        }
-        if (rowHeight < 32.dp) {
-            Text(
-                text = "${entity.distanceKm}km",
-                style = RiftTheme.typography.bodySecondary,
-                modifier = Modifier.padding(4.dp),
-            )
         }
     }
 }

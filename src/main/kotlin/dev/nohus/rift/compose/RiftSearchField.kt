@@ -47,10 +47,6 @@ fun RiftSearchField(
             .width(150.dp)
             .onKeyEvent {
                 when (it.key) {
-                    Key.Escape -> {
-                        focusManager.clearFocus()
-                        true
-                    }
                     Key.Enter -> {
                         focusManager.clearFocus()
                         onSearchConfirm()

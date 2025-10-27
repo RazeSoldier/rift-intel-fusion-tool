@@ -22,7 +22,7 @@ fun RiftCheckboxWithLabel(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val row = remember(label, isChecked) {
+    val row = remember(label, isChecked, onCheckedChange) {
         movableContentOf {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

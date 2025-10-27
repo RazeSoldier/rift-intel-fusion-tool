@@ -161,7 +161,7 @@ private fun LogsView(
                         Level.TRACE -> RiftTheme.typography.bodySecondary
                         Level.DEBUG -> RiftTheme.typography.bodySecondary
                         Level.WARN -> RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.awayYellow)
-                        Level.ERROR -> RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.offlineRed)
+                        Level.ERROR -> RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.hotRed)
                         else -> RiftTheme.typography.bodyPrimary
                     }
                     Text(

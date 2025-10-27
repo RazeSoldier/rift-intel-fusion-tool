@@ -81,10 +81,17 @@ object TypeGroups : Table() {
     override val primaryKey = PrimaryKey(groupId)
 }
 
+object TypeCategories : Table() {
+    val categoryId = integer("categoryId")
+    val categoryName = varchar("categoryName", 100)
+    override val primaryKey = PrimaryKey(categoryId)
+}
+
 object StarGates : Table() {
     val fromSystemId = integer("fromSystemId")
     val toSystemId = integer("toSystemId")
     val starGateTypeId = integer("starGateTypeId")
+    val locationId = long("locationId")
 }
 
 object Stations : Table() {
@@ -128,4 +135,9 @@ object Celestials : Table() {
     val radius = double("radius").nullable()
     val name = varchar("name", 100)
     override val primaryKey = PrimaryKey(id)
+}
+
+object TypeDogmas : Table() {
+    val typeId = integer("typeId")
+    val entityOverviewShipGroupId = integer("entityOverviewShipGroupId").nullable()
 }

@@ -388,6 +388,8 @@ private fun LocationHeader(
             items = GetSystemContextMenuItems(
                 systemId = location.systemId,
                 locationId = location.locationId,
+                locationTypeId = location.locationTypeId,
+                locationName = location.name,
             ) + contextMenuItems,
             modifier = Modifier.pointerHoverIcon(PointerIcon(Cursors.pointerInteractive)),
         ) {

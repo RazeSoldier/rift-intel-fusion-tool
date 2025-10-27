@@ -63,9 +63,8 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Link
-import dev.nohus.rift.repositories.ShipTypesRepository
-import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.StarGatesRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.openBrowser
@@ -317,13 +316,15 @@ private fun TokenWithSystem(
     system: MapSolarSystem,
     enterAnimation: Animatable<Float, AnimationVector1D>,
 ) {
-    IntelSystem(
-        system = system,
-        rowHeight = rowHeight,
-        isShowingSystemDistance = isShowingSystemDistance,
-        isUsingJumpBridges = isUsingJumpBridges,
-        enterAnimation = enterAnimation,
-    )
+    BorderedToken(rowHeight) {
+        SystemDetails(
+            system = system,
+            rowHeight = rowHeight,
+            isShowingSystemDistance = isShowingSystemDistance,
+            isUsingJumpBridges = isUsingJumpBridges,
+            enterAnimation = enterAnimation,
+        )
+    }
 }
 
 @Composable
@@ -334,27 +335,35 @@ private fun TokenWithGate(
     isAnsiblex: Boolean,
     enterAnimation: Animatable<Float, AnimationVector1D>,
 ) {
-    BorderedToken(rowHeight) {
-        GateIcon(
-            isAnsiblex = isAnsiblex,
-            fromSystem = fromSystem?.name,
-            toSystem = toSystem.name,
-            size = rowHeight,
-        )
-        VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-        SystemIllustrationIconSmall(
-            solarSystemId = toSystem.id,
-            size = rowHeight,
-            animation = enterAnimation,
-            modifier = Modifier.clipToBounds(),
-        )
-        VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-        val gateText = if (isAnsiblex) "Ansiblex" else "Gate"
-        Text(
-            text = "${toSystem.name} $gateText",
-            style = RiftTheme.typography.bodyLink,
-            modifier = Modifier.padding(4.dp),
-        )
+    val starGatesRepository: StarGatesRepository = remember { koin.get() }
+    val gate = starGatesRepository.getGate(isAnsiblex, fromSystem?.id, toSystem.id)
+    val gateText = if (isAnsiblex) "Ansiblex" else "Gate"
+    val name = "${toSystem.name} $gateText"
+    ClickableLocation(
+        systemId = fromSystem?.id,
+        locationId = gate.locationId,
+        locationTypeId = gate.typeId,
+        locationName = name,
+    ) {
+        BorderedToken(rowHeight) {
+            AsyncTypeIcon(
+                typeId = gate.typeId,
+                modifier = Modifier.size(rowHeight),
+            )
+            VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+            SystemIllustrationIconSmall(
+                solarSystemId = toSystem.id,
+                size = rowHeight,
+                animation = enterAnimation,
+                modifier = Modifier.clipToBounds(),
+            )
+            VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+            Text(
+                text = name,
+                style = RiftTheme.typography.bodyLink,
+                modifier = Modifier.padding(4.dp),
+            )
+        }
     }
 }
 
@@ -369,11 +378,10 @@ private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, moveme
         if (movement.isGate) {
             VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
             val systemFrom = previousTokens.firstNotNullOfOrNull { (it.type as? TokenType.System)?.system }
-            GateIcon(
-                isAnsiblex = false,
-                fromSystem = systemFrom?.name,
-                toSystem = movement.toSystem.name,
-                size = rowHeight,
+            val starGatesRepository: StarGatesRepository = remember { koin.get() }
+            AsyncTypeIcon(
+                typeId = starGatesRepository.getGate(false, systemFrom?.id, movement.toSystem.id).typeId,
+                modifier = Modifier.size(rowHeight),
             )
         }
         VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))

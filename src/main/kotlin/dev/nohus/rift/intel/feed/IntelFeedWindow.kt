@@ -13,6 +13,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,8 +46,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.compose.BorderedToken
 import dev.nohus.rift.compose.ContextMenuItem
-import dev.nohus.rift.compose.IntelSystem
 import dev.nohus.rift.compose.IntelTimer
 import dev.nohus.rift.compose.LocalNow
 import dev.nohus.rift.compose.PointerInteractionState
@@ -56,6 +57,7 @@ import dev.nohus.rift.compose.RiftContextMenuPopup
 import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
+import dev.nohus.rift.compose.SystemDetails
 import dev.nohus.rift.compose.SystemEntities
 import dev.nohus.rift.compose.TitleBarStyle
 import dev.nohus.rift.compose.getNow
@@ -70,7 +72,6 @@ import dev.nohus.rift.intel.feed.IntelFeedViewModel.UiState
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.map.groupIntelByTime
-import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.DistanceFilter
 import dev.nohus.rift.settings.persistence.EntityFilter
@@ -220,14 +221,15 @@ private fun IntelFeedItem(
             modifier = Modifier.fillMaxWidth(),
         ) {
             if (isExpanded) {
-                IntelSystem(
-                    system = system,
-                    rowHeight = state.settings.rowHeight,
-                    isShowingSystemDistance = state.settings.isShowingSystemDistance,
-                    isUsingJumpBridges = state.settings.isUsingJumpBridgesForDistance,
-                    enterAnimation = enterAnimation,
-                    background = RiftTheme.colors.windowBackgroundSecondary,
-                )
+                BorderedToken(state.settings.rowHeight, modifier = Modifier.background(RiftTheme.colors.windowBackgroundSecondary)) {
+                    SystemDetails(
+                        system = system,
+                        rowHeight = state.settings.rowHeight,
+                        isShowingSystemDistance = state.settings.isShowingSystemDistance,
+                        isUsingJumpBridges = state.settings.isUsingJumpBridgesForDistance,
+                        enterAnimation = enterAnimation,
+                    )
+                }
             }
             val groups = groupIntelByTime(intel)
             for ((index, group) in groups.entries.sortedByDescending { it.key }.withIndex()) {
@@ -236,14 +238,15 @@ private fun IntelFeedItem(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     if (index == 0 && !isExpanded) {
-                        IntelSystem(
-                            system = system,
-                            rowHeight = state.settings.rowHeight,
-                            isShowingSystemDistance = state.settings.isShowingSystemDistance,
-                            isUsingJumpBridges = state.settings.isUsingJumpBridgesForDistance,
-                            enterAnimation = enterAnimation,
-                            background = RiftTheme.colors.windowBackgroundSecondary,
-                        )
+                        BorderedToken(state.settings.rowHeight, modifier = Modifier.background(RiftTheme.colors.windowBackgroundSecondary)) {
+                            SystemDetails(
+                                system = system,
+                                rowHeight = state.settings.rowHeight,
+                                isShowingSystemDistance = state.settings.isShowingSystemDistance,
+                                isUsingJumpBridges = state.settings.isUsingJumpBridgesForDistance,
+                                enterAnimation = enterAnimation,
+                            )
+                        }
                     }
                     IntelTimer(
                         timestamp = group.key,

@@ -28,7 +28,6 @@ import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.repositories.ExternalServiceRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
-import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
@@ -38,6 +37,8 @@ import dev.nohus.rift.windowing.WindowManager.RiftWindow
 fun ClickableLocation(
     systemId: Int?,
     locationId: Long?,
+    locationTypeId: Int?,
+    locationName: String?,
     content: @Composable () -> Unit,
 ) {
     if (systemId == null) {
@@ -47,7 +48,7 @@ fun ClickableLocation(
     val repository: SolarSystemsRepository = remember { koin.get() }
     val isKnownSpace = repository.isKnownSpace(systemId)
     RiftContextMenuArea(
-        items = GetSystemContextMenuItems(systemId, locationId),
+        items = GetSystemContextMenuItems(systemId, locationId, locationTypeId, locationName),
     ) {
         val mapExternalControl: MapExternalControl = remember { koin.get() }
         ClickableEntity(
@@ -104,6 +105,8 @@ fun ClickableSystem(
 fun GetSystemContextMenuItems(
     systemId: Int?,
     locationId: Long? = null,
+    locationTypeId: Int? = null,
+    locationName: String? = null,
     mapType: MapType? = null,
 ): List<ContextMenuItem> {
     if (systemId == null) return emptyList()
@@ -124,7 +127,13 @@ fun GetSystemContextMenuItems(
             ContextMenuItem.TextItem(
                 text = "Show Info",
                 iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                onClick = { gameUiController.pushSystem(system) },
+                onClick = {
+                    if (locationId != null && locationTypeId != null) {
+                        gameUiController.pushLocation(locationId, locationTypeId, locationName ?: "Location")
+                    } else {
+                        gameUiController.pushSystem(system)
+                    }
+                },
             ),
         )
         add(ContextMenuItem.DividerItem)
@@ -362,6 +371,35 @@ fun ClickableShip(
         ClickableEntity(
             onClick = {
                 externalServiceRepository.openShipPreferredService(type)
+            },
+            content = content,
+        )
+    }
+}
+
+@Composable
+fun ClickableType(
+    type: Type,
+    content: @Composable () -> Unit,
+) {
+    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
+    val gameUiController: GameUiController = remember { koin.get() }
+    RiftContextMenuArea(
+        buildList {
+            add(
+                ContextMenuItem.TextItem(
+                    text = "Show Info",
+                    iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
+                    onClick = { gameUiController.pushType(type, "type") },
+                ),
+            )
+            add(ContextMenuItem.DividerItem)
+            addAll(externalServiceRepository.getTypeMenuItems(type))
+        },
+    ) {
+        ClickableEntity(
+            onClick = {
+                externalServiceRepository.openTypePreferredService(type)
             },
             content = content,
         )

@@ -256,7 +256,7 @@ private fun LogsView(
                         LogSeverity.Info -> RiftTheme.typography.bodyPrimary
                         LogSeverity.Notice -> RiftTheme.typography.bodyPrimary
                         LogSeverity.Warn -> RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.awayYellow)
-                        LogSeverity.Error -> RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.offlineRed)
+                        LogSeverity.Error -> RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.hotRed)
                         else -> RiftTheme.typography.bodySecondary
                     }
                     Text(

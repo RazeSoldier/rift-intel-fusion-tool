@@ -109,6 +109,25 @@ class ExternalServiceRepository(
         )
     }
 
+    fun getTypeMenuItems(type: Type): List<ContextMenuItem.TextItem> {
+        return getTypeItems(type).toMenuItems()
+    }
+
+    fun openTypePreferredService(type: Type) {
+        val items = getTypeItems(type)
+        val preferredService = getPreferredService(listOf(EveRef, ZKillboard, EveKill, NewEdenEncyclopedia))
+        items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
+    }
+
+    private fun getTypeItems(type: Type): List<ServiceItem> {
+        return listOf(
+            ServiceItem(EveRef, "https://everef.net/type/${type.id}"),
+            ServiceItem(ZKillboard, "https://zkillboard.com/item/${type.id}/"),
+            ServiceItem(EveKill, "https://eve-kill.com/item/${type.id}"),
+            ServiceItem(NewEdenEncyclopedia, "https://newedenencyclopedia.net/type/${type.id}"),
+        )
+    }
+
     fun getSystemMenuItems(system: String, systemId: Int, isWormholeSpace: Boolean): List<ContextMenuItem.TextItem> {
         return getSystemItems(system, systemId, isWormholeSpace).toMenuItems()
     }

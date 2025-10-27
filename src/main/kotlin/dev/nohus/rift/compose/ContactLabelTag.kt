@@ -49,3 +49,53 @@ fun ContactLabelTag(details: CharacterDetailsRepository.CharacterDetails, modifi
         }
     }
 }
+
+@Composable
+fun ContactLabelTag(details: CharacterDetailsRepository.CorporationDetails, modifier: Modifier = Modifier) {
+    if (details.corporationLabels.isNotEmpty() || details.allianceLabels.isNotEmpty()) {
+        RiftTooltipArea(
+            text = buildAnnotatedString {
+                if (details.corporationLabels.isNotEmpty()) {
+                    withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
+                        appendLine("Corporation label${details.corporationLabels.size.plural}")
+                    }
+                    appendLine(details.corporationLabels.joinToString(", "))
+                }
+                if (details.allianceLabels.isNotEmpty()) {
+                    withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
+                        appendLine("Alliance label${details.allianceLabels.size.plural}")
+                    }
+                    appendLine(details.allianceLabels.joinToString(", "))
+                }
+            }.trim() as AnnotatedString,
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.contact_tag),
+                contentDescription = null,
+                modifier = modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+fun ContactLabelTag(details: CharacterDetailsRepository.AllianceDetails, modifier: Modifier = Modifier) {
+    if (details.allianceLabels.isNotEmpty()) {
+        RiftTooltipArea(
+            text = buildAnnotatedString {
+                if (details.allianceLabels.isNotEmpty()) {
+                    withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
+                        appendLine("Alliance label${details.allianceLabels.size.plural}")
+                    }
+                    appendLine(details.allianceLabels.joinToString(", "))
+                }
+            }.trim() as AnnotatedString,
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.contact_tag),
+                contentDescription = null,
+                modifier = modifier.size(16.dp),
+            )
+        }
+    }
+}

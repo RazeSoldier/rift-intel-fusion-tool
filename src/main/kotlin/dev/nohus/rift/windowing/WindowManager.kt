@@ -50,6 +50,7 @@ import dev.nohus.rift.startupwarning.StartupWarningInputModel
 import dev.nohus.rift.startupwarning.StartupWarningWindow
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.Size
+import dev.nohus.rift.wallet.WalletWindow
 import dev.nohus.rift.whatsnew.WhatsNewWindow
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import kotlinx.coroutines.CoroutineScope
@@ -156,6 +157,9 @@ class WindowManager(
 
         @SerialName("InfoDialog")
         InfoDialog,
+
+        @SerialName("Wallet")
+        Wallet,
 
         @Deprecated("Removed")
         @SerialName("MapSettings")
@@ -269,6 +273,7 @@ class WindowManager(
                             RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
                             RiftWindow.CorporationProjects -> CorporationProjectsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CorporationProjects, state.uuid) })
                             RiftWindow.InfoDialog -> InfoDialogWindow(state.inputModel as InfoDialogInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.InfoDialog, state.uuid) })
+                            RiftWindow.Wallet -> WalletWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Wallet, state.uuid) })
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
@@ -417,6 +422,7 @@ class WindowManager(
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.CorporationProjects -> WindowSizing(defaultSize = saved ?: (800 to 900), minimumSize = 540 to 700)
             RiftWindow.InfoDialog -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
+            RiftWindow.Wallet -> WindowSizing(defaultSize = saved ?: (800 to 600), minimumSize = 800 to 500)
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))

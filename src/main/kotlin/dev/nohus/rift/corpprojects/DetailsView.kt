@@ -340,7 +340,7 @@ fun DetailsView(
                                     val totalEarnings = contribution.contribution.data * project.details.rewardPerContribution
                                     contribution.contribution.success?.let {
                                         RewardInfo(
-                                            text = formatIsk(totalEarnings),
+                                            text = formatIsk(totalEarnings, withCents = false),
                                             caption = "ISK total earnings",
                                             icon = Res.drawable.checkmark_16px,
                                             tooltip = {
@@ -350,26 +350,6 @@ fun DetailsView(
                                                         .width(IntrinsicSize.Max)
                                                         .padding(Spacing.large),
                                                 ) {
-                                                    // TODO: ESI doesn't expose claimed/unclaimed progress
-                                                    Text(
-                                                        text = "Claimed:",
-                                                        style = RiftTheme.typography.detailSecondary,
-                                                    )
-                                                    Text(
-                                                        text = formatIsk(0, withCents = true),
-                                                        style = RiftTheme.typography.bodyPrimary,
-                                                    )
-                                                    Text(
-                                                        text = "Unclaimed:",
-                                                        style = RiftTheme.typography.detailSecondary,
-                                                    )
-                                                    Text(
-                                                        text = formatIsk(0, withCents = true),
-                                                        style = RiftTheme.typography.bodyPrimary,
-                                                    )
-                                                    Divider(
-                                                        color = RiftTheme.colors.textSecondary,
-                                                    )
                                                     Text(
                                                         text = "My Total Earnings:",
                                                         style = RiftTheme.typography.detailSecondary,

@@ -5,11 +5,14 @@ import java.text.NumberFormat
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import kotlin.math.floor
 import kotlin.math.log
 import kotlin.math.log10
@@ -23,6 +26,7 @@ private val formatterWithoutDecimals = NumberFormat.getInstance(Locale.ENGLISH).
 }
 private val formatterWithDecimals = NumberFormat.getInstance(Locale.ENGLISH).apply {
     minimumFractionDigits = 2
+    maximumFractionDigits = 2
 }
 private val dateFormatter = DateTimeFormatter
     .ISO_LOCAL_DATE
@@ -33,8 +37,8 @@ private val dateFormatterWithTime = DateTimeFormatter.ofPattern("HH:mm:ss", Loca
 
 fun formatIskCompact(number: Long): String = "${formatNumberCompact(number)} ISK"
 fun formatIskCompact(number: Double): String = "${formatNumberCompact(number)} ISK"
-fun formatIsk(number: Long, withCents: Boolean = false): String = "${formatNumber(number, withCents)} ISK"
-fun formatIsk(number: Double, withCents: Boolean = false): String = "${formatNumber(number, withCents)} ISK"
+fun formatIsk(number: Long, withCents: Boolean): String = "${formatNumber(number, withCents)} ISK"
+fun formatIsk(number: Double, withCents: Boolean): String = "${formatNumber(number, withCents)} ISK"
 fun formatIskReadable(number: Long): String = "${formatNumberReadable(number.toDouble(), isCompact = false)} ISK"
 fun formatIskReadable(number: Double): String = "${formatNumberReadable(number, isCompact = false)} ISK"
 
@@ -53,7 +57,7 @@ private fun formatNumberReadable(number: Double, significantDigits: Int = 3, isC
     rounded /= 1000.0.pow(logThousand.toDouble())
     var decimalPlaces = 0
     for (i in 0 until (significantDigits - 1)) {
-        if ((rounded * pow(10, significantDigits - 1 - i)).roundToInt() % 10 > 0) {
+        if ((rounded.absoluteValue * pow(10, significantDigits - 1 - i)).roundToInt() % 10 > 0) {
             decimalPlaces = significantDigits - 1 - i
             break
         }
@@ -128,19 +132,23 @@ fun formatDurationLong(duration: Duration): String {
     }.take(2).joinToString(" and ")
 }
 
-fun formatDateTime(instant: Instant): String {
-    val time: ZonedDateTime = ZonedDateTime.ofInstant(instant, eveTime)
-    val previousMidnight = ZonedDateTime.of(LocalDate.now().atTime(0, 0), eveTime)
+fun formatDateTime(instant: Instant, timezone: ZoneId = eveTime): String {
+    val time: ZonedDateTime = ZonedDateTime.ofInstant(instant, timezone)
+    val previousMidnight = ZonedDateTime.of(LocalDate.now().atTime(0, 0), timezone)
     val nextMidnight = previousMidnight.plusDays(1)
     val isToday = time.isAfter(previousMidnight) && time.isBefore(nextMidnight)
     val formatter = if (isToday) dateFormatterWithTime else dateFormatterWithDateTime
-    return formatter.format(ZonedDateTime.ofInstant(instant, eveTime))
+    return formatter.format(ZonedDateTime.ofInstant(instant, timezone)) + " ${timezone.getName()}"
 }
 
 fun formatDateTime2(instant: Instant): String = dateFormatterWithDateTime2.format(ZonedDateTime.ofInstant(instant, eveTime))
 
 fun formatDate(instant: Instant): String {
     return dateFormatter.format(ZonedDateTime.ofInstant(instant, eveTime))
+}
+
+fun formatDate(date: LocalDate): String {
+    return dateFormatter.format(date)
 }
 
 fun formatDuration(duration: Duration): String {
@@ -170,4 +178,8 @@ val String.article: String get() {
         lowercase().firstOrNull { it.isLetter() } in listOf('e', 'u', 'i', 'o', 'a') -> "an"
         else -> "a"
     }
+}
+
+fun ZoneId.getName(): String {
+    return if (this == ZoneId.of("UTC")) "EVE" else getDisplayName(TextStyle.SHORT, Locale.US)
 }

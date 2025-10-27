@@ -79,10 +79,21 @@ object ScopeGroups {
     val readWallet = ScopeGroup(
         name = "Read wallet",
         reasons = listOf(
-            "Needed to show your wallet balance in the Characters window",
+            "Needed to show your wallet details in the Wallets window",
+            "Needed to show your wallet balances in the Characters window",
         ),
         scopes = listOf(
             EsiScope.Wallet.ReadCharacterWallet,
+        ),
+    )
+    val readCorporationWallet = ScopeGroup(
+        name = "Read corporation wallet",
+        reasons = listOf(
+            "Needed to show your corporation wallet details in the Wallets window",
+        ),
+        scopes = listOf(
+            EsiScope.Wallet.ReadCorporationWallets,
+            EsiScope.Corporations.ReadDivisions,
         ),
     )
     val readStructures = ScopeGroup(
@@ -153,6 +164,7 @@ object ScopeGroups {
         readCharacterLocation,
         readCurrentShip,
         readWallet,
+        readCorporationWallet,
         readPlanetaryIndustryColonies,
         readStructures,
         updateAutopilot,

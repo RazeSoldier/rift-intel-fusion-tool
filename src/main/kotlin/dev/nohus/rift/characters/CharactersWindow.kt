@@ -760,7 +760,7 @@ private fun OnlineIndicatorBar(isOnline: Boolean) {
         modifier = Modifier
             .width(2.dp)
             .height(height)
-            .background(RiftTheme.colors.onlineGreen),
+            .background(RiftTheme.colors.successGreen),
     ) {}
 }
 
@@ -770,7 +770,7 @@ fun OnlineIndicatorDot(
     modifier: Modifier,
 ) {
     val color by animateColorAsState(
-        targetValue = if (isOnline) RiftTheme.colors.onlineGreen else RiftTheme.colors.offlineRed,
+        targetValue = if (isOnline) RiftTheme.colors.successGreen else RiftTheme.colors.hotRed,
         animationSpec = tween(1000),
     )
     val blur by animateFloatAsState(
@@ -838,7 +838,12 @@ private fun LocationIcon(
     val type = typesRepository.getTypeOrPlaceholder(typeId)
     val locationId = location.station?.stationId?.toLong() ?: location.structure?.structureId
 
-    ClickableLocation(location.solarSystemId, locationId) {
+    ClickableLocation(
+        systemId = location.solarSystemId,
+        locationId = locationId,
+        locationTypeId = typeId,
+        locationName = location.station?.name ?: location.structure?.name ?: system.name,
+    ) {
         RiftTooltipArea(
             tooltip = {
                 Text(
@@ -907,7 +912,12 @@ private fun CloneLocation(station: Station?, structure: Structure?) {
     val systemName = repository.getSystemName(solarSystemId) ?: return
     val locationId = station?.stationId?.toLong() ?: structure?.structureId
 
-    ClickableLocation(solarSystemId, locationId) {
+    ClickableLocation(
+        systemId = solarSystemId,
+        locationId = locationId,
+        locationTypeId = station?.typeId ?: structure?.typeId,
+        locationName = station?.name ?: structure?.name,
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),

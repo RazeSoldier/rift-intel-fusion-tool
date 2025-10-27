@@ -1,7 +1,5 @@
 import org.jetbrains.compose.reload.gradle.ComposeHotRun
 import org.jetbrains.compose.reload.gradle.isHotReloadBuild
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Instant
 
 plugins {

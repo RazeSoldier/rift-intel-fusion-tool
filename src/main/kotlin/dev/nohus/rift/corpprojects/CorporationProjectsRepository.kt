@@ -8,11 +8,11 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.fetchCursorPaginated
 import dev.nohus.rift.network.esi.models.CorporationProject
 import dev.nohus.rift.network.esi.models.CorporationProjectCareer
 import dev.nohus.rift.network.esi.models.CorporationProjectState
 import dev.nohus.rift.network.esi.models.CorporationProjectsQueryState
+import dev.nohus.rift.network.esi.pagination.fetchCursorPaginated
 import dev.nohus.rift.repositories.GetSolarSystemChipStateUseCase
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.SolarSystemChipLocation

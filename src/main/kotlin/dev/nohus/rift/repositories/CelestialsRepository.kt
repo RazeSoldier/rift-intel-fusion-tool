@@ -35,6 +35,7 @@ class CelestialsRepository(
 
     private val scope = CoroutineScope(Job())
     private lateinit var celestialsBySolarSystemId: Map<Int, List<Celestial>>
+    private lateinit var celestialsByName: Map<String, Celestial>
     private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
@@ -57,6 +58,7 @@ class CelestialsRepository(
                 }
             }
             celestialsBySolarSystemId = celestials.groupBy { it.solarSystemId }
+            celestialsByName = celestials.associateBy { it.name }
             hasLoaded.complete(Unit)
         }
     }
@@ -70,6 +72,11 @@ class CelestialsRepository(
     fun getCelestials(solarSystemId: Int): List<Celestial> {
         blockUntilLoaded()
         return celestialsBySolarSystemId[solarSystemId] ?: emptyList()
+    }
+
+    fun getCelestial(name: String): Celestial? {
+        blockUntilLoaded()
+        return celestialsByName[name]
     }
 
     /**

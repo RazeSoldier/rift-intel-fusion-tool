@@ -8,6 +8,7 @@ import dev.nohus.rift.network.esi.models.CharactersIdAsset
 import dev.nohus.rift.network.esi.models.CharactersIdAssetLocationType
 import dev.nohus.rift.network.esi.models.UniverseStationsId
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
+import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -93,11 +94,13 @@ class AssetsRepository(
     sealed interface AssetLocation {
         data class Station(
             val locationId: Long,
+            val typeId: Int,
             val name: String,
             val systemId: Int,
         ) : AssetLocation
         data class Structure(
             val locationId: Long,
+            val typeId: Int?,
             val name: String,
             val systemId: Int,
         ) : AssetLocation
@@ -219,18 +222,13 @@ class AssetsRepository(
     private suspend fun loadAllAssets(characters: List<Int>): Result<List<AssetWithCharacter>> = coroutineScope {
         val assets = characters.map { characterId ->
             async {
-                var page = 1
-                val assets = mutableListOf<CharactersIdAsset>()
-                while (true) {
-                    when (val result = esiApi.getCharactersIdAssets(page, characterId)) {
-                        is Result.Success -> {
-                            assets += result.data.body() ?: emptyList()
-                            val pages = result.data.headers()["x-pages"]?.toIntOrNull() ?: 1
-                            if (page >= pages) break
-                            page++
-                        }
-                        is Result.Failure -> return@async result
+                val assets = when (
+                    val result = fetchPagePaginated {
+                        esiApi.getCharactersIdAssets(it, characterId)
                     }
+                ) {
+                    is Result.Success -> result.data
+                    is Result.Failure -> return@async result
                 }
                 typesRepository.resolveNamesFromEsi(assets.map { it.typeId })
                 val names = assets
@@ -284,12 +282,12 @@ class AssetsRepository(
             LocationType.AbyssalSystem -> AssetLocation.System(locationId, locationId.toInt())
             LocationType.Station -> {
                 val station = stationsById[locationId]!!
-                AssetLocation.Station(locationId, station.name, station.systemId)
+                AssetLocation.Station(locationId, station.typeId, station.name, station.systemId)
             }
             LocationType.Structure -> {
                 val structure = structuresById[locationId]
                 if (structure != null) {
-                    AssetLocation.Structure(locationId, structure.name, structure.solarSystemId)
+                    AssetLocation.Structure(locationId, structure.typeId, structure.name, structure.solarSystemId)
                 } else {
                     val assetsInLocation = allAssets.filter { it.asset.locationId == locationId }.map { it.asset.typeId }
                     if (planetaryIndustryCommoditiesRepository.isPlanetaryIndustryItems(assetsInLocation)) {

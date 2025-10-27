@@ -54,6 +54,7 @@ import dev.nohus.rift.generated.resources.window_rift_64
 import dev.nohus.rift.generated.resources.window_satellite
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_sovereignty
+import dev.nohus.rift.generated.resources.window_wallet
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -90,6 +91,7 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_bleedchannel, name = "Intel Reports", shortName = "Reports") { viewModel.onButtonClick(RiftWindow.IntelReports) })
             add(ButtonModel(icon = Res.drawable.window_characters, name = "Characters", "Chars") { viewModel.onButtonClick(RiftWindow.Characters) })
             add(ButtonModel(icon = Res.drawable.window_assets, name = "Assets") { viewModel.onButtonClick(RiftWindow.Assets) })
+            add(ButtonModel(icon = Res.drawable.window_wallet, name = "Wallets") { viewModel.onButtonClick(RiftWindow.Wallet) })
             add(ButtonModel(icon = Res.drawable.window_planets, name = "Planetary Industry", "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
             add(ButtonModel(icon = Res.drawable.window_corporation, name = "Corporation Projects", "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
             add(ButtonModel(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) })

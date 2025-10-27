@@ -1,4 +1,4 @@
-package dev.nohus.rift.network.esi
+package dev.nohus.rift.network.esi.pagination
 
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
