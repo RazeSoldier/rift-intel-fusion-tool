@@ -717,6 +717,11 @@ object WhatsNew {
                 - Added a popup informing of updates being available when using old versions of the app
                 """.trimIndent(),
             )
+            add(
+                "5.9.0" description """
+                - Your online characters are now shown in one row on the map system info boxes, instead of one per character, to save space
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

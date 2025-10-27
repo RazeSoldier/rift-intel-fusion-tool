@@ -15,6 +15,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Question
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Ship
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.System
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Url
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
@@ -49,14 +50,14 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     )
     every { mockSolarSystemsRepository.getFuzzySystem(any(), any()) } returns null
     every { mockShipTypesRepository.getFuzzyShip(any()) } returns null
-    coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns emptyMap()
+    coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns emptyMap()
     every { mockWordsRepository.isWord(any()) } returns false
     every { mockWordsRepository.isTypeName(any()) } returns false
 
     "system link, player link, player" {
         val system: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("D-W7F0", listOf("Delve")) } returns system
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Ishani Kalki", "Shiva Callipso").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Ishani Kalki", "Shiva Callipso").existing()
         val tokenizations = parser.parse("D-W7F0  Ishani Kalki  Shiva Callipso", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -71,7 +72,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     "player, ship" {
         val ship: Type = mockk()
         every { mockShipTypesRepository.getFuzzyShip("malediction") } returns ship
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("S-Killer").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("S-Killer").existing()
         val tokenizations = parser.parse("S-Killer malediction", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -98,7 +99,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     "player, extra spaces, system, clear" {
         val system: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("MO-GZ5", listOf("Delve")) } returns system
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Rinah Minayin").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Rinah Minayin").existing()
         val tokenizations = parser.parse("Rinah Minayin   MO-GZ5 nv", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -113,7 +114,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     "system with star" {
         val system: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("N-8YET", listOf("Delve")) } returns system
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Charlie Murdoch").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Charlie Murdoch").existing()
         val tokenizations = parser.parse("N-8YET*  Charlie Murdoch", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -142,7 +143,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("NOL-M9", listOf("Delve")) } returns system
         every { mockShipTypesRepository.getFuzzyShip("Caldari Shuttle") } returns ship
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Keeppley TT").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Keeppley TT").existing()
         val tokenizations = parser.parse("Caldari Shuttle*  Keeppley TT  NOL-M9*", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -159,7 +160,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("SVM-3K", listOf("Delve")) } returns system
         every { mockShipTypesRepository.getFuzzyShip("eris") } returns ship
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("M2002M").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("M2002M").existing()
         val tokenizations = parser.parse("M2002M  SVM-3K eris", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -176,7 +177,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("319-3D", listOf("Delve")) } returns system
         every { mockShipTypesRepository.getFuzzyShip("capsule") } returns ship
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("ssllss1", "Yaakov Y2").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("ssllss1", "Yaakov Y2").existing()
         val tokenizations = parser.parse("ssllss1  Yaakov Y2 2x capsule  319-3D", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -202,7 +203,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     }
 
     "player, question" {
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Ishani Kalki").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Ishani Kalki").existing()
         val tokenizations = parser.parse("Ishani Kalki where is he", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -214,7 +215,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     }
 
     "plus player" {
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("ssllss1").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("ssllss1").existing()
         val tokenizations = parser.parse("+ ssllss1", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -271,7 +272,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     "player, plus count, system" {
         val system: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("ZXB-VC", listOf("Delve")) } returns system
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("stark").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("stark").existing()
         val tokenizations = parser.parse("stark +3 ZXB-VC", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -349,7 +350,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val ship: Type = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("319-3D", listOf("Delve")) } returns system
         every { mockShipTypesRepository.getFuzzyShip("hecate") } returns ship
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("RB Charlote").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("RB Charlote").existing()
         val tokenizations = parser.parse("319-3D  RB Charlote +3 1x hecate, 3x nv", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -371,7 +372,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         every { mockSolarSystemsRepository.getFuzzySystem("1-2J4P", listOf("Delve")) } returns system
         every { mockShipTypesRepository.getFuzzyShip("purifier") } returns ship1
         every { mockShipTypesRepository.getFuzzyShip("sabre") } returns ship2
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("FeiShi", "iT0p").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("FeiShi", "iT0p").existing()
         val tokenizations = parser.parse("FeiShi  iT0p camping in 1-2J4P purifier + sabre", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -402,7 +403,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     }
 
     "many linked characters, including 3 word names" {
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("CPT Grabowsky", "Kelci Papi", "Kelio Rift", "Rim'tuti'tuks", "Lucho IYI", "Shopa s topa", "Urriah Souldown").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("CPT Grabowsky", "Kelci Papi", "Kelio Rift", "Rim'tuti'tuks", "Lucho IYI", "Shopa s topa", "Urriah Souldown").existing()
         val tokenizations = parser.parse("CPT Grabowsky  Kelci Papi  Kelio Rift  Rim'tuti'tuks  Lucho IYI  Shopa s topa  Urriah Souldown", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -421,7 +422,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     "player, plus count, link, system link" {
         val system: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("4K-TRB", listOf("Delve")) } returns system
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Sixty Ever4", "Sixty").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Sixty Ever4", "Sixty").existing()
         val tokenizations = parser.parse("Sixty Ever4 +5 gang  4K-TRB*", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -435,7 +436,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     }
 
     "two kills" {
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("Nuodaxier", "nuodaxier001").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("Nuodaxier", "nuodaxier001").existing()
         val tokenizations = parser.parse("Kill: Nuodaxier (Ishtar)  Kill: nuodaxier001 (Ishtar) Loki/Wolf", listOf("Delve"))
 
         val actual = target(tokenizations)
@@ -448,7 +449,7 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
     }
 
     "gate and gate camp" {
-        coEvery { mockCharactersRepository.getCharacterNamesStatus(any()) } returns listOf("chazzathespazman", "camp").existing()
+        coEvery { mockCharactersRepository.getCharacterNamesStatus(eq(Originator.ChatLogs), any()) } returns listOf("chazzathespazman", "camp").existing()
         val system1: MapSolarSystem = mockk()
         val system2: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("B-DBYQ", listOf("Delve")) } returns system1

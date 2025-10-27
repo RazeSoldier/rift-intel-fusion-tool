@@ -140,6 +140,7 @@ class EsiRateLimitInterceptor : Interceptor {
         val retryAfter = parseRetryAfter(response.header("Retry-After"))
 
         if (limit == null) {
+            return // TODO: Remove once rate limits are all live, for now missing headers are expected
             logger.error { "Invalid limit response for request in group \"${group.name}\": (${response.header("X-Ratelimit-Limit")})" }
         } else if (groupResponse != group.name) {
             logger.error { "Invalid group response for request in group \"${group.name}\": $groupResponse" }

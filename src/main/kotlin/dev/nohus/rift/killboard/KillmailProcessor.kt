@@ -51,14 +51,14 @@ class KillmailProcessor(
         val entities get() = listOf(killmail) + ships + attackers + listOfNotNull(celestial)
     }
 
-    private val seenKillmails = mutableMapOf<Int, Killboard>()
+    private val seenKillmails = mutableSetOf<Long>()
     private val mutex = Mutex()
 
     fun submit(message: Killmail) {
         runBlocking(Dispatchers.Default) {
             val ago = Duration.between(message.killmailTime, Instant.now())
             if (ago > Duration.ofMinutes(15)) {
-                logger.debug { "Ignoring old killmail from ${message.killboard}, ${ago.toSeconds()}s ago" }
+                logger.debug { "Ignoring old killmail, ${ago.toSeconds()}s ago" }
                 return@runBlocking
             }
 
@@ -141,13 +141,12 @@ class KillmailProcessor(
 
             mutex.withLock {
                 if (message.killmailId !in seenKillmails) {
-                    seenKillmails[message.killmailId] = message.killboard
-                    logger.debug { "Kill from ${message.killboard}: ${killmail.ship?.name} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
+                    seenKillmails += message.killmailId
+                    logger.debug { "Killmail: ${killmail.ship?.name ?: "Unknown ship"} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
                     intelStateController.submitKillmail(processedKillmail)
                     alertsTriggerController.onNewKillmail(processedKillmail)
                 } else {
-                    val killboard = seenKillmails[message.killmailId]
-                    logger.debug { "Kill from ${message.killboard}, ignoring, already seen from $killboard" }
+                    logger.debug { "Ignoring killmail, already seen" }
                 }
             }
         }

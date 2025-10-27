@@ -10,7 +10,7 @@ pluginManagement {
         kotlin("plugin.serialization") version "2.2.0"
         id("com.google.devtools.ksp") version "2.2.0-2.0.2"
         id("org.jetbrains.kotlin.plugin.compose") version "2.2.0"
-        id("org.jetbrains.compose") version "1.10.0-alpha02"
+        id("org.jetbrains.compose") version "1.9.0"
         id("org.jetbrains.compose.hot-reload") version "1.0.0-beta08"
         id("com.diffplug.spotless") version "7.2.1"
         id("com.github.gmazzo.buildconfig") version "5.3.5"

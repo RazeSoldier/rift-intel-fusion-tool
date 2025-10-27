@@ -2,6 +2,7 @@ package dev.nohus.rift.database
 
 import dev.nohus.rift.database.static.StaticDatabase
 import dev.nohus.rift.network.esi.EsiApi
+import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.ShipTypesRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.utils.HasNonAsciiWindowsUsernameUseCase
@@ -15,8 +16,8 @@ import io.mockk.mockk
 class ShipTypesRepositoryTest : FreeSpec({
 
     val database = StaticDatabase(SqliteInitializer(HasNonAsciiWindowsUsernameUseCase(OperatingSystem.Linux, AppDirectories(LinuxDirectories()))))
-    val esiApi: EsiApi = mockk()
-    val typesRepository = TypesRepository(database, esiApi)
+    val namesRepository: NamesRepository = mockk()
+    val typesRepository = TypesRepository(database, namesRepository)
     val target = ShipTypesRepository(
         staticDatabase = database,
         typesRepository = typesRepository,

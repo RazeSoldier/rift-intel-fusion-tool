@@ -4,8 +4,7 @@ import dev.nohus.rift.repositories.Position
 import java.time.Instant
 
 data class Killmail(
-    val killboard: Killboard,
-    val killmailId: Int,
+    val killmailId: Long,
     val killmailTime: Instant,
     val solarSystemId: Int,
     val url: String,
@@ -25,8 +24,3 @@ data class Attacker(
     val characterId: Int?,
     val shipTypeId: Int?,
 )
-
-enum class Killboard {
-    Zkillboard,
-    EveKill,
-}

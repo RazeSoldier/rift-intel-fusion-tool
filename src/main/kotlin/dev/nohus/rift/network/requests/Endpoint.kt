@@ -60,6 +60,7 @@ sealed class Endpoint(
     data object PostUiOpenWindowInformation : Endpoint()
     data object PostUiOpenWindowMarketDetails : Endpoint()
     data object PostUiOpenWindowNewMail : Endpoint()
+    data object GetKillmail : Endpoint()
 
     // Image Service
     data object ImageServiceHeadCharacterPortrait : Endpoint()
