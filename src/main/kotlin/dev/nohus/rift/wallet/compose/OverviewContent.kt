@@ -84,7 +84,7 @@ fun OverviewContent(
                 ) {
                     WalletPieChart(
                         group = selectedGroup,
-                        days = state.filters.timeSpanDays,
+                        days = state.filters.timeSpan.toDays().toInt(),
                         shownBreakdown = shownBreakdown,
                         segments = segments,
                         onSegmentClick = { segment ->

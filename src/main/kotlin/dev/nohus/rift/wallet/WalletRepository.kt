@@ -12,6 +12,7 @@ import dev.nohus.rift.network.esi.models.WalletJournalEntry
 import dev.nohus.rift.network.esi.models.WalletTransaction
 import dev.nohus.rift.network.esi.pagination.fetchOffsetIdPaginated
 import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.FactionNames
 import dev.nohus.rift.repositories.IdRanges
@@ -45,7 +46,6 @@ import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
 import kotlin.Int
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 private val logger = KotlinLogging.logger {}
 
@@ -170,20 +170,19 @@ class WalletRepository(
                 if (isRealtime) reloadFlow.emit(Unit)
             }
         }
-        // TODO: Background loading of data temporarily disabled
-//        launch {
-//            while (true) {
-//                delay(15.minutes)
-//                reloadFlow.emit(Unit)
-//            }
-//        }
+        launch {
+            while (true) {
+                delay(15.minutes)
+                reloadFlow.emit(Unit)
+            }
+        }
         launch {
             localCharactersRepository.characters.debounce(500).collectLatest { characters ->
                 // Wait for contacts to load before loading wallets, unless they take too long
                 withTimeoutOrNull(10_000) {
                     contactsRepository.finishedLoading.filter { it }.first()
                 }
-                if (isRealtime) reloadFlow.emit(Unit)
+                reloadFlow.emit(Unit)
             }
         }
         launch {
@@ -199,7 +198,7 @@ class WalletRepository(
 
     suspend fun setNeedsRealtimeUpdates(isRealtime: Boolean) {
         this.isRealtime = isRealtime
-        if (isRealtime && _state.value.loadedState == null && _state.value.loading.stage == null) {
+        if (isRealtime) {
             reloadFlow.emit(Unit)
         }
     }
@@ -220,7 +219,7 @@ class WalletRepository(
                 .map { character ->
                     LoadingCharacter(
                         characterId = character.characterId,
-                        name = character.info.success?.name ?: character.characterId.toString(),
+                        name = character.info?.name ?: character.characterId.toString(),
                         hasCorpWalletScopes = characterWithCorpWalletScopes.any { it.characterId == character.characterId },
                     )
                 }
@@ -230,7 +229,7 @@ class WalletRepository(
 
             val charactersWithRolesDeferred = async {
                 characterWithCorpWalletScopes.mapAsync { character ->
-                    character to esiApi.getCharactersIdRoles(character.characterId)
+                    character to esiApi.getCharactersIdRoles(Originator.Wallets, character.characterId)
                 }.mapNotNull { it.first to (it.second.success?.roles ?: return@mapNotNull null) }
             }
             val accountantsDeferred = async {
@@ -251,8 +250,12 @@ class WalletRepository(
             val corporationsToAccountantIds = localCharacters
                 .filter { it.characterId in accountants }
                 .mapNotNull { character ->
-                    val corporationId = character.info.success?.corporationId ?: return@mapNotNull null
-                    val corporationName = character.info.success?.corporationName ?: return@mapNotNull null
+                    val corporationId = character.info?.corporationId
+                    val corporationName = character.info?.corporationName
+                    if (corporationId == null || corporationName == null) {
+                        logger.error { "Character ${character.characterId} has no corporation ID or name" }
+                        return@mapNotNull null
+                    }
                     Corporation(corporationId, corporationName) to character.characterId
                 }
                 .groupBy { it.first }
@@ -295,7 +298,7 @@ class WalletRepository(
             }.awaitAll().flatten()
 
             val characters = charactersWithWalletScopes.map {
-                Character(it.characterId, it.info.success?.name ?: it.characterId.toString())
+                Character(it.characterId, it.info?.name ?: it.characterId.toString())
             }
             val corporations = corporationsToAccountantIds.keys.toList()
 
@@ -326,14 +329,14 @@ class WalletRepository(
         return coroutineScope {
             val characterWalletsDeferred = charactersToLoad.map { character ->
                 async {
-                    esiApi.getCharacterIdWallet(character.characterId).map {
+                    esiApi.getCharacterIdWallet(Originator.Wallets, character.characterId).map {
                         WalletBalance.Character(character.characterId, it)
                     }.success
                 }
             }
             val corporationWalletsDeferred = corporationsToAccountantIds.map { (corporation, accountantId) ->
                 async {
-                    esiApi.getCorporationsCorporationIdWallet(accountantId, corporation.id).map { wallets ->
+                    esiApi.getCorporationsCorporationIdWallet(Originator.Wallets, accountantId, corporation.id).map { wallets ->
                         wallets.map { wallet ->
                             WalletBalance.Corporation(corporation.id, wallet.divisionId, wallet.balance)
                         }
@@ -405,7 +408,7 @@ class WalletRepository(
                                 }
                             },
                         ) {
-                            esiApi.getCharactersIdWalletJournal(characterId, it)
+                            esiApi.getCharactersIdWalletJournal(Originator.Wallets, characterId, it)
                         }
                     }
                     val deferredTransactions = async {
@@ -416,7 +419,7 @@ class WalletRepository(
                                 }
                             },
                         ) {
-                            esiApi.getCharactersIdWalletTransactions(characterId, it)
+                            esiApi.getCharactersIdWalletTransactions(Originator.Wallets, characterId, it)
                         }
                     }
                     val journalEntries = deferredJournal.await()
@@ -468,7 +471,7 @@ class WalletRepository(
                                         }
                                     },
                                 ) {
-                                    esiApi.getCorporationsCorporationIdWalletsDivisionJournal(accountantId, corporation.id, divisionId, it)
+                                    esiApi.getCorporationsCorporationIdWalletsDivisionJournal(Originator.Wallets, accountantId, corporation.id, divisionId, it)
                                 }
                             }
                             val deferredTransactions = async {
@@ -479,7 +482,7 @@ class WalletRepository(
                                         }
                                     },
                                 ) {
-                                    esiApi.getCorporationsCorporationIdWalletsDivisionTransactions(accountantId, corporation.id, divisionId, it)
+                                    esiApi.getCorporationsCorporationIdWalletsDivisionTransactions(Originator.Wallets, accountantId, corporation.id, divisionId, it)
                                 }
                             }
                             val journalEntries = deferredJournal.await()
@@ -709,7 +712,7 @@ class WalletRepository(
         }
 
         // For those IDs where we don't know the category, fetch the categories from ESI
-        namesRepository.resolveNames(uncategorizedIds)
+        namesRepository.resolveNames(Originator.Wallets, uncategorizedIds)
         uncategorizedIds.forEach { id ->
             when (namesRepository.getCategory(id)) {
                 UniverseNamesCategory.Character -> characterIds += id
@@ -744,12 +747,12 @@ class WalletRepository(
         coroutineScope {
             val deferredStructures = structureIdsWithCharacterId.distinct().map { (structureId, characterId) ->
                 async {
-                    locationRepository.getStructure(structureId, characterId, fetchOwner = true)
+                    locationRepository.getStructure(Originator.Wallets, structureId, characterId, fetchOwner = true)
                 }
             }
             val deferredStations = stationIds.distinct().map {
                 async {
-                    locationRepository.getStation(it.toInt(), fetchOwner = true)
+                    locationRepository.getStation(Originator.Wallets, it.toInt(), fetchOwner = true)
                 }
             }
             deferredStructures.awaitAll().forEach { structure ->
@@ -770,7 +773,7 @@ class WalletRepository(
 
             val deferredCharacters = characterIds.distinct().let {
                 async {
-                    characterDetailsRepository.getCharacterDetails(it.map(Long::toInt)).values
+                    characterDetailsRepository.getCharacterDetails(Originator.Wallets, it.map(Long::toInt)).values
                 }
             }
             deferredCharacters.await().forEach { character ->
@@ -788,12 +791,12 @@ class WalletRepository(
 
             val deferredCorporations = corporationIds.distinct().map { corporationId ->
                 async {
-                    characterDetailsRepository.getCorporationDetails(corporationId.toInt())
+                    characterDetailsRepository.getCorporationDetails(Originator.Wallets, corporationId.toInt())
                 }
             }
             val deferredAlliances = allianceIds.distinct().map {
                 async {
-                    characterDetailsRepository.getAllianceDetails(it.toInt())
+                    characterDetailsRepository.getAllianceDetails(Originator.Wallets, it.toInt())
                 }
             }
 

@@ -257,11 +257,11 @@ private fun SystemDistanceIndicator(
     val characterDistance = remember(systemId, isUsingJumpBridges, localCharactersRepository.characters.value) {
         getDistance(systemId, withJumpBridges = isUsingJumpBridges)
     }
-    if (characterDistance == null || characterDistance.distance > 9) return
+    if (characterDistance == null) return
     val distanceColor = getDistanceColor(characterDistance.distance)
     val characterName = localCharactersRepository.characters.value
         .firstOrNull { it.characterId == characterDistance.characterId }
-        ?.info?.success?.name
+        ?.info?.name
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier

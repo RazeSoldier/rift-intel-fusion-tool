@@ -9,6 +9,7 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCha
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.network.esi.models.CharactersIdAsset
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.PricesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -106,7 +107,7 @@ class AssetsViewModel(
                 assetsRepository.assets,
             ) { locations, activeCharacter, (assets, isLoading) ->
                 val activeCharacterLocation = locations[activeCharacter]?.solarSystemId
-                pricesRepository.refreshPrices()
+                pricesRepository.refreshPrices(Originator.Assets)
                 val processedAssets = getAssetsByLocation(assets, activeCharacterLocation)
                 processedAssets to isLoading
             }.collect { (assets, isLoading) ->

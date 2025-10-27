@@ -2,7 +2,6 @@
 
 package dev.nohus.rift.wallet.compose
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,8 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Divider
@@ -24,29 +21,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncPlayerPortrait
-import dev.nohus.rift.compose.RiftImageButton
-import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.VerticalGrid
-import dev.nohus.rift.compose.fadingRightEdge
-import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.checkmark_16px
-import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.window_wallet
-import dev.nohus.rift.utils.formatIsk
-import dev.nohus.rift.utils.formatIskReadable
 import dev.nohus.rift.utils.toggle
 import dev.nohus.rift.wallet.WalletDivisionsRepository
 import dev.nohus.rift.wallet.WalletFilters

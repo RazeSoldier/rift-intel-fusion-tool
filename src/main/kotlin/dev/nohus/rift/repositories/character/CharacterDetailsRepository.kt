@@ -6,6 +6,7 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.models.CharactersAffiliation
 import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
 import kotlinx.coroutines.async
@@ -60,32 +61,32 @@ class CharacterDetailsRepository(
     )
 
     // TODO: Check if batch version can be applied anywhere else
-    suspend fun getCharacterDetails(characterIds: List<Int>): Map<Int, CharacterDetails?> = coroutineScope {
+    suspend fun getCharacterDetails(originator: Originator, characterIds: List<Int>): Map<Int, CharacterDetails?> = coroutineScope {
         val distinct = characterIds.distinct()
         val affiliations = distinct.chunked(1000).map { chunk ->
             async {
-                esiApi.getCharactersAffiliation(chunk).success ?: emptyList()
+                esiApi.getCharactersAffiliation(originator, chunk).success ?: emptyList()
             }
         }.awaitAll().flatten().associateBy { it.characterId }
 
         distinct.map {
             async {
-                it to getCharacterDetails(it, affiliations[it])
+                it to getCharacterDetails(originator, it, affiliations[it])
             }
         }.awaitAll().toMap()
     }
 
-    suspend fun getCharacterDetails(characterId: Int, affiliation: CharactersAffiliation? = null): CharacterDetails? = coroutineScope {
-        val characterDeferred = async { esiApi.getCharactersId(characterId).success }
+    suspend fun getCharacterDetails(originator: Originator, characterId: Int, affiliation: CharactersAffiliation? = null): CharacterDetails? = coroutineScope {
+        val characterDeferred = async { esiApi.getCharactersId(originator, characterId).success }
         val affiliationDeferred = async {
-            affiliation ?: esiApi.getCharactersAffiliation(listOf(characterId)).success?.firstOrNull()
+            affiliation ?: esiApi.getCharactersAffiliation(originator, listOf(characterId)).success?.firstOrNull()
         }
         val character = characterDeferred.await() ?: return@coroutineScope null
         val affiliation = affiliationDeferred.await()
         val corporationId = affiliation?.corporationId ?: character.corporationId
         val allianceId = affiliation?.allianceId ?: character.allianceId
-        val deferredCorporation = async { esiApi.getCorporationsId(corporationId).success }
-        val deferredAlliance = async { allianceId?.let { esiApi.getAlliancesId(it).success } }
+        val deferredCorporation = async { esiApi.getCorporationsId(originator, corporationId).success }
+        val deferredAlliance = async { allianceId?.let { esiApi.getAlliancesId(originator, it).success } }
         val corporation = deferredCorporation.await()
         val alliance = deferredAlliance.await()
         val standing = standingsRepository.getStanding(allianceId, corporationId, characterId) ?: 0f
@@ -113,9 +114,9 @@ class CharacterDetailsRepository(
         )
     }
 
-    suspend fun getCorporationDetails(corporationId: Int): CorporationDetails? = coroutineScope {
-        val corporation = esiApi.getCorporationsId(corporationId).success ?: return@coroutineScope null
-        val alliance = corporation.allianceId?.let { esiApi.getAlliancesId(it).success }
+    suspend fun getCorporationDetails(originator: Originator, corporationId: Int): CorporationDetails? = coroutineScope {
+        val corporation = esiApi.getCorporationsId(originator, corporationId).success ?: return@coroutineScope null
+        val alliance = corporation.allianceId?.let { esiApi.getAlliancesId(originator, it).success }
         val standing = standingsRepository.getStanding(corporation.allianceId, corporationId, null) ?: 0f
         val standingLevel = standingsRepository.getStandingLevel(corporation.allianceId, corporationId, null)
         val corporationLabels = contactsRepository.getLabels(listOf(corporationId)).map { it.name }.distinct()
@@ -136,8 +137,8 @@ class CharacterDetailsRepository(
         )
     }
 
-    suspend fun getAllianceDetails(allianceId: Int): AllianceDetails? = coroutineScope {
-        val alliance = esiApi.getAlliancesId(allianceId).success ?: return@coroutineScope null
+    suspend fun getAllianceDetails(originator: Originator, allianceId: Int): AllianceDetails? = coroutineScope {
+        val alliance = esiApi.getAlliancesId(originator, allianceId).success ?: return@coroutineScope null
         val standing = standingsRepository.getStanding(allianceId, null, null) ?: 0f
         val standingLevel = standingsRepository.getStandingLevel(allianceId, null, null)
         val allianceLabels = contactsRepository.getLabels(listOf(allianceId)).map { it.name }.distinct()
@@ -151,11 +152,11 @@ class CharacterDetailsRepository(
         )
     }
 
-    suspend fun getCorporationName(corporationId: Int): Result<CorporationsIdCorporation> {
-        return esiApi.getCorporationsId(corporationId)
+    suspend fun getCorporationName(originator: Originator, corporationId: Int): Result<CorporationsIdCorporation> {
+        return esiApi.getCorporationsId(originator, corporationId)
     }
 
-    suspend fun getAllianceName(allianceId: Int): Result<AlliancesIdAlliance> {
-        return esiApi.getAlliancesId(allianceId)
+    suspend fun getAllianceName(originator: Originator, allianceId: Int): Result<AlliancesIdAlliance> {
+        return esiApi.getAlliancesId(originator, allianceId)
     }
 }

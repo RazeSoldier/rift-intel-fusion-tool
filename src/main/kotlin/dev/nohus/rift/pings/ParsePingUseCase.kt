@@ -1,5 +1,6 @@
 package dev.nohus.rift.pings
 
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.character.CharactersRepository
@@ -144,7 +145,7 @@ class ParsePingUseCase(
     }
 
     private suspend fun parseFleetCommander(text: String): FleetCommander {
-        val characterId = charactersRepository.getCharacterId(text)
+        val characterId = charactersRepository.getCharacterId(Originator.Pings, text)
         return FleetCommander(text, characterId)
     }
 

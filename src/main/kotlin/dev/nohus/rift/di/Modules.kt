@@ -2,13 +2,15 @@ package dev.nohus.rift.di
 
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
-import dev.nohus.rift.network.EsiCompatibilityInterceptor
-import dev.nohus.rift.network.EsiErrorLimitInterceptor
-import dev.nohus.rift.network.LoggingInterceptor
-import dev.nohus.rift.network.RedirectAsSuccessInterceptor
-import dev.nohus.rift.network.RequestExecutor
-import dev.nohus.rift.network.RequestExecutorImpl
-import dev.nohus.rift.network.UserAgentInterceptor
+import dev.nohus.rift.network.interceptors.EsiCompatibilityInterceptor
+import dev.nohus.rift.network.interceptors.EsiErrorLimitInterceptor
+import dev.nohus.rift.network.interceptors.LoggingInterceptor
+import dev.nohus.rift.network.interceptors.RedirectAsSuccessInterceptor
+import dev.nohus.rift.network.interceptors.UserAgentInterceptor
+import dev.nohus.rift.network.requests.RateLimitingInterceptor
+import dev.nohus.rift.network.requests.RequestExecutor
+import dev.nohus.rift.network.requests.RequestExecutorImpl
+import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.notifications.system.LinuxSendNotificationUseCase
 import dev.nohus.rift.notifications.system.MacSendNotificationUseCase
 import dev.nohus.rift.notifications.system.SendNotificationUseCase
@@ -34,6 +36,7 @@ import dev.nohus.rift.utils.osdirectories.OperatingSystemDirectories
 import dev.nohus.rift.utils.osdirectories.WindowsDirectories
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
@@ -80,12 +83,13 @@ val platformModule = module {
 }
 
 val factoryModule = module {
-    single<OkHttpClient> {
+    single<OkHttpClient>(qualifier = named("api")) {
         val directory = get<AppDirectories>().getAppCacheDirectory().resolve("http-cache")
         val size = 50L * 1024 * 1024 // 50MB
         OkHttpClient.Builder()
             .cache(Cache(directory.toFile(), size))
             .addInterceptor(get<UserAgentInterceptor>())
+            .addInterceptor(get<RequestStatisticsInterceptor>())
             .addInterceptor(get<LoggingInterceptor>())
             .pingInterval(Duration.ofSeconds(10))
             .build()
@@ -93,11 +97,18 @@ val factoryModule = module {
     single<OkHttpClient>(qualifier = named("esi")) {
         val directory = get<AppDirectories>().getAppCacheDirectory().resolve("esi-cache")
         val size = 50L * 1024 * 1024 // 50MB
+        val dispatcher = Dispatcher().apply {
+            maxRequests = 64
+            maxRequestsPerHost = 64
+        }
         OkHttpClient.Builder()
             .cache(Cache(directory.toFile(), size))
+            .dispatcher(dispatcher)
             .addInterceptor(get<UserAgentInterceptor>())
+            .addInterceptor(get<RateLimitingInterceptor>())
             .addInterceptor(get<EsiErrorLimitInterceptor>())
             .addInterceptor(get<EsiCompatibilityInterceptor>())
+            .addInterceptor(get<RequestStatisticsInterceptor>())
             .addInterceptor(get<LoggingInterceptor>())
             .build()
     }
@@ -105,6 +116,7 @@ val factoryModule = module {
         OkHttpClient.Builder()
             .followRedirects(false)
             .addInterceptor(get<UserAgentInterceptor>())
+            .addInterceptor(get<RequestStatisticsInterceptor>())
             .addInterceptor(get<RedirectAsSuccessInterceptor>())
             .addInterceptor(get<LoggingInterceptor>())
             .build()

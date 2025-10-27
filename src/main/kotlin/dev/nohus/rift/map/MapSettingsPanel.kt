@@ -445,7 +445,7 @@ private fun JumpRangePanel(
 
             val suggestions by derivedStateOf {
                 val possibleCharacters = charactersRepository.characters.value
-                    .mapNotNull { it.info.success?.name }
+                    .mapNotNull { it.info?.name }
                 val possibleSystems = solarSystemsRepository.getSystems()
                     .map { it.name }
                 (possibleCharacters + possibleSystems)
@@ -622,7 +622,7 @@ private fun DistanceMapPanel(
 
             val suggestions by derivedStateOf {
                 val possibleCharacters = charactersRepository.characters.value
-                    .mapNotNull { it.info.success?.name }
+                    .mapNotNull { it.info?.name }
                 val possibleSystems = solarSystemsRepository.getSystems()
                     .map { it.name }
                 (possibleCharacters + possibleSystems)

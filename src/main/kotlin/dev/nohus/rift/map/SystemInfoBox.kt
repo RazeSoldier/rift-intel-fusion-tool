@@ -750,7 +750,7 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
         clones.forEach { (characterId, count) ->
             val characterName = localCharactersRepository.characters.value
                 .find { it.characterId == characterId }
-                ?.info?.success?.name
+                ?.info?.name
             RiftTooltipArea(
                 text = buildString {
                     if (characterName != null) appendLine(characterName)

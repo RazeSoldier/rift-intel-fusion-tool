@@ -134,7 +134,7 @@ class PlanetaryIndustryViewModel(
         val characterAgeSelector: (ColonyItem) -> Comparable<*> = { it.colony.characterId }
         val characterAlphabeticalSelector: (ColonyItem) -> Comparable<*> = {
             val characterId = it.colony.characterId
-            localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: ""
+            localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.name ?: ""
         }
         val statusSelector: (ColonyItem) -> Comparable<*> = { it.colony.status.order }
         val expiryTimeSelector: (ColonyItem) -> Comparable<*> = { item ->

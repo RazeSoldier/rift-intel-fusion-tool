@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
+import dev.nohus.rift.network.requests.Originator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -16,7 +17,7 @@ import retrofit2.Retrofit
 @Single
 class NtfyApi(
     @Named("network") json: Json,
-    client: OkHttpClient,
+    @Named("api") client: OkHttpClient,
 ) {
 
     private val contentType = "application/json".toMediaType()
@@ -29,7 +30,7 @@ class NtfyApi(
 
     suspend fun post(request: Ntfy): Result<Unit> {
         return try {
-            Success(withContext(Dispatchers.IO) { service.post(request) })
+            Success(withContext(Dispatchers.IO) { service.post(Originator.Alerts, request) })
         } catch (e: Exception) {
             Failure(e)
         }

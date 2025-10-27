@@ -448,7 +448,7 @@ private fun SolarSystem(system: MapSolarSystem, subtext: String?) {
 @Composable
 private fun Character(characterId: Int, subtext: String) {
     val localCharactersRepository: LocalCharactersRepository by koin.inject()
-    val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: "Character"
+    val name = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.name ?: "Character"
     ClickableCharacter(characterId) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

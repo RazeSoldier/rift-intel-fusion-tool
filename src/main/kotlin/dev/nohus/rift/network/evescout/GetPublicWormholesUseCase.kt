@@ -2,6 +2,7 @@ package dev.nohus.rift.network.evescout
 
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
@@ -36,8 +37,8 @@ class GetPublicWormholesUseCase(
         Capital,
     }
 
-    suspend operator fun invoke(): Map<Int, List<Wormhole>> {
-        return when (val response = eveScoutRescueApi.getSignatures()) {
+    suspend operator fun invoke(originator: Originator): Map<Int, List<Wormhole>> {
+        return when (val response = eveScoutRescueApi.getSignatures(originator)) {
             is Success -> {
                 response.data
                     .mapNotNull { signature ->

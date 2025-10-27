@@ -356,7 +356,7 @@ private fun FormQuestion(
                             onFormAnswer(CharacterAnswer(characterId))
                         },
                         getItemName = { characterId ->
-                            characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: "$characterId"
+                            characters.firstOrNull { it.characterId == characterId }?.info?.name ?: "$characterId"
                         },
                     )
                 } else {
@@ -812,7 +812,7 @@ private fun Pair<FormQuestion, FormAnswer>.toAnswerString(
 
         is FormQuestion.OwnedCharacterQuestion -> {
             val characterId = (answer as CharacterAnswer).characterId
-            characters.firstOrNull { it.characterId == characterId }?.info?.success?.name ?: "$characterId"
+            characters.firstOrNull { it.characterId == characterId }?.info?.name ?: "$characterId"
         }
 
         is FormQuestion.IntelChannelQuestion -> {

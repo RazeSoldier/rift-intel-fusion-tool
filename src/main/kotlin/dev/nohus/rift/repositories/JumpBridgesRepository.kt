@@ -5,6 +5,7 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.CharactersIdSearch
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -92,8 +93,8 @@ class JumpBridgesRepository(
                     semaphore.withPermit {
                         var searchResult: Result<CharactersIdSearch>? = null
                         repeat(3) {
-                            if (searchResult == null || searchResult?.isFailure == true) {
-                                searchResult = esiApi.getCharactersIdSearch(characterId, listOf("structure"), false, search = system)
+                            if (searchResult == null || searchResult.isFailure) {
+                                searchResult = esiApi.getCharactersIdSearch(Originator.JumpBridgeSearch, characterId, listOf("structure"), false, search = system)
                             }
                         }
                         val newFoundConnectionsMutex = Mutex()
@@ -108,8 +109,8 @@ class JumpBridgesRepository(
                                     async {
                                         var structureResult: Result<UniverseStructuresId>? = null
                                         repeat(3) {
-                                            if (structureResult == null || structureResult?.isFailure == true) {
-                                                structureResult = esiApi.getUniverseStructuresId(structureId, characterId)
+                                            if (structureResult == null || structureResult.isFailure) {
+                                                structureResult = esiApi.getUniverseStructuresId(Originator.JumpBridgeSearch, structureId, characterId)
                                             }
                                         }
                                         when (val result = structureResult) {

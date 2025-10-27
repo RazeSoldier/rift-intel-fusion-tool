@@ -79,7 +79,7 @@ class GetAccountsWithDisabledChatLogsUseCase(
             }
             append("Account with ID $id")
             if (charactersOnAccount.isNotEmpty()) {
-                val names = charactersOnAccount.mapNotNull { it.info.success?.name }
+                val names = charactersOnAccount.mapNotNull { it.info?.name }
                 if (names.isNotEmpty()) {
                     val characterNames = names.joinToString(", ")
                     append(" and characters $characterNames")

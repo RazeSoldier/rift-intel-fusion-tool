@@ -4,6 +4,8 @@ import dev.nohus.rift.sso.SsoAuthority
 import dev.nohus.rift.sso.authentication.Authentication.EveAuthentication
 import dev.nohus.rift.sso.scopes.EsiScope
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Factory
 import java.time.Instant
 
@@ -14,6 +16,8 @@ class SsoAuthenticator(
     private val ssoClient: SsoClient,
     private val eveSsoRepository: EveSsoRepository,
 ) {
+    // One mutex per character to prevent concurrent refreshes for the same character
+    private val refreshMutexes = mutableMapOf<Int, Mutex>()
 
     /**
      * Starts the SSO flow, redirecting the user to the SSO login page.
@@ -47,13 +51,28 @@ class SsoAuthenticator(
         if (scope != null && scope.id !in authentication.scopes) {
             throw NoAuthenticationException(characterId, scope)
         }
-        return if (authentication.expiration.isBefore(Instant.now())) {
-            val newAuthentication = ssoClient.refreshToken(SsoAuthority.Eve, authentication) as EveAuthentication
-            logger.debug { "Eve SSO access token refreshed" }
+        if (authentication.expiration.isAfter(Instant.now())) {
+            return authentication.accessToken
+        }
+
+        // Token has expired, refresh it
+        val mutex = synchronized(refreshMutexes) {
+            refreshMutexes.getOrPut(characterId) { Mutex() }
+        }
+        return mutex.withLock {
+            // Re-check after acquiring the lock in case another coroutine already refreshed
+            val current = eveSsoRepository.getAuthentication(characterId) ?: throw NoAuthenticationException(characterId, null)
+            if (scope != null && scope.id !in current.scopes) {
+                throw NoAuthenticationException(characterId, scope)
+            }
+            if (current.expiration.isAfter(Instant.now())) {
+                return@withLock current.accessToken
+            }
+
+            val newAuthentication = ssoClient.refreshToken(SsoAuthority.Eve, current) as EveAuthentication
             eveSsoRepository.addAuthentication(newAuthentication)
+            logger.debug { "Eve SSO access token refreshed" }
             newAuthentication.accessToken
-        } else {
-            authentication.accessToken
         }
     }
 }

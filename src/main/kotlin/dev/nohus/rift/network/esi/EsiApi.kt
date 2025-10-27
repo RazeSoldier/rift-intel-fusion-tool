@@ -1,8 +1,6 @@
 package dev.nohus.rift.network.esi
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import dev.nohus.rift.network.Reply
-import dev.nohus.rift.network.RequestExecutor
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
@@ -45,6 +43,9 @@ import dev.nohus.rift.network.esi.models.UniverseSystemJumps
 import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import dev.nohus.rift.network.esi.models.WalletJournalEntry
 import dev.nohus.rift.network.esi.models.WalletTransaction
+import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.requests.Reply
+import dev.nohus.rift.network.requests.RequestExecutor
 import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -68,72 +69,74 @@ class EsiApi(
         .build()
     private val service = retrofit.create(EsiService::class.java)
 
-    suspend fun postUniverseIds(names: List<String>): Result<UniverseIdsResponse> {
-        return execute { service.postUniverseIds(names) }
+    suspend fun postUniverseIds(originator: Originator, names: List<String>): Result<UniverseIdsResponse> {
+        return execute { service.postUniverseIds(originator, names) }
     }
 
-    suspend fun postUniverseNames(ids: List<Long>): Result<List<UniverseName>> {
-        return execute { service.postUniverseNames(ids) }
+    suspend fun postUniverseNames(originator: Originator, ids: List<Long>): Result<List<UniverseName>> {
+        return execute { service.postUniverseNames(originator, ids) }
     }
 
-    suspend fun getCharactersId(characterId: Int): Result<CharactersIdCharacter> {
-        return execute { service.getCharactersId(characterId) }
+    suspend fun getCharactersId(originator: Originator, characterId: Int): Result<CharactersIdCharacter> {
+        return execute { service.getCharactersId(originator, characterId) }
     }
 
-    suspend fun getCharactersAffiliation(characterIds: List<Int>): Result<List<CharactersAffiliation>> {
-        return execute { service.getCharactersAffiliation(characterIds) }
+    suspend fun getCharactersAffiliation(originator: Originator, characterIds: List<Int>): Result<List<CharactersAffiliation>> {
+        return execute { service.getCharactersAffiliation(originator, characterIds) }
     }
 
-    suspend fun getCorporationsId(corporationId: Int): Result<CorporationsIdCorporation> {
-        return execute { service.getCorporationsId(corporationId) }
+    suspend fun getCorporationsId(originator: Originator, corporationId: Int): Result<CorporationsIdCorporation> {
+        return execute { service.getCorporationsId(originator, corporationId) }
     }
 
-    suspend fun getAlliancesId(allianceId: Int): Result<AlliancesIdAlliance> {
-        return execute { service.getAlliancesId(allianceId) }
+    suspend fun getAlliancesId(originator: Originator, allianceId: Int): Result<AlliancesIdAlliance> {
+        return execute { service.getAlliancesId(originator, allianceId) }
     }
 
-    suspend fun getAlliancesIdContacts(characterId: Int, allianceId: Int): Result<List<Contact>> {
+    suspend fun getAlliancesIdContacts(originator: Originator, characterId: Int, allianceId: Int): Result<List<Contact>> {
         return executeEveAuthorized(characterId, EsiScope.Alliances.ReadContacts) { authorization ->
-            service.getAlliancesIdContacts(allianceId, authorization)
+            service.getAlliancesIdContacts(originator, allianceId, authorization)
         }
     }
 
-    suspend fun getCorporationsIdContacts(characterId: Int, corporationId: Int): Result<List<Contact>> {
+    suspend fun getCorporationsIdContacts(originator: Originator, characterId: Int, corporationId: Int): Result<List<Contact>> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadContacts) { authorization ->
-            service.getCorporationsIdContacts(corporationId, authorization)
+            service.getCorporationsIdContacts(originator, corporationId, authorization)
         }
     }
 
-    suspend fun getCharactersIdContacts(characterId: Int): Result<List<Contact>> {
+    suspend fun getCharactersIdContacts(originator: Originator, characterId: Int): Result<List<Contact>> {
         return executeEveAuthorized(characterId, EsiScope.Characters.ReadContacts) { authorization ->
-            service.getCharactersIdContacts(characterId, authorization)
+            service.getCharactersIdContacts(originator, characterId, authorization)
         }
     }
 
-    suspend fun getAlliancesIdContactsLabels(characterId: Int, allianceId: Int): Result<List<ContactsLabel>> {
+    suspend fun getAlliancesIdContactsLabels(originator: Originator, characterId: Int, allianceId: Int): Result<List<ContactsLabel>> {
         return executeEveAuthorized(characterId, EsiScope.Alliances.ReadContacts) { authorization ->
-            service.getAlliancesIdContactsLabels(allianceId, authorization)
+            service.getAlliancesIdContactsLabels(originator, allianceId, authorization)
         }
     }
 
-    suspend fun getCorporationsIdContactsLabels(characterId: Int, corporationId: Int): Result<List<ContactsLabel>> {
+    suspend fun getCorporationsIdContactsLabels(originator: Originator, characterId: Int, corporationId: Int): Result<List<ContactsLabel>> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadContacts) { authorization ->
-            service.getCorporationsIdContactsLabels(corporationId, authorization)
+            service.getCorporationsIdContactsLabels(originator, corporationId, authorization)
         }
     }
 
-    suspend fun getCharactersIdContactsLabels(characterId: Int): Result<List<ContactsLabel>> {
+    suspend fun getCharactersIdContactsLabels(originator: Originator, characterId: Int): Result<List<ContactsLabel>> {
         return executeEveAuthorized(characterId, EsiScope.Characters.ReadContacts) { authorization ->
-            service.getCharactersIdContactsLabels(characterId, authorization)
+            service.getCharactersIdContactsLabels(originator, characterId, authorization)
         }
     }
 
     suspend fun deleteCharactersIdContacts(
+        originator: Originator,
         characterId: Int,
         contactIds: List<Int>,
     ): Result<Unit> {
         return executeEveAuthorized(characterId, EsiScope.Characters.WriteContacts) { authorization ->
             service.deleteCharactersIdContacts(
+                originator = originator,
                 characterId = characterId,
                 contactIds = contactIds,
                 authorization = authorization,
@@ -142,6 +145,7 @@ class EsiApi(
     }
 
     suspend fun postCharactersIdContacts(
+        originator: Originator,
         characterId: Int,
         labelIds: List<Long>?,
         standing: Float,
@@ -150,6 +154,7 @@ class EsiApi(
     ): Result<List<Int>> {
         return executeEveAuthorized(characterId, EsiScope.Characters.WriteContacts) { authorization ->
             service.postCharactersIdContacts(
+                originator = originator,
                 characterId = characterId,
                 labelIds = labelIds,
                 standing = standing,
@@ -161,6 +166,7 @@ class EsiApi(
     }
 
     suspend fun putCharactersIdContacts(
+        originator: Originator,
         characterId: Int,
         labelIds: List<Long>?,
         standing: Float,
@@ -168,147 +174,155 @@ class EsiApi(
         contactIds: List<Int>,
     ): Result<Unit> {
         return executeEveAuthorized(characterId, EsiScope.Characters.WriteContacts) { authorization ->
-            service.putCharactersIdContacts(characterId, labelIds, standing, watched, authorization, contactIds)
+            service.putCharactersIdContacts(originator, characterId, labelIds, standing, watched, authorization, contactIds)
         }
     }
 
-    suspend fun getCharacterIdOnline(characterId: Int): Result<CharacterIdOnline> {
+    suspend fun getCharacterIdOnline(originator: Originator, characterId: Int): Result<CharacterIdOnline> {
         return executeEveAuthorized(characterId, EsiScope.Locations.ReadOnline) { authorization ->
-            service.getCharacterIdOnline(characterId, authorization)
+            service.getCharacterIdOnline(originator, characterId, authorization)
         }
     }
 
-    suspend fun getCharacterIdShip(characterId: Int): Result<CharacterIdShip> {
+    suspend fun getCharacterIdShip(originator: Originator, characterId: Int): Result<CharacterIdShip> {
         return executeEveAuthorized(characterId, EsiScope.Locations.ReadShipType) { authorization ->
-            service.getCharacterIdShip(characterId, authorization)
+            service.getCharacterIdShip(originator, characterId, authorization)
         }
     }
 
-    suspend fun getCharacterIdLocation(characterId: Int): Result<CharacterIdLocation> {
+    suspend fun getCharacterIdLocation(originator: Originator, characterId: Int): Result<CharacterIdLocation> {
         return executeEveAuthorized(characterId, EsiScope.Locations.ReadLocation) { authorization ->
-            service.getCharacterIdLocation(characterId, authorization)
+            service.getCharacterIdLocation(originator, characterId, authorization)
         }
     }
 
-    suspend fun getCharacterIdWallet(characterId: Int): Result<Double> {
+    suspend fun getCharacterIdWallet(originator: Originator, characterId: Int): Result<Double> {
         return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
-            service.getCharactersIdWallet(characterId, authorization)
+            service.getCharactersIdWallet(originator, characterId, authorization)
         }
     }
 
     suspend fun getCharactersIdWalletJournal(
+        originator: Originator,
         characterId: Int,
         page: Int? = null,
     ): Result<Reply<List<WalletJournalEntry>>> {
         return executeEveAuthorizedWithHeaders(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
-            service.getCharactersIdWalletJournal(characterId, page, authorization)
+            service.getCharactersIdWalletJournal(originator, characterId, page, authorization)
         }
     }
 
     suspend fun getCharactersIdWalletTransactions(
+        originator: Originator,
         characterId: Int,
         fromId: Long? = null,
     ): Result<List<WalletTransaction>> {
         return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCharacterWallet) { authorization ->
-            service.getCharactersIdWalletTransactions(characterId, fromId, authorization)
+            service.getCharactersIdWalletTransactions(originator, characterId, fromId, authorization)
         }
     }
 
     suspend fun getCorporationsCorporationIdWallet(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
     ): Result<List<CorporationWalletBalance>> {
         return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
-            service.getCorporationsCorporationIdWallets(corporationId, authorization)
+            service.getCorporationsCorporationIdWallets(originator, corporationId, authorization)
         }
     }
 
     suspend fun getCorporationsCorporationIdWalletsDivisionJournal(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
         division: Int,
         page: Int? = null,
     ): Result<Reply<List<WalletJournalEntry>>> {
         return executeEveAuthorizedWithHeaders(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
-            service.getCorporationsCorporationIdWalletsDivisionJournal(corporationId, division, page, authorization)
+            service.getCorporationsCorporationIdWalletsDivisionJournal(originator, corporationId, division, page, authorization)
         }
     }
 
     suspend fun getCorporationsCorporationIdWalletsDivisionTransactions(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
         division: Int,
         fromId: Long? = null,
     ): Result<List<WalletTransaction>> {
         return executeEveAuthorized(characterId, EsiScope.Wallet.ReadCorporationWallets) { authorization ->
-            service.getCorporationsCorporationIdWalletsDivisionTransactions(corporationId, division, fromId, authorization)
+            service.getCorporationsCorporationIdWalletsDivisionTransactions(originator, corporationId, division, fromId, authorization)
         }
     }
 
     suspend fun getCorporationsCorporationIdDivisions(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
     ): Result<CorporationDivisions> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadDivisions) { authorization ->
-            service.getCorporationsCorporationIdDivisions(corporationId, authorization)
+            service.getCorporationsCorporationIdDivisions(originator, corporationId, authorization)
         }
     }
 
-    suspend fun getCharactersIdSearch(characterId: Int, categories: List<String>, strict: Boolean, search: String): Result<CharactersIdSearch> {
+    suspend fun getCharactersIdSearch(originator: Originator, characterId: Int, categories: List<String>, strict: Boolean, search: String): Result<CharactersIdSearch> {
         return executeEveAuthorized(characterId, EsiScope.Search.SearchStructures) { authorization ->
-            service.getCharactersIdSearch(characterId, categories, strict, search, authorization)
+            service.getCharactersIdSearch(originator, characterId, categories, strict, search, authorization)
         }
     }
 
-    suspend fun getCharactersIdClones(characterId: Int): Result<CharactersIdClones> {
+    suspend fun getCharactersIdClones(originator: Originator, characterId: Int): Result<CharactersIdClones> {
         return executeEveAuthorized(characterId, EsiScope.Clones.ReadClones) { authorization ->
-            service.getCharactersIdClones(characterId, authorization)
+            service.getCharactersIdClones(originator, characterId, authorization)
         }
     }
 
-    suspend fun getCharactersIdImplants(characterId: Int): Result<List<Int>> {
+    suspend fun getCharactersIdImplants(originator: Originator, characterId: Int): Result<List<Int>> {
         return executeEveAuthorized(characterId, EsiScope.Clones.ReadImplants) { authorization ->
-            service.getCharactersIdImplants(characterId, authorization)
+            service.getCharactersIdImplants(originator, characterId, authorization)
         }
     }
 
-    suspend fun getUniverseStationsId(stationId: Int): Result<UniverseStationsId> {
-        return execute { service.getUniverseStationsId(stationId) }
+    suspend fun getUniverseStationsId(originator: Originator, stationId: Int): Result<UniverseStationsId> {
+        return execute { service.getUniverseStationsId(originator, stationId) }
     }
 
-    suspend fun getUniverseStructuresId(structureId: Long, characterId: Int): Result<UniverseStructuresId> {
+    suspend fun getUniverseStructuresId(originator: Originator, structureId: Long, characterId: Int): Result<UniverseStructuresId> {
         return executeEveAuthorized(characterId, EsiScope.Universe.ReadStructures) { authorization ->
-            service.getUniverseStructuresId(structureId, authorization)
+            service.getUniverseStructuresId(originator, structureId, authorization)
         }
     }
 
-    suspend fun getUniverseSystemJumps(): Result<List<UniverseSystemJumps>> {
-        return execute { service.getUniverseSystemJumps() }
+    suspend fun getUniverseSystemJumps(originator: Originator): Result<List<UniverseSystemJumps>> {
+        return execute { service.getUniverseSystemJumps(originator) }
     }
 
-    suspend fun getUniverseSystemKills(): Result<List<UniverseSystemKills>> {
-        return execute { service.getUniverseSystemKills() }
+    suspend fun getUniverseSystemKills(originator: Originator): Result<List<UniverseSystemKills>> {
+        return execute { service.getUniverseSystemKills(originator) }
     }
 
-    suspend fun getIncursions(): Result<List<Incursion>> {
-        return execute { service.getIncursions() }
+    suspend fun getIncursions(originator: Originator): Result<List<Incursion>> {
+        return execute { service.getIncursions(originator) }
     }
 
-    suspend fun getFactionWarfareSystems(): Result<List<FactionWarfareSystem>> {
-        return execute { service.getFactionWarfareSystems() }
+    suspend fun getFactionWarfareSystems(originator: Originator): Result<List<FactionWarfareSystem>> {
+        return execute { service.getFactionWarfareSystems(originator) }
     }
 
-    suspend fun getSovereigntyMap(): Result<List<SovereigntySystem>> {
-        return execute { service.getSovereigntyMap() }
+    suspend fun getSovereigntyMap(originator: Originator): Result<List<SovereigntySystem>> {
+        return execute { service.getSovereigntyMap(originator) }
     }
 
     suspend fun postUiAutopilotWaypoint(
+        originator: Originator,
         destinationId: Long,
         clearOtherWaypoints: Boolean,
         characterId: Int,
     ): Result<Unit> {
         return executeEveAuthorized(characterId, EsiScope.Ui.WriteWaypoint) { authorization ->
             service.postUiAutopilotWaypoint(
+                originator = originator,
                 addToBeginning = false,
                 clearOtherWaypoints = clearOtherWaypoints,
                 destinationId = destinationId,
@@ -317,63 +331,64 @@ class EsiApi(
         }
     }
 
-    suspend fun getCharactersIdAssets(page: Int, characterId: Int): Result<Reply<List<CharactersIdAsset>>> {
+    suspend fun getCharactersIdAssets(originator: Originator, page: Int, characterId: Int): Result<Reply<List<CharactersIdAsset>>> {
         return executeEveAuthorizedWithHeaders(characterId, EsiScope.Assets.ReadAssets) { authorization ->
-            service.getCharactersIdAssets(characterId, page, authorization)
+            service.getCharactersIdAssets(originator, characterId, page, authorization)
         }
     }
 
-    suspend fun getCharactersIdAssetsNames(characterId: Int, assets: List<Long>): Result<List<CharactersIdAssetsName>> {
+    suspend fun getCharactersIdAssetsNames(originator: Originator, characterId: Int, assets: List<Long>): Result<List<CharactersIdAssetsName>> {
         return executeEveAuthorized(characterId, EsiScope.Assets.ReadAssets) { authorization ->
-            service.getCharactersIdAssetsNames(characterId, assets, authorization)
+            service.getCharactersIdAssetsNames(originator, characterId, assets, authorization)
         }
     }
 
-    suspend fun getCharactersIdAssetsLocations(characterId: Int, itemIds: List<Long>): Result<List<CharactersIdAssetsLocation>> {
+    suspend fun getCharactersIdAssetsLocations(originator: Originator, characterId: Int, itemIds: List<Long>): Result<List<CharactersIdAssetsLocation>> {
         return executeEveAuthorized(characterId, EsiScope.Assets.ReadAssets) { authorization ->
-            service.getCharactersIdAssetsLocations(characterId, itemIds, authorization)
+            service.getCharactersIdAssetsLocations(originator, characterId, itemIds, authorization)
         }
     }
 
-    suspend fun getMarketsPrices(): Result<List<MarketsPrice>> {
-        return execute { service.getMarketsPrices() }
+    suspend fun getMarketsPrices(originator: Originator): Result<List<MarketsPrice>> {
+        return execute { service.getMarketsPrices(originator) }
     }
 
-    suspend fun getCharactersIdFleet(characterId: Int): Result<CharactersIdFleet> {
+    suspend fun getCharactersIdFleet(originator: Originator, characterId: Int): Result<CharactersIdFleet> {
         return executeEveAuthorized(characterId, EsiScope.Fleets.ReadFleet) { authorization ->
-            service.getCharactersIdFleet(characterId, authorization)
+            service.getCharactersIdFleet(originator, characterId, authorization)
         }
     }
 
-    suspend fun getFleetsId(characterId: Int, fleetId: Long): Result<FleetsId> {
+    suspend fun getFleetsId(originator: Originator, characterId: Int, fleetId: Long): Result<FleetsId> {
         return executeEveAuthorized(characterId, EsiScope.Fleets.ReadFleet) { authorization ->
-            service.getFleetsId(fleetId, authorization)
+            service.getFleetsId(originator, fleetId, authorization)
         }
     }
 
-    suspend fun getFleetsIdMembers(characterId: Int, fleetId: Long): Result<List<FleetMember>> {
+    suspend fun getFleetsIdMembers(originator: Originator, characterId: Int, fleetId: Long): Result<List<FleetMember>> {
         return executeEveAuthorized(characterId, EsiScope.Fleets.ReadFleet) { authorization ->
-            service.getFleetsIdMembers(fleetId, authorization)
+            service.getFleetsIdMembers(originator, fleetId, authorization)
         }
     }
 
-    suspend fun getCharactersIdPlanets(characterId: Int): Result<List<CharactersIdPlanet>> {
+    suspend fun getCharactersIdPlanets(originator: Originator, characterId: Int): Result<List<CharactersIdPlanet>> {
         return executeEveAuthorized(characterId, EsiScope.Planets.ManagePlanets) { authorization ->
-            service.getCharactersIdPlanets(characterId, authorization)
+            service.getCharactersIdPlanets(originator, characterId, authorization)
         }
     }
 
-    suspend fun getCharactersIdPlanetsId(characterId: Int, planetId: Int): Result<CharactersIdPlanetsId> {
+    suspend fun getCharactersIdPlanetsId(originator: Originator, characterId: Int, planetId: Int): Result<CharactersIdPlanetsId> {
         return executeEveAuthorized(characterId, EsiScope.Planets.ManagePlanets) { authorization ->
-            service.getCharactersIdPlanetsId(characterId, planetId, authorization)
+            service.getCharactersIdPlanetsId(originator, characterId, planetId, authorization)
         }
     }
 
-    suspend fun getIndustrySystems(): Result<List<IndustrySystem>> {
-        return execute { service.getIndustrySystems() }
+    suspend fun getIndustrySystems(originator: Originator): Result<List<IndustrySystem>> {
+        return execute { service.getIndustrySystems(originator) }
     }
 
     suspend fun getCorporationsIdProjects(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
         before: String?,
@@ -382,31 +397,34 @@ class EsiApi(
         state: CorporationProjectsQueryState?,
     ): Result<CorporationsIdProjects> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjects(corporationId, before, after, limit, state, authorization)
+            service.getCorporationsIdProjects(originator, corporationId, before, after, limit, state, authorization)
         }
     }
 
     suspend fun getCorporationsIdProjectsId(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
         projectId: String,
     ): Result<CorporationsIdProjectsId> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjectsId(corporationId, projectId, authorization)
+            service.getCorporationsIdProjectsId(originator, corporationId, projectId, authorization)
         }
     }
 
     suspend fun getCorporationsIdProjectsIdContribution(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
         projectId: String,
     ): Result<CorporationsIdProjectsIdContribution> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjectsIdContribution(corporationId, projectId, characterId, authorization)
+            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, authorization)
         }
     }
 
     suspend fun getCorporationsIdProjectsIdContributors(
+        originator: Originator,
         characterId: Int,
         corporationId: Int,
         projectId: String,
@@ -415,42 +433,46 @@ class EsiApi(
         limit: Int? = 100,
     ): Result<CorporationsIdProjectsIdContributors> {
         return executeEveAuthorized(characterId, EsiScope.Corporations.ReadProjects) { authorization ->
-            service.getCorporationsIdProjectsIdContributors(corporationId, projectId, before, after, limit, authorization)
+            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, authorization)
         }
     }
 
     suspend fun getCharactersIdRoles(
+        originator: Originator,
         characterId: Int,
     ): Result<CharactersIdRoles> {
         return executeEveAuthorized(characterId, EsiScope.Characters.ReadCorporationRoles) { authorization ->
-            service.getCharactersIdRoles(characterId, authorization)
+            service.getCharactersIdRoles(originator, characterId, authorization)
         }
     }
 
     suspend fun postUiOpenWindowInformation(
+        originator: Originator,
         characterId: Int,
         id: Long,
     ): Result<Unit> {
         return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
-            service.postUiOpenWindowInformation(id, authorization)
+            service.postUiOpenWindowInformation(originator, id, authorization)
         }
     }
 
     suspend fun postUiOpenWindowMarketDetails(
+        originator: Originator,
         characterId: Int,
         typeId: Long,
     ): Result<Unit> {
         return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
-            service.postUiOpenWindowMarketDetails(typeId, authorization)
+            service.postUiOpenWindowMarketDetails(originator, typeId, authorization)
         }
     }
 
     suspend fun postUiOpenWindowNewMail(
+        originator: Originator,
         characterId: Int,
         request: NewMailRequest,
     ): Result<Unit> {
         return executeEveAuthorized(characterId, EsiScope.Ui.OpenWindow) { authorization ->
-            service.postUiOpenWindowNewMail(request, authorization)
+            service.postUiOpenWindowNewMail(originator, request, authorization)
         }
     }
 }

@@ -3,6 +3,7 @@ package dev.nohus.rift.network.zkillboardqueue
 import dev.nohus.rift.killboard.KillmailConverter
 import dev.nohus.rift.killboard.KillmailProcessor
 import dev.nohus.rift.network.Result
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
@@ -46,12 +47,12 @@ class ZkillboardObserver(
                 val startTime = clock.markNow()
                 val fromDate = dateFormatter.format(Instant.now() - maxAge)
                 val filter = "killmail_time>=$fromDate"
-                when (val result = zkillboardQueueApi.getKillmailRedirect(queueId, 5, filter)) {
+                when (val result = zkillboardQueueApi.getKillmailRedirect(Originator.Killmails, queueId, 5, filter)) {
                     is Result.Success -> {
                         val location = result.data.headers["Location"]
                         if (location != null) {
                             if ("objectID=null" !in location) {
-                                when (val result = zkillboardQueueApi.getKillmail(location)) {
+                                when (val result = zkillboardQueueApi.getKillmail(Originator.Killmails, location)) {
                                     is Result.Success -> {
                                         val payload = result.data.payload
                                         if (payload != null) {

@@ -1,9 +1,8 @@
 package dev.nohus.rift.characters.repositories
 
 import dev.nohus.rift.characters.files.GetEveCharactersSettingsUseCase
-import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.toResource
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -34,11 +33,11 @@ class LocalCharactersRepository(
         val characterId: Int,
         val settingsFiles: Map<String, Path>, // Launcher profile name -> File
         val scopes: List<ScopeGroup>,
-        val info: AsyncResource<CharacterInfo>,
+        val info: CharacterInfo?,
         val isHidden: Boolean,
     ) {
         override fun toString(): String {
-            return "LocalCharacter(${info.success?.name ?: characterId})"
+            return "LocalCharacter(${info?.name ?: characterId})"
         }
     }
 
@@ -73,23 +72,28 @@ class LocalCharactersRepository(
                 val scopes = authenticatedCharacters.mapValues { (_, authentication) ->
                     ScopeGroups.getByIds(authentication.scopes)
                 }
-                _characters.value = _characters.value.mapNotNull { character ->
-                    val newCharacter = character.copy(
-                        scopes = scopes[character.characterId] ?: emptyList(),
-                        isHidden = character.characterId in hiddenCharacterIds,
-                    )
-                    if (newCharacter.scopes.isEmpty() && newCharacter.settingsFiles.isEmpty()) return@mapNotNull null
-                    newCharacter
+                withContext(MainUIDispatcher) {
+                    _characters.value = _characters.value.mapNotNull { character ->
+                        val newCharacter = character.copy(
+                            scopes = scopes[character.characterId] ?: emptyList(),
+                            isHidden = character.characterId in hiddenCharacterIds,
+                        )
+                        if (newCharacter.scopes.isEmpty() && newCharacter.settingsFiles.isEmpty()) return@mapNotNull null
+                        newCharacter
+                    }
                 }
             }
     }
 
     suspend fun load() = withContext(Dispatchers.IO) {
-        loadLocalCharacters()
-        loadEsiCharacters()
+        val characters = loadLocalCharacters()
+        loadEsiCharacters(characters)
     }
 
-    private fun loadLocalCharacters() {
+    /**
+     * Loads and returns local characters from settings files and authenticated characters
+     */
+    private fun loadLocalCharacters(): List<LocalCharacter> {
         val directory = settings.eveSettingsDirectory
         val authenticatedCharacterIds = settings.authenticatedCharacters.keys
         val scopes = settings.authenticatedCharacters.mapValues { (_, authentication) ->
@@ -110,7 +114,7 @@ class LocalCharactersRepository(
                         characterId = characterId,
                         settingsFiles = settingsFiles,
                         scopes = scopes[characterId] ?: emptyList(),
-                        info = AsyncResource.Loading,
+                        info = null,
                         isHidden = characterId in hiddenCharacterIds,
                     )
                 }
@@ -126,34 +130,27 @@ class LocalCharactersRepository(
                     characterId = characterId,
                     settingsFiles = emptyMap(),
                     scopes = scopes[characterId] ?: emptyList(),
-                    info = AsyncResource.Loading,
+                    info = null,
                     isHidden = characterId in hiddenCharacterIds,
                 )
             }
 
-        _characters.value = (charactersFromFiles + ssoOnlyCharacters)
-            .distinctBy { it.characterId }
-            .sortedWith(
-                compareBy(
-                    { it.scopes.isEmpty() },
-                    { it.settingsFiles.values.maxOfOrNull { it.getLastModifiedTime().toMillis() }?.let { -it } ?: 0L },
-                ),
-            )
+        return (charactersFromFiles + ssoOnlyCharacters).distinctBy { it.characterId }
     }
 
-    private suspend fun loadEsiCharacters() = coroutineScope {
-        val characterIds = _characters.value.map { it.characterId }
-        val affiliations = esiApi.getCharactersAffiliation(characterIds).map {
+    private suspend fun loadEsiCharacters(characters: List<LocalCharacter>) = coroutineScope {
+        val characterIds = characters.map { it.characterId }
+        val affiliations = esiApi.getCharactersAffiliation(Originator.LocalCharacters, characterIds).map {
             it.associateBy { it.characterId }
         }.success ?: emptyMap()
 
-        for (item in _characters.value) {
+        for (localCharacter in characters) {
             launch {
-                val result = esiApi.getCharactersId(item.characterId).map { character ->
-                    val corporationId = affiliations[item.characterId]?.corporationId ?: character.corporationId
-                    val allianceId = affiliations[item.characterId]?.allianceId ?: character.allianceId
-                    val corporationDeferred = async { esiApi.getCorporationsId(corporationId) }
-                    val allianceDeferred = if (allianceId != null) async { esiApi.getAlliancesId(allianceId) } else null
+                val characterInfo = esiApi.getCharactersId(Originator.LocalCharacters, localCharacter.characterId).map { character ->
+                    val corporationId = affiliations[localCharacter.characterId]?.corporationId ?: character.corporationId
+                    val allianceId = affiliations[localCharacter.characterId]?.allianceId ?: character.allianceId
+                    val corporationDeferred = async { esiApi.getCorporationsId(Originator.LocalCharacters, corporationId) }
+                    val allianceDeferred = if (allianceId != null) async { esiApi.getAlliancesId(Originator.LocalCharacters, allianceId) } else null
                     val corporation = corporationDeferred.await()
                     val alliance = allianceDeferred?.await()
                     CharacterInfo(
@@ -163,14 +160,34 @@ class LocalCharactersRepository(
                         allianceId = allianceId,
                         allianceName = if (alliance != null) alliance.success?.name ?: "?" else null,
                     )
-                }
+                }.success
+                val updatedCharacter = localCharacter.copy(info = characterInfo ?: localCharacter.info)
                 withContext(MainUIDispatcher) {
+                    var isExistingCharacterUpdated = false
                     val characters = _characters.value.map { current ->
-                        if (current.characterId == item.characterId) current.copy(info = result.toResource()) else current
+                        if (current.characterId == localCharacter.characterId) {
+                            isExistingCharacterUpdated = true
+                            updatedCharacter
+                        } else {
+                            current
+                        }
                     }
-                    _characters.value = characters
+                    if (!isExistingCharacterUpdated) {
+                        _characters.value = (characters + updatedCharacter).sort()
+                    } else {
+                        _characters.value = characters
+                    }
                 }
             }
         }
+    }
+
+    private fun List<LocalCharacter>.sort(): List<LocalCharacter> {
+        return sortedWith(
+            compareBy(
+                { it.scopes.isEmpty() },
+                { it.settingsFiles.values.maxOfOrNull { it.getLastModifiedTime().toMillis() }?.let { -it } ?: 0L },
+            ),
+        )
     }
 }

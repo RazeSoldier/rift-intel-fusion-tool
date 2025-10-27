@@ -44,6 +44,7 @@ data class SettingsModel(
     val jabberPassword: String? = null,
     val jabberCollapsedGroups: List<String> = emptyList(),
     val jabberIsUsingBiggerFontSize: Boolean = false,
+    val jabberConferences: List<String> = emptyList(),
     val isDemoMode: Boolean = false,
     val isSettingsReadFailure: Boolean = false,
     val isUsingDarkTrayIcon: Boolean = false,

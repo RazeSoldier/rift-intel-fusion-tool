@@ -44,7 +44,7 @@ class WalletViewModel(
         val loading: LoadingState = LoadingState(),
         val tab: WalletTab = WalletTab.Wallets,
         val insightsTab: InsightsTab = InsightsTab.IncomeByParty,
-        val journalHistoryFrom: Instant? = null,
+        val availableTimestamps: List<Duration> = emptyList(),
 
         val displayTimezone: ZoneId,
         val showCents: Boolean,
@@ -247,13 +247,16 @@ class WalletViewModel(
 
     private suspend fun updateJournals() {
         val loaded = walletRepository.state.value.loadedState
-        val (oldest, data) = withContext(Dispatchers.Default) {
-            var oldest: Instant? = null
+        val data = withContext(Dispatchers.Default) {
+            var oldest = Instant.now()
             val data = loaded?.map { loaded ->
                 loaded.journal.minOfOrNull { it.date }?.also { if (oldest == null || it < oldest) oldest = it }
+                _state.update { it.copy(availableTimestamps = getAvailableTimespans(oldest)) }
+                if (_state.value.filters.timeSpan == Duration.ZERO) {
+                    _state.update { it.copy(filters = it.filters.copy(timeSpan = it.availableTimestamps.lastOrNull() ?: Duration.ZERO)) }
+                }
                 val journals = filterJournalsByAge(filterJournalsByWallet(loaded.journal))
                     .sortedByDescending { it.date }
-                ensureActive()
                 LoadedData(
                     filteredJournal = filterJournalsByTypeDirectionPartySearch(journals),
                     balances = loaded.balances,
@@ -262,10 +265,9 @@ class WalletViewModel(
                     corporations = loaded.corporations,
                 )
             }
-            ensureActive()
-            oldest to data
+            data
         }
-        _state.update { it.copy(loadedData = data, journalHistoryFrom = oldest) }
+        _state.update { it.copy(loadedData = data) }
     }
 
     private fun getStatistics(journal: List<WalletJournalItem>): Statistics {
@@ -466,7 +468,7 @@ class WalletViewModel(
 
     private fun filterJournalsByAge(items: List<WalletJournalItem>): List<WalletJournalItem> {
         val filters = _state.value.filters
-        val minAge = Instant.now() - Duration.ofDays(filters.timeSpanDays.toLong())
+        val minAge = Instant.now() - filters.timeSpan
         return items.filter {
             it.date >= minAge
         }
@@ -527,5 +529,21 @@ class WalletViewModel(
             transaction?.client.isMatching(search) ||
             transaction?.location.isMatching(search) ||
             transaction?.type.isMatching(search)
+    }
+
+    private fun getAvailableTimespans(journalHistoryFrom: Instant): List<Duration> {
+        val maxTimespanDays = Duration.between(journalHistoryFrom, Instant.now()).toDays().toInt() + 1
+        val maxTimespan = Duration.ofDays(maxTimespanDays.toLong())
+        return sequence {
+            yield(Duration.ofHours(2))
+            yield(Duration.ofHours(12))
+            yield(Duration.ofHours(24))
+            yield(Duration.ofDays(2))
+            yield(Duration.ofDays(7))
+            yield(Duration.ofDays(14))
+            repeat(100) {
+                yield(Duration.ofDays(30L * (it + 1)))
+            }
+        }.takeWhile { it < maxTimespan }.toList() + maxTimespan
     }
 }

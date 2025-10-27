@@ -3,6 +3,7 @@ package dev.nohus.rift.killboard
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
@@ -64,19 +65,19 @@ class KillmailProcessor(
             val system = solarSystemsRepository.getSystem(message.solarSystemId) ?: return@runBlocking
 
             val deferredVictim = message.victim.characterId
-                ?.let { async { characterDetailsRepository.getCharacterDetails(it) } }
+                ?.let { async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it) } }
 
             // Corporation and alliance are only loaded if there is no character, otherwise they are included with the character
             val deferredVictimCorporation = if (message.victim.characterId == null) {
                 message.victim.corporationId?.let {
-                    async { characterDetailsRepository.getCorporationName(it).success }
+                    async { characterDetailsRepository.getCorporationName(Originator.Killmails, it).success }
                 }
             } else {
                 null
             }
             val deferredVictimAlliance = if (message.victim.characterId == null) {
                 message.victim.allianceId?.let {
-                    async { characterDetailsRepository.getAllianceName(it).success }
+                    async { characterDetailsRepository.getAllianceName(Originator.Killmails, it).success }
                 }
             } else {
                 null
@@ -84,7 +85,7 @@ class KillmailProcessor(
 
             val deferredAttackers = message.attackers
                 .mapNotNull { it.characterId }
-                .map { async { characterDetailsRepository.getCharacterDetails(it) } }
+                .map { async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it) } }
 
             val victim = deferredVictim?.await()?.let {
                 SystemEntity.Character(it.name, it.characterId, it)

@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
+import dev.nohus.rift.network.requests.Originator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
@@ -18,7 +19,7 @@ import retrofit2.Retrofit
 @Single
 class PushoverApi(
     @Named("network") private val json: Json,
-    client: OkHttpClient,
+    @Named("api") client: OkHttpClient,
 ) {
 
     private val contentType = "application/json".toMediaType()
@@ -31,7 +32,7 @@ class PushoverApi(
 
     suspend fun postMessages(messages: Messages): Result<MessagesResponse> {
         return try {
-            Success(withContext(Dispatchers.IO) { service.postMessages(messages) })
+            Success(withContext(Dispatchers.IO) { service.postMessages(Originator.Alerts, messages) })
         } catch (e: Exception) {
             if (e is HttpException) {
                 val body = e.response()?.errorBody()?.string()

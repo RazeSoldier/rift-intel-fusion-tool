@@ -10,6 +10,7 @@ import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.logs.parse.ChatMessageParser
 import dev.nohus.rift.logs.parse.ChooseChatMessageTokenizationUseCase
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.mapAsync
@@ -142,7 +143,7 @@ class ChatLogWatcher(
             if (token.type is ChatMessageParser.TokenType.Character) {
                 token.copy(
                     type = token.type.copy(
-                        details = characterDetailsRepository.getCharacterDetails(token.type.characterId),
+                        details = characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, token.type.characterId),
                     ),
                 )
             } else {

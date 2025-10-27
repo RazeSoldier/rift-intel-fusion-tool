@@ -29,7 +29,7 @@ class ConfigurationPackRepository(
 
     fun getSuggestedPack(): ConfigurationPack? {
         val characterAlliances = localCharactersRepository.characters.value
-            .mapNotNull { it.info.success?.allianceId }
+            .mapNotNull { it.info?.allianceId }
             .toSet()
         return ConfigurationPack.entries.firstOrNull { pack ->
             getPackMemberAllianceIds(pack).any { it in characterAlliances }

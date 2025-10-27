@@ -34,7 +34,7 @@ class AccountAssociationsRepository(
             ?.first?.nameWithoutExtension?.substringAfterLast("_")?.toIntOrNull() ?: return
         if (settings.accountAssociations[characterId] != accountId) {
             settings.accountAssociations += characterId to accountId
-            logger.info { "Set account association for character ${character.info.success?.name} to $accountId." }
+            logger.info { "Set account association for character ${character.info?.name} to $accountId." }
         }
     }
 

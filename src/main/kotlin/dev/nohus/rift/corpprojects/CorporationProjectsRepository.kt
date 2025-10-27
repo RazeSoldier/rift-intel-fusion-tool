@@ -13,6 +13,7 @@ import dev.nohus.rift.network.esi.models.CorporationProjectCareer
 import dev.nohus.rift.network.esi.models.CorporationProjectState
 import dev.nohus.rift.network.esi.models.CorporationProjectsQueryState
 import dev.nohus.rift.network.esi.pagination.fetchCursorPaginated
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.GetSolarSystemChipStateUseCase
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.SolarSystemChipLocation
@@ -170,7 +171,7 @@ class CorporationProjectsRepository(
         return localCharactersRepository.characters.value
             .filter { ScopeGroups.readProjects in it.scopes }
             .mapNotNull { character ->
-                val corporation = character.info.success?.let {
+                val corporation = character.info?.let {
                     Corporation(it.corporationId, it.corporationName)
                 } ?: return@mapNotNull null
                 corporation to character
@@ -202,13 +203,13 @@ class CorporationProjectsRepository(
         val characterIds = characters.map { it.characterId }
         val projectManagersDeferred = async {
             characterIds.mapAsync { characterId ->
-                characterId to esiApi.getCharactersIdRoles(characterId).map { "Project_Manager" in it.roles }
+                characterId to esiApi.getCharactersIdRoles(Originator.CorporationProjects, characterId).map { "Project_Manager" in it.roles }
             }.filter { it.second.success == true }.map { it.first }
         }
 
         var deletedProjects: Set<String> = emptySet()
         val projects = fetchCursorPaginated(after) { before, after ->
-            esiApi.getCorporationsIdProjects(characterIds.first(), corporation.id, before, after, state = CorporationProjectsQueryState.All)
+            esiApi.getCorporationsIdProjects(Originator.CorporationProjects, characterIds.first(), corporation.id, before, after, state = CorporationProjectsQueryState.All)
         }.map { (projects, newAfter) ->
             if (after == null) {
                 updateLoading { copy(corporations = corporations.map { if (it.corporation == corporation) it.copy(projectsCount = projects.size) else it }) }
@@ -260,15 +261,15 @@ class CorporationProjectsRepository(
     ): Result<Project> {
         val characterIds = characters.map { it.characterId }
         val detailsDeferred = async {
-            esiApi.getCorporationsIdProjectsId(characterIds.first(), corporation.id, project.id)
+            esiApi.getCorporationsIdProjectsId(Originator.CorporationProjects, characterIds.first(), corporation.id, project.id)
         }
         val contributionsDeferred = characters.map { character ->
             async {
-                val contributionResult = esiApi.getCorporationsIdProjectsIdContribution(character.characterId, corporation.id, project.id)
+                val contributionResult = esiApi.getCorporationsIdProjectsIdContribution(Originator.CorporationProjects, character.characterId, corporation.id, project.id)
                     .map { it.contributed }
                 Contribution(
                     characterId = character.characterId,
-                    characterName = character.info.success?.name ?: "?",
+                    characterName = character.info?.name ?: "?",
                     contribution = contributionResult,
                 )
             }
@@ -276,12 +277,12 @@ class CorporationProjectsRepository(
         val contributorsDeferred: Deferred<Contributors> = async {
             projectManagersDeferred.await().firstOrNull()?.let { projectManager ->
                 fetchCursorPaginated(null) { before, after ->
-                    esiApi.getCorporationsIdProjectsIdContributors(projectManager, corporation.id, project.id, before, after)
+                    esiApi.getCorporationsIdProjectsIdContributors(Originator.CorporationProjects, projectManager, corporation.id, project.id, before, after)
                 }.map { (contributors, newAfter) ->
                     val list = contributors.mapAsync {
                         Contributor(
                             characterId = it.id.toInt(),
-                            details = characterDetailsRepository.getCharacterDetails(it.id.toInt()),
+                            details = characterDetailsRepository.getCharacterDetails(Originator.CorporationProjects, it.id.toInt()),
                             contributed = it.contributed,
                         )
                     }
@@ -299,7 +300,7 @@ class CorporationProjectsRepository(
             is Failure -> return details
         }
         val creatorDeferred = async {
-            characterDetailsRepository.getCharacterDetails(details.creator.id)
+            characterDetailsRepository.getCharacterDetails(Originator.CorporationProjects, details.creator.id)
         }
         val configuration = mapper.toModel(details.configuration)
         val contributionAttributesDeferred = async {

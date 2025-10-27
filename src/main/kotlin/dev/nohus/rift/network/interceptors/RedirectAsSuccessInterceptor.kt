@@ -1,4 +1,4 @@
-package dev.nohus.rift.network
+package dev.nohus.rift.network.interceptors
 
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor

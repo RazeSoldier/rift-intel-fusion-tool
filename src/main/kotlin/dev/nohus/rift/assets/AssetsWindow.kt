@@ -129,7 +129,7 @@ private fun AssetsWindowContent(
                 onItemSelected = onCharacterSelected,
                 getItemName = {
                     if (it != null) {
-                        it.info.success?.name ?: "${it.characterId}"
+                        it.info?.name ?: "${it.characterId}"
                     } else {
                         "All characters"
                     }
@@ -193,7 +193,7 @@ private fun AssetsWindowContent(
                 }
             }
             val characterNames: Map<Int, String>? = if (state.filterCharacter == null) {
-                state.characters.mapNotNull { it.characterId to (it.info.success?.name ?: return@mapNotNull null) }.toMap()
+                state.characters.mapNotNull { it.characterId to (it.info?.name ?: return@mapNotNull null) }.toMap()
             } else {
                 null
             }

@@ -68,7 +68,7 @@ class ActiveCharacterRepository(
     private suspend fun checkActiveCharacter(character: String?) = withContext(Dispatchers.IO) {
         val character = character ?: return@withContext
         val characterId = localCharactersRepository.characters.value.firstOrNull { characterItem ->
-            characterItem.info.success?.name == character
+            characterItem.info?.name == character
         }?.characterId
         _activeCharacter.value = characterId
     }

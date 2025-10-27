@@ -55,7 +55,7 @@ class MapJumpRangeController(
             localCharactersRepository.characters.collect { characters ->
                 val target = _state.value.target
                 if (target is MapJumpRangeTarget.Character) {
-                    val name = characters.find { it.characterId == target.id }?.info?.success?.name
+                    val name = characters.find { it.characterId == target.id }?.info?.name
                     if (name != null) {
                         _state.update { it.copy(target = target.copy(name = name)) }
                     }
@@ -71,7 +71,7 @@ class MapJumpRangeController(
                 MapJumpRangeTarget.System(system.name, jumpRange.fromId)
             } else {
                 val character = localCharactersRepository.characters.value.firstOrNull { it.characterId == jumpRange.fromId }
-                MapJumpRangeTarget.Character(character?.info?.success?.name ?: "${jumpRange.fromId}", jumpRange.fromId)
+                MapJumpRangeTarget.Character(character?.info?.name ?: "${jumpRange.fromId}", jumpRange.fromId)
             }
             _state.update { it.copy(target = target, distanceLy = jumpRange.distanceLy) }
         }
@@ -83,7 +83,7 @@ class MapJumpRangeController(
         if (system != null) {
             _state.update { it.copy(target = MapJumpRangeTarget.System(system.name, system.id)) }
         } else {
-            val character = localCharactersRepository.characters.value.firstOrNull { it.info.success?.name == target }
+            val character = localCharactersRepository.characters.value.firstOrNull { it.info?.name == target }
             if (character != null) {
                 _state.update { it.copy(target = MapJumpRangeTarget.Character(target, character.characterId)) }
             } else {

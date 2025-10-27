@@ -94,7 +94,6 @@ import dev.nohus.rift.generated.resources.window_delete_character
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
-import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
@@ -145,7 +144,7 @@ fun CharactersWindow(
                 onDismiss = viewModel::onCloseSso,
             )
         } else if (state.deletingCharacter != null) {
-            val name = state.deletingCharacter?.info?.success?.name ?: "character ID ${state.deletingCharacter?.characterId}"
+            val name = state.deletingCharacter?.info?.name ?: "character ID ${state.deletingCharacter?.characterId}"
             RiftDialog(
                 title = "Delete $name?",
                 icon = Res.drawable.window_delete_character,
@@ -390,21 +389,31 @@ private fun CharacterRow(
                 modifier = Modifier.size(64.dp),
             )
             when (character.info) {
-                is AsyncResource.Ready -> {
+                null -> {
+                    Text(
+                        text = "Could not load",
+                        style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
+                        modifier = Modifier
+                            .padding(horizontal = Spacing.medium)
+                            .weight(1f),
+                    )
+                }
+
+                else -> {
                     Column(
                         modifier = Modifier.padding(start = Spacing.medium),
                     ) {
-                        RiftTooltipArea(character.info.value.corporationName) {
+                        RiftTooltipArea(character.info.corporationName) {
                             AsyncCorporationLogo(
-                                corporationId = character.info.value.corporationId,
+                                corporationId = character.info.corporationId,
                                 size = 32,
                                 modifier = Modifier.size(32.dp),
                             )
                         }
-                        if (character.info.value.allianceId != null) {
-                            RiftTooltipArea(character.info.value.allianceName) {
+                        if (character.info.allianceId != null) {
+                            RiftTooltipArea(character.info.allianceName) {
                                 AsyncAllianceLogo(
-                                    allianceId = character.info.value.allianceId,
+                                    allianceId = character.info.allianceId,
                                     size = 32,
                                     modifier = Modifier.size(32.dp),
                                 )
@@ -422,7 +431,7 @@ private fun CharacterRow(
                             modifier = Modifier.width(IntrinsicSize.Max),
                         ) {
                             Text(
-                                text = character.info.value.name,
+                                text = character.info.name,
                                 style = RiftTheme.typography.headerHighlighted,
                                 modifier = Modifier.weight(1f),
                             )
@@ -444,26 +453,6 @@ private fun CharacterRow(
                     AnimatedVisibility(!isChoosingDisabledCharacters) {
                         Location(location)
                     }
-                }
-
-                is AsyncResource.Error -> {
-                    Text(
-                        text = "Could not load",
-                        style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
-                        modifier = Modifier
-                            .padding(horizontal = Spacing.medium)
-                            .weight(1f),
-                    )
-                }
-
-                AsyncResource.Loading -> {
-                    Text(
-                        text = "Loading…",
-                        style = RiftTheme.typography.bodySecondary,
-                        modifier = Modifier
-                            .padding(horizontal = Spacing.medium)
-                            .weight(1f),
-                    )
                 }
             }
 
@@ -689,28 +678,7 @@ private fun HiddenCharacterRow(
             modifier = Modifier.weight(1f),
         ) {
             when (character.info) {
-                is AsyncResource.Ready -> {
-                    AsyncCorporationLogo(
-                        corporationId = character.info.value.corporationId,
-                        size = 32,
-                        modifier = Modifier.size(32.dp),
-                    )
-                    if (character.info.value.allianceId != null) {
-                        AsyncAllianceLogo(
-                            allianceId = character.info.value.allianceId,
-                            size = 32,
-                            modifier = Modifier.size(32.dp),
-                        )
-                    }
-                    Text(
-                        text = character.info.value.name,
-                        style = RiftTheme.typography.headerSecondary,
-                        modifier = Modifier
-                            .padding(horizontal = Spacing.medium),
-                    )
-                }
-
-                is AsyncResource.Error -> {
+                null -> {
                     Text(
                         text = "Could not load",
                         style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
@@ -718,11 +686,24 @@ private fun HiddenCharacterRow(
                     )
                 }
 
-                AsyncResource.Loading -> {
+                else -> {
+                    AsyncCorporationLogo(
+                        corporationId = character.info.corporationId,
+                        size = 32,
+                        modifier = Modifier.size(32.dp),
+                    )
+                    if (character.info.allianceId != null) {
+                        AsyncAllianceLogo(
+                            allianceId = character.info.allianceId,
+                            size = 32,
+                            modifier = Modifier.size(32.dp),
+                        )
+                    }
                     Text(
-                        text = "Loading…",
-                        style = RiftTheme.typography.bodySecondary,
-                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                        text = character.info.name,
+                        style = RiftTheme.typography.headerSecondary,
+                        modifier = Modifier
+                            .padding(horizontal = Spacing.medium),
                     )
                 }
             }

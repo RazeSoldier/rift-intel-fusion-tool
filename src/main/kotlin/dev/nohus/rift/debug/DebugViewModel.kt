@@ -5,11 +5,13 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.about.GetVersionUseCase
 import dev.nohus.rift.jabber.client.JabberClient
 import dev.nohus.rift.logging.LoggingRepository
+import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.OperatingSystem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
@@ -21,16 +23,26 @@ class DebugViewModel(
     getVersionUseCase: GetVersionUseCase,
     private val jabberClient: JabberClient,
     operatingSystem: OperatingSystem,
+    private val requestStatisticsInterceptor: RequestStatisticsInterceptor,
 ) : ViewModel() {
 
     data class UiState(
+        val tab: DebugTab = DebugTab.Logs,
+        // Logs
         val events: List<ILoggingEvent> = emptyList(),
         val displayTimezone: ZoneId,
         val version: String,
         val vmVersion: String,
         val operatingSystem: OperatingSystem,
         val isJabberConnected: Boolean,
+        // Network
+        val buckets: List<RequestStatisticsInterceptor.Bucket> = emptyList(),
     )
+
+    enum class DebugTab {
+        Logs,
+        Network,
+    }
 
     private val _state = MutableStateFlow(
         UiState(
@@ -47,6 +59,11 @@ class DebugViewModel(
         viewModelScope.launch {
             LoggingRepository.state.collect { logs ->
                 _state.update { it.copy(events = logs) }
+            }
+        }
+        viewModelScope.launch {
+            requestStatisticsInterceptor.buckets.collectLatest { buckets ->
+                _state.update { it.copy(buckets = buckets.toList()) }
             }
         }
         viewModelScope.launch {
@@ -68,6 +85,10 @@ class DebugViewModel(
                 }
             }
         }
+    }
+
+    fun onTabClick(tab: DebugTab) {
+        _state.update { it.copy(tab = tab) }
     }
 
     private fun getVmVersion(): String {

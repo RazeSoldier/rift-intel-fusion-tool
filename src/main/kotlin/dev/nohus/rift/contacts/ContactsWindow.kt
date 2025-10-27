@@ -703,7 +703,7 @@ private fun SearchTabContent(
                     items = state.characters,
                     selectedItem = selectedCharacter,
                     onItemSelected = { selectedCharacter = it },
-                    getItemName = { it?.let { it.info.success?.name ?: "${it.characterId}" } ?: "Select character" },
+                    getItemName = { it?.let { it.info?.name ?: "${it.characterId}" } ?: "Select character" },
                 )
             }
             RiftContextMenuArea(

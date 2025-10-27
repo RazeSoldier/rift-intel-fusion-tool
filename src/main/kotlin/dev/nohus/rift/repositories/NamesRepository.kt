@@ -3,6 +3,7 @@ package dev.nohus.rift.repositories
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.UniverseNamesCategory
+import dev.nohus.rift.network.requests.Originator
 import org.koin.core.annotation.Single
 
 @Single
@@ -34,22 +35,22 @@ class NamesRepository(
         return categories[id]
     }
 
-    suspend fun resolveNames(ids: List<Int>) {
-        resolveNames(ids.map { it.toLong() })
+    suspend fun resolveNames(originator: Originator, ids: List<Int>) {
+        resolveNames(originator, ids.map { it.toLong() })
     }
 
     @JvmName("resolveNamesLong")
-    suspend fun resolveNames(ids: List<Long>) {
-        resolveNames(ids.toSet())
+    suspend fun resolveNames(originator: Originator, ids: List<Long>) {
+        resolveNames(originator, ids.toSet())
     }
 
-    suspend fun resolveNames(ids: Set<Long>) {
+    suspend fun resolveNames(originator: Originator, ids: Set<Long>) {
         ids
             .filter { it !in names }
             .filterNot { IdRanges.isSpawnedItem(it) }
             .chunked(1000)
             .flatMap { typeIds ->
-                when (val result = esiApi.postUniverseNames(typeIds)) {
+                when (val result = esiApi.postUniverseNames(originator, typeIds)) {
                     is Result.Success -> result.data
                     is Result.Failure -> emptyList()
                 }

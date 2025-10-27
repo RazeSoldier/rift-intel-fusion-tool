@@ -55,7 +55,6 @@ import dev.nohus.rift.generated.resources.copy_16px
 import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.recall_drones_16px
 import dev.nohus.rift.generated.resources.window_character_settings
-import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.utils.viewModel
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -202,7 +201,7 @@ private fun CharacterSettingsWindowContent(
                                             appendLine()
                                             appendLine()
                                             append("Some settings are account-wide, so these will also affect ")
-                                            unselectedAffectedCharacters.map { it.info.success?.name ?: "${it.characterId}" }.forEachIndexed { index, character ->
+                                            unselectedAffectedCharacters.map { it.info?.name ?: "${it.characterId}" }.forEachIndexed { index, character ->
                                                 if (index != 0) append(", ")
                                                 withColor(RiftTheme.colors.textHighlighted) {
                                                     append(character)
@@ -470,14 +469,7 @@ private fun CharacterRow(
             )
 
             when (character.info) {
-                is AsyncResource.Ready -> {
-                    Text(
-                        text = character.info.value.name,
-                        style = RiftTheme.typography.headerHighlighted,
-                    )
-                }
-
-                is AsyncResource.Error -> {
+                null -> {
                     Text(
                         text = "Could not load",
                         style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
@@ -485,11 +477,10 @@ private fun CharacterRow(
                     )
                 }
 
-                AsyncResource.Loading -> {
+                else -> {
                     Text(
-                        text = "Loading…",
-                        style = RiftTheme.typography.bodySecondary,
-                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                        text = character.info.name,
+                        style = RiftTheme.typography.headerHighlighted,
                     )
                 }
             }
