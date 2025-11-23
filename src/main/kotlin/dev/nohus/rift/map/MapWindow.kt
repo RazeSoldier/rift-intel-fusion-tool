@@ -1,7 +1,5 @@
 package dev.nohus.rift.map
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.LinearEasing
@@ -14,11 +12,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.PointerMatcher
@@ -26,12 +19,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.onDrag
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.onClick
 import androidx.compose.runtime.Composable
@@ -60,6 +56,7 @@ import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtLeast
@@ -68,17 +65,32 @@ import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import dev.nohus.rift.EventEffect
 import dev.nohus.rift.compose.GetSystemContextMenuItems
+import dev.nohus.rift.compose.KeyName
 import dev.nohus.rift.compose.RiftContextMenuPopup
+import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftTabBar
+import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.TitleBarStyle
+import dev.nohus.rift.compose.animatedcontentfixed.AnimatedContentFixed
+import dev.nohus.rift.compose.animatedcontentfixed.AnimatedVisibility
+import dev.nohus.rift.compose.animatedcontentfixed.ContentTransform
+import dev.nohus.rift.compose.animatedcontentfixed.fadeIn
+import dev.nohus.rift.compose.animatedcontentfixed.fadeOut
+import dev.nohus.rift.compose.animatedcontentfixed.scaleIn
+import dev.nohus.rift.compose.animatedcontentfixed.scaleOut
+import dev.nohus.rift.compose.animatedcontentfixed.togetherWith
 import dev.nohus.rift.compose.onKeyPress
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.abstract_layout_32px
+import dev.nohus.rift.generated.resources.focus_viewfinder_32px
+import dev.nohus.rift.generated.resources.map_fit_view_32px
 import dev.nohus.rift.generated.resources.window_map
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
@@ -121,8 +133,10 @@ import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.painterResource
 import org.koin.core.parameter.parametersOf
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -176,6 +190,9 @@ fun MapWindow(
             onLayoutSelected = viewModel::onLayoutSelected,
             onDistanceMapCenterUpdate = viewModel::onDistanceMapCenterUpdate,
             onDistanceMapRangeUpdate = viewModel::onDistanceMapRangeUpdate,
+            onFocusCurrentClick = viewModel::onFocusCurrentClick,
+            onFitMapClick = viewModel::onFitMapClick,
+            onToggle2dLayoutClick = viewModel::onToggle2dLayoutClick,
         )
     }
 }
@@ -207,10 +224,13 @@ private fun MapWindowContent(
     onLayoutSelected: (Int) -> Unit,
     onDistanceMapCenterUpdate: (String) -> Unit,
     onDistanceMapRangeUpdate: (Int) -> Unit,
+    onFocusCurrentClick: () -> Unit,
+    onFitMapClick: () -> Unit,
+    onToggle2dLayoutClick: () -> Unit,
 ) {
     Box {
         val hazeState = remember { HazeState() }
-        AnimatedContent(
+        AnimatedContentFixed(
             targetState = state,
             contentKey = { it.mapType },
             transitionSpec = { getMapChangeTransition(initialState, targetState) },
@@ -228,6 +248,8 @@ private fun MapWindowContent(
                 onMapClick = onMapClick,
                 onContextMenuDismiss = onContextMenuDismiss,
                 onMapTransformChanged = { onMapTransformChanged(state.mapType, it) },
+                onFocusCurrentClick = onFocusCurrentClick,
+                onFitMapClick = onFitMapClick,
             )
         }
         MapSettingsPanel(
@@ -253,6 +275,63 @@ private fun MapWindowContent(
             onDistanceMapCenterUpdate = onDistanceMapCenterUpdate,
             onDistanceMapRangeUpdate = onDistanceMapRangeUpdate,
         )
+        BottomControlButtons(
+            mapType = state.mapType,
+            onFocusCurrentClick = onFocusCurrentClick,
+            onFitMapClick = onFitMapClick,
+            onToggle2dLayoutClick = onToggle2dLayoutClick,
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.BottomControlButtons(
+    mapType: MapType,
+    onFocusCurrentClick: () -> Unit,
+    onFitMapClick: () -> Unit,
+    onToggle2dLayoutClick: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+        modifier = Modifier
+            .padding(Spacing.medium)
+            .align(Alignment.BottomEnd),
+    ) {
+        AnimatedVisibility(mapType != DistanceMap) {
+            RiftTooltipArea(
+                tooltip = {
+                    KeyName("Focus Current Location", "Enter")
+                },
+            ) {
+                RiftImageButton(
+                    resource = Res.drawable.focus_viewfinder_32px,
+                    size = 32.dp,
+                    onClick = onFocusCurrentClick,
+                )
+            }
+        }
+        RiftTooltipArea(
+            tooltip = {
+                KeyName("Fit To Window", "Space")
+            },
+        ) {
+            RiftImageButton(
+                resource = Res.drawable.map_fit_view_32px,
+                size = 32.dp,
+                onClick = onFitMapClick,
+            )
+        }
+        AnimatedVisibility(mapType is ClusterSystemsMap) {
+            RiftTooltipArea(
+                text = "Toggle 2D Layout",
+            ) {
+                RiftImageButton(
+                    resource = Res.drawable.abstract_layout_32px,
+                    size = 32.dp,
+                    onClick = onToggle2dLayoutClick,
+                )
+            }
+        }
     }
 }
 
@@ -311,12 +390,14 @@ private fun Map(
     onMapClick: (button: Int) -> Unit,
     onContextMenuDismiss: () -> Unit,
     onMapTransformChanged: (Transform) -> Unit,
+    onFocusCurrentClick: () -> Unit,
+    onFitMapClick: () -> Unit,
 ) {
     val layoutBounds by remember(state.layout) { mutableStateOf(getMapLayoutBounds(state.layout)) }
     val zoomRange = remember(state.mapType) {
         when (state.mapType) {
             ClusterRegionsMap -> 1.0..2.0
-            ClusterSystemsMap -> 0.2..8.0
+            is ClusterSystemsMap -> 0.2..8.0
             is RegionMap -> 0.12..2.0
             is DistanceMap -> 0.2..2.0
         }
@@ -330,7 +411,7 @@ private fun Map(
     var center by remember {
         mutableStateOf(
             if (state.mapState.centeredSystem != null) {
-                state.layout[state.mapState.centeredSystem]
+                state.layout[state.mapState.centeredSystem.value]
                     ?.let { Offset(it.position.x.toFloat(), it.position.y.toFloat()) }
                     ?: getMapLayoutCenter(layoutBounds)
             } else {
@@ -409,13 +490,16 @@ private fun Map(
         }
     }.apply { initializeComposed() }
 
-    LaunchedEffect(state.mapState.centeredSystem) {
-        val selectedPosition = state.layout[state.mapState.centeredSystem]?.position ?: return@LaunchedEffect
+    EventEffect(state.mapState.centeredSystem) { centeredSystem ->
+        val selectedPosition = state.layout[centeredSystem]?.position ?: return@EventEffect
         center = Offset(selectedPosition.x.toFloat(), selectedPosition.y.toFloat())
+        if (state.mapType is ClusterSystemsMap) {
+            zoom = 4.0
+        }
     }
 
     val density = LocalDensity.current.density
-    fun fitMap() {
+    EventEffect(state.fitMapEvent) {
         center = getMapLayoutCenter(layoutBounds)
         zoom = (zoom * getIdealZoomMultiplier(state.mapType, layoutBounds, canvasSize, mapScale, density)).coerceIn(zoomRange)
     }
@@ -457,7 +541,7 @@ private fun Map(
         Box(modifier = Modifier.clipToBounds()) {
             val baseScale = when (state.mapType) {
                 ClusterRegionsMap -> 0.7f
-                ClusterSystemsMap -> 2.0f
+                is ClusterSystemsMap -> 2.0f
                 is RegionMap -> 0.6f
                 is DistanceMap -> 0.6f
             }
@@ -471,7 +555,6 @@ private fun Map(
                     scope = this,
                     center = DoubleOffset(animatedCenter.x.toDouble(), animatedCenter.y.toDouble()),
                     scale = scale,
-                    zoom = animatedZoom,
                     systemColorStrategy = solarSystemColorStrategy,
                     cellColorStrategy = cellColorStrategy,
                     jumpBands = state.distanceMapState.distance + 1,
@@ -536,7 +619,10 @@ private fun Map(
                         focusRequester.requestFocus()
                     }
                     .onKeyPress(Key.Spacebar) {
-                        fitMap()
+                        onFitMapClick()
+                    }
+                    .onKeyPress(Key.Enter) {
+                        onFocusCurrentClick()
                     },
             )
             if (mapScale != 0.0f && canvasSize != Size.Zero) {
@@ -552,7 +638,7 @@ private fun Map(
                             onClick = { onMapClick(LEFT_BUTTON) },
                         )
                     }
-                    ClusterSystemsMap, is RegionMap, is DistanceMap -> {
+                    is ClusterSystemsMap, is RegionMap, is DistanceMap -> {
                         val nodeSizes = NodeSizes(
                             margin = 12.dp,
                             marginPx = LocalDensity.current.run { 12.dp.toPx() },
@@ -580,7 +666,7 @@ private fun getIdealZoomMultiplier(
     density: Float,
 ): Float {
     val margin = when (mapType) {
-        ClusterRegionsMap, ClusterSystemsMap, is RegionMap -> 50
+        ClusterRegionsMap, is ClusterSystemsMap, is RegionMap -> 50
         DistanceMap -> 120
     } * density
     val idealMapScaleX = (layoutBounds.maxX - layoutBounds.minX) / (canvasSize.width - margin)
@@ -731,7 +817,7 @@ private fun SystemInfoBoxesLayer(
         val isZoomEnough = (state.settings.isAlwaysShowingSystems || mapScale <= (0.9f / LocalDensity.current.density))
         val isShowingSystemInfoBox = isHighlightedOrHovered || when (state.mapType) {
             ClusterRegionsMap -> false
-            ClusterSystemsMap -> true
+            is ClusterSystemsMap -> true
             is DistanceMap -> isZoomEnough
             is RegionMap -> isZoomEnough
         }
@@ -771,7 +857,7 @@ private fun getInfoBoxInfoTypes(state: UiState): List<MapSystemInfoType> {
 private fun getSettingsMapType(mapType: MapType): SettingsMapType {
     return when (mapType) {
         ClusterRegionsMap -> SettingsMapType.NewEden
-        ClusterSystemsMap -> SettingsMapType.NewEden
+        is ClusterSystemsMap -> SettingsMapType.NewEden
         is RegionMap -> SettingsMapType.Region
         is DistanceMap -> SettingsMapType.Distance
     }
@@ -804,7 +890,10 @@ private fun ForEachSystem(
 
         val isDrawn = when (state.mapType) {
             ClusterRegionsMap -> false // N/A
-            ClusterSystemsMap -> mapScale <= 0.5 || isHighlightedOrHovered || forceDrawWithIntel && state.mapState.intel[systemId] != null
+            is ClusterSystemsMap -> {
+                val isZoomedInEnough = if (state.mapType.is2D) mapScale <= 0.8 else mapScale <= 0.5
+                isZoomedInEnough || isHighlightedOrHovered || forceDrawWithIntel && (state.mapState.intel[systemId] != null || systemId in state.mapState.onlineCharacterLocations)
+            }
             is DistanceMap -> true // Always draw
             is RegionMap -> true // Always draw
         }

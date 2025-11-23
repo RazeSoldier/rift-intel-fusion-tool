@@ -732,6 +732,14 @@ object WhatsNew {
                 - Startup warnings now scroll if necessary
                 """.trimIndent(),
             )
+            add(
+                "5.11.0" description """
+                - The new 2D map layout introduced in-game in the Catalyst expansion is now available in RIFT's New Eden map, along with many map tweaks
+                - Added new buttons on the map to focus on the current location, fit the map to the window, or switch to the 2D map layout. They are also quickly accessible with keyboard shortcuts.
+                - Updated internal data for new Catalyst ships
+                - Significantly reduced memory usage when running RIFT over time
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

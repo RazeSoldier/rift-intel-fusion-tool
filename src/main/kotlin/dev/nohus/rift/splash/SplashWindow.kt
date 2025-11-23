@@ -94,7 +94,7 @@ private fun SplashWindowContent(state: UiState) {
         )
         val isDarkBackground = false
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
         ) {
             val shadeColor = if (isDarkBackground) {
                 Color.White.copy(alpha = 0.15f)

@@ -11,6 +11,7 @@ object LocationFlags {
         "CorpseBay" to "Corpse Hold",
         "Deliveries" to "Deliveries",
         "DroneBay" to "Drone Bay",
+        "ExpeditionHold" to "Expedition Hold",
         "FighterBay" to "Fighter Bay",
         "FighterTube0" to "Fighter Tube 0",
         "FighterTube1" to "Fighter Tube 1",

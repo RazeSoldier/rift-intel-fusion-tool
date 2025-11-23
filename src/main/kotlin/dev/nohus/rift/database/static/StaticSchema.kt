@@ -11,6 +11,8 @@ object SolarSystems : Table() {
     val x = double("x")
     val y = double("y")
     val z = double("z")
+    val x2d = double("x2d").nullable()
+    val y2d = double("y2d").nullable()
     val security = double("security")
     val hasJoveObservatory = bool("hasJoveObservatory")
     val asteroidBeltCount = integer("asteroidBeltCount")
@@ -24,6 +26,8 @@ object Regions : Table() {
     val x = double("x")
     val y = double("y")
     val z = double("z")
+    val x2d = double("x2d").nullable()
+    val y2d = double("y2d").nullable()
     override val primaryKey = PrimaryKey(regionId)
 }
 

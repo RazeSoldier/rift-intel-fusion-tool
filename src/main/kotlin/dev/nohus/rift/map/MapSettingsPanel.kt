@@ -126,7 +126,7 @@ fun MapSettingsPanel(
 ) {
     val settingsMapType = when (mapType) {
         ClusterRegionsMap -> null
-        ClusterSystemsMap -> SettingsMapType.NewEden
+        is ClusterSystemsMap -> SettingsMapType.NewEden
         is RegionMap -> SettingsMapType.Region
         is DistanceMap -> SettingsMapType.Distance
     } ?: return
