@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -32,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
@@ -45,6 +47,7 @@ import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftProgressBar
 import dev.nohus.rift.compose.RiftRadioButtonWithLabel
 import dev.nohus.rift.compose.RiftTabBar
+import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.Tab
@@ -350,7 +353,8 @@ private fun DebugWindowContent(
                             bucket.copy(remaining = tokensRemaining)
                         }
                     }
-                    val sortedBuckets = buckets.entries.toList().sortedBy { (_, bucket) -> bucket.remaining }
+                    val sortedBuckets = buckets.entries.toList()
+                        .sortedBy { (_, bucket) -> bucket.remaining / bucket.limit.tokens.toDouble() }
 
                     ScrollbarLazyColumn(
                         verticalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -361,35 +365,49 @@ private fun DebugWindowContent(
                                 horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 modifier = Modifier.animateItem(),
                             ) {
-                                Text(
-                                    text = buildAnnotatedString {
-                                        append("Group ")
-                                        withColor(RiftTheme.colors.textPrimary) {
-                                            append(bucketKey.group.name)
-                                        }
-                                    },
-                                    style = RiftTheme.typography.bodySecondary,
-                                )
-                                if (bucketKey.character != null) {
-                                    AsyncPlayerPortrait(
-                                        characterId = bucketKey.character.id,
-                                        size = 32,
-                                        modifier = Modifier
-                                            .border(1.dp, RiftTheme.colors.borderGreyLight)
-                                            .size(32.dp),
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                    modifier = Modifier.widthIn(min = 200.dp),
+                                ) {
+                                    Text(
+                                        text = buildAnnotatedString {
+                                            append("Group ")
+                                            withColor(RiftTheme.colors.textPrimary) {
+                                                append(bucketKey.group.name)
+                                            }
+                                        },
+                                        style = RiftTheme.typography.bodySecondary,
                                     )
-                                } else {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .border(1.dp, RiftTheme.colors.borderGreyLight)
-                                            .background(RiftTheme.colors.backgroundPrimaryDark)
-                                            .size(32.dp),
-                                    ) {
-                                        Text(
-                                            text = "IP",
-                                            style = RiftTheme.typography.bodyPrimary,
-                                        )
+                                    if (bucketKey.character != null) {
+                                        RiftTooltipArea(
+                                            text = "Bucket for this character",
+                                        ) {
+                                            AsyncPlayerPortrait(
+                                                characterId = bucketKey.character.id,
+                                                size = 32,
+                                                modifier = Modifier
+                                                    .border(1.dp, RiftTheme.colors.borderGreyLight)
+                                                    .size(32.dp),
+                                            )
+                                        }
+                                    } else {
+                                        RiftTooltipArea(
+                                            text = "Bucket for your IP address.\nShared with other apps on your PC.",
+                                        ) {
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier
+                                                    .border(1.dp, RiftTheme.colors.borderGreyLight)
+                                                    .background(RiftTheme.colors.backgroundPrimaryDark)
+                                                    .size(32.dp),
+                                            ) {
+                                                Text(
+                                                    text = "IP",
+                                                    style = RiftTheme.typography.bodyPrimary,
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                                 Box(
@@ -397,22 +415,28 @@ private fun DebugWindowContent(
                                         .height(IntrinsicSize.Min)
                                         .weight(1f),
                                 ) {
-                                    val spendTokens = state.spentTokens[bucketKey] ?: emptyList()
-                                    val tokensRegeneratedSinceLastRequest = spendTokens
+                                    val spentTokens = state.spentTokens[bucketKey] ?: emptyList()
+                                    val tokensRegeneratedSinceLastRequest = spentTokens
                                         .takeWhile { it.returnTimestamp.isBefore(now) }
                                         .sumOf { it.tokens }
-                                    val tokensRemaining = bucket.remaining + tokensRegeneratedSinceLastRequest
+                                    val tokensRemaining = (bucket.remaining + tokensRegeneratedSinceLastRequest).coerceAtMost(bucket.limit.tokens)
                                     val previousTokensRemaining = previousTokens[bucketKey] ?: 0
                                     previousTokens = previousTokens + (bucketKey to tokensRemaining)
 
                                     val defaultColor = RiftTheme.colors.primary
-                                    var targetColor by remember { mutableStateOf(defaultColor) }
-                                    LaunchedEffect(tokensRemaining) {
-                                        if (previousTokensRemaining > tokensRemaining) {
-                                            targetColor = EveColors.hotRed
+                                    fun getTargetColor(): Color {
+                                        return if (previousTokensRemaining > tokensRemaining) {
+                                            EveColors.hotRed
                                         } else if (previousTokensRemaining < tokensRemaining) {
-                                            targetColor = EveColors.successGreen
+                                            EveColors.successGreen
+                                        } else {
+                                            defaultColor
                                         }
+                                    }
+
+                                    var targetColor by remember { mutableStateOf(getTargetColor()) }
+                                    LaunchedEffect(tokensRemaining) {
+                                        targetColor = getTargetColor()
                                         delay(1000)
                                         targetColor = defaultColor
                                     }
@@ -420,13 +444,16 @@ private fun DebugWindowContent(
                                     RiftProgressBar(
                                         percentage = tokensRemaining / bucket.limit.tokens.toFloat(),
                                         color = color,
+                                        hasInitialAnimation = false,
                                         modifier = Modifier
                                             .height(20.dp)
                                             .fillMaxWidth(),
                                     )
-                                    val nextReturnIn = spendTokens.firstOrNull { it.returnTimestamp.isAfter(now) }?.returnTimestamp?.let { Duration.between(now, it) }
+                                    val nextReturnIn = spentTokens.firstOrNull { it.returnTimestamp.isAfter(now) }?.returnTimestamp?.let { Duration.between(now, it) }
                                     val returnText = if (nextReturnIn != null) {
-                                        ", ${nextReturnIn.seconds}s"
+                                        val minutes = nextReturnIn.toMinutes()
+                                        val seconds = nextReturnIn.toSecondsPart()
+                                        if (minutes > 0) ", ${minutes}m ${seconds}s" else ", ${seconds}s"
                                     } else {
                                         ""
                                     }

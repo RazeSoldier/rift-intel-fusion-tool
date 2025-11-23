@@ -93,15 +93,18 @@ private fun SplashWindowContent(state: UiState) {
             modifier = Modifier.fillMaxSize(),
         )
         val isDarkBackground = false
-        Column {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             val shadeColor = if (isDarkBackground) {
                 Color.White.copy(alpha = 0.15f)
             } else {
                 Color.Black.copy(alpha = 0.5f)
             }
+
             Column(
                 modifier = Modifier
-                    .padding(vertical = Spacing.large)
+                    .padding(vertical = Spacing.medium)
                     .clip(RoundedCornerShape(topEndPercent = 100, bottomEndPercent = 100))
                     .background(shadeColor)
                     .padding(vertical = Spacing.large)

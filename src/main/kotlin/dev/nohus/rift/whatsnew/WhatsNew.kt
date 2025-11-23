@@ -722,6 +722,16 @@ object WhatsNew {
                 - Your online characters are now shown in one row on the map system info boxes, instead of one per character, to save space
                 """.trimIndent(),
             )
+            add(
+                "5.10.0" description """
+                - Updated splash screen
+                - Chat message alerts now have an option to exclude messages from your own characters
+                - Intel Reports now has a new option to reverse the message order, so that new messages show at the top
+                - Intel Reports and Intel Feed windows now have their settings directly in a context menu, instead of opening separate settings windows
+                - Updated text and sizing of map system info boxes
+                - Startup warnings now scroll if necessary
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

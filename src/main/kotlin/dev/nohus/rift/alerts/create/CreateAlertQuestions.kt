@@ -308,6 +308,17 @@ class CreateAlertQuestions(
         allowEmpty = true,
     )
 
+    // Chat message, exclude self
+    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_NO = FormChoiceItem(id = id++, text = "Are allowed if matching")
+    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_YES = FormChoiceItem(id = id++, text = "Are always excluded")
+    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_QUESTION = SingleChoiceQuestion(
+        title = "And messages from my own characters:",
+        items = listOf(
+            CHAT_MESSAGE_SENDER_EXCLUDE_SELF_NO,
+            CHAT_MESSAGE_SENDER_EXCLUDE_SELF_YES,
+        ),
+    )
+
     // Chat message, message contains
     val CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION = FreeformTextQuestion(
         title = "And the message contains:",

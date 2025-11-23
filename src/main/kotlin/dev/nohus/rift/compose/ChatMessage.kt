@@ -58,7 +58,7 @@ import dev.nohus.rift.generated.resources.keywords_spike
 import dev.nohus.rift.generated.resources.keywords_systems
 import dev.nohus.rift.generated.resources.keywords_wormhole
 import dev.nohus.rift.intel.ParsedChannelChatMessage
-import dev.nohus.rift.intel.reports.settings.IntelReportsSettings
+import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
 import dev.nohus.rift.logs.parse.ChatMessageParser.Token
 import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType

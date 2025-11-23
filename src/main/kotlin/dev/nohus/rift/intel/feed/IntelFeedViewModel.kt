@@ -91,6 +91,10 @@ class IntelFeedViewModel(
         )
     }
 
+    fun onIsUsingCompactModeChange(enabled: Boolean) {
+        settings.intelFeed = settings.intelFeed.copy(isUsingCompactMode = enabled)
+    }
+
     fun onLocationFilterSelect(selection: LocationFilter) {
         val current = _state.value.settings.locationFilters
         val new = if (selection in current) current - selection else current + selection

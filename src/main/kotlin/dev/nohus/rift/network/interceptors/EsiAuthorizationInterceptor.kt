@@ -51,23 +51,21 @@ class EsiAuthorizationInterceptor(
         } else {
             "Could not execute request because the character ${exception.characterId} is not authenticated"
         }
-        return Response.Builder()
-            .request(request)
-            .protocol(Protocol.HTTP_1_1)
-            .code(401)
-            .message(message)
-            .body(message.toResponseBody(null))
-            .build()
+        return createSyntheticFailure(request, message)
     }
 
     private fun createSyntheticFailure(request: Request, exception: SsoException): Response {
-        val message = "Could not execute request because of an SSO error: ${exception.errorResponse}"
+        val message = exception.errorResponse?.errorDescription ?: exception.message ?: "Unknown error"
+        return createSyntheticFailure(request, message)
+    }
+
+    private fun createSyntheticFailure(request: Request, text: String): Response {
         return Response.Builder()
             .request(request)
             .protocol(Protocol.HTTP_1_1)
             .code(401)
-            .message(message)
-            .body(message.toResponseBody(null))
+            .message(text)
+            .body(text.toResponseBody(null))
             .build()
     }
 }

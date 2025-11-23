@@ -145,9 +145,8 @@ fun SystemInfoBox(
                                 }
                             }
                         }
-                        val systemNameStyle = RiftTheme.typography.detailBoldPrimary
-                        val highlightedSystemNameStyle =
-                            RiftTheme.typography.bodyHighlighted.copy(fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        val systemNameStyle = RiftTheme.typography.detailPrimary.copy(fontWeight = FontWeight.Bold)
+                        val highlightedSystemNameStyle = RiftTheme.typography.detailHighlighted.copy(fontWeight = FontWeight.Bold)
                         val style = if (isHighlightedOrHovered) highlightedSystemNameStyle else systemNameStyle
                         Text(
                             text = systemNameText,

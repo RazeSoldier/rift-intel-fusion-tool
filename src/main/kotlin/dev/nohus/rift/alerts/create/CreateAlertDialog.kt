@@ -141,6 +141,8 @@ private fun CreateAlertDialogContent(
                         Text(
                             text = text,
                             style = RiftTheme.typography.bodySecondary,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(bottom = Spacing.small),
                         )
                     }
