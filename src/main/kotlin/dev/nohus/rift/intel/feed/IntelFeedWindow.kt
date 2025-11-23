@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.BorderedToken
 import dev.nohus.rift.compose.ContextMenuItem
+import dev.nohus.rift.compose.ContextMenuItem.CheckboxItem
+import dev.nohus.rift.compose.ContextMenuItem.HeaderItem
 import dev.nohus.rift.compose.IntelTimer
 import dev.nohus.rift.compose.LocalNow
 import dev.nohus.rift.compose.PointerInteractionState
@@ -84,7 +86,6 @@ import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 fun IntelFeedWindow(
     windowState: RiftWindowState,
     onCloseRequest: () -> Unit,
-    onTuneClick: () -> Unit,
 ) {
     val viewModel: IntelFeedViewModel = viewModel()
     val state by viewModel.state.collectAsState()
@@ -92,7 +93,7 @@ fun IntelFeedWindow(
         title = "Intel Feed",
         icon = Res.drawable.window_satellite,
         state = windowState,
-        onTuneClick = onTuneClick,
+        tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),
         onCloseClick = onCloseRequest,
         titleBarStyle = if (state.settings.isUsingCompactMode) TitleBarStyle.Small else TitleBarStyle.Full,
         withContentPadding = false,
@@ -106,6 +107,16 @@ fun IntelFeedWindow(
             onSearchChange = viewModel::onSearchChange,
         )
     }
+}
+
+private fun getTuneContextMenuItems(
+    state: UiState,
+    viewModel: IntelFeedViewModel,
+): List<ContextMenuItem>? {
+    val isUsingCompactMode = state.settings.isUsingCompactMode
+    return buildList {
+        add(CheckboxItem("Compact mode", isSelected = isUsingCompactMode, onClick = { viewModel.onIsUsingCompactModeChange(!isUsingCompactMode) }))
+    }.takeIf { it.isNotEmpty() }
 }
 
 @Composable

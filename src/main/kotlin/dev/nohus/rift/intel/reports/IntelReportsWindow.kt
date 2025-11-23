@@ -23,6 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.ChatMessage
+import dev.nohus.rift.compose.ContextMenuItem
+import dev.nohus.rift.compose.ContextMenuItem.CheckboxItem
+import dev.nohus.rift.compose.ContextMenuItem.HeaderItem
 import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftWindow
@@ -33,8 +36,8 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.intel.ParsedChannelChatMessage
+import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.intel.reports.IntelReportsViewModel.UiState
-import dev.nohus.rift.intel.reports.settings.IntelReportsSettings
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -44,7 +47,6 @@ import java.time.Instant
 fun IntelReportsWindow(
     windowState: RiftWindowState,
     onCloseRequest: () -> Unit,
-    onTuneClick: () -> Unit,
 ) {
     val viewModel: IntelReportsViewModel = viewModel()
     val state by viewModel.state.collectAsState()
@@ -52,7 +54,7 @@ fun IntelReportsWindow(
         title = "Intel Reports",
         icon = Res.drawable.window_bleedchannel,
         state = windowState,
-        onTuneClick = onTuneClick,
+        tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),
         onCloseClick = onCloseRequest,
         titleBarStyle = if (state.settings.isUsingCompactMode) TitleBarStyle.Small else TitleBarStyle.Full,
         withContentPadding = false,
@@ -63,6 +65,26 @@ fun IntelReportsWindow(
             onSearchChange = viewModel::onSearchChange,
         )
     }
+}
+
+private fun getTuneContextMenuItems(
+    state: UiState,
+    viewModel: IntelReportsViewModel,
+): List<ContextMenuItem>? {
+    val isUsingCompactMode = state.settings.isUsingCompactMode
+    val isUsingReverseOrder = state.settings.isUsingReverseOrder
+    val isShowingReporter = state.settings.isShowingReporter
+    val isShowingChannel = state.settings.isShowingChannel
+    val isShowingRegion = state.settings.isShowingRegion
+    return buildList {
+        add(HeaderItem("User interface"))
+        add(CheckboxItem("Compact mode", isSelected = isUsingCompactMode, onClick = { viewModel.onIsUsingCompactModeChange(!isUsingCompactMode) }))
+        add(CheckboxItem("Show newest on top", isSelected = isUsingReverseOrder, onClick = { viewModel.onIsUsingReverseOrderChange(!isUsingReverseOrder) }))
+        add(HeaderItem("Shown information"))
+        add(CheckboxItem("Show reporter name", isSelected = isShowingReporter, onClick = { viewModel.onIsShowingReporterChange(!isShowingReporter) }))
+        add(CheckboxItem("Show channel name", isSelected = isShowingChannel, onClick = { viewModel.onIsShowingChannelChange(!isShowingChannel) }))
+        add(CheckboxItem("Show channel region", isSelected = isShowingRegion, onClick = { viewModel.onIsShowingRegionChange(!isShowingRegion) }))
+    }.takeIf { it.isNotEmpty() }
 }
 
 @Composable
@@ -152,8 +174,14 @@ private fun ScrollingIntelPanel(
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(channelChatMessages) {
-        channelChatMessages.lastIndex.takeIf { it > -1 }?.let {
-            listState.scrollToItem(it)
+        if (settings.isUsingReverseOrder) {
+            if (channelChatMessages.isNotEmpty()) {
+                listState.scrollToItem(0)
+            }
+        } else {
+            channelChatMessages.lastIndex.takeIf { it > -1 }?.let {
+                listState.scrollToItem(it)
+            }
         }
     }
 

@@ -349,6 +349,7 @@ class CreateAlertViewModel(
                         }
                     }
                     CHAT_MESSAGE_SENDER_QUESTION.answer ?: return CHAT_MESSAGE_SENDER_QUESTION
+                    CHAT_MESSAGE_SENDER_EXCLUDE_SELF_QUESTION.answer ?: return CHAT_MESSAGE_SENDER_EXCLUDE_SELF_QUESTION
                     CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer ?: return CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION
                 }
 
@@ -590,12 +591,18 @@ class CreateAlertViewModel(
                         else -> throw IllegalStateException()
                     }
                     val sender = CHAT_MESSAGE_SENDER_QUESTION.answer?.text ?: return null
+                    val isExcludingSelf = when (CHAT_MESSAGE_SENDER_EXCLUDE_SELF_QUESTION.answer?.id) {
+                        CHAT_MESSAGE_SENDER_EXCLUDE_SELF_YES.id -> true
+                        CHAT_MESSAGE_SENDER_EXCLUDE_SELF_NO.id -> false
+                        else -> throw IllegalStateException()
+                    }
                     val messageContaining = CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer ?: return null
                     AlertTrigger.ChatMessage(
                         channel = channel,
                         sender = sender.takeIf { it.isNotBlank() },
                         messageContaining = messageContaining.text.takeIf { it.isNotBlank() },
                         isRegex = messageContaining.isRegex,
+                        isExcludingSelf = isExcludingSelf,
                     )
                 }
 

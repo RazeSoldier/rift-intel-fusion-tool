@@ -25,6 +25,7 @@ import org.jetbrains.compose.resources.Font
 @Immutable
 data class RiftTypography(
     val detailBoldPrimary: TextStyle,
+    val detailHighlighted: TextStyle,
     val detailPrimary: TextStyle,
     val detailSecondary: TextStyle,
     val detailDisabled: TextStyle,
@@ -49,6 +50,7 @@ data class RiftTypography(
 val LocalRiftTypography = staticCompositionLocalOf {
     RiftTypography(
         detailBoldPrimary = TextStyle.Default,
+        detailHighlighted = TextStyle.Default,
         detailPrimary = TextStyle.Default,
         detailSecondary = TextStyle.Default,
         detailDisabled = TextStyle.Default,
@@ -140,6 +142,7 @@ fun getRiftTypography(colors: RiftColors): RiftTypography {
 
     return RiftTypography(
         detailBoldPrimary = detail.copy(color = colors.textPrimary, fontWeight = FontWeight.Bold),
+        detailHighlighted = detail.copy(color = colors.textHighlighted),
         detailPrimary = detail.copy(color = colors.textPrimary),
         detailSecondary = detail.copy(color = colors.textSecondary),
         detailDisabled = detail.copy(color = colors.textDisabled),

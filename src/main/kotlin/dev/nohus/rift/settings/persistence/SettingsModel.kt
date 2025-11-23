@@ -238,6 +238,7 @@ data class WindowSettings(
 @Serializable
 data class IntelReports(
     val isUsingCompactMode: Boolean = false,
+    val isUsingReverseOrder: Boolean = false,
     val isShowingReporter: Boolean = true,
     val isShowingChannel: Boolean = true,
     val isShowingRegion: Boolean = false,

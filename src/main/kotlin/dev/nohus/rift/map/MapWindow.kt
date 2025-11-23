@@ -554,7 +554,7 @@ private fun Map(
                     }
                     ClusterSystemsMap, is RegionMap, is DistanceMap -> {
                         val nodeSizes = NodeSizes(
-                            margin = 16.dp,
+                            margin = 12.dp,
                             marginPx = LocalDensity.current.run { 12.dp.toPx() },
                             radius = 8.dp,
                             radiusPx = LocalDensity.current.run { 8.dp.toPx() },

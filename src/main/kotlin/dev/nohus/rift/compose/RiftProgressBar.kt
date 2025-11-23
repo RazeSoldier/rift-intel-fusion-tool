@@ -29,6 +29,7 @@ fun RiftProgressBar(
     secondaryPercentage: Float? = null,
     color: Color,
     secondaryColor: Color? = null,
+    hasInitialAnimation: Boolean = true,
     modifier: Modifier,
 ) {
     BoxWithConstraints(
@@ -37,8 +38,8 @@ fun RiftProgressBar(
     ) {
         val width = maxWidth
         val height = maxHeight
-        var animatedPercentage by remember { mutableStateOf(0f) }
-        var animatedSecondaryPercentage by remember { mutableStateOf(0f) }
+        var animatedPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else percentage) }
+        var animatedSecondaryPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else secondaryPercentage ?: 0f) }
         val progressWidth by animateDpAsState(animatedPercentage * width, spring(stiffness = StiffnessVeryLow))
         val secondaryProgressWidth by animateDpAsState(animatedSecondaryPercentage * width, spring(stiffness = StiffnessVeryLow))
         LaunchedEffect(percentage, secondaryPercentage) {

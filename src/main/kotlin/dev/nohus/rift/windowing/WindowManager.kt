@@ -28,9 +28,7 @@ import dev.nohus.rift.fleet.FleetsWindow
 import dev.nohus.rift.infodialog.InfoDialogInputModel
 import dev.nohus.rift.infodialog.InfoDialogWindow
 import dev.nohus.rift.intel.feed.IntelFeedWindow
-import dev.nohus.rift.intel.feed.settings.IntelFeedSettingsWindow
 import dev.nohus.rift.intel.reports.IntelReportsWindow
-import dev.nohus.rift.intel.reports.settings.IntelReportsSettingsWindow
 import dev.nohus.rift.jabber.JabberInputModel
 import dev.nohus.rift.jabber.JabberWindow
 import dev.nohus.rift.jukebox.JukeboxWindow
@@ -80,14 +78,8 @@ class WindowManager(
         @SerialName("Intel")
         IntelReports,
 
-        @SerialName("IntelSettings")
-        IntelReportsSettings,
-
         @SerialName("IntelFeed")
         IntelFeed,
-
-        @SerialName("IntelFeedSettings")
-        IntelFeedSettings,
 
         @SerialName("Settings")
         Settings,
@@ -172,6 +164,14 @@ class WindowManager(
         @Deprecated("Removed")
         @SerialName("Pushover")
         Pushover,
+
+        @Deprecated("Removed")
+        @SerialName("IntelSettings")
+        IntelReportsSettings,
+
+        @Deprecated("Removed")
+        @SerialName("IntelFeedSettings")
+        IntelFeedSettings,
     }
 
     data class RiftWindowState(
@@ -200,8 +200,6 @@ class WindowManager(
     )
 
     private val nonSavedWindows = listOf(
-        RiftWindow.IntelReportsSettings,
-        RiftWindow.IntelFeedSettings,
         RiftWindow.MapMarkers,
         RiftWindow.About,
         RiftWindow.ConfigurationPackReminder,
@@ -246,10 +244,8 @@ class WindowManager(
                         @Suppress("DEPRECATION")
                         when (window) {
                             RiftWindow.Neocom -> NeocomWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Neocom, state.uuid) })
-                            RiftWindow.IntelReports -> IntelReportsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelReports, state.uuid) }, onTuneClick = { onWindowOpen(RiftWindow.IntelReportsSettings) })
-                            RiftWindow.IntelReportsSettings -> IntelReportsSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelReportsSettings, state.uuid) })
-                            RiftWindow.IntelFeed -> IntelFeedWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelFeed, state.uuid) }, onTuneClick = { onWindowOpen(RiftWindow.IntelFeedSettings) })
-                            RiftWindow.IntelFeedSettings -> IntelFeedSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelFeedSettings, state.uuid) })
+                            RiftWindow.IntelReports -> IntelReportsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelReports, state.uuid) })
+                            RiftWindow.IntelFeed -> IntelFeedWindow(state, onCloseRequest = { onWindowClose(RiftWindow.IntelFeed, state.uuid) })
                             RiftWindow.Settings -> SettingsWindow(state.inputModel as? SettingsInputModel ?: SettingsInputModel.Normal, state, onCloseRequest = { onWindowClose(RiftWindow.Settings, state.uuid) })
                             RiftWindow.Map -> MapWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Map, state.uuid) })
                             RiftWindow.MapMarkers -> MapMarkersWindow(state.inputModel as? MapMarkersInputModel ?: MapMarkersInputModel.New, state, onCloseRequest = { onWindowClose(RiftWindow.MapMarkers, state.uuid) })
@@ -277,6 +273,8 @@ class WindowManager(
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
+                            RiftWindow.IntelReportsSettings -> {}
+                            RiftWindow.IntelFeedSettings -> {}
                         }
                     }
                 }

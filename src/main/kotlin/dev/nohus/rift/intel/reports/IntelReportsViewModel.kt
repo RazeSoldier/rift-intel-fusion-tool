@@ -4,7 +4,7 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.intel.ChatLogWatcher
 import dev.nohus.rift.intel.ParsedChannelChatMessage
-import dev.nohus.rift.intel.reports.settings.IntelReportsSettings
+import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
 import dev.nohus.rift.logs.parse.ChatMessageParser
@@ -69,6 +69,27 @@ class IntelReportsViewModel(
         }
     }
 
+    fun onIsUsingCompactModeChange(enabled: Boolean) {
+        settings.intelReports = settings.intelReports.copy(isUsingCompactMode = enabled)
+    }
+
+    fun onIsUsingReverseOrderChange(enabled: Boolean) {
+        settings.intelReports = settings.intelReports.copy(isUsingReverseOrder = enabled)
+        updateFilteredMessages()
+    }
+
+    fun onIsShowingReporterChange(enabled: Boolean) {
+        settings.intelReports = settings.intelReports.copy(isShowingReporter = enabled)
+    }
+
+    fun onIsShowingChannelChange(enabled: Boolean) {
+        settings.intelReports = settings.intelReports.copy(isShowingChannel = enabled)
+    }
+
+    fun onIsShowingRegionChange(enabled: Boolean) {
+        settings.intelReports = settings.intelReports.copy(isShowingRegion = enabled)
+    }
+
     fun onIntelChannelFilterSelect(channelName: String) {
         val channel = _state.value.intelChannels.firstOrNull { it.name == channelName }
         _state.update { it.copy(filteredChannel = channel) }
@@ -90,6 +111,7 @@ class IntelReportsViewModel(
         return IntelReportsSettings(
             displayTimezone = settings.displayTimeZone,
             isUsingCompactMode = settings.intelReports.isUsingCompactMode,
+            isUsingReverseOrder = settings.intelReports.isUsingReverseOrder,
             isShowingReporter = settings.intelReports.isShowingReporter,
             isShowingChannel = settings.intelReports.isShowingChannel,
             isShowingRegion = settings.intelReports.isShowingRegion,
@@ -106,6 +128,9 @@ class IntelReportsViewModel(
                 val matchesChannelFilter = filteredChannel == null || message.metadata.channelName == filteredChannel.name
                 val matchesSearchFilter = search == null || search in message
                 matchesChannelFilter && matchesSearchFilter
+            }
+            .let {
+                if (settings.intelReports.isUsingReverseOrder) it.reversed() else it
             }
     }
 

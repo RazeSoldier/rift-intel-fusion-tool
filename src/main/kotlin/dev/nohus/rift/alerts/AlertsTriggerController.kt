@@ -6,6 +6,7 @@ import dev.nohus.rift.alerts.AlertTrigger.IntelReported
 import dev.nohus.rift.alerts.AlertTrigger.JabberMessage
 import dev.nohus.rift.alerts.AlertTrigger.JabberPing
 import dev.nohus.rift.alerts.AlertTrigger.NoChannelActivity
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogAction
@@ -50,6 +51,7 @@ class AlertsTriggerController(
     private val shipTypesRepository: ShipTypesRepository,
     private val alertTriggeringMessagesRepository: AlertTriggeringMessagesRepository,
     private val contactsRepository: ContactsRepository,
+    private val localCharactersRepository: LocalCharactersRepository,
 ) {
 
     private val enabledAlerts: List<Alert> get() = settings.alerts.filter { it.isEnabled }
@@ -246,7 +248,11 @@ class AlertsTriggerController(
                 if (isChannelMatching) {
                     val triggerSender = alert.trigger.sender
                     val isEveSystem = channelChatMessage.chatMessage.author == "EVE System"
-                    val isSenderMatching = triggerSender == null && !isEveSystem || channelChatMessage.chatMessage.author == triggerSender
+                    var isSenderMatching = triggerSender == null && !isEveSystem || channelChatMessage.chatMessage.author == triggerSender
+                    if (alert.trigger.isExcludingSelf) {
+                        val selfCharacterNames = localCharactersRepository.characters.value.mapNotNull { it.info?.name }
+                        if (channelChatMessage.chatMessage.author in selfCharacterNames) isSenderMatching = false
+                    }
                     if (isSenderMatching) {
                         val message = channelChatMessage.chatMessage.message
                         val containing = alert.trigger.messageContaining

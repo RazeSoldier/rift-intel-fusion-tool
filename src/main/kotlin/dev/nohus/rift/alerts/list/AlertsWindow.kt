@@ -827,6 +827,9 @@ private fun getAlertText(
                             append(trigger.sender)
                         }
                     }
+                    if (trigger.isExcludingSelf) {
+                        append(" excluding my messages")
+                    }
                     append(" in ")
                     val channel = when (val channel = trigger.channel) {
                         ChatMessageChannel.Any -> "any channel"

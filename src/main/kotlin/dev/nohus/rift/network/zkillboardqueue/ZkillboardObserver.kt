@@ -11,6 +11,7 @@ import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.repositories.Position
 import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope

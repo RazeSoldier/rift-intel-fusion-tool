@@ -43,6 +43,7 @@ sealed interface AlertTrigger {
         val sender: String?,
         val messageContaining: String?,
         val isRegex: Boolean = false,
+        val isExcludingSelf: Boolean = false,
     ) : AlertTrigger
 
     @Serializable
