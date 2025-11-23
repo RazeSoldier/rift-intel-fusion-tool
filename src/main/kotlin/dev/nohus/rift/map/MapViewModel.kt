@@ -1,6 +1,8 @@
 package dev.nohus.rift.map
 
 import androidx.compose.ui.geometry.Offset
+import dev.nohus.rift.DataEvent
+import dev.nohus.rift.Event
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.game.AutopilotController
@@ -95,7 +97,7 @@ class MapViewModel(
     data class MapState(
         val hoveredSystem: Int? = null,
         val selectedSystem: Int? = null,
-        val centeredSystem: Int? = null,
+        val centeredSystem: DataEvent<Int>? = null,
         val searchResults: List<Int> = emptyList(),
         val intel: Map<Int, List<IntelStateController.Dated<SystemEntity>>> = emptyMap(),
         val intelPopupSystems: List<Int> = emptyList(),
@@ -107,7 +109,7 @@ class MapViewModel(
     )
 
     sealed interface MapType {
-        data object ClusterSystemsMap : MapType
+        data class ClusterSystemsMap(val is2D: Boolean) : MapType
         data object ClusterRegionsMap : MapType
         data class RegionMap(val layoutId: Int, val regionIds: List<Int>) : MapType
         data object DistanceMap : MapType
@@ -143,6 +145,7 @@ class MapViewModel(
         val mapState: MapState = MapState(),
         val alternativeLayouts: List<Layout>,
         val settings: IntelMap,
+        val fitMapEvent: Event? = null,
     )
 
     private val openLayouts = mutableSetOf<Int>()
@@ -167,7 +170,7 @@ class MapViewModel(
                 connections = gateConnectionsRepository.gateConnections,
                 jumpBridgeConnections = jumpBridgesRepository.getConnections(),
             ),
-            mapType = ClusterSystemsMap,
+            mapType = ClusterSystemsMap(is2D = false),
             layout = emptyMap(),
             jumpBridgeAdditionalSystems = emptySet(),
             alternativeLayouts = emptyList(),
@@ -254,7 +257,7 @@ class MapViewModel(
     }
 
     private fun initialize() {
-        val openedTab = settings.intelMap.openedTabs[windowUuid]
+        val openedTab = settings.intelMap.openedTabs2[windowUuid]
         if (openedTab is MapOpenedTab.DistanceMap) {
             distanceMapController.setSettings(openedTab.centerSystemId, openedTab.followingCharacterId, openedTab.distance)
         }
@@ -264,7 +267,7 @@ class MapViewModel(
     private fun openInitialTab(openedTab: MapOpenedTab?) {
         if (openedTab != null) {
             when (openedTab) {
-                MapOpenedTab.ClusterSystemsMap -> openTab(0, focusedId = null)
+                is MapOpenedTab.ClusterSystemsMap -> openTab(0, focusedId = null)
                 MapOpenedTab.ClusterRegionsMap -> openTab(1, focusedId = null)
                 is MapOpenedTab.DistanceMap -> openTab(2, focusedId = null)
                 is MapOpenedTab.RegionMap -> openLayoutMap(openedTab.layoutId, focusedId = null)
@@ -392,11 +395,11 @@ class MapViewModel(
             return
         }
 
-        val centered = _state.value.mapState.centeredSystem
+        val centered = _state.value.mapState.centeredSystem?.value
         var index = visibleResultIds.indexOf(centered) + 1
         if (index > visibleResultIds.lastIndex) index = 0
 
-        updateMapState { copy(centeredSystem = visibleResultIds[index]) }
+        updateMapState { copy(centeredSystem = DataEvent(visibleResultIds[index])) }
     }
 
     fun onSystemColorChange(mapType: SettingsMapType, selected: MapSystemInfoType) {
@@ -452,7 +455,7 @@ class MapViewModel(
     }
 
     fun onLayoutSelected(layoutId: Int) {
-        openLayoutMap(layoutId, _state.value.mapState.centeredSystem)
+        openLayoutMap(layoutId, _state.value.mapState.centeredSystem?.value)
     }
 
     fun onDistanceMapCenterUpdate(target: String) {
@@ -461,6 +464,43 @@ class MapViewModel(
 
     fun onDistanceMapRangeUpdate(range: Int) {
         distanceMapController.setDistance(range)
+    }
+
+    fun onFocusCurrentClick() {
+        val locations = _state.value.mapState.onlineCharacterLocations.values.flatten()
+        if (locations.isEmpty()) return
+        when (val mapType = _state.value.mapType) {
+            ClusterRegionsMap -> {
+                val regionId = locations.firstNotNullOfOrNull { it.location.regionId } ?: return
+                updateMapState { copy(centeredSystem = DataEvent(regionId)) }
+            }
+            is ClusterSystemsMap -> {
+                updateMapState { copy(centeredSystem = DataEvent(locations.first().location.solarSystemId)) }
+            }
+            is RegionMap -> {
+                val centeredId = locations.firstOrNull { it.location.regionId in mapType.regionIds }?.location?.solarSystemId
+                if (centeredId != null) {
+                    updateMapState { copy(centeredSystem = DataEvent(centeredId)) }
+                } else {
+                    val location = locations.firstOrNull {
+                        it.location.regionId != null && layoutRepository.getLayouts(it.location.regionId).isNotEmpty()
+                    }?.location ?: return
+                    openRegionMap(location.regionId!!, location.solarSystemId)
+                }
+            }
+            is DistanceMap -> {}
+        }
+    }
+
+    fun onFitMapClick() {
+        _state.update { it.copy(fitMapEvent = Event()) }
+    }
+
+    fun onToggle2dLayoutClick() {
+        val is2D = (_state.value.mapType as? ClusterSystemsMap)?.is2D ?: return
+        _state.update { it.copy(tabs = it.tabs.map { tab -> if (tab.id == 0) tab.copy(payload = ClusterSystemsMap(!is2D)) else tab }) }
+        settings.intelMap = settings.intelMap.copy(isUsing2DClusterLayout = !is2D)
+        openMap(ClusterSystemsMap(is2D = !is2D), null, recenter = false)
     }
 
     /**
@@ -476,12 +516,12 @@ class MapViewModel(
     /**
      * Open the given map type. The correct tab should already be open.
      */
-    private fun openMap(mapType: MapType, focusedId: Int?) {
+    private fun openMap(mapType: MapType, focusedId: Int?, recenter: Boolean = true) {
         rememberOpenedLayout(mapType)
         mapExternalControl.setOpenedRegions(windowUuid, (mapType as? RegionMap)?.regionIds ?: emptyList())
 
         val layout = when (mapType) {
-            ClusterSystemsMap -> layoutRepository.getNewEdenSystemPosition()
+            is ClusterSystemsMap -> if (mapType.is2D) layoutRepository.getNewEdenSystemPosition2D() else layoutRepository.getNewEdenSystemPosition()
             ClusterRegionsMap -> layoutRepository.getRegionsPositions()
             is RegionMap -> layoutRepository.getLayoutSystemPositions(mapType.layoutId) ?: throw IllegalArgumentException("No such layout: ${mapType.layoutId}")
             is DistanceMap -> distanceMapController.state.value.layout
@@ -496,7 +536,11 @@ class MapViewModel(
         if (centeredId !in layout.keys) centeredId = null
         val initialTransform = mapTransforms[mapType]
 
-        updateMapState { copy(hoveredSystem = null, centeredSystem = centeredId, contextMenuSystem = null, initialTransform = initialTransform) }
+        if (recenter) {
+            updateMapState { copy(hoveredSystem = null, centeredSystem = centeredId?.let { DataEvent(it) }, contextMenuSystem = null, initialTransform = initialTransform) }
+        } else {
+            updateMapState { copy(hoveredSystem = null, contextMenuSystem = null, initialTransform = initialTransform) }
+        }
         _state.update {
             it.copy(
                 mapType = mapType,
@@ -510,7 +554,7 @@ class MapViewModel(
     private fun getAlternativeLayouts(mapType: MapType): List<Layout> {
         return when (mapType) {
             ClusterRegionsMap -> emptyList()
-            ClusterSystemsMap -> emptyList()
+            is ClusterSystemsMap -> emptyList()
             is RegionMap -> {
                 mapType.regionIds.flatMap { layoutRepository.getLayouts(it) }.distinct()
             }
@@ -521,7 +565,7 @@ class MapViewModel(
     private fun rememberOpenedLayout(mapType: MapType) {
         val openedMapTab = when (mapType) {
             ClusterRegionsMap -> MapOpenedTab.ClusterRegionsMap
-            ClusterSystemsMap -> MapOpenedTab.ClusterSystemsMap
+            is ClusterSystemsMap -> MapOpenedTab.ClusterSystemsMap(mapType.is2D)
             is DistanceMap -> {
                 val state = distanceMapController.state.value
                 MapOpenedTab.DistanceMap(state.centerSystemId, state.followingCharacterId, state.distance)
@@ -529,8 +573,8 @@ class MapViewModel(
             is RegionMap -> MapOpenedTab.RegionMap(mapType.layoutId)
         }
         val openWindowUuids = windowManager.getOpenWindowUuids(RiftWindow.Map)
-        val openedTabs = settings.intelMap.openedTabs.filter { it.key in openWindowUuids } + (windowUuid to openedMapTab)
-        settings.intelMap = settings.intelMap.copy(openedTabs = openedTabs)
+        val openedTabs = settings.intelMap.openedTabs2.filter { it.key in openWindowUuids } + (windowUuid to openedMapTab)
+        settings.intelMap = settings.intelMap.copy(openedTabs2 = openedTabs)
     }
 
     private fun calculateVoronoi(systems: Map<Int, Position>): Map<Int, VoronoiLayout> {
@@ -611,14 +655,14 @@ class MapViewModel(
             .flatten()
             .filter {
                 when (mapType) {
-                    ClusterRegionsMap, ClusterSystemsMap, is DistanceMap -> true
+                    ClusterRegionsMap, is ClusterSystemsMap, is DistanceMap -> true
                     is RegionMap -> it.location.regionId in mapType.regionIds
                 }
             }
             .map {
                 when (mapType) {
                     ClusterRegionsMap -> it.location.regionId
-                    ClusterSystemsMap, is RegionMap, is DistanceMap -> it.location.solarSystemId
+                    is ClusterSystemsMap, is RegionMap, is DistanceMap -> it.location.solarSystemId
                 }
             }
             .firstOrNull()
@@ -632,34 +676,7 @@ class MapViewModel(
             onlineCharacterLocations.forEach { onlineCharacterLocation ->
                 val previous = current.firstOrNull { it.id == onlineCharacterLocation.id }
                 if (previous?.location?.solarSystemId == onlineCharacterLocation.location.solarSystemId) return@forEach
-
-                val systemId = onlineCharacterLocation.location.solarSystemId
-                val regionId = onlineCharacterLocation.location.regionId ?: return@forEach
-
-                when (val mapType = _state.value.mapType) {
-                    ClusterRegionsMap -> {
-                        if (isPanning) {
-                            updateMapState { copy(centeredSystem = regionId) }
-                        }
-                    }
-                    ClusterSystemsMap -> {
-                        if (isPanning) {
-                            updateMapState { copy(centeredSystem = systemId) }
-                        }
-                    }
-                    is RegionMap -> {
-                        if (regionId in mapType.regionIds) {
-                            if (isPanning) {
-                                updateMapState { copy(centeredSystem = systemId) }
-                            }
-                        } else {
-                            if (isSwitching && layoutRepository.getLayouts(regionId).isNotEmpty()) {
-                                openRegionMap(regionId, systemId.takeIf { isPanning })
-                            }
-                        }
-                    }
-                    is DistanceMap -> {}
-                }
+                focusOnlineCharacterLocation(onlineCharacterLocation, isPanning, isSwitching)
             }
         }
 
@@ -667,9 +684,43 @@ class MapViewModel(
         _state.update { it.copy(mapState = it.mapState.copy(onlineCharacterLocations = locations)) }
     }
 
+    private fun focusOnlineCharacterLocation(
+        onlineCharacterLocation: OnlineCharacterLocation,
+        isPanning: Boolean = true,
+        isSwitching: Boolean = true,
+    ) {
+        val systemId = onlineCharacterLocation.location.solarSystemId
+        val regionId = onlineCharacterLocation.location.regionId ?: return
+
+        when (val mapType = _state.value.mapType) {
+            ClusterRegionsMap -> {
+                if (isPanning) {
+                    updateMapState { copy(centeredSystem = DataEvent(regionId)) }
+                }
+            }
+            is ClusterSystemsMap -> {
+                if (isPanning) {
+                    updateMapState { copy(centeredSystem = DataEvent(systemId)) }
+                }
+            }
+            is RegionMap -> {
+                if (regionId in mapType.regionIds) {
+                    if (isPanning) {
+                        updateMapState { copy(centeredSystem = DataEvent(systemId)) }
+                    }
+                } else {
+                    if (isSwitching && layoutRepository.getLayouts(regionId).isNotEmpty()) {
+                        openRegionMap(regionId, systemId.takeIf { isPanning })
+                    }
+                }
+            }
+            is DistanceMap -> {}
+        }
+    }
+
     private fun createTabs(): List<Tab> {
         return listOf(
-            Tab(id = 0, title = "New Eden", isCloseable = false, icon = Res.drawable.map_universe, payload = ClusterSystemsMap),
+            Tab(id = 0, title = "New Eden", isCloseable = false, icon = Res.drawable.map_universe, payload = ClusterSystemsMap(is2D = settings.intelMap.isUsing2DClusterLayout)),
             Tab(id = 1, title = "Regions", isCloseable = false, icon = Res.drawable.map_region, payload = ClusterRegionsMap),
             Tab(id = 2, title = "Distance", isCloseable = false, icon = Res.drawable.map_constellation, payload = DistanceMap),
         ) + openLayouts.mapIndexed { index, layoutId ->

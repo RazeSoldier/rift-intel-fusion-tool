@@ -215,6 +215,7 @@ class ShipTypesRepository(
             "Freighter" -> Res.drawable.brackets_freighter_16
             "Jump Freighter" -> Res.drawable.brackets_freighter_16
             "Capital Industrial Ship" -> Res.drawable.brackets_freighter_16
+            "Expedition Command Ship" -> Res.drawable.brackets_battlecruiser_16
             else -> null
         }
     }

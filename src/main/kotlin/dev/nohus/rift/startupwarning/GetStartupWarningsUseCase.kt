@@ -133,7 +133,7 @@ class GetStartupWarningsUseCase(
         }
             .also {
                 if (it.isNotEmpty()) {
-                    logger.warn { "Startup warnings: ${it.joinToString { warning -> warning.id }}" }
+                    logger.warn { "Startup warnings: ${it.joinToString("\n") { warning -> listOfNotNull(warning.id, warning.description, warning.detail).joinToString() }}" }
                 }
             }
             .filter { it.id !in settings.dismissedWarnings }

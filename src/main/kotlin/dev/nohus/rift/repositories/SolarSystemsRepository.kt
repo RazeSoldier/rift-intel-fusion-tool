@@ -42,6 +42,8 @@ class SolarSystemsRepository(
         val x: Double,
         val y: Double,
         val z: Double,
+        val x2d: Double?,
+        val y2d: Double?,
         val security: Double,
         val sunTypeId: Int,
         val hasJoveObservatory: Boolean,
@@ -64,6 +66,8 @@ class SolarSystemsRepository(
         val x: Double,
         val y: Double,
         val z: Double,
+        val x2d: Double?,
+        val y2d: Double?,
     )
 
     init {
@@ -97,6 +101,8 @@ class SolarSystemsRepository(
                 x = it[SolarSystems.x],
                 y = it[SolarSystems.y],
                 z = -it[SolarSystems.z],
+                x2d = it[SolarSystems.x2d],
+                y2d = it[SolarSystems.y2d],
                 security = it[SolarSystems.security],
                 sunTypeId = it[SolarSystems.sunTypeId],
                 hasJoveObservatory = it[SolarSystems.hasJoveObservatory],
@@ -122,6 +128,8 @@ class SolarSystemsRepository(
                 x = it[Regions.x],
                 y = it[Regions.y],
                 z = -it[Regions.z],
+                x2d = it[Regions.x2d],
+                y2d = it[Regions.y2d],
             )
         }
         mapSystemConstellation = systemRows.associate {

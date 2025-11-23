@@ -102,7 +102,7 @@ enum class MapType {
 sealed interface MapOpenedTab {
     @Serializable
     @SerialName("ClusterSystemsMap")
-    data object ClusterSystemsMap : MapOpenedTab
+    data class ClusterSystemsMap(val is2D: Boolean) : MapOpenedTab
 
     @Serializable
     @SerialName("ClusterRegionsMap")
@@ -182,13 +182,14 @@ data class IntelMap(
     val isInvertZoom: Boolean = false,
     val isJumpBridgeNetworkShown: Boolean = true,
     val jumpBridgeNetworkOpacity: Int = 100,
-    val openedTabs: Map<
+    val openedTabs2: Map<
         @Serializable(with = UuidSerializer::class)
         UUID,
         MapOpenedTab,
         > = emptyMap(),
     val isAlwaysShowingSystems: Boolean = false,
     val isPreferringRegionMaps: Boolean = true,
+    val isUsing2DClusterLayout: Boolean = true,
 )
 
 @Serializable

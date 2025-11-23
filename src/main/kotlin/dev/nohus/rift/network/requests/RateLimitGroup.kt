@@ -8,6 +8,7 @@ sealed class RateLimitGroup(val name: String) {
     data object Alliance : RateLimitGroup("alliance")
     data object AllianceSocial : RateLimitGroup("alliance-social")
     data object CorpSocial : RateLimitGroup("corp-social")
+    data object CorpProjects : RateLimitGroup("corp-projects")
     data object CharSocial : RateLimitGroup("char-social")
     data object CharLocation : RateLimitGroup("char-location")
     data object CharWallet : RateLimitGroup("char-wallet")
