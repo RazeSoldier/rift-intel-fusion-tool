@@ -33,6 +33,7 @@ import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftDialog
+import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
@@ -82,6 +83,8 @@ fun WindowScope.SsoDialog(
                 viewModel.onCloseRequest()
                 onDismiss()
             },
+            onSsoCodeChange = viewModel::onSsoCodeChange, // 传递新回调
+            onSsoCodeSubmit = viewModel::onSsoCodeSubmit, // 传递新回调
         )
     }
 }
@@ -93,6 +96,8 @@ private fun SsoDialogContent(
     onScopesButtonClick: () -> Unit,
     onContinueClick: () -> Unit,
     onFinishClick: () -> Unit,
+    onSsoCodeChange: (String) -> Unit, // 添加认证码变化回调
+    onSsoCodeSubmit: () -> Unit, // 添加认证码提交回调
 ) {
     AnimatedContent(state.status) { status ->
         Column(
@@ -119,12 +124,43 @@ private fun SsoDialogContent(
                 SsoViewModel.SsoStatus.Waiting -> {
                     Spacer(Modifier.height(Spacing.large))
                     LoadingSpinner()
+//                    Text(
+//                        text = "Please continue in your browser",
+//                        style = RiftTheme.typography.headerPrimary,
+//                        modifier = Modifier
+//                            .padding(vertical = Spacing.large),
+//                    )
                     Text(
-                        text = "Please continue in your browser",
+                        text = "Enter the authorized URL below",
                         style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(vertical = Spacing.large),
                     )
+//                    Text(
+//                        text = "Waiting for authentication response...",
+//                        style = RiftTheme.typography.bodyPrimary,
+//                        modifier = Modifier.padding(bottom = Spacing.large)
+//                    )
+//                    Spacer(Modifier.height(Spacing.medium))
+                    // 添加手动输入认证码按钮
+                    RiftTextField(
+                        // 输入值state.ssoCode
+                        text = state.ssoCode,
+                        onTextChanged = onSsoCodeChange,
+                        placeholder = "Enter SSO code",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(Spacing.medium))
+                    RiftButton(
+                        text = "Submit",
+                        type = ButtonType.Primary,
+                        cornerCut = ButtonCornerCut.None,
+                        onClick = onSsoCodeSubmit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(Spacing.medium))
                     RiftButton(
                         text = "Change ESI scopes",
                         type = ButtonType.Secondary,
@@ -136,7 +172,7 @@ private fun SsoDialogContent(
                     )
                     RiftButton(
                         text = "Cancel",
-                        type = ButtonType.Primary,
+                        type = ButtonType.Secondary,
                         cornerCut = ButtonCornerCut.Both,
                         onClick = onFinishClick,
                         modifier = Modifier

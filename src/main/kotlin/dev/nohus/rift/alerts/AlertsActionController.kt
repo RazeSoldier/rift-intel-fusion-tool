@@ -74,7 +74,7 @@ class AlertsActionController(
         val type = getNotificationItemType(action)
         val notification = Notification.TextNotification(title, message, characterId, type)
         val iconUrl = if (type != null) {
-            "https://images.evetech.net/types/${type.id}/icon"
+            "https://image.evepc.163.com/types/${type.id}/icon"
         } else {
             null
         }
@@ -154,7 +154,7 @@ class AlertsActionController(
             }
         }
         val iconUrl = (ping as? PingModel.FleetPing)?.fleetCommander?.id?.let { id ->
-            "https://images.evetech.net/characters/$id/portrait"
+            "https://image.evepc.163.com/Character/${id}_64.jpg"
         }
         triggerAlert(alert, null, title, message, iconUrl)
     }

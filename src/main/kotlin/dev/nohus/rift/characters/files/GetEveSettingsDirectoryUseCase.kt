@@ -34,7 +34,7 @@ class GetEveSettingsDirectoryUseCase(
             eveDataDirectory
                 .listDirectoryEntries()
                 .filter { file ->
-                    file.isDirectory() && file.name.endsWith("_tranquility")
+                    file.isDirectory() && file.name.endsWith(".evepc.163.com")
                 }.maxByOrNull {
                     // Choose the directory where the newest character files are
                     getEveCharactersSettingsUseCase(it).maxOfOrNull { it.getLastModifiedTime().toMillis() } ?: 0

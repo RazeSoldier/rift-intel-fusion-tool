@@ -46,6 +46,7 @@ class SsoClient(
     }
 
     data class SsoConfiguration(
+        val logoffEndpoint: String,
         val authority: SsoAuthority,
         val callbackPort: Int,
         val callbackUrl: String,
@@ -60,42 +61,72 @@ class SsoClient(
 
     private fun getSsoConfiguration(authority: SsoAuthority) = when (authority) {
         SsoAuthority.Eve -> SsoConfiguration(
+            logoffEndpoint = "https://login.evepc.163.com/account/logoff",
             authority = SsoAuthority.Eve,
             callbackPort = 25252,
-            callbackUrl = "http://localhost:25252/callback",
-            authorizationEndpoint = "https://login.eveonline.com/v2/oauth/authorize",
-            tokenEndpoint = "https://login.eveonline.com/v2/oauth/token",
+            // 国服需要跳转到UniSDK的回调页面
+//            callbackUrl = "http://localhost:25252/callback",
+            callbackUrl = "https://ali-esi.evepc.163.com/ui/oauth2-redirect.html",
+            authorizationEndpoint = "https://login.evepc.163.com/v2/oauth/authorize",
+            tokenEndpoint = "https://login.evepc.163.com/v2/oauth/token",
             tokenRedirectUrl = null,
-            jwksEndpoint = "https://login.eveonline.com/oauth/jwks",
-            jwtExpectedIssuer = "https://login.eveonline.com",
-            clientId = "84f160b7c2d54bddb41c0ef587923e65",
+            jwksEndpoint = "https://login.evepc.163.com/oauth/jwks",
+            jwtExpectedIssuer = "login.evepc.163.com",
+            clientId = "bc90aa496a404724a93f41b4f4e97761",
             clientSecret = null,
         )
     }
 
-    suspend fun authenticate(authority: SsoAuthority, scopes: List<String>): Authentication = withContext(Dispatchers.IO) {
+//    suspend fun authenticate(authority: SsoAuthority, scopes: List<String>): Authentication = withContext(Dispatchers.IO) {
+//        val codeVerifier = generateRandomBytes()
+//        val codeChallenge = generateCodeChallenge(codeVerifier)
+//        val state = generateRandomBytes()
+//        val completableDeferred = CompletableDeferred<Authentication>()
+//        val configuration = getSsoConfiguration(authority)
+//
+//        server.start(configuration.callbackPort, completableDeferred)
+//        server.setCallback { code, responseState ->
+//            if (responseState == state) {
+//                server.stop()
+//                try {
+//                    val response = postSsoTokenRequest(configuration, code, codeVerifier)
+//                    completableDeferred.complete(response.toAuthentication(configuration, scopes))
+//                } catch (e: Exception) {
+//                    logger.error(e) { "SSO authentication failed after a successful callback" }
+//                    completableDeferred.completeExceptionally(e)
+//                }
+//            }
+//        }
+//
+//        val uri = buildSsoUrl(configuration, codeChallenge, state, scopes)
+//        uri.openBrowser()
+//
+//        completableDeferred.await()
+//    }
+
+    suspend fun raiseAuthenticationPage(authority: SsoAuthority, scopes: List<String>) {
         val codeVerifier = generateRandomBytes()
         val codeChallenge = generateCodeChallenge(codeVerifier)
         val state = generateRandomBytes()
+        val configuration = getSsoConfiguration(authority)
+
+        val logoffUri = URI.create(configuration.logoffEndpoint)
+        logoffUri.openBrowser()
+
+        kotlinx.coroutines.delay(1000)
+
+        // TODO: 国服暂未支持此scope: esi-corporations.read_projects.v1
+        val uri = buildSsoUrl(configuration, codeChallenge, state, scopes.filterNot { it == "esi-corporations.read_projects.v1" })
+        uri.openBrowser()
+    }
+
+    suspend fun authenticateWithCode(authority: SsoAuthority, scopes: List<String>, ssoCode: String): Authentication = withContext(Dispatchers.IO) {
         val completableDeferred = CompletableDeferred<Authentication>()
         val configuration = getSsoConfiguration(authority)
 
-        server.start(configuration.callbackPort, completableDeferred)
-        server.setCallback { code, responseState ->
-            if (responseState == state) {
-                server.stop()
-                try {
-                    val response = postSsoTokenRequest(configuration, code, codeVerifier)
-                    completableDeferred.complete(response.toAuthentication(configuration, scopes))
-                } catch (e: Exception) {
-                    logger.error(e) { "SSO authentication failed after a successful callback" }
-                    completableDeferred.completeExceptionally(e)
-                }
-            }
-        }
-
-        val uri = buildSsoUrl(configuration, codeChallenge, state, scopes)
-        uri.openBrowser()
+        val response = postSsoTokenRequest(configuration, ssoCode)
+        // TODO: 国服暂未支持此scope: esi-corporations.read_projects.v1
+        completableDeferred.complete(response.toAuthentication(configuration, scopes.filterNot { it == "esi-corporations.read_projects.v1" }))
 
         completableDeferred.await()
     }
@@ -141,7 +172,7 @@ class SsoClient(
             .setVerificationKeyResolver(keyResolver)
             .setExpectedIssuer(configuration.jwtExpectedIssuer)
             .setRequireExpirationTime()
-            .setExpectedAudience(configuration.clientId, "EVE Online")
+            .setSkipDefaultAudienceValidation()
             .build()
         return jwtConsumer.processToClaims(accessToken)
     }
@@ -173,16 +204,17 @@ class SsoClient(
             addParameter("redirect_uri", configuration.callbackUrl)
             addParameter("client_id", configuration.clientId)
             addParameter("scope", scopes.joinToString(" "))
-            addParameter("code_challenge", codeChallenge)
-            addParameter("code_challenge_method", "S256")
+//            addParameter("code_challenge", codeChallenge)
+//            addParameter("code_challenge_method", "S256")
             addParameter("state", state)
+            addParameter("device_id", "rift-intel-fusion-tool")
         }.build()
     }
 
     private suspend fun postSsoTokenRequest(
         configuration: SsoConfiguration,
         code: String,
-        codeVerifier: String,
+//        codeVerifier: String,
     ): TokenResponse {
         return httpClient.submitForm(
             url = configuration.tokenEndpoint,
@@ -190,7 +222,7 @@ class SsoClient(
                 append("grant_type", "authorization_code")
                 append("code", code)
                 append("client_id", configuration.clientId)
-                append("code_verifier", codeVerifier)
+//                append("code_verifier", codeVerifier)
                 if (configuration.clientSecret != null) {
                     append("client_secret", configuration.clientSecret)
                 }

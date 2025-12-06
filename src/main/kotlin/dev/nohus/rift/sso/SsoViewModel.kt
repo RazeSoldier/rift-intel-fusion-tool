@@ -3,6 +3,7 @@ package dev.nohus.rift.sso
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.sso.authentication.SsoAuthenticator
+import dev.nohus.rift.sso.authentication.SsoClient
 import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.toggle
@@ -22,12 +23,14 @@ class SsoViewModel(
     @InjectedParam private val inputModel: SsoAuthority,
     private val ssoAuthenticator: SsoAuthenticator,
     private val localCharactersRepository: LocalCharactersRepository,
+    private val ssoClient: SsoClient
 ) : ViewModel() {
 
     data class UiState(
         val status: SsoStatus = SsoStatus.Waiting,
         val scopeGroups: List<ScopeGroup>,
         val selectedScopeGroups: List<ScopeGroup>,
+        val ssoCode: String = "", // 添加SSO认证码状态
     )
 
     sealed interface SsoStatus {
@@ -47,14 +50,20 @@ class SsoViewModel(
 
     fun onWindowOpened() {
         _state.update { it.copy(status = SsoStatus.Waiting) }
-        authenticate()
+        raiseAuthentication()
+    }
+
+    private fun raiseAuthentication() {
+        viewModelScope.launch {
+            ssoClient.raiseAuthenticationPage(inputModel, _state.value.selectedScopeGroups.flatMap { it.scopes }.map { it.id })
+        }
     }
 
     private fun authenticate() {
         val scopes = _state.value.selectedScopeGroups.flatMap { it.scopes }.map { it.id }
         viewModelScope.launch {
             try {
-                ssoAuthenticator.authenticate(inputModel, scopes)
+                ssoAuthenticator.authenticate(inputModel, scopes, _state.value.ssoCode)
                 _state.update { it.copy(status = SsoStatus.Complete) }
                 localCharactersRepository.load()
             } catch (e: BindException) {
@@ -77,12 +86,23 @@ class SsoViewModel(
 
     fun onContinueClick() {
         _state.update { it.copy(status = SsoStatus.Waiting) }
-        authenticate()
+        raiseAuthentication()
     }
 
     fun onCloseRequest() {
         ssoAuthenticator.cancel()
         _state.update { it.copy(status = SsoStatus.Waiting) }
+    }
+
+    fun onSsoCodeChange(code: String) {
+        // https://ali-esi.evepc.163.com/ui/oauth2-redirect.html?code=xxxxx&state=xxxxx
+        _state.update { it.copy(ssoCode = code.substringAfter("code=").substringBefore("&state=")) }
+    }
+
+    fun onSsoCodeSubmit() {
+        if (_state.value.ssoCode.isNotBlank()) {
+            authenticate()
+        }
     }
 
     private fun getScopeGroups(): List<ScopeGroup> {

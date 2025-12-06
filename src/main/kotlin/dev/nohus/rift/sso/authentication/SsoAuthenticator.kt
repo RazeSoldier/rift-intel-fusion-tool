@@ -23,8 +23,8 @@ class SsoAuthenticator(
      * Starts the SSO flow, redirecting the user to the SSO login page.
      * Returns once the authentication flow has finished, or failed
      */
-    suspend fun authenticate(authority: SsoAuthority, scopes: List<String>) {
-        val authentication = ssoClient.authenticate(authority, scopes.sorted())
+    suspend fun authenticate(authority: SsoAuthority, scopes: List<String>, ssoCode: String) {
+        val authentication = ssoClient.authenticateWithCode(authority, scopes.sorted(), ssoCode)
         when (authority) {
             SsoAuthority.Eve -> eveSsoRepository.addAuthentication(authentication as EveAuthentication)
         }

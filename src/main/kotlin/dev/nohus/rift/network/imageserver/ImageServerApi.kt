@@ -19,7 +19,7 @@ class ImageServerApi(
 
     private val retrofit = Retrofit.Builder()
         .client(client)
-        .baseUrl("https://images.evetech.net")
+        .baseUrl("https://image.evepc.163.com")
         .build()
     private val service = retrofit.create(ImageServerService::class.java)
 
