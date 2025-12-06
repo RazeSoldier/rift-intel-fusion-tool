@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.StringResourceReader
 import dev.nohus.rift.alerts.create.CreateAlertViewModel.UiState
 import dev.nohus.rift.alerts.create.FormAnswer.CharacterAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.ContactsLabelAnswer
@@ -72,8 +73,7 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.play
-import dev.nohus.rift.generated.resources.window_loudspeaker_icon
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.get
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.utils.plural
@@ -83,9 +83,12 @@ import dev.nohus.rift.utils.toRegexOrNull
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
+import org.jetbrains.compose.resources.stringResource
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.nameWithoutExtension
+
+private val stringResourceReader: StringResourceReader = koin.get()
 
 @Composable
 fun WindowScope.CreateAlertDialog(
@@ -99,8 +102,8 @@ fun WindowScope.CreateAlertDialog(
     if (state.dismissEvent.get()) onDismiss()
 
     val title = when (inputModel) {
-        CreateAlertInputModel.New -> "New alert"
-        is CreateAlertInputModel.EditAction -> "Edit alert action"
+        CreateAlertInputModel.New -> stringResource(Res.string.new_alert)
+        is CreateAlertInputModel.EditAction -> stringResource(Res.string.edit_alert_action)
     }
     RiftDialog(
         title = title,
@@ -182,13 +185,13 @@ private fun CreateAlertDialogContent(
                 modifier = Modifier.padding(top = Spacing.medium),
             ) {
                 RiftButton(
-                    text = "Back",
+                    text = stringResource(Res.string.back),
                     cornerCut = ButtonCornerCut.BottomLeft,
                     type = ButtonType.Secondary,
                     onClick = onBackClick,
                     modifier = Modifier.weight(1f),
                 )
-                val label = if (state.formQuestion != null) "Continue" else "Finish"
+                val label = if (state.formQuestion != null) stringResource(Res.string.`continue`) else stringResource(Res.string.finish)
                 RiftButton(
                     text = label,
                     onClick = onContinueClick,
@@ -269,9 +272,9 @@ private fun FormQuestion(
                 ) {
                     var system: String by remember { mutableStateOf("") }
                     val placeholder = if (formQuestion.allowEmpty) {
-                        "System name, or leave empty"
+                        stringResource(Res.string.system_name_or_leave_empty)
                     } else {
-                        "System name"
+                        stringResource(Res.string.system_name)
                     }
                     if (formQuestion.allowEmpty) {
                         LaunchedEffect(Unit) {
@@ -290,8 +293,8 @@ private fun FormQuestion(
                     if (isPendingAnswerValid != null) {
                         RequirementIcon(
                             isFulfilled = isPendingAnswerValid,
-                            fulfilledTooltip = "System valid",
-                            notFulfilledTooltip = "System does not exist",
+                            fulfilledTooltip = stringResource(Res.string.system_valid),
+                            notFulfilledTooltip = stringResource(Res.string.system_does_not_exist),
                             modifier = Modifier.padding(start = Spacing.medium),
                         )
                     }
@@ -306,13 +309,13 @@ private fun FormQuestion(
                     var min: Int by remember { mutableStateOf(0) }
                     var max: Int by remember { mutableStateOf(0) }
 
-                    fun getItemName(jumps: Int) = if (jumps == 0) "Same system" else "$jumps jump${jumps.plural}"
+                    fun getItemName(jumps: Int) = if (jumps == 0) stringResourceReader.getStringSync(Res.string.same_system) else "$jumps jump${jumps.plural}"
 
                     LaunchedEffect(formQuestion) {
                         onFormAnswer(JumpsRangeAnswer(minJumps = min, maxJumps = max))
                     }
                     Text(
-                        text = "From: ",
+                        text = stringResource(Res.string.from),
                         style = RiftTheme.typography.headerPrimary,
                     )
                     val maxJumps = 16 // 0 - 15
@@ -328,7 +331,7 @@ private fun FormQuestion(
                         maxItems = 5,
                     )
                     Text(
-                        text = " To: ",
+                        text = stringResource(Res.string.to),
                         style = RiftTheme.typography.headerPrimary,
                     )
                     RiftDropdown(
@@ -363,7 +366,7 @@ private fun FormQuestion(
                     )
                 } else {
                     Text(
-                        text = "You have no characters to choose from!",
+                        text = stringResource(Res.string.no_characters_available),
                         style = RiftTheme.typography.headerPrimary,
                     )
                 }
@@ -386,7 +389,7 @@ private fun FormQuestion(
                     )
                 } else {
                     Text(
-                        text = "You have no intel channels to choose from!",
+                        text = stringResource(Res.string.no_intel_channels_available),
                         style = RiftTheme.typography.headerPrimary,
                     )
                 }
@@ -398,8 +401,8 @@ private fun FormQuestion(
                 var selectedTabIndex by remember { mutableStateOf(0) }
                 RiftTabBar(
                     tabs = listOf(
-                        Tab(0, "Built-in sounds", isCloseable = false),
-                        Tab(1, "Custom sound", isCloseable = false),
+                        Tab(0, stringResource(Res.string.built_in_sounds), isCloseable = false),
+                        Tab(1, stringResource(Res.string.custom_sound), isCloseable = false),
                     ),
                     selectedTab = selectedTabIndex,
                     onTabSelected = { selectedTabIndex = it },
@@ -431,7 +434,7 @@ private fun FormQuestion(
                         }
                     } else {
                         Text(
-                            text = "Choose a sound file:",
+                            text = stringResource(Res.string.choose_a_sound_file),
                             style = RiftTheme.typography.bodyPrimary,
                             modifier = Modifier.padding(top = Spacing.medium),
                         )
@@ -454,12 +457,12 @@ private fun FormQuestion(
                             AnimatedVisibility(isPendingAnswerValid != null) {
                                 RequirementIcon(
                                     isFulfilled = isPendingAnswerValid ?: false,
-                                    fulfilledTooltip = "Sound file path valid",
-                                    notFulfilledTooltip = pendingAnswerInvalidReason ?: "Invalid",
+                                    fulfilledTooltip = stringResource(Res.string.sound_file_path_valid),
+                                    notFulfilledTooltip = pendingAnswerInvalidReason ?: stringResource(Res.string.invalid),
                                 )
                             }
                             RiftFileChooserButton(
-                                typesDescription = "WAV audio files",
+                                typesDescription = stringResource(Res.string.wav_audio_files),
                                 extensions = listOf("wav"),
                                 onFileChosen = {
                                     text = it.absolutePathString()
@@ -474,7 +477,7 @@ private fun FormQuestion(
                             )
                         }
                         Text(
-                            text = "You can test your sound with the play button.",
+                            text = stringResource(Res.string.test_sound_with_play_button),
                             style = RiftTheme.typography.bodyPrimary,
                             modifier = Modifier.padding(vertical = Spacing.medium),
                         )
@@ -491,9 +494,9 @@ private fun FormQuestion(
                 ) {
                     var text: String by remember { mutableStateOf("") }
                     val placeholder = if (formQuestion.allowEmpty) {
-                        "Comma separated character names, or leave empty"
+                        stringResource(Res.string.comma_separated_character_names_or_leave_empty)
                     } else {
-                        "Comma separated character names"
+                        stringResource(Res.string.comma_separated_character_names)
                     }
                     if (formQuestion.allowEmpty) {
                         LaunchedEffect(Unit) {
@@ -516,8 +519,8 @@ private fun FormQuestion(
                     if (isPendingAnswerValid != null) {
                         RequirementIcon(
                             isFulfilled = isPendingAnswerValid,
-                            fulfilledTooltip = "Character names valid",
-                            notFulfilledTooltip = pendingAnswerInvalidReason ?: "Invalid character names",
+                            fulfilledTooltip = stringResource(Res.string.character_names_valid),
+                            notFulfilledTooltip = pendingAnswerInvalidReason ?: stringResource(Res.string.invalid_character_names),
                             modifier = Modifier.padding(start = Spacing.medium),
                         )
                     }
@@ -547,7 +550,7 @@ private fun FormQuestion(
                             Spacer(Modifier.width(Spacing.medium))
                             RiftDropdown(
                                 items = recentTargets.toList(),
-                                selectedItem = "Recent targets",
+                                selectedItem = stringResource(Res.string.recent_targets),
                                 onItemSelected = {
                                     text = it
                                     onFormAnswer(FreeformTextAnswer(it.trim()))
@@ -559,9 +562,9 @@ private fun FormQuestion(
                         }
                     }
                     val helpText = if (recentTargets.isNotEmpty()) {
-                        "You can choose from your recent targets above."
+                        stringResource(Res.string.choose_from_recent_targets)
                     } else {
-                        "Attack some targets in-game to get suggestions to what you can type above."
+                        stringResource(Res.string.attack_targets_for_suggestions)
                     }
                     Text(
                         text = helpText,
@@ -576,7 +579,7 @@ private fun FormQuestion(
                     Column {
                         if (isNotEmpty) {
                             Text(
-                                text = "Leave empty for any.",
+                                text = stringResource(Res.string.leave_empty_for_any),
                                 style = RiftTheme.typography.bodySecondary,
                                 modifier = Modifier.padding(bottom = Spacing.small),
                             )
@@ -603,7 +606,7 @@ private fun FormQuestion(
                             }
                         } else {
                             Text(
-                                text = "No colonies available.\nCheck the Planetary Industry window.",
+                                text = stringResource(Res.string.no_colonies_available),
                                 style = RiftTheme.typography.headerPrimary,
                             )
                         }
@@ -640,8 +643,8 @@ private fun FormQuestion(
                     }
                     if (formQuestion.isRegexAllowed) {
                         RiftCheckboxWithLabel(
-                            label = "Use regex",
-                            tooltip = "Your filter will be evaluated as a regular expression.\nMatching is case insensitive.\n\nYou can learn more about regular expressions online.",
+                            label = stringResource(Res.string.use_regex),
+                            tooltip = stringResource(Res.string.use_regex_tooltip),
                             isChecked = isRegex,
                             onCheckedChange = { isRegex = it },
                         )
@@ -652,7 +655,7 @@ private fun FormQuestion(
                             ) {
                                 RiftTextField(
                                     text = testText,
-                                    placeholder = "Enter a message to test if it matches",
+                                    placeholder = stringResource(Res.string.enter_message_to_test),
                                     onTextChanged = {
                                         testText = it
                                     },
@@ -664,7 +667,7 @@ private fun FormQuestion(
                                             text = buildAnnotatedString {
                                                 val trimmed = match.value.trim()
                                                 if (trimmed.isNotBlank()) {
-                                                    append("Matched: ")
+                                                    append(stringResource(Res.string.matched) + " ")
                                                     withColor(RiftTheme.colors.textSpecialHighlighted) {
                                                         append(trimmed)
                                                     }
@@ -683,8 +686,8 @@ private fun FormQuestion(
                                 }
                                 RequirementIcon(
                                     isFulfilled = match != null,
-                                    fulfilledTooltip = "This message would trigger this alert",
-                                    notFulfilledTooltip = "This message wouldn't trigger this alert",
+                                    fulfilledTooltip = stringResource(Res.string.this_message_would_trigger),
+                                    notFulfilledTooltip = stringResource(Res.string.this_message_would_not_trigger),
                                     modifier = Modifier.padding(start = Spacing.small),
                                 )
                             }
@@ -714,7 +717,7 @@ private fun FormQuestion(
                     }
                 } else {
                     Text(
-                        text = "No contact labels available.\nCheck the Contacts window.",
+                        text = stringResource(Res.string.no_contact_labels_available),
                         style = RiftTheme.typography.headerPrimary,
                     )
                 }
@@ -802,7 +805,7 @@ private fun Pair<FormQuestion, FormAnswer>.toAnswerString(
             val (min, max) = (answer as JumpsRangeAnswer).let { it.minJumps to it.maxJumps }
             val plural = if (max > 1) "s" else ""
             if (min == 0 && max == 0) {
-                "Same system only"
+                stringResourceReader.getStringSync(Res.string.same_system_only)
             } else if (min == 0) {
                 "Up to $max jump$plural away"
             } else if (min == max) {

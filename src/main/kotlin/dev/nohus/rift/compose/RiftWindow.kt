@@ -51,6 +51,7 @@ import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.zIndex
 import dev.nohus.rift.Event
+import dev.nohus.rift.StringResourceReader
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.LocalRiftColors
 import dev.nohus.rift.compose.theme.RiftTheme
@@ -58,6 +59,7 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.compose.theme.getRiftColors
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.generated.resources.window_background_dots
 import dev.nohus.rift.generated.resources.window_background_dots_light
 import dev.nohus.rift.generated.resources.window_light_background_off_16px
@@ -84,6 +86,8 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import java.awt.Dimension
+
+private val stringResourceReader: StringResourceReader = koin.get()
 
 @Composable
 fun RiftWindow(
@@ -644,7 +648,7 @@ private fun getTitleBarContextMenuItems(
             if (isAlwaysOnTop) {
                 add(
                     ContextMenuItem.TextItem(
-                        "Disable always above",
+                        stringResourceReader.getStringSync(Res.string.disable_always_above),
                         Res.drawable.window_overlay_fullscreen_on_16px,
                         onClick = onAlwaysOnTopClick,
                     ),
@@ -652,7 +656,7 @@ private fun getTitleBarContextMenuItems(
             } else {
                 add(
                     ContextMenuItem.TextItem(
-                        "Enable always above",
+                        stringResourceReader.getStringSync(Res.string.enable_always_above),
                         Res.drawable.window_overlay_fullscreen_off_16px,
                         onClick = onAlwaysOnTopClick,
                     ),
@@ -663,7 +667,7 @@ private fun getTitleBarContextMenuItems(
             if (isLocked) {
                 add(
                     ContextMenuItem.TextItem(
-                        "Unlock window size and position",
+                        stringResourceReader.getStringSync(Res.string.unlock_window_size_and_position),
                         Res.drawable.window_locked_16px,
                         onClick = onLockClick,
                     ),
@@ -671,7 +675,7 @@ private fun getTitleBarContextMenuItems(
             } else {
                 add(
                     ContextMenuItem.TextItem(
-                        "Lock window size and position",
+                        stringResourceReader.getStringSync(Res.string.lock_window_size_and_position),
                         Res.drawable.window_unlocked_16px,
                         onClick = onLockClick,
                     ),
@@ -712,15 +716,15 @@ private fun getTitleBarContextMenuItems(
             } else {
                 add(
                     ContextMenuItem.TextItem(
-                        "Maximize",
+                        stringResourceReader.getStringSync(Res.string.maximize),
                         Res.drawable.window_titlebar_float,
                         onClick = onMaximizeClick,
                     ),
                 )
             }
         }
-        add(ContextMenuItem.TextItem("Minimize", onClick = onMinimizeClick))
-        add(ContextMenuItem.TextItem("Close", iconContent = { RiftMulticolorIcon(MulticolorIconType.Warning, it) }, onClick = onCloseClick))
+        add(ContextMenuItem.TextItem(stringResourceReader.getStringSync(Res.string.minimize), onClick = onMinimizeClick))
+        add(ContextMenuItem.TextItem(stringResourceReader.getStringSync(Res.string.close), iconContent = { RiftMulticolorIcon(MulticolorIconType.Warning, it) }, onClick = onCloseClick))
     }
 }
 

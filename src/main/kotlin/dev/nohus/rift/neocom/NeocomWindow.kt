@@ -38,28 +38,13 @@ import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_assets
-import dev.nohus.rift.generated.resources.window_bleedchannel
-import dev.nohus.rift.generated.resources.window_characters
-import dev.nohus.rift.generated.resources.window_chatchannels
-import dev.nohus.rift.generated.resources.window_contacts
-import dev.nohus.rift.generated.resources.window_corporation
-import dev.nohus.rift.generated.resources.window_evemailtag
-import dev.nohus.rift.generated.resources.window_jukebox
-import dev.nohus.rift.generated.resources.window_loudspeaker_icon
-import dev.nohus.rift.generated.resources.window_map
-import dev.nohus.rift.generated.resources.window_planets
-import dev.nohus.rift.generated.resources.window_quitgame
-import dev.nohus.rift.generated.resources.window_rift_64
-import dev.nohus.rift.generated.resources.window_satellite
-import dev.nohus.rift.generated.resources.window_settings
-import dev.nohus.rift.generated.resources.window_sovereignty
-import dev.nohus.rift.generated.resources.window_wallet
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -84,24 +69,24 @@ fun NeocomWindow(
         isResizable = true,
     ) {
         val buttons = buildList {
-            add(ButtonModel(icon = Res.drawable.window_loudspeaker_icon, name = "Alerts") { viewModel.onButtonClick(RiftWindow.Alerts) })
-            add(ButtonModel(icon = Res.drawable.window_map, name = "Map") { viewModel.onButtonClick(RiftWindow.Map) })
-            add(ButtonModel(icon = Res.drawable.window_satellite, name = "Intel Feed", shortName = "Feed") { viewModel.onButtonClick(RiftWindow.IntelFeed) })
-            add(ButtonModel(icon = Res.drawable.window_bleedchannel, name = "Intel Reports", shortName = "Reports") { viewModel.onButtonClick(RiftWindow.IntelReports) })
-            add(ButtonModel(icon = Res.drawable.window_characters, name = "Characters", "Chars") { viewModel.onButtonClick(RiftWindow.Characters) })
-            add(ButtonModel(icon = Res.drawable.window_assets, name = "Assets") { viewModel.onButtonClick(RiftWindow.Assets) })
-            add(ButtonModel(icon = Res.drawable.window_wallet, name = "Wallets") { viewModel.onButtonClick(RiftWindow.Wallet) })
-            add(ButtonModel(icon = Res.drawable.window_planets, name = "Planetary Industry", "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
-            add(ButtonModel(icon = Res.drawable.window_corporation, name = "Corporation Projects", "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
-            add(ButtonModel(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) })
+            add(ButtonModel(icon = Res.drawable.window_loudspeaker_icon, name = stringResource(Res.string.alerts)) { viewModel.onButtonClick(RiftWindow.Alerts) })
+            add(ButtonModel(icon = Res.drawable.window_map, name = stringResource(Res.string.map)) { viewModel.onButtonClick(RiftWindow.Map) })
+            add(ButtonModel(icon = Res.drawable.window_satellite, name = stringResource(Res.string.intel_feed), shortName = "Feed") { viewModel.onButtonClick(RiftWindow.IntelFeed) })
+            add(ButtonModel(icon = Res.drawable.window_bleedchannel, name = stringResource(Res.string.intel_report), shortName = "Reports") { viewModel.onButtonClick(RiftWindow.IntelReports) })
+            add(ButtonModel(icon = Res.drawable.window_characters, name = stringResource(Res.string.characters), "Chars") { viewModel.onButtonClick(RiftWindow.Characters) })
+            add(ButtonModel(icon = Res.drawable.window_assets, name = stringResource(Res.string.assets)) { viewModel.onButtonClick(RiftWindow.Assets) })
+            add(ButtonModel(icon = Res.drawable.window_wallet, name = stringResource(Res.string.wallet)) { viewModel.onButtonClick(RiftWindow.Wallet) })
+            add(ButtonModel(icon = Res.drawable.window_planets, name = stringResource(Res.string.planetary_industry), "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
+            add(ButtonModel(icon = Res.drawable.window_corporation, name = stringResource(Res.string.corporation_projects), "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
+            add(ButtonModel(icon = Res.drawable.window_contacts, name = stringResource(Res.string.contacts)) { viewModel.onButtonClick(RiftWindow.Contacts) })
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })
                 add(ButtonModel(icon = Res.drawable.window_chatchannels, name = "Jabber") { viewModel.onButtonClick(RiftWindow.Jabber) })
             }
             add(ButtonModel(icon = Res.drawable.window_jukebox, name = "Jukebox") { viewModel.onButtonClick(RiftWindow.Jukebox) })
-            add(ButtonModel(icon = Res.drawable.window_settings, name = "Settings") { viewModel.onButtonClick(RiftWindow.Settings) })
-            add(ButtonModel(icon = Res.drawable.window_evemailtag, name = "About") { viewModel.onButtonClick(RiftWindow.About) })
-            add(ButtonModel(icon = Res.drawable.window_quitgame, name = "Quit") { viewModel.onQuitClick() })
+            add(ButtonModel(icon = Res.drawable.window_settings, name = stringResource(Res.string.settings)) { viewModel.onButtonClick(RiftWindow.Settings) })
+            add(ButtonModel(icon = Res.drawable.window_evemailtag, name = stringResource(Res.string.about)) { viewModel.onButtonClick(RiftWindow.About) })
+            add(ButtonModel(icon = Res.drawable.window_quitgame, name = stringResource(Res.string.quit)) { viewModel.onQuitClick() })
         }
 
         BoxWithConstraints(
