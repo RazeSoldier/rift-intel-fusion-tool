@@ -67,17 +67,14 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.delete
-import dev.nohus.rift.generated.resources.editplanicon
-import dev.nohus.rift.generated.resources.toggle_off_18
-import dev.nohus.rift.generated.resources.toggle_on_18
-import dev.nohus.rift.generated.resources.window_loudspeaker_icon
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.stringResource
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.nameWithoutExtension
@@ -90,7 +87,7 @@ fun AlertsWindow(
     val viewModel: AlertsViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Alerts",
+        title = stringResource(Res.string.alerts),
         icon = Res.drawable.window_loudspeaker_icon,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -222,7 +219,7 @@ private fun AlertsWindowContent(
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = "No alerts defined.\nCreate some with the button below.",
+                    text = stringResource(Res.string.no_alerts_defined),
                     style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -237,14 +234,14 @@ private fun AlertsWindowContent(
         ) {
             if (state.alerts.isNotEmpty()) {
                 RiftButton(
-                    text = "Create group",
+                    text = stringResource(Res.string.create_group),
                     type = ButtonType.Secondary,
                     cornerCut = ButtonCornerCut.None,
                     onClick = onCreateGroupClick,
                 )
             }
             RiftButton(
-                text = "Create alert",
+                text = stringResource(Res.string.create_alert),
                 onClick = onCreateAlertClick,
             )
         }
@@ -288,7 +285,7 @@ private fun LazyItemScope.AlertGroupHeader(
         val buttonsAlpha by animateFloatAsState(if (pointerState.isHovered) 1f else 0f)
         if (!isEmpty) {
             RiftTooltipArea(
-                text = if (hasEnabledAlerts) "Disable all alerts" else "Enable all alerts",
+                text = if (hasEnabledAlerts) stringResource(Res.string.disable_all_alerts) else stringResource(Res.string.enable_all_alerts),
             ) {
                 RiftImageButton(
                     resource = if (hasEnabledAlerts) Res.drawable.toggle_on_18 else Res.drawable.toggle_off_18,
@@ -300,7 +297,7 @@ private fun LazyItemScope.AlertGroupHeader(
         }
         if (!isDefault) {
             RiftTooltipArea(
-                text = "Rename group",
+                text = stringResource(Res.string.rename_group),
             ) {
                 RiftImageButton(
                     resource = Res.drawable.editplanicon,
@@ -310,7 +307,7 @@ private fun LazyItemScope.AlertGroupHeader(
                 )
             }
             RiftTooltipArea(
-                text = if (isEmpty) "Delete group" else "Delete group and move alerts to default",
+                text = if (isEmpty) stringResource(Res.string.delete_group) else stringResource(Res.string.delete_group_and_move_alerts),
             ) {
                 RiftImageButton(
                     resource = Res.drawable.delete,
@@ -334,7 +331,7 @@ private fun LazyItemScope.EmptyGroup() {
             .animateContentSize(),
     ) {
         Text(
-            text = "No alerts in this group",
+            text = stringResource(Res.string.no_alerts_in_this_group),
             style = RiftTheme.typography.bodySecondary,
         )
     }
@@ -413,7 +410,7 @@ private fun LazyItemScope.AlertItem(
                     .fillMaxWidth(),
             ) {
                 RiftDropdownWithLabel(
-                    label = "Group:",
+                    label = stringResource(Res.string.group),
                     items = (groups.sorted() + listOf(null)).toList(),
                     selectedItem = alert.group,
                     onItemSelected = onGroupChange,
@@ -425,7 +422,7 @@ private fun LazyItemScope.AlertItem(
                 )
                 if (alert.actions.any { it is AlertAction.Sound || it is AlertAction.CustomSound }) {
                     RiftButton(
-                        text = "Test sound",
+                        text = stringResource(Res.string.test_sound),
                         type = ButtonType.Secondary,
                         cornerCut = ButtonCornerCut.None,
                         onClick = { onTestAlertSound(alert.id) },
@@ -433,14 +430,14 @@ private fun LazyItemScope.AlertItem(
                     )
                 }
                 RiftButton(
-                    text = "Edit action",
+                    text = stringResource(Res.string.edit_action),
                     type = ButtonType.Secondary,
                     cornerCut = ButtonCornerCut.None,
                     onClick = { onEditAlertAction(alert.id) },
                     modifier = Modifier.padding(end = Spacing.medium),
                 )
                 RiftButton(
-                    text = "Delete",
+                    text = stringResource(Res.string.delete),
                     type = ButtonType.Negative,
                     onClick = { onDeleteAlert(alert.id) },
                 )
