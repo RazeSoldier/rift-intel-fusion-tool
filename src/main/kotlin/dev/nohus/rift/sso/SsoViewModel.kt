@@ -23,7 +23,7 @@ class SsoViewModel(
     @InjectedParam private val inputModel: SsoAuthority,
     private val ssoAuthenticator: SsoAuthenticator,
     private val localCharactersRepository: LocalCharactersRepository,
-    private val ssoClient: SsoClient
+    private val ssoClient: SsoClient,
 ) : ViewModel() {
 
     data class UiState(

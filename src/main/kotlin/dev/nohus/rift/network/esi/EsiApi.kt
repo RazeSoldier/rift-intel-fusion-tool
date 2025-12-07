@@ -67,26 +67,27 @@ class EsiApi(
 
     private val contentType = "application/json".toMediaType()
     private val retrofit = Retrofit.Builder()
-        .client(client.newBuilder()
-            .addInterceptor { chain ->
-                val originalRequest = chain.request()
-                val originalUrl = originalRequest.url.toString()
-                
-                // 拦截器强行添加latest路径
-                if (!originalUrl.contains("/latest/")) {
-                    val baseUrl = "https://ali-esi.evepc.163.com/latest/"
-                    val apiPath = originalUrl.replace("https://ali-esi.evepc.163.com/", "")
-                    val newUrl = "$baseUrl$apiPath"
-                    
-                    val newRequest = originalRequest.newBuilder()
-                        .url(newUrl)
-                        .build()
-                    chain.proceed(newRequest)
-                } else {
-                    chain.proceed(originalRequest)
+        .client(
+            client.newBuilder()
+                .addInterceptor { chain ->
+                    val originalRequest = chain.request()
+                    val originalUrl = originalRequest.url.toString()
+
+                    // 拦截器强行添加latest路径
+                    if (!originalUrl.contains("/latest/")) {
+                        val baseUrl = "https://ali-esi.evepc.163.com/latest/"
+                        val apiPath = originalUrl.replace("https://ali-esi.evepc.163.com/", "")
+                        val newUrl = "$baseUrl$apiPath"
+
+                        val newRequest = originalRequest.newBuilder()
+                            .url(newUrl)
+                            .build()
+                        chain.proceed(newRequest)
+                    } else {
+                        chain.proceed(originalRequest)
+                    }
                 }
-            }
-            .build()
+                .build(),
         )
         .baseUrl("https://ali-esi.evepc.163.com/")
         .addConverterFactory(json.asConverterFactory(contentType))

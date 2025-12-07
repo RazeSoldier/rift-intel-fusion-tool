@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.reload.gradle.ComposeHotRun
 import org.jetbrains.compose.reload.gradle.isHotReloadBuild
 import java.time.Instant
@@ -151,6 +152,7 @@ compose.desktop {
         jvmArgs("--add-opens=java.desktop/java.awt=ALL-UNNAMED", "--add-exports=java.desktop/java.awt.peer=ALL-UNNAMED")
 
         nativeDistributions {
+            targetFormats(TargetFormat.Exe)
             modules("java.sql", "java.naming", "jdk.naming.dns")
         }
     }
@@ -194,6 +196,8 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
                 "ktlint_standard_no-empty-first-line-in-class-body" to "disabled",
                 "ktlint_standard_function-expression-body" to "disabled",
                 "ktlint_standard_class-signature" to "disabled",
+                "ktlint_standard_no-wildcard-imports" to "disabled",
+                "ktlint_standard_dependency-ordering" to "disabled",
             ))
         targetExclude("**/generated/**")
     }

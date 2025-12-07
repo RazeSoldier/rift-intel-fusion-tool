@@ -131,7 +131,7 @@ private fun SsoDialogContent(
 //                            .padding(vertical = Spacing.large),
 //                    )
                     Text(
-                        text = "Enter the authorized URL below",
+                        text = "Paste the authorized URL below",
                         style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(vertical = Spacing.large),
@@ -147,9 +147,9 @@ private fun SsoDialogContent(
                         // 输入值state.ssoCode
                         text = state.ssoCode,
                         onTextChanged = onSsoCodeChange,
-                        placeholder = "Enter SSO code",
+                        placeholder = "Paste here",
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
                     )
                     Spacer(Modifier.height(Spacing.medium))
                     RiftButton(
@@ -158,7 +158,7 @@ private fun SsoDialogContent(
                         cornerCut = ButtonCornerCut.None,
                         onClick = onSsoCodeSubmit,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxWidth(),
                     )
                     Spacer(Modifier.height(Spacing.medium))
                     RiftButton(
