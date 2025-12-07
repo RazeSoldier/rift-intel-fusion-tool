@@ -47,9 +47,9 @@ class ExternalServiceRepository(
 
     private fun getCharacterItems(characterId: Int): List<ServiceItem> {
         return listOf(
-            ServiceItem(ZKillboard, "https://zkillboard.com/character/$characterId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/character/$characterId"),
-            ServiceItem(EveWho, "https://evewho.com/character/$characterId"),
+            ServiceItem(ZKillboard, "https://beta.ceve-market.org/pilot/$characterId/"),
+            ServiceItem(EveKill, "https://beta.ceve-market.org/pilot/$characterId"),
+            ServiceItem(EveWho, "https://beta.ceve-market.org/pilot/$characterId"),
         )
     }
 
@@ -65,9 +65,9 @@ class ExternalServiceRepository(
 
     private fun getCorporationItems(corporationId: Int): List<ServiceItem> {
         return listOf(
-            ServiceItem(ZKillboard, "https://zkillboard.com/corporation/$corporationId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/corporation/$corporationId"),
-            ServiceItem(EveWho, "https://evewho.com/corporation/$corporationId"),
+            ServiceItem(ZKillboard, "https://beta.ceve-market.org/corp/$corporationId/kill"),
+            ServiceItem(EveKill, "https://beta.ceve-market.org/corp/$corporationId/kill"),
+            ServiceItem(EveWho, "https://beta.ceve-market.org/corp/$corporationId/kill"),
         )
     }
 
@@ -83,9 +83,9 @@ class ExternalServiceRepository(
 
     private fun getAllianceItems(allianceId: Int): List<ServiceItem> {
         return listOf(
-            ServiceItem(ZKillboard, "https://zkillboard.com/alliance/$allianceId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/alliance/$allianceId"),
-            ServiceItem(EveWho, "https://evewho.com/alliance/$allianceId"),
+            ServiceItem(ZKillboard, "https://beta.ceve-market.org/alliance/$allianceId/kill"),
+            ServiceItem(EveKill, "https://beta.ceve-market.org/alliance/$allianceId/kill"),
+            ServiceItem(EveWho, "https://beta.ceve-market.org/alliance/$allianceId/kill"),
         )
     }
 
