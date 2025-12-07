@@ -50,9 +50,9 @@ class MapSovereigntyUpgradesController(
 
     private fun getSovereigntyUpgrades(upgrades: Map<MapSolarSystem, List<Type>>): Map<Int, List<SovereigntyUpgrade>> {
         val areaOfEffectUpgrades = listOf(
-            "Exploration Detector 1",
-            "Exploration Detector 2",
-            "Exploration Detector 3",
+            87948, // Exploration Detector 1
+            87953, // Exploration Detector 2
+            87954, // Exploration Detector 3
         ).map { typesRepository.getType(it)!! }
 
         val systemsWithAllUpgrades = upgrades
