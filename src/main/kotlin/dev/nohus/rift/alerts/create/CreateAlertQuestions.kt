@@ -1,6 +1,6 @@
 package dev.nohus.rift.alerts.create
 
-import dev.nohus.rift.StringResourceReader
+import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.alerts.create.FormQuestion.CombatTargetQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.ContactsLabelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.FreeformTextQuestion

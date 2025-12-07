@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
-import dev.nohus.rift.StringResourceReader
+import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.alerts.create.CreateAlertViewModel.UiState
 import dev.nohus.rift.alerts.create.FormAnswer.CharacterAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.ContactsLabelAnswer
