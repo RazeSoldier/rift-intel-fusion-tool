@@ -1,6 +1,6 @@
 package dev.nohus.rift.planetaryindustry
 
-import dev.nohus.rift.StringResourceReader
+import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.*
