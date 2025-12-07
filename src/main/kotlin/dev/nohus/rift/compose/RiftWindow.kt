@@ -51,7 +51,7 @@ import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.zIndex
 import dev.nohus.rift.Event
-import dev.nohus.rift.StringResourceReader
+import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.LocalRiftColors
 import dev.nohus.rift.compose.theme.RiftTheme

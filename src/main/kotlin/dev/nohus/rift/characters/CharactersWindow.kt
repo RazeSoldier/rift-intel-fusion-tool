@@ -52,6 +52,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.characters.CharactersViewModel.AuthenticationStatus
 import dev.nohus.rift.characters.CharactersViewModel.CharacterItem
 import dev.nohus.rift.characters.CharactersViewModel.UiState
