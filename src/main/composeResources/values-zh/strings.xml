@@ -219,4 +219,17 @@
     <string name="rename_group">重命名组</string>
     <string name="delete_group">删除组</string>
     <string name="delete_group_and_move_alerts">删除组并将警报移动到默认组</string>
+    <!-- PlanetaryIndustryRepository.kt -->
+    <string name="extractor_control_unit">行星采集控制器</string>
+    <string name="industry_facility">行星基础工业设施</string>
+    <string name="production_plant">行星高级工业设施</string>
+    <string name="command_center">行星指挥中心</string>
+    <string name="launchpad">行星发射平台</string>
+    <string name="storage">行星储藏设施</string>
+    <string name="ship_inspace_if_unknown_ship_name">在太空中</string>
+    <string name="station">空间站</string>
+    <string name="a_with_space"/>
+    <string name="dockedin_if_known_ship_name"> 在 </string>
+    <string name="dockedin_if_unknown_ship_name">在 </string>
+    <string name="structure">建筑</string>
 </resources>
