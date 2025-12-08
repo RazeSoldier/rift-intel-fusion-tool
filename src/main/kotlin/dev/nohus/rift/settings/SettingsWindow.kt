@@ -1059,17 +1059,17 @@ private fun JumpBridgeNetworkSection(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = Spacing.medium).fillMaxWidth(),
                 ) {
-                    Text("跳桥与 ${network.size} 已加载连接")
+                    Text("已与 ${network.size} 跳桥加载连接")
                     Spacer(Modifier.weight(1f))
                     RiftButton(
-                        text = "Copy",
+                        text = "复制",
                         type = ButtonType.Primary,
                         cornerCut = ButtonCornerCut.None,
                         onClick = viewModel::onJumpBridgeCopyClick,
                         modifier = Modifier.padding(end = Spacing.medium),
                     )
                     RiftButton(
-                        text = "Forget",
+                        text = "清除",
                         type = ButtonType.Negative,
                         onClick = viewModel::onJumpBridgeForgetClick,
                     )

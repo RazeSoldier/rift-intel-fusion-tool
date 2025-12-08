@@ -401,7 +401,7 @@ private fun TokenWithMovement(rowHeight: Dp, previousTokens: List<Token>, moveme
         )
         if (movement.isGate) {
             Text(
-                text = "gate",
+                text = "星门",
                 modifier = Modifier.padding(vertical = 4.dp).padding(end = 4.dp),
             )
         }
@@ -419,7 +419,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "No visual",
+                    text = "Miss",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -430,7 +430,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Clear",
+                    text = "全灭",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -441,7 +441,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Wormhole",
+                    text = "虫洞",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -474,7 +474,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Skyhook",
+                    text = "天钩",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -507,7 +507,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Bubbles",
+                    text = "泡泡",
                     modifier = Modifier.padding(4.dp),
                 )
             }

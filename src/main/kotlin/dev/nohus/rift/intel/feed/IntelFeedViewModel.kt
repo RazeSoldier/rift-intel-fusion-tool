@@ -175,7 +175,7 @@ class IntelFeedViewModel(
                     is SystemEntity.UnspecifiedCharacter,
                     is SystemEntity.Ship,
                     is SystemEntity.NoVisual,
-                    -> EntityFilter.Characters in entityFilters
+                        -> EntityFilter.Characters in entityFilters
                     else -> EntityFilter.Other in entityFilters
                 }
             }
@@ -205,34 +205,34 @@ class IntelFeedViewModel(
 
     private operator fun SystemEntity.contains(term: String): Boolean {
         return when (this) {
-            SystemEntity.Bubbles -> term in "bubbles"
+            SystemEntity.Bubbles -> term in "泡泡"
             is SystemEntity.Character -> {
                 term in name.lowercase() ||
-                    details.corporationName?.let { term in it.lowercase() } ?: false ||
-                    details.corporationTicker?.let { term in it.lowercase() } ?: false ||
-                    details.allianceName?.let { term in it.lowercase() } ?: false ||
-                    details.allianceTicker?.let { term in it.lowercase() } ?: false
+                        details.corporationName?.let { term in it.lowercase() } ?: false ||
+                        details.corporationTicker?.let { term in it.lowercase() } ?: false ||
+                        details.allianceName?.let { term in it.lowercase() } ?: false ||
+                        details.allianceTicker?.let { term in it.lowercase() } ?: false
             }
-            SystemEntity.CombatProbes -> term in "combat probes"
+            SystemEntity.CombatProbes -> term in "针"
             SystemEntity.Ess -> term in "ess"
-            is SystemEntity.Gate -> term in "gate" || term in system2.name || term == "location"
-            is SystemEntity.Celestial -> term in celestial.name || term == "location"
+            is SystemEntity.Gate -> term in "门" || term in system2.name || term == "位置"
+            is SystemEntity.Celestial -> term in celestial.name || term == "位置"
             SystemEntity.GateCamp -> term in "gate camp"
             is SystemEntity.Killmail -> {
-                term in "kill" ||
-                    ship?.let { term in it.name.lowercase() } ?: false ||
-                    typeName?.let { term in it.lowercase() } ?: false ||
-                    victim.corporationName?.let { term in it.lowercase() } ?: false
+                term in "km" ||
+                        ship?.let { term in it.name.lowercase() } ?: false ||
+                        typeName?.let { term in it.lowercase() } ?: false ||
+                        victim.corporationName?.let { term in it.lowercase() } ?: false
                 victim.corporationTicker?.let { term in it.lowercase() } ?: false
                 victim.allianceName?.let { term in it.lowercase() } ?: false
                 victim.allianceTicker?.let { term in it.lowercase() } ?: false
             }
-            SystemEntity.NoVisual -> term in "no visual" || term in "nv"
+            SystemEntity.NoVisual -> term in "消失" || term in "miss"
             is SystemEntity.Ship -> term in type.name.lowercase()
-            SystemEntity.Skyhook -> term in "skyhook"
+            SystemEntity.Skyhook -> term in "天钩"
             SystemEntity.Spike -> term in "spike"
-            is SystemEntity.UnspecifiedCharacter -> term in "hostiles"
-            SystemEntity.Wormhole -> term in "wormhole" || term in "wh"
+            is SystemEntity.UnspecifiedCharacter -> term in "敌对"
+            SystemEntity.Wormhole -> term in "虫洞" || term in "洞"
             is CharacterBound -> false
             is Clearable -> false
         }

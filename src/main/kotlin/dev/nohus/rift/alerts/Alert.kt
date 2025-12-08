@@ -98,7 +98,7 @@ sealed interface IntelReportType {
     ) : IntelReportType
 
     @Serializable
-    @SerialName("Wormhole")
+    @SerialName("虫洞")
     data object Wormhole : IntelReportType
 
     @Serializable
@@ -106,7 +106,7 @@ sealed interface IntelReportType {
     data object GateCamp : IntelReportType
 
     @Serializable
-    @SerialName("Bubbles")
+    @SerialName("泡泡")
     data object Bubbles : IntelReportType
 
     @Serializable
@@ -114,7 +114,7 @@ sealed interface IntelReportType {
     data object Ess : IntelReportType
 
     @Serializable
-    @SerialName("Skyhook")
+    @SerialName("天钩")
     data object Skyhook : IntelReportType
 }
 

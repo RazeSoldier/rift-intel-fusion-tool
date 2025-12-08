@@ -228,7 +228,7 @@ fun SystemEntities(
         val unspecified = it as SystemEntity.UnspecifiedCharacter
         val content = @Composable {
             Text(
-                text = "${if (hasNamedHostiles) "+" else ""}${unspecified.count} hostile${unspecified.count.plural}",
+                text = "${if (hasNamedHostiles) "+" else ""}${unspecified.count} 敌对${unspecified.count.plural}",
                 style = RiftTheme.typography.bodyHighlighted,
                 modifier = Modifier.padding(4.dp),
             )
@@ -243,10 +243,10 @@ fun SystemEntities(
     }
     entities.forEach { entity ->
         when (entity) {
-            SystemEntity.Bubbles -> IconInfoRow(Res.drawable.keywords_interdiction_probe, "Bubbles", rowHeight, isHorizontal)
-            SystemEntity.CombatProbes -> IconInfoRow(Res.drawable.keywords_combat_probe, "Combat probes", rowHeight, isHorizontal)
+            SystemEntity.Bubbles -> IconInfoRow(Res.drawable.keywords_interdiction_probe, "跃迁干扰探针", rowHeight, isHorizontal)
+            SystemEntity.CombatProbes -> IconInfoRow(Res.drawable.keywords_combat_probe, "作战扫描探针", rowHeight, isHorizontal)
             SystemEntity.Ess -> IconInfoRow(Res.drawable.keywords_ess, "ESS", rowHeight, isHorizontal)
-            SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "Skyhook", rowHeight, isHorizontal)
+            SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "天钩", rowHeight, isHorizontal)
             is SystemEntity.Gate -> GateInfoRow(system, entity, rowHeight, isHorizontal)
             is SystemEntity.Celestial -> CelestialInfoRow(entity, rowHeight, isHorizontal)
             SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "Gate camp", rowHeight, isHorizontal)
@@ -404,7 +404,7 @@ private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
                 .rotate(-rotation),
         )
         Text(
-            text = "Wormhole",
+            text = "虫洞",
             style = RiftTheme.typography.bodyPrimary,
             modifier = Modifier.padding(4.dp),
         )
