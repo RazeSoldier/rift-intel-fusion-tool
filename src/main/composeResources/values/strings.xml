@@ -226,4 +226,12 @@
     <string name="command_center">Command Center</string>
     <string name="launchpad">Launchpad</string>
     <string name="storage">Storage</string>
+    <!-- CharactersWindow.kt -->
+    <string name="ship_inspace_if_known_ship_name"> in space</string>
+    <string name="ship_inspace_if_unknown_ship_name"> in space</string>
+    <string name="station">Station</string>
+    <string name="a_with_space">a </string>
+    <string name="dockedin_if_known_ship_name"> docked in </string>
+    <string name="dockedin_if_unknown_ship_name">Docked in </string>
+    <string name="structure">Structure</string>
 </resources>
