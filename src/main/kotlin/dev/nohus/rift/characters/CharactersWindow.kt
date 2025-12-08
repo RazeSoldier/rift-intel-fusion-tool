@@ -1,33 +1,14 @@
 package dev.nohus.rift.characters
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
@@ -52,46 +33,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
-import dev.nohus.rift.i18n.StringResourceReader
-import dev.nohus.rift.characters.CharactersViewModel.AuthenticationStatus
-import dev.nohus.rift.characters.CharactersViewModel.CharacterItem
-import dev.nohus.rift.characters.CharactersViewModel.UiState
+import dev.nohus.rift.characters.CharactersViewModel.*
 import dev.nohus.rift.clones.Clone
-import dev.nohus.rift.compose.AsyncAllianceLogo
-import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
-import dev.nohus.rift.compose.AsyncTypeIcon
-import dev.nohus.rift.compose.ButtonCornerCut
-import dev.nohus.rift.compose.ButtonType
-import dev.nohus.rift.compose.ClickableLocation
-import dev.nohus.rift.compose.ClickableShip
-import dev.nohus.rift.compose.ContextMenuItem
-import dev.nohus.rift.compose.PointerInteractionStateHolder
-import dev.nohus.rift.compose.RiftButton
-import dev.nohus.rift.compose.RiftDialog
-import dev.nohus.rift.compose.RiftIconButton
-import dev.nohus.rift.compose.RiftImageButton
-import dev.nohus.rift.compose.RiftTooltipArea
-import dev.nohus.rift.compose.RiftWindow
-import dev.nohus.rift.compose.ScrollbarLazyColumn
-import dev.nohus.rift.compose.hoverBackground
-import dev.nohus.rift.compose.pointerInteraction
+import dev.nohus.rift.compose.*
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
-import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.buttoniconminus
-import dev.nohus.rift.generated.resources.buttoniconplus
-import dev.nohus.rift.generated.resources.clone
-import dev.nohus.rift.generated.resources.delete
-import dev.nohus.rift.generated.resources.editplanicon
-import dev.nohus.rift.generated.resources.sso
-import dev.nohus.rift.generated.resources.sso_dark
-import dev.nohus.rift.generated.resources.status_warning_orange
-import dev.nohus.rift.generated.resources.status_warning_red
-import dev.nohus.rift.generated.resources.window_characters
-import dev.nohus.rift.generated.resources.window_delete_character
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.StringResourceReader
+import dev.nohus.rift.i18n.execIfLocaleNotInZh
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
@@ -107,6 +58,9 @@ import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+private val stringResourceReader : StringResourceReader = koin.get()
 
 @Composable
 fun CharactersWindow(
@@ -511,27 +465,27 @@ private fun LocationText(location: Location?) {
                         }
                         if (locationId != null) {
                             if (shipName != null) {
-                                append(" docked in ")
+                                append(stringResource(Res.string.dockedin_if_known_ship_name))
                             } else {
-                                append("Docked in ")
+                                append(stringResource(Res.string.dockedin_if_unknown_ship_name))
                             }
                             if (location.station != null) {
-                                append("a ")
+                                execIfLocaleNotInZh { append(stringResourceReader.getStringSync(Res.string.a_with_space)) }
                                 withColor(RiftTheme.colors.textHighlighted) {
-                                    append("Station")
+                                    append(stringResourceReader.getStringSync(Res.string.station))
                                 }
                             } else if (location.structure != null) {
-                                val structureTypeName = location.structure.typeId?.let { typesRepository.getTypeName(it) } ?: "Structure"
-                                append("${structureTypeName.article} ")
+                                val structureTypeName = location.structure.typeId?.let { typesRepository.getTypeName(it) } ?: stringResource(Res.string.structure)
+                                execIfLocaleNotInZh{ append("${structureTypeName.article} ") }
                                 withColor(RiftTheme.colors.textHighlighted) {
                                     append(structureTypeName)
                                 }
                             }
                         } else {
                             if (shipName != null) {
-                                append(" in space")
+                                append(stringResource(Res.string.ship_inspace_if_known_ship_name))
                             } else {
-                                append("In space")
+                                append(stringResource(Res.string.ship_inspace_if_unknown_ship_name))
                             }
                         }
                     },
@@ -911,7 +865,7 @@ private fun CloneLocation(station: Station?, structure: Structure?) {
             Text(
                 text = systemName,
                 style = RiftTheme.typography.bodyLink,
-                modifier = Modifier.widthIn(max = 50.dp),
+                modifier = Modifier.widthIn(max = 70.dp),
             )
             RiftTooltipArea(
                 text = tooltip,
