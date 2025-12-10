@@ -232,4 +232,8 @@
     <string name="dockedin_if_known_ship_name"> 在 </string>
     <string name="dockedin_if_unknown_ship_name">在 </string>
     <string name="structure">建筑</string>
+    <!-- SettingsWindow.kt -->
+    <string name="language">语言</string>
+    <!-- SettingsViewModel.kt -->
+    <string name="language_restart_dialog">需要重启应用使更改客户端语言生效</string>
 </resources>

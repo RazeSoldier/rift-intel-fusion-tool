@@ -2,26 +2,20 @@ package dev.nohus.rift.settings.persistence
 
 import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.alerts.Alert
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Assets
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Clones
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Colonies
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Incursions
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.IntelHostiles
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.JoveObservatories
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.MetaliminalStorms
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Security
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Sovereignty
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.SovereigntyUpgrades
+import dev.nohus.rift.i18n.LocaleAsStringSerializer
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.*
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Standings
-import dev.nohus.rift.settings.persistence.MapSystemInfoType.Wormholes
 import dev.nohus.rift.standings.StandingsRepository.Standings
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.Size
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.util.UUID
+import java.util.*
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class SettingsModel(
     val eveLogsDirectory: String? = null,
@@ -75,6 +69,7 @@ data class SettingsModel(
     val skipSplashScreen: Boolean = false,
     val dismissedWarnings: List<String> = emptyList(),
     val uiScale: Float = 1f,
+    @EncodeDefault @Serializable(with = LocaleAsStringSerializer::class) val language: Locale = Locale.getDefault(),
     val accountAssociations: Map<Int, Int> = emptyMap(),
     val isTrayIconWorking: Boolean = false,
     val isWindowTransparencyEnabled: Boolean = false,

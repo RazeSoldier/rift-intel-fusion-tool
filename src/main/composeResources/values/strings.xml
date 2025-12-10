@@ -234,4 +234,8 @@
     <string name="dockedin_if_known_ship_name"> docked in </string>
     <string name="dockedin_if_unknown_ship_name">Docked in </string>
     <string name="structure">Structure</string>
+    <!-- SettingsWindow.kt -->
+    <string name="language">Language</string>
+    <!-- SettingsViewModel.kt -->
+    <string name="language_restart_dialog">Changing the language will take effect after you restart the application.</string>
 </resources>

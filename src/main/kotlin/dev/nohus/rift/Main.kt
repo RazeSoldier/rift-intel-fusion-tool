@@ -17,12 +17,14 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.di.startKoin
 import dev.nohus.rift.logging.initializeLogging
 import dev.nohus.rift.notifications.NotificationsController
+import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.singleinstance.SingleInstanceWrapper
 import dev.nohus.rift.splash.SplashWindowWrapper
 import dev.nohus.rift.tray.RiftTray
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.wizard.WizardWindowWrapper
 import io.kamel.image.config.LocalKamelConfig
+import java.util.Locale
 
 fun main() {
     try {
@@ -47,8 +49,10 @@ private fun ApplicationScope.riftApplication() {
         val viewModel: ApplicationViewModel = viewModel()
         val windowManager: WindowManager = remember { koin.get() }
         val notificationsController: NotificationsController = remember { koin.get() }
+        val currentLocale : Locale = koin.get<Settings>(Settings::class).language
         val state by viewModel.state.collectAsState()
 
+        Locale.setDefault(currentLocale)
         RiftTheme {
             if (state.isAnotherInstanceDialogShown) {
                 SingleInstanceWrapper(
