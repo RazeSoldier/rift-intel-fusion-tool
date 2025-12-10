@@ -134,7 +134,7 @@ class ChatMessageParser(
         private val SHIP_COUNT_PREV_REGEX = """x[1-9]""".toRegex()
         private val COUNT_PLUS_REGEX = """\+[1-9][0-9]?|[1-9][0-9]?\+|\+ [1-9][0-9]?|[1-9][0-9]? \+""".toRegex()
         private val COUNT_EQUALS_REGEX = """=[1-9][0-9]?|[1-9][0-9]? neuts""".toRegex()
-        private val KILL_MAIL_TARGET_REGEX = """\([A-z ]+\)""".toRegex()
+        private val KILL_MAIL_TARGET_REGEX = """\([\p{L}\p{N}\s-]+\)""".toRegex()
         private val URL_REGEX = """https?://.*""".toRegex()
         private val keywords = mapOf(
             "miss" to KeywordType.NoVisual,
@@ -312,12 +312,26 @@ class ChatMessageParser(
         return if (tokens.size >= 3) {
             val threeTokens = tokens.takeLast(3)
             val (t1, t2, t3) = threeTokens
-            val killTranslations = listOf("Kill:", "Abschuss:")
-            if (t1.words.singleOrNull() in killTranslations && t3.words.joinToString(" ").matches(KILL_MAIL_TARGET_REGEX)) {
+
+            // 增强关键词匹配逻辑
+            val killKeywords = listOf("Kill:", "击杀:", "击毁:", "击杀", "杀:", "损失:", "Destroyed:")
+            val isKillToken = t1.words.joinToString("").let { text ->
+                killKeywords.any { keyword ->
+                    text.contains(keyword, ignoreCase = true)
+                }
+            }
+
+            // 增强目标匹配逻辑
+            val targetText = t3.words.joinToString(" ")
+            val isTargetMatch = targetText.matches(KILL_MAIL_TARGET_REGEX) ||
+                    (targetText.startsWith('(') && targetText.endsWith(')'))
+
+            if (isKillToken && isTargetMatch) {
                 val player = t2.words.joinToString(" ")
-                val target = t3.words.joinToString(" ").removePrefix("(").removeSuffix(")")
+                val target = targetText.removePrefix("(").removeSuffix(")")
                 val words = threeTokens.flatMap { it.words }
                 val characterId = (characterNamesStatus[player] as? CharacterStatus.Exists)?.characterId
+
                 tokens.dropLast(3) + MultiTypeToken(words, types = listOf(Kill(player, characterId, target)))
             } else {
                 tokens
@@ -614,6 +628,7 @@ class ChatMessageParser(
             }
 
             val system = solarSystemsRepository.getFuzzySystem(text, regionsHint)
+
             if (system != null) add(System(system))
 
             val shipText = text

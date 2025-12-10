@@ -24,6 +24,7 @@ class CharacterDetailsRepository(
     data class CharacterDetails(
         val characterId: Int,
         val name: String,
+        val nameZh: String? = null,
         val corporationId: Int,
         val corporationName: String?,
         val corporationTicker: String?,

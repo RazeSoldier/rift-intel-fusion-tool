@@ -82,7 +82,7 @@ class GameUiController(
     }
 
     private fun pushLink(link: String, category: String) {
-        val subject = "${category.replaceFirstChar { it.titlecase(Locale.ENGLISH) }} link from RIFT Intel Fusion Tool"
+        val subject = "${category.replaceFirstChar { it.titlecase(Locale.CHINESE) }} link from RIFT Intel Fusion Tool"
         val body = buildString {
             append("<font size=\"30\">")
             append("→ ")

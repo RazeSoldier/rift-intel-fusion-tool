@@ -19,20 +19,20 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 private val eveTime = ZoneId.of("UTC")
-private val formatterWithoutDecimals = NumberFormat.getInstance(Locale.ENGLISH).apply {
+private val formatterWithoutDecimals = NumberFormat.getInstance(Locale.CHINESE).apply {
     minimumFractionDigits = 0
     maximumFractionDigits = 0
 }
-private val formatterWithDecimals = NumberFormat.getInstance(Locale.ENGLISH).apply {
+private val formatterWithDecimals = NumberFormat.getInstance(Locale.CHINESE).apply {
     minimumFractionDigits = 2
     maximumFractionDigits = 2
 }
 private val dateFormatter = DateTimeFormatter
     .ISO_LOCAL_DATE
-    .withLocale(Locale.ENGLISH)
-private val dateFormatterWithDateTime = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss", Locale.ENGLISH)
-private val dateFormatterWithDateTime2 = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm", Locale.ENGLISH)
-private val dateFormatterWithTime = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ENGLISH)
+    .withLocale(Locale.CHINESE)
+private val dateFormatterWithDateTime = DateTimeFormatter.ofPattern("MMM dd, HH:mm:ss z", Locale.CHINESE)
+private val dateFormatterWithDateTime2 = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm z", Locale.CHINESE)
+private val dateFormatterWithTime = DateTimeFormatter.ofPattern("HH:mm:ss z", Locale.CHINESE)
 
 fun formatIskCompact(number: Long): String = "${formatNumberCompact(number)} ISK"
 fun formatIskCompact(number: Double): String = "${formatNumberCompact(number)} ISK"
@@ -61,7 +61,7 @@ private fun formatNumberReadable(number: Double, significantDigits: Int = 3, isC
             break
         }
     }
-    val formatted = NumberFormat.getInstance(Locale.ENGLISH).apply {
+    val formatted = NumberFormat.getInstance(Locale.CHINESE).apply {
         minimumFractionDigits = decimalPlaces
         maximumFractionDigits = decimalPlaces
     }.format(rounded)
@@ -180,5 +180,5 @@ val String.article: String get() {
 }
 
 fun ZoneId.getName(): String {
-    return if (this == ZoneId.of("UTC")) "EVE" else getDisplayName(TextStyle.SHORT, Locale.US)
+    return if (this == ZoneId.of("UTC")) "EVE" else getDisplayName(TextStyle.SHORT, Locale.CHINA)
 }

@@ -767,13 +767,13 @@ private fun IntelTimeoutSection(
 ) {
     SectionTitle("预警时效", Modifier.padding(bottom = Spacing.medium))
     val expiryItems = mapOf(
-        "1 minute" to 60,
-        "2 minutes" to 60 * 2,
-        "5 minutes" to 60 * 5,
-        "10 minutes" to 60 * 10,
-        "15 minutes" to 60 * 15,
-        "30 minutes" to 60 * 30,
-        "1 hour" to 60 * 60,
+        "1 分" to 60,
+        "2 分" to 60 * 2,
+        "5 分" to 60 * 5,
+        "10 分" to 60 * 10,
+        "15 分" to 60 * 15,
+        "30 分" to 60 * 30,
+        "1 小时" to 60 * 60,
         "永久" to Int.MAX_VALUE,
     )
     RiftDropdownWithLabel(

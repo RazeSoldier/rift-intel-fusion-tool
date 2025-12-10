@@ -228,7 +228,7 @@ fun SystemEntities(
         val unspecified = it as SystemEntity.UnspecifiedCharacter
         val content = @Composable {
             Text(
-                text = "${if (hasNamedHostiles) "+" else ""}${unspecified.count} 敌对${unspecified.count.plural}",
+                text = "${if (hasNamedHostiles) "+" else ""}${unspecified.count} 敌对",
                 style = RiftTheme.typography.bodyHighlighted,
                 modifier = Modifier.padding(4.dp),
             )

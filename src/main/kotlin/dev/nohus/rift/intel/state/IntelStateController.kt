@@ -19,6 +19,8 @@ import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneId
+import java.time.LocalDateTime
 
 @Single
 class IntelStateController(
@@ -40,8 +42,8 @@ class IntelStateController(
 
     private fun updateState() {
         val expiryMinTimestamp = Instant.now() - Duration.ofSeconds(settings.intelExpireSeconds.toLong())
-        _state.value = systemContents
-            .mapValues { (_, datedEntities) ->
+
+        _state.value = systemContents.mapValues { (_, datedEntities) ->
                 datedEntities.filter { it.timestamp >= expiryMinTimestamp } // Filter out expired intel
             }
             .filterValues { it.isNotEmpty() }

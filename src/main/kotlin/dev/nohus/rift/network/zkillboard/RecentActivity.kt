@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RecentActivity(
-    @SerialName("characterID")
+    @SerialName("char_id")
     val characterIds: List<Int>,
 )

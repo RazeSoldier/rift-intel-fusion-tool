@@ -285,7 +285,7 @@ fun InsightsContent(
                     val dailyGoals = statistics.dailyGoals.filter { it.party.isMatching(search) }
                     // Adding 1 day because the oldest day in the data is likely incomplete and so misleading
                     val oldestDay = statistics.journal.lastOrNull()?.date?.toEveLocalDate()?.plusDays(1)
-                    val monthYear = DateTimeFormatter.ofPattern("MMMM yyyy").withLocale(Locale.ENGLISH)
+                    val monthYear = DateTimeFormatter.ofPattern("MMMM yyyy").withLocale(Locale.CHINESE)
 
                     items(dailyGoals, { state.insightsTab to it.party }) { item ->
                         Column(
@@ -367,7 +367,7 @@ fun InsightsContent(
                     val activity = statistics.activity.filter { it.party.isMatching(search) }
                     // Adding 1 day because the oldest day in the data is likely incomplete and so misleading
                     val oldestDay = statistics.journal.lastOrNull()?.date?.toEveLocalDate()?.plusDays(1)
-                    val monthYear = DateTimeFormatter.ofPattern("MMMM yyyy").withLocale(Locale.ENGLISH)
+                    val monthYear = DateTimeFormatter.ofPattern("MMMM yyyy").withLocale(Locale.CHINESE)
 
                     items(activity, { state.insightsTab to it.party }) { item ->
                         Column(

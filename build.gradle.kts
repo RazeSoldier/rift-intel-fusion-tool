@@ -41,6 +41,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation("io.ktor:ktor-server-test-host-jvm:3.1.1")
     // Compose
     linuxAmd64(compose.desktop.linux_x64)
     macAmd64(compose.desktop.macos_x64)

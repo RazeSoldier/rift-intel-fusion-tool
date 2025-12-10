@@ -5,7 +5,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 fun Instant.toEveLocalDate(): LocalDate {
-    val utc = ZoneId.of("UTC")
+    val  utc = ZoneId.of("UTC")
     return if (atZone(utc).hour < 11) {
         LocalDate.ofInstant(this, utc).minusDays(1)
     } else {

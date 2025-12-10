@@ -90,7 +90,7 @@ fun IntelFeedWindow(
     val viewModel: IntelFeedViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Intel Feed",
+        title = "预警源",
         icon = Res.drawable.window_satellite,
         state = windowState,
         tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),

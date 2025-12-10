@@ -115,7 +115,7 @@ class PushViewModel(
                     showDialog("Success", "Notification sent successfully!")
                 } else {
                     val reason = response.errors
-                        ?.joinToString("\n") { it.replaceFirstChar { it.titlecase(Locale.US) } }
+                        ?.joinToString("\n") { it.replaceFirstChar { it.titlecase(Locale.CHINA) } }
                         ?: "Unknown error"
                     showDialog("Failed to send", reason)
                 }

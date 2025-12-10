@@ -1,0 +1,125 @@
+GET https://beta.ceve-market.org/api/public/kmqueue
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.3
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZA3tCwBd0_EX_xKhzqKoNyBSv8ARLaPBUStbg3TJFAy6PR_lVunEToBGXm1g5necCHl4LteSB4v3v48LTGRPddET05XnPh7kPLefLFwrzhjzJEKqsJ7WOWIf5EJROsML8Q
+
+<> 2025-12-09T230212.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.3
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZBOMJ7IUsD5-Pf6-MtjnZBK8CjPd8RyQ3idDs5UOBiZ254dtkwdo20iNEyevnx2bXhcpkMPuV899Ge9QC-GoS6sNfaw5iDSGH0ZaupUet4d28dvH6jb4ADfm5g_BQAQhI0
+
+<> 2025-12-09T225703.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.3
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZD3IT1GM9kB0vm1XYm_HqkgfI7DwsGi9KI_eXjVd7k9cvRY9gS2naCCIUIvXba8XaRMMqflA9loRndbDwOhByjRvqY3KJ82jOIOQHlI2wIjsXyLqg4Qyj0rVn3GecmnlZ8
+
+<> 2025-12-09T225644.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZBmu1uthBy6gr5m4q3a4M2rojdFPsWTfyWHFiLZt-B3ocrOi9qwQtvGHPQMEBmAi39cyxjcu5t9DwWSdE0gRPzQOCpV-Lxb3M08rISOKafuy0UpE7-JyL1C0s0uUZkoyoo
+
+<> 2025-12-08T153705.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmstream/sse
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZA3aJsRLU1bggUv5U-vX8P_y3fFCUkxyXIb_VICUMtYw4Ood2xdJeeBPiv6N44AMqseeE3Vn9UVVWF8TTf38o7cQtGFwJXwzy2cTBUYJWFqZMjmTIEsqgy4u9xdJSdv2Ec
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmstream/see
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZDhdMXGeUt3Jvig4tRTlAEsWl3cXdhuY17g8yIX6Ekrb8nvXs97rpiDOmsJPVoNeQYaoshVgVoQbCf9TdhYB8zP5xAn-COsFBjwG2hoABbBbZMqxqiS7_f57QxGp-15a-0
+
+<> 2025-12-08T153529.200.html
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmstream/recentactivity/
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZD0XNPf8o6CDvE0yXWGfVy4cKlaa7x9Z3WXgaFblaAkRW2NWT-Q3oabOMTSrNmNZkpbiXde4tLfZaXmnjrYfeDfqt1TfsUZ2snc6ddFts1Oz4_MrCOYLWoF-XpXtHwujTQ
+
+<> 2025-12-08T153440.200.html
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmstream/sse
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZDvkHrSNigv0SejgbaWucQg6MQ7lwTAlKJ1DPOqHb6aVy50jK9k4ssjcztt6NldBLmxhEjh5RhfVTuzSWYqmkrUijBRtKxkhslscECVYlA67r2wMzPTvSZkdpE9fE12Nxk
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue/
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZAv7OndyzPu8SPj6nq82hBunUwpKWURG70aT3C4S0H_tbgxiu6RMOw1fPHp0eXGcDb4TT7RbiSfWvDN6Jo1aXjiHzbTFzcAIIPT6UtuC7RL6nJ00N8T4x_hNwN36G3MqEk
+
+<> 2025-12-07T204343.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue/
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZAH-BGz8zz5wNAJvaa50TsyXzM5W-xuSh54iY3EPzJs2Edrvgkh5gt7LJrvEiaK1xkA9o62nQQBE5AuNlK2Dobvk5E94eP7etw26BBQZtKtDIzYaq6eCn7dyuikWQBH7Yk
+
+<> 2025-12-07T204334.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue/
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZBG6wOaVcQUh8vOv8CPEBmyv6gMpaYJIx-JCW3cpl6hcNwH9HnneAtOPbBfEsP56DDwkRwNiz1s-0_RuJf9VsTtp7fF7wZe2IbNJsmPv7tnLL5-m_qc7NqJCbXHpTfcsxg
+
+<> 2025-12-07T193306.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue/
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Cookie: GranblueFantasy=CfDJ8JxyiS0auGZBnVv4w1EdVZChZOqfCKdDFKOFc6Nlq6RxLyowYjdBR-54Ha5vNulRuq0UOFRIlRGjgH4mg5oUNwZuTccu6B87y6Qhr84f_z4yVfjhJyyV-v8d_hRUMfRRKMdzFlDLZVxcjkLnnRoqipA; ReDive=CfDJ8JxyiS0auGZBnVv4w1EdVZBknp7je3B5-Sc746nC7iW27136Um-bizlyEsm0B4f3rd6SGznHNAp78MA6SWNm_Zq_2oq2Uu5rHHVpHXQK3KTrXgV9ZPGdexhmHnJzewWH96sNot3UVjV8Z4yT6iMKVjA
+
+<> 2025-12-07T193248.200.json
+
+###
+
+GET https://beta.ceve-market.org/api/public/kmqueue/
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.5
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2025-12-07T193044.200.json
+
+###
+
