@@ -76,6 +76,7 @@ import dev.nohus.rift.configurationpack.displayName
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.deleteicon
+import dev.nohus.rift.generated.resources.language
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_warning
 import dev.nohus.rift.notifications.NotificationEditWindow
@@ -95,6 +96,8 @@ import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.stringResource
+import java.util.Locale
 import javax.swing.JFileChooser
 import kotlin.io.path.absolutePathString
 
@@ -474,6 +477,13 @@ private fun UserInterfaceSection(
         selectedItem = state.uiScale,
         onItemSelected = viewModel::onUiScaleChanged,
         getItemName = { String.format("%d%%", (it * 100).toInt()) },
+    )
+    RiftDropdownWithLabel(
+        label = stringResource(Res.string.language) + ":",
+        items = listOf(Locale.ENGLISH, Locale.CHINESE),
+        selectedItem = state.language,
+        onItemSelected = viewModel::onLanguageChanged,
+        getItemName = { it.getDisplayLanguage(it) }
     )
 }
 

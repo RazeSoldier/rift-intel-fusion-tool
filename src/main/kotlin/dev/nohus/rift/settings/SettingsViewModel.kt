@@ -8,6 +8,10 @@ import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
+import dev.nohus.rift.di.koin
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.language_restart_dialog
+import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.MatchChatLogFilenameUseCase
@@ -37,10 +41,12 @@ import java.io.IOException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.time.Duration
+import java.util.Locale
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.pathString
 
 private val logger = KotlinLogging.logger {}
+private val stringResourceReader : StringResourceReader = koin.get()
 
 @Factory
 class SettingsViewModel(
@@ -87,6 +93,7 @@ class SettingsViewModel(
         val configurationPack: ConfigurationPack?,
         val dialogMessage: DialogMessage? = null,
         val uiScale: Float,
+        val language: Locale,
         val isWindowTransparencyEnabled: Boolean,
         val windowTransparencyModifier: Float,
         // Map
@@ -157,6 +164,7 @@ class SettingsViewModel(
             soundsVolume = settings.soundsVolume,
             configurationPack = settings.configurationPack,
             uiScale = settings.uiScale,
+            language = settings.language,
             isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
             windowTransparencyModifier = settings.windowTransparencyModifier,
             // Map
@@ -199,6 +207,7 @@ class SettingsViewModel(
                         soundsVolume = settings.soundsVolume,
                         configurationPack = settings.configurationPack,
                         uiScale = settings.uiScale,
+                        language = settings.language,
                         isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
                         windowTransparencyModifier = settings.windowTransparencyModifier,
                         // Map
@@ -413,6 +422,11 @@ class SettingsViewModel(
     fun onUiScaleChanged(uiScale: Float) {
         showRestartRequiredDialog("Changing the UI scale will take effect after you restart the application.")
         settings.uiScale = uiScale
+    }
+
+    fun onLanguageChanged(locale: Locale) {
+        showRestartRequiredDialog(stringResourceReader.getStringSync(Res.string.language_restart_dialog))
+        settings.language = locale
     }
 
     fun onSoundsVolumeChange(volume: Int) {

@@ -10,6 +10,7 @@ import org.koin.core.annotation.Single
 import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Locale
 import kotlin.io.path.pathString
 
 @Single
@@ -234,6 +235,10 @@ class Settings(
     var uiScale: Float
         get() = model.uiScale
         set(value) = update { copy(uiScale = value) }
+
+    var language: Locale
+        get() = model.language
+        set(value) = update { copy(language = value) }
 
     var accountAssociations: Map<Int, Int>
         get() = model.accountAssociations
