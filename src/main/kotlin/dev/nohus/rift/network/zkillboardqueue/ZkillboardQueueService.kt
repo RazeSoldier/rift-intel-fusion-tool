@@ -11,11 +11,18 @@ import retrofit2.http.Url
 
 interface ZkillboardQueueService {
 
+    @GET("api/public/kmqueue")
+    @EndpointTag(Endpoint.ZkillboardListen::class)
+    suspend fun getKillmailStream(
+        @Tag originator: Originator,
+        @Query("id") queueId: String,
+    ): CnKillmailStreamResponse
+
     @GET("listen.php")
     @EndpointTag(Endpoint.ZkillboardListen::class)
     suspend fun getKillmailRedirect(
         @Tag originator: Originator,
-        @Query("queueID") queueId: String,
+        @Query("client_id") queueId: String,
         @Query("ttw") timeToWait: Int,
         @Query("filter") filter: String,
     ): Response<Unit>

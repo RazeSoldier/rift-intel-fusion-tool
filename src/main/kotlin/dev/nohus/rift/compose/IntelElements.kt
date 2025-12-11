@@ -24,16 +24,35 @@ fun IntelTimer(
     timestamp: Instant,
     style: TextStyle,
     rowHeight: Dp? = null,
+    expiryDurationSeconds: Long? = null,
     modifier: Modifier = Modifier,
 ) {
     val now = LocalNow.current
-    val duration = Duration.between(timestamp, now)
-    val colorFadePercentage = (duration.toSeconds() / Duration.ofMinutes(3).seconds.toFloat()).coerceIn(0f, 1f)
+    val elapsedDuration = Duration.between(timestamp, now)
+    
+    // If expiryDurationSeconds is provided, show remaining time; otherwise show elapsed time
+    val displayDuration = if (expiryDurationSeconds != null) {
+        val maxDuration = Duration.ofSeconds(expiryDurationSeconds)
+        val remainingDuration = maxDuration - elapsedDuration
+        remainingDuration.coerceAtLeast(Duration.ZERO)
+    } else {
+        elapsedDuration
+    }
+    
+    val colorFadePercentage = if (expiryDurationSeconds != null) {
+        // When showing remaining time, fade as time runs out
+        val maxDuration = Duration.ofSeconds(expiryDurationSeconds)
+        (1f - (displayDuration.toSeconds() / maxDuration.seconds.toFloat())).coerceIn(0f, 1f)
+    } else {
+        // Original behavior: fade based on elapsed time with 3 minute reference
+        (elapsedDuration.toSeconds() / Duration.ofMinutes(3).seconds.toFloat()).coerceIn(0f, 1f)
+    }
+    
     val color = lerp(RiftTheme.colors.textSpecialHighlighted, RiftTheme.colors.textSecondary, colorFadePercentage)
     val borderColor = lerp(RiftTheme.colors.textSpecialHighlighted, RiftTheme.colors.borderGreyLight, colorFadePercentage)
     val content = @Composable {
         Text(
-            text = formatDuration(duration),
+            text = formatDuration(displayDuration),
             style = style.copy(color = color),
             modifier = modifier,
         )

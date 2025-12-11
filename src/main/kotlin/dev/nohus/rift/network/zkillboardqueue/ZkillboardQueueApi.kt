@@ -1,5 +1,4 @@
 package dev.nohus.rift.network.zkillboardqueue
-
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.requests.Originator
@@ -22,10 +21,14 @@ class ZkillboardQueueApi(
     private val contentType = "application/json".toMediaType()
     private val retrofit = Retrofit.Builder()
         .client(client)
-        .baseUrl("https://zkillredisq.stream/")
+        .baseUrl("https://beta.ceve-market.org/")
         .addConverterFactory(json.asConverterFactory(contentType))
         .build()
     private val service = retrofit.create(ZkillboardQueueService::class.java)
+
+    suspend fun getKillmailStream(originator: Originator, queueId: String): Result<CnKillmailStreamResponse> {
+        return execute { service.getKillmailStream(originator, queueId) }
+    }
 
     suspend fun getKillmailRedirect(originator: Originator, queueId: String, timeToWait: Int, filter: String): Result<Reply<Unit>> {
         return executeWithHeaders { service.getKillmailRedirect(originator, queueId, timeToWait, filter) }

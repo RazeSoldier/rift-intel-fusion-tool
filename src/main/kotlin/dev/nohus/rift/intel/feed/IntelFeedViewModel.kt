@@ -88,6 +88,7 @@ class IntelFeedViewModel(
             isUsingCompactMode = settings.intelFeed.isUsingCompactMode,
             isShowingSystemDistance = settings.isShowingSystemDistance,
             isUsingJumpBridgesForDistance = settings.isUsingJumpBridgesForDistance,
+            intelExpireSeconds = settings.intelExpireSeconds.toLong(),
         )
     }
 

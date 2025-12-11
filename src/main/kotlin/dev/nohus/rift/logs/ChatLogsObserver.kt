@@ -21,6 +21,7 @@ import java.nio.file.FileSystemException
 import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
@@ -121,7 +122,12 @@ class ChatLogsObserver(
             logger.debug { "Updating active chat log files. All files: ${logFiles.size}" }
             val minTime = Instant.now() - Duration.ofDays(7)
             val currentActiveLogFiles = logFilesMutex.withLock { logFiles.toList() }
-                .filter { it.dateTime.toInstant(ZoneOffset.UTC).isAfter(minTime) }
+                // EVE log file names use local time, convert to UTC for comparison
+                .filter { 
+                    val localDateTime = it.dateTime.atZone(ZoneId.systemDefault())
+                    val utcInstant = localDateTime.withZoneSameInstant(ZoneId.of("UTC")).toInstant()
+                    utcInstant.isAfter(minTime)
+                }
                 .also {
                     if (it.isEmpty()) logger.info { "No chat log files within the last week" }
                 }

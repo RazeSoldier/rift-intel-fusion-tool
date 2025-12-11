@@ -6,6 +6,7 @@ import dev.nohus.rift.network.zkillboard.RecentActivity
 import dev.nohus.rift.network.zkillboard.ZkillboardApi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.awaitCancellation
 import org.koin.core.annotation.Single
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
@@ -21,16 +22,11 @@ class ZkillboardRecentActivityRepository(
         private set
 
     suspend fun start() {
-        while (true) {
-            val recentActivity = getRecentActivity(Originator.DataPreloading)
-            if (recentActivity != null) {
-                activeCharacterIds = recentActivity.characterIds.toSet()
-                logger.info { "Recent activity loaded from zKillboard" }
-                delay(1.hours)
-            } else {
-                delay(30.seconds)
-            }
-        }
+        logger.info { "Zkillboard recent activity tracking is disabled for CN server" }
+        // CN server doesn't have the recentactivity API, keep all characters as potentially active
+        activeCharacterIds = null
+        // Just wait indefinitely without making API calls
+        awaitCancellation()
     }
 
     private suspend fun getRecentActivity(originator: Originator): RecentActivity? {

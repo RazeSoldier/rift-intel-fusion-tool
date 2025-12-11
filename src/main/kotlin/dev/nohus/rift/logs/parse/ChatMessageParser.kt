@@ -152,14 +152,16 @@ class ChatMessageParser(
             "天钩" to KeywordType.Skyhook,
             "robbing skyhook" to KeywordType.Skyhook,
             "skyhook theft" to KeywordType.Skyhook,
-            "gate camp" to KeywordType.GateCamp,
-            "gate camping" to KeywordType.GateCamp,
+            "堵门" to KeywordType.GateCamp,
+            "封门" to KeywordType.GateCamp,
             "gate camped" to KeywordType.GateCamp,
-            "针" to KeywordType.CombatProbes,
+            "下针" to KeywordType.CombatProbes,
             "combat scanners" to KeywordType.CombatProbes,
             "泡" to KeywordType.Bubbles,
             "泡泡" to KeywordType.Bubbles,
+            "有泡泡" to KeywordType.Bubbles,
             "重拦" to KeywordType.Bubbles,
+            "拦截" to KeywordType.Bubbles,
         )
         // TODO: "core sister probes"
 
@@ -176,7 +178,7 @@ class ChatMessageParser(
             "船型 ?" to ShipTypes,
             "船型?" to ShipTypes,
             "船型 ?" to ShipTypes,
-            "ship types?" to ShipTypes,
+            "什么船?" to ShipTypes,
             "ship types ?" to ShipTypes,
             "ship type?" to ShipTypes,
             "ship type ?" to ShipTypes,
@@ -195,6 +197,7 @@ class ChatMessageParser(
             "status" to Status,
             "sts?" to Status,
             "clr?" to Status,
+
         )
         private val countQualifiers = mapOf(
             "one" to 1,
@@ -358,7 +361,7 @@ class ChatMessageParser(
     }
 
     private fun findMovement(tokens: List<MultiTypeToken>, isAtEnd: Boolean): List<MultiTypeToken> {
-        val keywords = listOf("going", "jumped", "jumping")
+        val keywords = listOf("过门", "", "jumping")
         if (tokens.size >= 2) {
             val lastTokens = tokens.takeLast(2)
             if (lastTokens[1].types.filterIsInstance<Gate>().isNotEmpty()) {

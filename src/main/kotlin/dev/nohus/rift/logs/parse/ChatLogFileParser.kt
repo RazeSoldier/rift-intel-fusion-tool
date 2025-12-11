@@ -5,6 +5,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.nio.file.Path
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.bufferedReader
@@ -88,7 +89,10 @@ class ChatLogFileParser {
     private fun parseLine(line: String): ChatMessage? {
         val match = chatMessageRegex.find(line) ?: return null
         val datetime = match.groups["datetime"]!!.value
-        val timestamp = LocalDateTime.parse(datetime, dateFormatter).toInstant(ZoneOffset.UTC)
+        // Chat logs show local time, but we parse it as UTC offset by converting local to UTC
+        val localTime = LocalDateTime.parse(datetime, dateFormatter)
+        val localZoned = localTime.atZone(ZoneId.systemDefault())
+        val timestamp = localZoned.withZoneSameInstant(ZoneId.of("UTC")).toInstant()
         val author = match.groups["author"]!!.value
         val message = match.groups["message"]!!.value
         return ChatMessage(timestamp, author, message)

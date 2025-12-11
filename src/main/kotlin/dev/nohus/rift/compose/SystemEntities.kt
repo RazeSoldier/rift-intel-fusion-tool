@@ -249,7 +249,7 @@ fun SystemEntities(
             SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "天钩", rowHeight, isHorizontal)
             is SystemEntity.Gate -> GateInfoRow(system, entity, rowHeight, isHorizontal)
             is SystemEntity.Celestial -> CelestialInfoRow(entity, rowHeight, isHorizontal)
-            SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "Gate camp", rowHeight, isHorizontal)
+            SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "堵门", rowHeight, isHorizontal)
             SystemEntity.NoVisual -> NoVisualRow(rowHeight, isHorizontal)
             SystemEntity.Spike -> IconInfoRow(Res.drawable.keywords_spike, "Spike", rowHeight, isHorizontal)
             SystemEntity.Wormhole -> WormholeInfoRow(rowHeight, isHorizontal)

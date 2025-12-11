@@ -263,6 +263,7 @@ private fun IntelFeedItem(
                         timestamp = group.key,
                         style = RiftTheme.typography.detailBoldPrimary,
                         rowHeight = state.settings.rowHeight,
+                        expiryDurationSeconds = state.settings.intelExpireSeconds,
                         modifier = Modifier.padding(Spacing.small),
                     )
                     val hasMultipleCharacters = group.value.count { it is SystemEntity.Character } > 1

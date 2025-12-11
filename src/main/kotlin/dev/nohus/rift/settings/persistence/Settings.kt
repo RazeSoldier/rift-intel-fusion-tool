@@ -98,7 +98,8 @@ class Settings(
         set(value) = update { copy(isShowIskCents = value) }
 
     val displayTimeZone: ZoneId
-        get() = if (model.isDisplayEveTime) ZoneId.of("UTC") else ZoneId.systemDefault()
+        // isDisplayEveTime = true means "use local time", false means "use EVE time (UTC)"
+        get() = if (model.isDisplayEveTime) ZoneId.systemDefault() else ZoneId.of("UTC")
 
     var jabberJidLocalPart: String?
         get() = model.jabberJidLocalPart

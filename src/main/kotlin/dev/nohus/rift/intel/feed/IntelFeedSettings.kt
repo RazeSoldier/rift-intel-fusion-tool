@@ -15,6 +15,7 @@ data class IntelFeedSettings(
     val isUsingCompactMode: Boolean,
     val isShowingSystemDistance: Boolean,
     val isUsingJumpBridgesForDistance: Boolean,
+    val intelExpireSeconds: Long = 300L,
 ) {
     val rowHeight: Dp get() = if (isUsingCompactMode) 24.dp else 32.dp
 }

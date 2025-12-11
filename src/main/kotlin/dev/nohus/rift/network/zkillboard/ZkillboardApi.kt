@@ -21,7 +21,7 @@ class ZkillboardApi(
     private val contentType = "application/json".toMediaType()
     private val retrofit = Retrofit.Builder()
         .client(client)
-        .baseUrl("https://zkillboard.com/api/")
+        .baseUrl("https://beta.ceve-market.org/api/public/kmqueue/")
         .addConverterFactory(json.asConverterFactory(contentType))
         .build()
     private val service = retrofit.create(ZkillboardService::class.java)

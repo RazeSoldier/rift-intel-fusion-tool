@@ -40,7 +40,7 @@ class ZkillboardObserver(
 ) {
 
     private val queueId = UUID.randomUUID().toString()
-    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
+    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"))
     private var maxAge: Duration = Duration.ofMinutes(5)
 
     suspend fun start() = coroutineScope {
@@ -55,14 +55,12 @@ class ZkillboardObserver(
             while (true) {
                 try {
                     val startTime = clock.markNow()
-                    val fromDate = dateFormatter.format(Instant.now() - maxAge)
-                    val filter = "killmail_time>=$fromDate"
-                    when (val result = zkillboardQueueApi.getKillmailRedirect(Killmails, queueId, 5, filter)) {
+                    when (val result = zkillboardQueueApi.getKillmailStream(Killmails, queueId)) {
                         is Result.Success -> {
-                            handleRedirect(result.data)
+                            handleCnKillmail(result.data)
                         }
                         is Result.Failure -> {
-                            logger.error { "Failed to receive killmail redirect: ${result.cause?.message ?: "unknown error"}" }
+                            logger.error { "Failed to receive killmail from CN API: ${result.cause?.message ?: "unknown error"}" }
                             delay(FAILED_REQUEST_DELAY)
                         }
                     }
@@ -76,6 +74,48 @@ class ZkillboardObserver(
                 }
             }
         }
+    }
+
+    private suspend fun handleCnKillmail(response: CnKillmailStreamResponse) {
+        val cnKillmail = response.killmail
+        if (cnKillmail != null) {
+            val now = Instant.now()
+            val age = Duration.between(cnKillmail.time, now)
+            if (age <= maxAge) {
+                logger.info { "Processing killmail ${cnKillmail.killId} in ${cnKillmail.system}, ${age.toSeconds()}s ago" }
+                val killmail = convertCnKillmailToKillmail(cnKillmail)
+                killmailProcessor.submit(killmail)
+            } else {
+                logger.debug { "Skipping old killmail ${cnKillmail.killId}, ${age.toSeconds()}s old" }
+            }
+        } else {
+            logger.debug { "No new killmail available" }
+        }
+    }
+
+    private fun convertCnKillmailToKillmail(cnKillmail: CnKillmail): Killmail {
+        logger.info { "Converting CN killmail: victim=${cnKillmail.charName}, ship=${cnKillmail.ship}, attacker=${cnKillmail.finalCharName}" }
+        return Killmail(
+            killmailId = cnKillmail.killId,
+            killmailTime = cnKillmail.time,
+            solarSystemId = cnKillmail.systemId,
+            url = "https://beta.ceve-market.org/kill/${cnKillmail.killId}/",
+            victim = Victim(
+                characterId = cnKillmail.charId?.toInt(),
+                corporationId = cnKillmail.corpId?.toInt(),
+                allianceId = cnKillmail.alliId?.toInt(),
+                shipTypeId = cnKillmail.shipId,
+            ),
+            attackers = listOfNotNull(
+                cnKillmail.finalCharId?.let { 
+                    Attacker(
+                        characterId = it.toInt(),
+                        shipTypeId = null,
+                    )
+                }
+            ),
+            position = null,
+        )
     }
 
     private suspend fun handleRedirect(reply: Reply<Unit>) {
@@ -119,7 +159,7 @@ class ZkillboardObserver(
                     killmailId = killmail.killmailId,
                     killmailTime = killmail.killmailTime,
                     solarSystemId = killmail.solarSystemId.toInt(),
-                    url = "https://zkillboard.com/kill/${killmail.killmailId}/",
+                    url = "https://beta.ceve-market.org/kill/${killmail.killmailId}/",
                     victim = Victim(
                         characterId = killmail.victim.characterId?.toInt(),
                         corporationId = killmail.victim.corporationId?.toInt(),

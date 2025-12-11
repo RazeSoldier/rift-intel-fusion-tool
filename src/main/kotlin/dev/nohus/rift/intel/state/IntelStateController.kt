@@ -21,6 +21,10 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.LocalDateTime
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Single
 class IntelStateController(
@@ -40,6 +44,18 @@ class IntelStateController(
     private val _state = MutableStateFlow<Map<MapSolarSystem, List<Dated<SystemEntity>>>>(emptyMap())
     val state = _state.asStateFlow()
 
+    init {
+        // Start a periodic cleanup task to remove expired intel
+        CoroutineScope(Dispatchers.Default).launch {
+            while (true) {
+                delay(1000) // Update every second
+                mutex.withLock {
+                    updateState()
+                }
+            }
+        }
+    }
+
     private fun updateState() {
         val expiryMinTimestamp = Instant.now() - Duration.ofSeconds(settings.intelExpireSeconds.toLong())
 
@@ -52,14 +68,18 @@ class IntelStateController(
     suspend fun submitKillmail(
         killmail: ProcessedKillmail,
     ) = mutex.withLock {
+        io.github.oshai.kotlinlogging.KotlinLogging.logger {}.info { "IntelStateController.submitKillmail: system=${killmail.system.name}, entities=${killmail.entities.size}" }
         killmail.victim?.let {
             removeKilledCharacters(listOf(it.name))
         }
 
         val entities: List<SystemEntity> = killmail.attackers + killmail.ships + killmail.killmail + listOfNotNull(killmail.celestial)
+        io.github.oshai.kotlinlogging.KotlinLogging.logger {}.info { "Updating system entities: system=${killmail.system.name}, entities count=${entities.size}, attackers=${killmail.attackers.size}, ships=${killmail.ships.size}" }
         updateSystemEntities(killmail.timestamp, killmail.system, removeExisting = false, entities)
 
+        io.github.oshai.kotlinlogging.KotlinLogging.logger {}.info { "Updating state, current systemContents size=${systemContents.size}" }
         updateState()
+        io.github.oshai.kotlinlogging.KotlinLogging.logger {}.info { "State updated, new state size=${_state.value.size}" }
     }
 
     suspend fun submitMessage(

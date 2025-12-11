@@ -57,12 +57,18 @@ class KillmailProcessor(
 
     suspend fun submit(message: Killmail) = coroutineScope {
         val ago = Duration.between(message.killmailTime, Instant.now())
+        logger.info { "KillmailProcessor.submit: killmailId=${message.killmailId}, ago=${ago.toSeconds()}s, systemId=${message.solarSystemId}" }
         if (ago > Duration.ofMinutes(15)) {
             logger.debug { "Ignoring old killmail, ${ago.toSeconds()}s ago" }
             return@coroutineScope
         }
 
-        val system = solarSystemsRepository.getSystem(message.solarSystemId) ?: return@coroutineScope
+        val system = solarSystemsRepository.getSystem(message.solarSystemId)
+        if (system == null) {
+            logger.warn { "System not found for killmail: systemId=${message.solarSystemId}" }
+            return@coroutineScope
+        }
+        logger.info { "Found system: ${system.name} (${system.id})" }
 
         val deferredVictim = message.victim.characterId
             ?.let { async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it) } }
@@ -142,8 +148,10 @@ class KillmailProcessor(
         mutex.withLock {
             if (message.killmailId !in seenKillmails) {
                 seenKillmails += message.killmailId
-                logger.debug { "Killmail: ${killmail.ship?.name ?: "Unknown ship"} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
+                logger.info { "Submitting killmail to IntelStateController: ${killmail.ship?.name ?: "Unknown ship"} killed by ${ships.joinToString { it.type.name }} in ${processedKillmail.system.name}, ${ago.toSeconds()}s ago" }
+                logger.info { "Killmail entities: killmail=$killmail, ships=${ships.size}, attackers=${attackers.size}, victim=$victim" }
                 intelStateController.submitKillmail(processedKillmail)
+                logger.info { "Killmail submitted to IntelStateController successfully" }
                 alertsTriggerController.onNewKillmail(processedKillmail)
             } else {
                 logger.debug { "Ignoring killmail, already seen" }

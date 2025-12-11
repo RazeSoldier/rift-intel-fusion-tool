@@ -179,6 +179,12 @@ class ChatLogWatcher(
         if (message.chatMessage.author == "EVE System") return false
         val messageAge = Duration.between(message.chatMessage.timestamp, Instant.now())
         val isMessageOld = messageAge > Duration.ofMinutes(10)
+        
+        // Debug logging
+        if (isMessageOld) {
+            logger.debug { "Filtering out old intel message: age=${messageAge.toMinutes()}m, timestamp=${message.chatMessage.timestamp}, now=${Instant.now()}" }
+        }
+        
         if (isMessageOld) return false
         return true
     }
