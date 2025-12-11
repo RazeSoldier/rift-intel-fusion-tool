@@ -1,6 +1,7 @@
 package dev.nohus.rift.database
 
 import dev.nohus.rift.database.static.StaticDatabase
+import dev.nohus.rift.i18n.ApplicationLocale
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.utils.HasNonAsciiWindowsUsernameUseCase
 import dev.nohus.rift.utils.OperatingSystem
@@ -8,9 +9,10 @@ import dev.nohus.rift.utils.directories.AppDirectories
 import dev.nohus.rift.utils.osdirectories.LinuxDirectories
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import java.util.Locale
 
 class SolarSystemsRepositoryTest : FreeSpec({
-
+    ApplicationLocale.setLocale(Locale.ENGLISH)
     val target = SolarSystemsRepository(
         staticDatabase = StaticDatabase(SqliteInitializer(HasNonAsciiWindowsUsernameUseCase(OperatingSystem.Linux, AppDirectories(LinuxDirectories())))),
     )

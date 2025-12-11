@@ -1,7 +1,7 @@
 package dev.nohus.rift.database.static
 
 import dev.nohus.rift.database.SqliteInitializer
-import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.i18n.ApplicationLocale
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
@@ -13,10 +13,9 @@ private val logger = KotlinLogging.logger {}
 @Single
 class StaticDatabase(
     sqliteInitializer: SqliteInitializer,
-    settings: Settings,
 ) {
     private val targetDatabase: Database = (
-        if (settings.language.language == "zh") {
+        if (ApplicationLocale.current.language == "zh") {
             logger.info { "Using Chinese static database" }
             Database.connect("jdbc:sqlite::resource:static-zh.db", "org.sqlite.JDBC")
         } else {

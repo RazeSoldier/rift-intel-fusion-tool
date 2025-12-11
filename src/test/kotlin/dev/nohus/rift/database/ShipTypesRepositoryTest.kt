@@ -1,6 +1,7 @@
 package dev.nohus.rift.database
 
 import dev.nohus.rift.database.static.StaticDatabase
+import dev.nohus.rift.i18n.ApplicationLocale
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.ShipTypesRepository
@@ -12,9 +13,11 @@ import dev.nohus.rift.utils.osdirectories.LinuxDirectories
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
+import java.util.Locale
 
 class ShipTypesRepositoryTest : FreeSpec({
 
+    ApplicationLocale.setLocale(Locale.ENGLISH)
     val database = StaticDatabase(SqliteInitializer(HasNonAsciiWindowsUsernameUseCase(OperatingSystem.Linux, AppDirectories(LinuxDirectories()))))
     val namesRepository: NamesRepository = mockk()
     val typesRepository = TypesRepository(database, namesRepository)
