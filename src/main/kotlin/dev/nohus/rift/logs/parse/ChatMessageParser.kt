@@ -138,6 +138,7 @@ class ChatMessageParser(
         private val URL_REGEX = """https?://.*""".toRegex()
         private val keywords = mapOf(
             "miss" to KeywordType.NoVisual,
+            "clr" to KeywordType.NoVisual,
             "全灭" to KeywordType.Clear,
             "洞" to KeywordType.Wormhole,
             "虫洞" to KeywordType.Wormhole,
@@ -154,6 +155,7 @@ class ChatMessageParser(
             "skyhook theft" to KeywordType.Skyhook,
             "堵门" to KeywordType.GateCamp,
             "封门" to KeywordType.GateCamp,
+            "有堵门" to KeywordType.GateCamp,
             "gate camped" to KeywordType.GateCamp,
             "下针" to KeywordType.CombatProbes,
             "combat scanners" to KeywordType.CombatProbes,

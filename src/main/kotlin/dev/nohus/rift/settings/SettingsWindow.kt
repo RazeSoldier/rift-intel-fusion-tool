@@ -257,6 +257,9 @@ private fun SettingsWindowContent(
                             IntelTimeoutSection(state, viewModel)
                         }
                         SectionContainer(inputModel) {
+                            IgnoredCharacterNamesSection(state, viewModel)
+                        }
+                        SectionContainer(inputModel) {
                             AlertsSection(state, viewModel)
                         }
                     }
@@ -786,6 +789,80 @@ private fun IntelTimeoutSection(
                     选择的时间后，预警将不在地图或预警源显示。
         """.trimIndent(),
     )
+}
+
+@Composable
+private fun IgnoredCharacterNamesSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("忽略的文本", Modifier.padding(bottom = Spacing.medium))
+    Text(
+        text = "添加不应识别为角色名的文本:",
+        style = RiftTheme.typography.bodyPrimary,
+        modifier = Modifier.padding(vertical = Spacing.medium),
+    )
+    ScrollbarColumn(
+        modifier = Modifier
+            .height(120.dp)
+            .border(1.dp, RiftTheme.colors.borderGrey),
+        scrollbarModifier = Modifier.padding(vertical = Spacing.small),
+    ) {
+        for (pattern in state.ignoredCharacterNamePatterns) {
+            key(pattern) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .hoverBackground()
+                        .padding(Spacing.small),
+                ) {
+                    Text(
+                        text = pattern,
+                        style = RiftTheme.typography.bodyPrimary,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                    )
+                    RiftImageButton(
+                        resource = Res.drawable.deleteicon,
+                        size = 20.dp,
+                        onClick = { viewModel.onIgnoredCharacterNamePatternRemoved(pattern) },
+                    )
+                }
+            }
+        }
+        if (state.ignoredCharacterNamePatterns.isEmpty()) {
+            Text(
+                text = "无",
+                style = RiftTheme.typography.headerPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Spacing.large),
+            )
+        }
+    }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        modifier = Modifier.padding(top = Spacing.medium),
+    ) {
+        var addPatternText by remember { mutableStateOf("") }
+        RiftTextField(
+            text = addPatternText,
+            placeholder = "输入要忽略的文本",
+            onTextChanged = { addPatternText = it },
+            modifier = Modifier.weight(1f),
+        )
+        RiftButton(
+            text = "添加",
+            isEnabled = addPatternText.isNotBlank(),
+            onClick = {
+                viewModel.onIgnoredCharacterNamePatternAdded(addPatternText)
+                addPatternText = ""
+            },
+        )
+    }
 }
 
 @Composable

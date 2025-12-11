@@ -89,6 +89,7 @@ data class SettingsModel(
     val preferredExternalServices: List<ExternalService> = emptyList(),
     val corpWalletDivisionNames: Map<Int, Map<Int, String>> = emptyMap(),
     val newVersionSeenTimestamp: Long? = null,
+    val ignoredCharacterNamePatterns: List<String> = emptyList(),
 )
 
 @Serializable

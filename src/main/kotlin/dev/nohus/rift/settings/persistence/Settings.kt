@@ -291,4 +291,8 @@ class Settings(
     var newVersionSeenTimestamp: Instant?
         get() = model.newVersionSeenTimestamp?.let { Instant.ofEpochMilli(it) }
         set(value) = update { copy(newVersionSeenTimestamp = value?.toEpochMilli()) }
+
+    var ignoredCharacterNamePatterns: List<String>
+        get() = model.ignoredCharacterNamePatterns
+        set(value) = update { copy(ignoredCharacterNamePatterns = value) }
 }

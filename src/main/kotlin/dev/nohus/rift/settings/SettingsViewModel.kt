@@ -103,6 +103,7 @@ class SettingsViewModel(
         // Sovereignty
         val isSovereigntyUpgradesHackImportingEnabled: Boolean,
         val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean,
+        val ignoredCharacterNamePatterns: List<String> = emptyList(),
     )
 
     sealed class SettingsTab(val id: Int) {
@@ -173,6 +174,7 @@ class SettingsViewModel(
             // Sovereignty
             isSovereigntyUpgradesHackImportingEnabled = settings.isSovereigntyUpgradesHackImportingEnabled,
             isSovereigntyUpgradesHackImportingOfflineEnabled = settings.isSovereigntyUpgradesHackImportingOfflineEnabled,
+            ignoredCharacterNamePatterns = settings.ignoredCharacterNamePatterns,
         ),
     )
     val state = _state.asStateFlow()
@@ -207,6 +209,7 @@ class SettingsViewModel(
                         // Sovereignty
                         isSovereigntyUpgradesHackImportingEnabled = settings.isSovereigntyUpgradesHackImportingEnabled,
                         isSovereigntyUpgradesHackImportingOfflineEnabled = settings.isSovereigntyUpgradesHackImportingOfflineEnabled,
+                        ignoredCharacterNamePatterns = settings.ignoredCharacterNamePatterns,
                     )
                 }
                 val logsDirectory = settings.eveLogsDirectory
@@ -565,6 +568,22 @@ class SettingsViewModel(
 
     fun onIsSovereigntyUpgradesHackImportingOfflineEnabledClick(enabled: Boolean) {
         settings.isSovereigntyUpgradesHackImportingOfflineEnabled = enabled
+    }
+
+    fun onIgnoredCharacterNamePatternAdded(pattern: String) {
+        if (pattern.isNotBlank()) {
+            val current = settings.ignoredCharacterNamePatterns
+            val updated = (current + pattern).distinct().sorted()
+            settings.ignoredCharacterNamePatterns = updated
+            _state.update { it.copy(ignoredCharacterNamePatterns = updated) }
+        }
+    }
+
+    fun onIgnoredCharacterNamePatternRemoved(pattern: String) {
+        val current = settings.ignoredCharacterNamePatterns
+        val updated = current.filterNot { it == pattern }
+        settings.ignoredCharacterNamePatterns = updated
+        _state.update { it.copy(ignoredCharacterNamePatterns = updated) }
     }
 
     fun onCloseDialogMessage() {

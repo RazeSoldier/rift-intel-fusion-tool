@@ -1,11 +1,22 @@
 package dev.nohus.rift.logs.parse
 
+import dev.nohus.rift.settings.persistence.Settings
 import org.koin.core.annotation.Single
 
 @Single
-class CharacterNameValidator {
+class CharacterNameValidator(
+    private val settings: Settings,
+) {
 
     fun isValid(name: String): Boolean {
+        // 检查是否在忽略列表中
+        val ignoredPatterns = settings.ignoredCharacterNamePatterns
+        for (pattern in ignoredPatterns) {
+            if (name.equals(pattern, ignoreCase = false)) {
+                return false
+            }
+        }
+        
         // 拒绝纯数字
         if (name.matches("""^[0-9\s]+$""".toRegex())) {
             return false

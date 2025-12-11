@@ -419,7 +419,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Miss",
+                    text = "消失",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -485,7 +485,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Gate Camp",
+                    text = "堵门",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -496,7 +496,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Combat Probes",
+                    text = "作战针",
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -507,7 +507,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "泡泡",
+                    text = "拦截泡",
                     modifier = Modifier.padding(4.dp),
                 )
             }

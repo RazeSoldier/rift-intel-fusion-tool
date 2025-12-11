@@ -102,7 +102,7 @@ sealed interface IntelReportType {
     data object Wormhole : IntelReportType
 
     @Serializable
-    @SerialName("GateCamp")
+    @SerialName("堵门")
     data object GateCamp : IntelReportType
 
     @Serializable
