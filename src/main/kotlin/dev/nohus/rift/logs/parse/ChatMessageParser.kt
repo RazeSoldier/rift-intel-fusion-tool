@@ -139,6 +139,7 @@ class ChatMessageParser(
         private val keywords = mapOf(
             "miss" to KeywordType.NoVisual,
             "clr" to KeywordType.NoVisual,
+            "消失" to KeywordType.NoVisual,
             "全灭" to KeywordType.Clear,
             "洞" to KeywordType.Wormhole,
             "虫洞" to KeywordType.Wormhole,
@@ -170,10 +171,10 @@ class ChatMessageParser(
         // TODO: Character names that maybe should be keywords or ignored: "Gang", "was", "from", "kicked", "Ansiblex", "ansi", "on the"
         // TODO: "WORMHOLE large", "WORMHOLE XL", "WORMHOLE -> SYSTEM"
         private val questions = mapOf(
-            "where is he" to Location,
-            "where is he?" to Location,
-            "loc?" to Location,
-            "loc ?" to Location,
+            "在哪" to Location,
+            "在哪?" to Location,
+            "哪个星系?" to Location,
+            "哪个星系" to Location,
             "位置?" to Location,
             "位置 ?" to Location,
             "船型?" to ShipTypes,

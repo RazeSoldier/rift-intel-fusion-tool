@@ -419,7 +419,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "消失",
+                    text = "MISS",
                     modifier = Modifier.padding(4.dp),
                 )
             }
