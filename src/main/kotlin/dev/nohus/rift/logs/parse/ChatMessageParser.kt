@@ -302,6 +302,8 @@ class ChatMessageParser(
             .flatMap { listOf(it.take(1), it.take(2), it.take(3)).map { it.joinToString(" ") } }
             .filterNot { it.startsWith(" ") || it.endsWith(" ") || it.contains("  ") }
             .filter(characterNameValidator::isValid)
+            // 排除已知的星系名（不管是英文还是中文）
+            .filterNot { candidateName -> solarSystemsRepository.getSystem(candidateName) != null }
             .distinct()
             .toList()
     }

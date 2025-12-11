@@ -138,7 +138,7 @@ class ExternalServiceRepository(
                 add(ServiceItem(Anoikis, "https://anoik.is/systems/$system"))
             }
             add(ServiceItem(Dotlan, "https://evemaps.dotlan.net/system/$system"))
-            add(ServiceItem(ZKillboard, "https://zkillboard.com/system/$systemId/"))
+            add(ServiceItem(ZKillboard, "https://evemaps.ceve-market.org/system/$systemId/"))
             add(ServiceItem(EveKill, "https://eve-kill.com/system/$systemId"))
         }
     }
@@ -152,7 +152,7 @@ class ExternalServiceRepository(
         return ContextMenuItem.TextItem(
             text = when (service) {
                 EveWho -> "EveWho"
-                ZKillboard -> "zKillboard"
+                ZKillboard -> "Evemaps"
                 EveKill -> "EVE-KILL"
                 UniWiki -> "UniWiki"
                 EveRef -> "EVE Ref"
