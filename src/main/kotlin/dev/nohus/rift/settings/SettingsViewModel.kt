@@ -8,10 +8,9 @@ import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
-import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.language_restart_dialog
-import dev.nohus.rift.i18n.StringResourceReader
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.MatchChatLogFilenameUseCase
@@ -46,7 +45,6 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.pathString
 
 private val logger = KotlinLogging.logger {}
-private val stringResourceReader : StringResourceReader = koin.get()
 
 @Factory
 class SettingsViewModel(
@@ -425,7 +423,7 @@ class SettingsViewModel(
     }
 
     fun onLanguageChanged(locale: Locale) {
-        showRestartRequiredDialog(stringResourceReader.getStringSync(Res.string.language_restart_dialog))
+        showRestartRequiredDialog(getStringSync(Res.string.language_restart_dialog))
         settings.language = locale
     }
 

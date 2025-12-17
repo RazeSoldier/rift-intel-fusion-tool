@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
-import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.alerts.create.CreateAlertViewModel.UiState
 import dev.nohus.rift.alerts.create.FormAnswer.CharacterAnswer
 import dev.nohus.rift.alerts.create.FormAnswer.ContactsLabelAnswer
@@ -75,6 +74,7 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.get
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.sound.Sound
@@ -87,8 +87,6 @@ import org.jetbrains.compose.resources.stringResource
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.nameWithoutExtension
-
-private val stringResourceReader: StringResourceReader = koin.get()
 
 @Composable
 fun WindowScope.CreateAlertDialog(
@@ -309,7 +307,7 @@ private fun FormQuestion(
                     var min: Int by remember { mutableStateOf(0) }
                     var max: Int by remember { mutableStateOf(0) }
 
-                    fun getItemName(jumps: Int) = if (jumps == 0) stringResourceReader.getStringSync(Res.string.same_system) else "$jumps jump${jumps.plural}"
+                    fun getItemName(jumps: Int) = if (jumps == 0) getStringSync(Res.string.same_system) else "$jumps jump${jumps.plural}"
 
                     LaunchedEffect(formQuestion) {
                         onFormAnswer(JumpsRangeAnswer(minJumps = min, maxJumps = max))
@@ -805,7 +803,7 @@ private fun Pair<FormQuestion, FormAnswer>.toAnswerString(
             val (min, max) = (answer as JumpsRangeAnswer).let { it.minJumps to it.maxJumps }
             val plural = if (max > 1) "s" else ""
             if (min == 0 && max == 0) {
-                stringResourceReader.getStringSync(Res.string.same_system_only)
+                getStringSync(Res.string.same_system_only)
             } else if (min == 0) {
                 "Up to $max jump$plural away"
             } else if (min == max) {
