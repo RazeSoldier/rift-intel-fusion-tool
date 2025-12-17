@@ -41,8 +41,8 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.*
-import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.i18n.execIfLocaleNotInZh
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.location.CharacterLocationRepository.Location
 import dev.nohus.rift.location.LocationRepository.Station
 import dev.nohus.rift.location.LocationRepository.Structure
@@ -59,8 +59,6 @@ import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-
-private val stringResourceReader : StringResourceReader = koin.get()
 
 @Composable
 fun CharactersWindow(
@@ -470,9 +468,9 @@ private fun LocationText(location: Location?) {
                                 append(stringResource(Res.string.dockedin_if_unknown_ship_name))
                             }
                             if (location.station != null) {
-                                execIfLocaleNotInZh { append(stringResourceReader.getStringSync(Res.string.a_with_space)) }
+                                execIfLocaleNotInZh { append(getStringSync(Res.string.a_with_space)) }
                                 withColor(RiftTheme.colors.textHighlighted) {
-                                    append(stringResourceReader.getStringSync(Res.string.station))
+                                    append(getStringSync(Res.string.station))
                                 }
                             } else if (location.structure != null) {
                                 val structureTypeName = location.structure.typeId?.let { typesRepository.getTypeName(it) } ?: stringResource(Res.string.structure)

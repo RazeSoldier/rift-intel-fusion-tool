@@ -1,6 +1,5 @@
 package dev.nohus.rift.alerts.create
 
-import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.alerts.create.FormQuestion.CombatTargetQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.ContactsLabelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.FreeformTextQuestion
@@ -14,29 +13,28 @@ import dev.nohus.rift.alerts.create.FormQuestion.SoundQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.SpecificCharactersQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.SystemQuestion
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
-import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.repositories.ShipTypesRepository
 
 @Suppress("PropertyName")
 class CreateAlertQuestions(
     shipTypesRepository: ShipTypesRepository,
     configurationPackRepository: ConfigurationPackRepository,
-    stringResourceReader: StringResourceReader = koin.get(),
 ) {
     private var id = 0
 
     // Alert trigger
-    val ALERT_TRIGGER_INTEL_REPORTED = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_intel_reported))
-    val ALERT_TRIGGER_GAME_ACTION = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_game_action))
-    val ALERT_TRIGGER_PLANETARY_INDUSTRY = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_planetary_industry))
-    val ALERT_TRIGGER_CHAT_MESSAGE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_chat_message))
-    val ALERT_TRIGGER_JABBER_PING = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_jabber_ping))
-    val ALERT_TRIGGER_JABBER_MESSAGE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_jabber_message))
-    val ALERT_TRIGGER_NO_MESSAGE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_trigger_no_message))
+    val ALERT_TRIGGER_INTEL_REPORTED = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_intel_reported))
+    val ALERT_TRIGGER_GAME_ACTION = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_game_action))
+    val ALERT_TRIGGER_PLANETARY_INDUSTRY = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_planetary_industry))
+    val ALERT_TRIGGER_CHAT_MESSAGE = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_chat_message))
+    val ALERT_TRIGGER_JABBER_PING = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_jabber_ping))
+    val ALERT_TRIGGER_JABBER_MESSAGE = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_jabber_message))
+    val ALERT_TRIGGER_NO_MESSAGE = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_trigger_no_message))
     val ALERT_TRIGGER_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.alert_trigger_question),
+        title = getStringSync(Res.string.alert_trigger_question),
         items = buildList {
             add(ALERT_TRIGGER_INTEL_REPORTED)
             add(ALERT_TRIGGER_GAME_ACTION)
@@ -51,18 +49,18 @@ class CreateAlertQuestions(
     )
 
     // Intel report type
-    val INTEL_REPORT_TYPE_ANY_CHARACTER = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.characters))
-    val INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_specific_characters))
-    val INTEL_REPORT_TYPE_LABELED_CONTACTS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_labeled_contacts))
-    val INTEL_REPORT_TYPE_ANY_SHIP = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_any_ship))
-    val INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_specific_ship_classes))
-    val INTEL_REPORT_TYPE_WORMHOLE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_wormhole))
-    val INTEL_REPORT_TYPE_GATE_CAMP = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_gate_camp))
-    val INTEL_REPORT_TYPE_BUBBLES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_bubbles))
-    val INTEL_REPORT_TYPE_ESS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_ess))
-    val INTEL_REPORT_TYPE_SKYHOOK = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_type_skyhook))
+    val INTEL_REPORT_TYPE_ANY_CHARACTER = FormChoiceItem(id = id++, text = getStringSync(Res.string.characters))
+    val INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_specific_characters))
+    val INTEL_REPORT_TYPE_LABELED_CONTACTS = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_labeled_contacts))
+    val INTEL_REPORT_TYPE_ANY_SHIP = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_any_ship))
+    val INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_specific_ship_classes))
+    val INTEL_REPORT_TYPE_WORMHOLE = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_wormhole))
+    val INTEL_REPORT_TYPE_GATE_CAMP = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_gate_camp))
+    val INTEL_REPORT_TYPE_BUBBLES = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_bubbles))
+    val INTEL_REPORT_TYPE_ESS = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_ess))
+    val INTEL_REPORT_TYPE_SKYHOOK = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_type_skyhook))
     val INTEL_REPORT_TYPE_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_type_question),
+        title = getStringSync(Res.string.intel_report_type_question),
         items = listOf(
             INTEL_REPORT_TYPE_ANY_CHARACTER,
             INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS,
@@ -79,35 +77,35 @@ class CreateAlertQuestions(
 
     // Intel report type, specific characters
     val INTEL_REPORT_TYPE_SPECIFIC_CHARACTERS_QUESTION = SpecificCharactersQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_type_specific_characters_question),
+        title = getStringSync(Res.string.intel_report_type_specific_characters_question),
         allowEmpty = false,
     )
 
     // Intel report type, labeled contacts
     val INTEL_REPORT_TYPE_LABELED_CONTACTS_QUESTION = ContactsLabelQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_type_labeled_contacts_question),
+        title = getStringSync(Res.string.intel_report_type_labeled_contacts_question),
     )
 
     // Intel report type, specific ship classes
     val INTEL_REPORT_TYPE_SPECIFIC_SHIP_CLASSES_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_type_specific_ship_classes_question),
+        title = getStringSync(Res.string.intel_report_type_specific_ship_classes_question),
         items = shipTypesRepository.getShipClasses()
             .sorted()
             .mapIndexed { index, shipClass -> FormChoiceItem(index, shipClass) },
     )
 
     // Intel report location
-    val INTEL_REPORT_LOCATION_SYSTEM = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_location_system))
+    val INTEL_REPORT_LOCATION_SYSTEM = FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_location_system))
     val INTEL_REPORT_LOCATION_ANY_OWNED_CHARACTER =
-        FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_location_any_owned_character))
+        FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_location_any_owned_character))
     val INTEL_REPORT_LOCATION_OWNED_CHARACTER =
-        FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_location_owned_character))
+        FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_location_owned_character))
     val INTEL_REPORT_LOCATION_ANY_UNDOCKED_CHARACTER =
-        FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_location_any_undocked_character))
+        FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_location_any_undocked_character))
     val INTEL_REPORT_LOCATION_UNDOCKED_CHARACTER =
-        FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.intel_report_location_undocked_character))
+        FormChoiceItem(id = id++, text = getStringSync(Res.string.intel_report_location_undocked_character))
     val INTEL_REPORT_LOCATION_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_location_question),
+        title = getStringSync(Res.string.intel_report_location_question),
         items = listOf(
             INTEL_REPORT_LOCATION_SYSTEM,
             INTEL_REPORT_LOCATION_ANY_OWNED_CHARACTER,
@@ -119,59 +117,59 @@ class CreateAlertQuestions(
 
     // Intel report location, system
     val INTEL_REPORT_LOCATION_SYSTEM_QUESTION = SystemQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_location_system_question),
+        title = getStringSync(Res.string.intel_report_location_system_question),
         allowEmpty = false,
     )
 
     // Intel report location, specific character
     val INTEL_REPORT_LOCATION_OWNED_CHARACTER_QUESTION = OwnedCharacterQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_location_owned_character_question),
+        title = getStringSync(Res.string.intel_report_location_owned_character_question),
     )
 
     // Intel report location, jumps range
     val INTEL_REPORT_LOCATION_JUMPS_RANGE_QUESTION = JumpsRangeQuestion(
-        title = stringResourceReader.getStringSync(Res.string.intel_report_location_jumps_range_question),
+        title = getStringSync(Res.string.intel_report_location_jumps_range_question),
     )
 
     // Game action type
     val GAME_ACTION_TYPE_IN_COMBAT = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_in_combat),
-        description = stringResourceReader.getStringSync(Res.string.game_action_type_in_combat_description),
+        text = getStringSync(Res.string.game_action_type_in_combat),
+        description = getStringSync(Res.string.game_action_type_in_combat_description),
     )
     val GAME_ACTION_TYPE_UNDER_ATTACK = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_under_attack),
-        description = stringResourceReader.getStringSync(Res.string.game_action_type_under_attack_description),
+        text = getStringSync(Res.string.game_action_type_under_attack),
+        description = getStringSync(Res.string.game_action_type_under_attack_description),
     )
     val GAME_ACTION_TYPE_ATTACKING = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_attacking),
+        text = getStringSync(Res.string.game_action_type_attacking),
     )
     val GAME_ACTION_TYPE_BEING_WARP_SCRAMBLED = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_being_warp_scrambled),
+        text = getStringSync(Res.string.game_action_type_being_warp_scrambled),
     )
     val GAME_ACTION_TYPE_DECLOAKED = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_decloaked),
+        text = getStringSync(Res.string.game_action_type_decloaked),
     )
     val GAME_ACTION_TYPE_COMBAT_STOPPED = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped),
-        description = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_description),
+        text = getStringSync(Res.string.game_action_type_combat_stopped),
+        description = getStringSync(Res.string.game_action_type_combat_stopped_description),
     )
     val GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_run_out_of_charges),
+        text = getStringSync(Res.string.game_action_type_run_out_of_charges),
     )
     val GAME_ACTION_TYPE_CUSTOM = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.game_action_type_custom),
-        description = stringResourceReader.getStringSync(Res.string.game_action_type_custom_description),
+        text = getStringSync(Res.string.game_action_type_custom),
+        description = getStringSync(Res.string.game_action_type_custom_description),
     )
     val GAME_ACTION_TYPE_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.game_action_type_question),
+        title = getStringSync(Res.string.game_action_type_question),
         items = listOf(
             GAME_ACTION_TYPE_IN_COMBAT,
             GAME_ACTION_TYPE_UNDER_ATTACK,
@@ -186,27 +184,27 @@ class CreateAlertQuestions(
 
     // Game action type, combat target
     val GAME_ACTION_TYPE_COMBAT_TARGET_QUESTION = CombatTargetQuestion(
-        title = stringResourceReader.getStringSync(Res.string.game_action_type_combat_target_question),
+        title = getStringSync(Res.string.game_action_type_combat_target_question),
         placeholder = "Dark Blood",
         allowEmpty = true,
     )
 
     // Game action type, decloak exceptions
     val GAME_ACTION_TYPE_DECLOAKED_EXCEPTIONS_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.game_action_type_decloaked_exceptions_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.game_action_type_decloaked_exceptions_placeholder),
+        title = getStringSync(Res.string.game_action_type_decloaked_exceptions_question),
+        placeholder = getStringSync(Res.string.game_action_type_decloaked_exceptions_placeholder),
         allowEmpty = true,
     )
 
     // Game action type, combat stopped, duration
-    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_10_SECONDS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_10_seconds))
-    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_20_SECONDS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_20_seconds))
-    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_30_SECONDS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_30_seconds))
-    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_1_MINUTE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_1_minute))
-    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_2_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_2_minutes))
-    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_5_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_5_minutes))
+    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_10_SECONDS = FormChoiceItem(id = id++, text = getStringSync(Res.string.game_action_type_combat_stopped_duration_10_seconds))
+    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_20_SECONDS = FormChoiceItem(id = id++, text = getStringSync(Res.string.game_action_type_combat_stopped_duration_20_seconds))
+    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_30_SECONDS = FormChoiceItem(id = id++, text = getStringSync(Res.string.game_action_type_combat_stopped_duration_30_seconds))
+    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_1_MINUTE = FormChoiceItem(id = id++, text = getStringSync(Res.string.game_action_type_combat_stopped_duration_1_minute))
+    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_2_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.game_action_type_combat_stopped_duration_2_minutes))
+    val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_5_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.game_action_type_combat_stopped_duration_5_minutes))
     val GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.game_action_type_combat_stopped_duration_question),
+        title = getStringSync(Res.string.game_action_type_combat_stopped_duration_question),
         items = listOf(
             GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_10_SECONDS,
             GAME_ACTION_TYPE_COMBAT_STOPPED_DURATION_20_SECONDS,
@@ -219,8 +217,8 @@ class CreateAlertQuestions(
 
     // Game action type, custom game log message
     val GAME_ACTION_TYPE_CUSTOM_MESSAGE_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.game_action_type_custom_message_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.game_action_type_custom_message_placeholder),
+        title = getStringSync(Res.string.game_action_type_custom_message_question),
+        placeholder = getStringSync(Res.string.game_action_type_custom_message_placeholder),
         allowEmpty = false,
         isRegexAllowed = true,
     )
@@ -228,26 +226,26 @@ class CreateAlertQuestions(
     // Planetary Industry event type
     val PLANETARY_INDUSTRY_EVENT_TYPE_NOT_SETUP = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_not_setup),
-        description = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_not_setup_description),
+        text = getStringSync(Res.string.planetary_industry_event_type_not_setup),
+        description = getStringSync(Res.string.planetary_industry_event_type_not_setup_description),
     )
     val PLANETARY_INDUSTRY_EVENT_TYPE_EXTRACTOR_INACTIVE = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_extractor_inactive),
-        description = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_extractor_inactive_description),
+        text = getStringSync(Res.string.planetary_industry_event_type_extractor_inactive),
+        description = getStringSync(Res.string.planetary_industry_event_type_extractor_inactive_description),
     )
     val PLANETARY_INDUSTRY_EVENT_TYPE_STORAGE_FULL = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_storage_full),
-        description = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_storage_full_description),
+        text = getStringSync(Res.string.planetary_industry_event_type_storage_full),
+        description = getStringSync(Res.string.planetary_industry_event_type_storage_full_description),
     )
     val PLANETARY_INDUSTRY_EVENT_TYPE_IDLE = FormChoiceItem(
         id = id++,
-        text = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_idle),
-        description = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_idle_description),
+        text = getStringSync(Res.string.planetary_industry_event_type_idle),
+        description = getStringSync(Res.string.planetary_industry_event_type_idle_description),
     )
     val PLANETARY_INDUSTRY_EVENT_TYPE_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.planetary_industry_event_type_question),
+        title = getStringSync(Res.string.planetary_industry_event_type_question),
         items = listOf(
             PLANETARY_INDUSTRY_EVENT_TYPE_EXTRACTOR_INACTIVE,
             PLANETARY_INDUSTRY_EVENT_TYPE_STORAGE_FULL,
@@ -258,22 +256,22 @@ class CreateAlertQuestions(
 
     // Planetary Industry colony filter
     val PLANETARY_INDUSTRY_COLONIES_QUESTION = PlanetaryIndustryColoniesQuestion(
-        title = stringResourceReader.getStringSync(Res.string.planetary_industry_colonies_question),
+        title = getStringSync(Res.string.planetary_industry_colonies_question),
     )
 
     // Planetary Industry alert before
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_NONE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_none))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_5_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_5_minutes))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_15_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_15_minutes))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_30_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_30_minutes))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_1_HOUR = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_1_hour))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_2_HOURS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_2_hours))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_4_HOURS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_4_hours))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_8_HOURS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_8_hours))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_12_HOURS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_12_hours))
-    val PLANETARY_INDUSTRY_ALERT_BEFORE_24_HOURS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_24_hours))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_NONE = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_none))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_5_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_5_minutes))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_15_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_15_minutes))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_30_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_30_minutes))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_1_HOUR = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_1_hour))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_2_HOURS = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_2_hours))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_4_HOURS = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_4_hours))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_8_HOURS = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_8_hours))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_12_HOURS = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_12_hours))
+    val PLANETARY_INDUSTRY_ALERT_BEFORE_24_HOURS = FormChoiceItem(id = id++, text = getStringSync(Res.string.planetary_industry_alert_before_24_hours))
     val PLANETARY_INDUSTRY_ALERT_BEFORE_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.planetary_industry_alert_before_question),
+        title = getStringSync(Res.string.planetary_industry_alert_before_question),
         items = listOf(
             PLANETARY_INDUSTRY_ALERT_BEFORE_NONE,
             PLANETARY_INDUSTRY_ALERT_BEFORE_5_MINUTES,
@@ -289,10 +287,10 @@ class CreateAlertQuestions(
     )
 
     // Chat message, channel type
-    val CHAT_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.chat_message_channel_any))
-    val CHAT_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.chat_message_channel_specific))
+    val CHAT_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = getStringSync(Res.string.chat_message_channel_any))
+    val CHAT_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = getStringSync(Res.string.chat_message_channel_specific))
     val CHAT_MESSAGE_CHANNEL_TYPE_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.chat_message_channel_type_question),
+        title = getStringSync(Res.string.chat_message_channel_type_question),
         items = listOf(
             CHAT_MESSAGE_CHANNEL_ANY,
             CHAT_MESSAGE_CHANNEL_SPECIFIC,
@@ -301,23 +299,23 @@ class CreateAlertQuestions(
 
     // Chat message, specific channel
     val CHAT_MESSAGE_SPECIFIC_CHANNEL_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.chat_message_specific_channel_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.chat_message_specific_channel_placeholder),
+        title = getStringSync(Res.string.chat_message_specific_channel_question),
+        placeholder = getStringSync(Res.string.chat_message_specific_channel_placeholder),
         allowEmpty = false,
     )
 
     // Chat message, sender
     val CHAT_MESSAGE_SENDER_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.chat_message_sender_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.chat_message_sender_placeholder),
+        title = getStringSync(Res.string.chat_message_sender_question),
+        placeholder = getStringSync(Res.string.chat_message_sender_placeholder),
         allowEmpty = true,
     )
 
     // Chat message, exclude self
-    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_NO = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.chat_message_sender_exclude_self_no))
-    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_YES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.chat_message_sender_exclude_self_yes))
+    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_NO = FormChoiceItem(id = id++, text = getStringSync(Res.string.chat_message_sender_exclude_self_no))
+    val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_YES = FormChoiceItem(id = id++, text = getStringSync(Res.string.chat_message_sender_exclude_self_yes))
     val CHAT_MESSAGE_SENDER_EXCLUDE_SELF_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.chat_message_sender_exclude_self_question),
+        title = getStringSync(Res.string.chat_message_sender_exclude_self_question),
         items = listOf(
             CHAT_MESSAGE_SENDER_EXCLUDE_SELF_NO,
             CHAT_MESSAGE_SENDER_EXCLUDE_SELF_YES,
@@ -326,17 +324,17 @@ class CreateAlertQuestions(
 
     // Chat message, message contains
     val CHAT_MESSAGE_MESSAGE_CONTAINING_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.chat_message_message_containing_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.chat_message_message_containing_placeholder),
+        title = getStringSync(Res.string.chat_message_message_containing_question),
+        placeholder = getStringSync(Res.string.chat_message_message_containing_placeholder),
         allowEmpty = true,
         isRegexAllowed = true,
     )
 
     // Jabber ping, ping type
-    val JABBER_PING_TYPE_FLEET = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_ping_type_fleet))
-    val JABBER_PING_TYPE_MESSAGE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_ping_type_message))
+    val JABBER_PING_TYPE_FLEET = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_ping_type_fleet))
+    val JABBER_PING_TYPE_MESSAGE = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_ping_type_message))
     val JABBER_PING_TYPE_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_ping_type_question),
+        title = getStringSync(Res.string.jabber_ping_type_question),
         items = listOf(
             JABBER_PING_TYPE_FLEET,
             JABBER_PING_TYPE_MESSAGE,
@@ -345,22 +343,22 @@ class CreateAlertQuestions(
 
     // Jabber ping, fleet ping, fleet commander
     val JABBER_PING_FLEET_COMMANDER_QUESTION = SpecificCharactersQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_commander_question),
+        title = getStringSync(Res.string.jabber_ping_fleet_commander_question),
         allowEmpty = true,
     )
 
     // Jabber ping, fleet ping, formup system
     val JABBER_PING_FLEET_FORMUP_SYSTEM_QUESTION = SystemQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_formup_system_question),
+        title = getStringSync(Res.string.jabber_ping_fleet_formup_system_question),
         allowEmpty = true,
     )
 
     // Jabber ping, fleet ping, PAP type
-    val JABBER_PING_FLEET_PAP_TYPE_STRATEGIC = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_pap_type_strategic))
-    val JABBER_PING_FLEET_PAP_TYPE_PEACETIME = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_pap_type_peacetime))
-    val JABBER_PING_FLEET_PAP_TYPE_ANY = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_pap_type_any))
+    val JABBER_PING_FLEET_PAP_TYPE_STRATEGIC = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_ping_fleet_pap_type_strategic))
+    val JABBER_PING_FLEET_PAP_TYPE_PEACETIME = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_ping_fleet_pap_type_peacetime))
+    val JABBER_PING_FLEET_PAP_TYPE_ANY = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_ping_fleet_pap_type_any))
     val JABBER_PING_FLEET_PAP_TYPE_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_pap_type_question),
+        title = getStringSync(Res.string.jabber_ping_fleet_pap_type_question),
         items = listOf(
             JABBER_PING_FLEET_PAP_TYPE_STRATEGIC,
             JABBER_PING_FLEET_PAP_TYPE_PEACETIME,
@@ -370,24 +368,24 @@ class CreateAlertQuestions(
 
     // Jabber ping, fleet ping, doctrine
     val JABBER_PING_FLEET_DOCTRINE_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_doctrine_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.jabber_ping_fleet_doctrine_placeholder),
+        title = getStringSync(Res.string.jabber_ping_fleet_doctrine_question),
+        placeholder = getStringSync(Res.string.jabber_ping_fleet_doctrine_placeholder),
         allowEmpty = true,
     )
 
     // Jabber ping, target
     val JABBER_PING_TARGET_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_ping_target_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.jabber_ping_target_placeholder),
+        title = getStringSync(Res.string.jabber_ping_target_question),
+        placeholder = getStringSync(Res.string.jabber_ping_target_placeholder),
         allowEmpty = true,
     )
 
     // Jabber message, channel type
-    val JABBER_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_message_channel_any))
-    val JABBER_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_message_channel_specific))
-    val JABBER_MESSAGE_CHANNEL_DIRECT_MESSAGE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.jabber_message_channel_direct_message))
+    val JABBER_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_message_channel_any))
+    val JABBER_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_message_channel_specific))
+    val JABBER_MESSAGE_CHANNEL_DIRECT_MESSAGE = FormChoiceItem(id = id++, text = getStringSync(Res.string.jabber_message_channel_direct_message))
     val JABBER_MESSAGE_CHANNEL_TYPE_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_message_channel_type_question),
+        title = getStringSync(Res.string.jabber_message_channel_type_question),
         items = listOf(
             JABBER_MESSAGE_CHANNEL_ANY,
             JABBER_MESSAGE_CHANNEL_SPECIFIC,
@@ -397,32 +395,32 @@ class CreateAlertQuestions(
 
     // Jabber message, specific channel
     val JABBER_MESSAGE_SPECIFIC_CHANNEL_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_message_specific_channel_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.jabber_message_specific_channel_placeholder),
+        title = getStringSync(Res.string.jabber_message_specific_channel_question),
+        placeholder = getStringSync(Res.string.jabber_message_specific_channel_placeholder),
         allowEmpty = false,
     )
 
     // Jabber message, sender
     val JABBER_MESSAGE_SENDER_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_message_sender_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.jabber_message_sender_placeholder),
+        title = getStringSync(Res.string.jabber_message_sender_question),
+        placeholder = getStringSync(Res.string.jabber_message_sender_placeholder),
         allowEmpty = true,
     )
 
     // Jabber message, message contains
     val JABBER_MESSAGE_MESSAGE_CONTAINING_QUESTION = FreeformTextQuestion(
-        title = stringResourceReader.getStringSync(Res.string.jabber_message_message_containing_question),
-        placeholder = stringResourceReader.getStringSync(Res.string.jabber_message_message_containing_placeholder),
+        title = getStringSync(Res.string.jabber_message_message_containing_question),
+        placeholder = getStringSync(Res.string.jabber_message_message_containing_placeholder),
         allowEmpty = true,
         isRegexAllowed = true,
     )
 
     // No message channel type
-    val NO_MESSAGE_CHANNEL_ALL = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_channel_all))
-    val NO_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_channel_any))
-    val NO_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_channel_specific))
+    val NO_MESSAGE_CHANNEL_ALL = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_channel_all))
+    val NO_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_channel_any))
+    val NO_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_channel_specific))
     val NO_MESSAGE_CHANNEL_TYPE_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.no_message_channel_type_question),
+        title = getStringSync(Res.string.no_message_channel_type_question),
         items = listOf(
             NO_MESSAGE_CHANNEL_ALL,
             NO_MESSAGE_CHANNEL_ANY,
@@ -432,17 +430,17 @@ class CreateAlertQuestions(
 
     // No message channel type, specific channel
     val NO_MESSAGE_CHANNEL_SPECIFIC_QUESTION = IntelChannelQuestion(
-        title = stringResourceReader.getStringSync(Res.string.no_message_channel_specific_question),
+        title = getStringSync(Res.string.no_message_channel_specific_question),
     )
 
     // No message duration
-    val NO_MESSAGE_DURATION_2_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_duration_2_minutes))
-    val NO_MESSAGE_DURATION_5_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_duration_5_minutes))
-    val NO_MESSAGE_DURATION_10_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_duration_10_minutes))
-    val NO_MESSAGE_DURATION_20_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_duration_20_minutes))
-    val NO_MESSAGE_DURATION_30_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.no_message_duration_30_minutes))
+    val NO_MESSAGE_DURATION_2_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_duration_2_minutes))
+    val NO_MESSAGE_DURATION_5_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_duration_5_minutes))
+    val NO_MESSAGE_DURATION_10_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_duration_10_minutes))
+    val NO_MESSAGE_DURATION_20_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_duration_20_minutes))
+    val NO_MESSAGE_DURATION_30_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.no_message_duration_30_minutes))
     val NO_MESSAGE_DURATION_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.no_message_duration_question),
+        title = getStringSync(Res.string.no_message_duration_question),
         items = listOf(
             NO_MESSAGE_DURATION_2_MINUTES,
             NO_MESSAGE_DURATION_5_MINUTES,
@@ -453,14 +451,14 @@ class CreateAlertQuestions(
     )
 
     // Alert action
-    val ALERT_ACTION_RIFT_NOTIFICATION = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_action_rift_notification), description = stringResourceReader.getStringSync(Res.string.alert_action_rift_notification_description))
-    val ALERT_ACTION_SYSTEM_NOTIFICATION = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_action_system_notification), description = stringResourceReader.getStringSync(Res.string.alert_action_system_notification_description))
-    val ALERT_ACTION_PUSH_NOTIFICATION = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_action_push_notification), description = stringResourceReader.getStringSync(Res.string.alert_action_push_notification_description))
-    val ALERT_ACTION_PLAY_SOUND = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_action_play_sound))
-    val ALERT_ACTION_SHOW_COLONIES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_action_show_colonies), description = stringResourceReader.getStringSync(Res.string.alert_action_show_colonies_description))
-    val ALERT_ACTION_SHOW_PING = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_action_show_ping), description = stringResourceReader.getStringSync(Res.string.alert_action_show_ping_description))
+    val ALERT_ACTION_RIFT_NOTIFICATION = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_action_rift_notification), description = getStringSync(Res.string.alert_action_rift_notification_description))
+    val ALERT_ACTION_SYSTEM_NOTIFICATION = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_action_system_notification), description = getStringSync(Res.string.alert_action_system_notification_description))
+    val ALERT_ACTION_PUSH_NOTIFICATION = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_action_push_notification), description = getStringSync(Res.string.alert_action_push_notification_description))
+    val ALERT_ACTION_PLAY_SOUND = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_action_play_sound))
+    val ALERT_ACTION_SHOW_COLONIES = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_action_show_colonies), description = getStringSync(Res.string.alert_action_show_colonies_description))
+    val ALERT_ACTION_SHOW_PING = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_action_show_ping), description = getStringSync(Res.string.alert_action_show_ping_description))
     val ALERT_ACTION_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.alert_action_question),
+        title = getStringSync(Res.string.alert_action_question),
         items = listOf(
             ALERT_ACTION_RIFT_NOTIFICATION,
             ALERT_ACTION_SYSTEM_NOTIFICATION,
@@ -471,7 +469,7 @@ class CreateAlertQuestions(
 
     // Alert action (Planetary Industry ping version)
     val ALERT_ACTION_PLANETARY_INDUSTRY_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.alert_action_question),
+        title = getStringSync(Res.string.alert_action_question),
         items = listOf(
             ALERT_ACTION_SHOW_COLONIES,
             ALERT_ACTION_RIFT_NOTIFICATION,
@@ -483,7 +481,7 @@ class CreateAlertQuestions(
 
     // Alert action (Jabber ping version)
     val ALERT_ACTION_JABBER_PING_QUESTION = MultipleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.alert_action_question),
+        title = getStringSync(Res.string.alert_action_question),
         items = listOf(
             ALERT_ACTION_SHOW_PING,
             ALERT_ACTION_PUSH_NOTIFICATION,
@@ -493,18 +491,18 @@ class CreateAlertQuestions(
 
     // Alert action, sound
     val ALERT_ACTION_SOUND_QUESTION = SoundQuestion(
-        title = stringResourceReader.getStringSync(Res.string.alert_action_sound_question),
+        title = getStringSync(Res.string.alert_action_sound_question),
     )
 
     // Alert cooldown
-    val ALERT_COOLDOWN_NONE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_cooldown_none))
-    val ALERT_COOLDOWN_30_SECONDS = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_cooldown_30_seconds))
-    val ALERT_COOLDOWN_1_MINUTE = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_cooldown_1_minute))
-    val ALERT_COOLDOWN_2_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_cooldown_2_minutes))
-    val ALERT_COOLDOWN_5_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_cooldown_5_minutes))
-    val ALERT_COOLDOWN_10_MINUTES = FormChoiceItem(id = id++, text = stringResourceReader.getStringSync(Res.string.alert_cooldown_10_minutes))
+    val ALERT_COOLDOWN_NONE = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_cooldown_none))
+    val ALERT_COOLDOWN_30_SECONDS = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_cooldown_30_seconds))
+    val ALERT_COOLDOWN_1_MINUTE = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_cooldown_1_minute))
+    val ALERT_COOLDOWN_2_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_cooldown_2_minutes))
+    val ALERT_COOLDOWN_5_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_cooldown_5_minutes))
+    val ALERT_COOLDOWN_10_MINUTES = FormChoiceItem(id = id++, text = getStringSync(Res.string.alert_cooldown_10_minutes))
     val ALERT_COOLDOWN_QUESTION = SingleChoiceQuestion(
-        title = stringResourceReader.getStringSync(Res.string.alert_cooldown_question),
+        title = getStringSync(Res.string.alert_cooldown_question),
         items = listOf(
             ALERT_COOLDOWN_NONE,
             ALERT_COOLDOWN_30_SECONDS,

@@ -1,9 +1,8 @@
 package dev.nohus.rift.planetaryindustry
 
-import dev.nohus.rift.i18n.StringResourceReader
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
-import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.network.esi.EsiApi
@@ -54,7 +53,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 private val logger = KotlinLogging.logger {}
-private val stringResourceReader : StringResourceReader = koin.get()
 
 @Single
 class PlanetaryIndustryRepository(
@@ -330,7 +328,7 @@ class PlanetaryIndustryRepository(
         } ?: 0f
         val designator = getDesignator(pin.pinId)
 
-        return if (stringResourceReader.getStringSync(Res.string.extractor_control_unit) in name) {
+        return if (getStringSync(Res.string.extractor_control_unit) in name) {
             val cycleTime = pin.extractor?.cycleTime?.let { Duration.ofSeconds(it.toLong()) }
             val activityState = pin.expiryTime != null && lastUpdate < pin.expiryTime && pin.lastCycleStart != null
             val productType = pin.extractor?.productTypeId?.let { typesRepository.getTypeOrPlaceholder(it) }
@@ -354,7 +352,7 @@ class PlanetaryIndustryRepository(
                 baseValue = pin.extractor?.quantityPerCycle,
                 status = PinStatus.Static,
             )
-        } else if (stringResourceReader.getStringSync(Res.string.industry_facility) in name || stringResourceReader.getStringSync(Res.string.production_plant) in name) {
+        } else if (getStringSync(Res.string.industry_facility) in name || getStringSync(Res.string.production_plant) in name) {
             val schematic = pin.schematicId?.let { planetaryIndustrySchematicsRepository.getSchematic(it) }
             val cycleTime = schematic?.cycleTime ?: Duration.ZERO
             val lastCycleAgo = Duration.between(pin.lastCycleStart ?: Instant.EPOCH, lastUpdate)
@@ -376,7 +374,7 @@ class PlanetaryIndustryRepository(
                 lastCycleStartTime = pin.lastCycleStart,
                 status = PinStatus.Static,
             )
-        } else if (stringResourceReader.getStringSync(Res.string.command_center) in name) {
+        } else if (getStringSync(Res.string.command_center) in name) {
             Pin.CommandCenter(
                 id = pin.pinId,
                 type = pinType,
@@ -391,7 +389,7 @@ class PlanetaryIndustryRepository(
                 level = upgradeLevel,
                 status = PinStatus.Static,
             )
-        } else if (stringResourceReader.getStringSync(Res.string.launchpad) in name) {
+        } else if (getStringSync(Res.string.launchpad) in name) {
             Pin.Launchpad(
                 id = pin.pinId,
                 type = pinType,
@@ -405,7 +403,7 @@ class PlanetaryIndustryRepository(
                 longitude = pin.longitude,
                 status = PinStatus.Static,
             )
-        } else if (stringResourceReader.getStringSync(Res.string.storage) in name) {
+        } else if (getStringSync(Res.string.storage) in name) {
             Pin.Storage(
                 id = pin.pinId,
                 type = pinType,
