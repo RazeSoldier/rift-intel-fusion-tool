@@ -280,8 +280,8 @@ class Settings(
         set(value) = update { copy(isSovereigntyUpgradesHackImportingOfflineEnabled = value) }
 
     var preferredExternalServices: List<ExternalService>
-        get() = model.preferredExternalServices
-        set(value) = update { copy(preferredExternalServices = value) }
+        get() = model.preferredExternalServices2
+        set(value) = update { copy(preferredExternalServices2 = value) }
 
     var corpWalletDivisionNames: Map<Int, Map<Int, String>>
         get() = model.corpWalletDivisionNames

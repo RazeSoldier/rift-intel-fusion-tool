@@ -582,7 +582,7 @@ class EsiApi(
 
     suspend fun getKillmailIdHash(
         originator: Originator,
-        killmailId: Long,
+        killmailId: String,
         killmailHash: String,
     ): Result<KillmailIdHash> {
         return execute {
