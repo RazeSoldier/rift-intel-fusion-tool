@@ -57,7 +57,7 @@ class EsiRateLimitInterceptor : Interceptor {
             handleRateLimit(group, bucketKey)
 
             val response = chain.proceed(request)
-            handleResponse(response, group, bucketKey)
+            handleResponse(request, response, group, bucketKey)
 
             response
         } else {
@@ -129,6 +129,7 @@ class EsiRateLimitInterceptor : Interceptor {
     }
 
     private suspend fun handleResponse(
+        request: Request,
         response: Response,
         group: RateLimitGroup,
         bucketKey: BucketKey,

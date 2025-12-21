@@ -49,6 +49,8 @@ class RequestExecutorImpl(
     ): Result<R> {
         return try {
             Success(withContext(Dispatchers.IO) { request() })
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             handleError(e)
         }
@@ -69,6 +71,8 @@ class RequestExecutorImpl(
             } else {
                 handleError(HttpException(response))
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             handleError(e)
         }
@@ -124,8 +128,6 @@ class RequestExecutorImpl(
             logger.error { "Could not execute request: $e" }
         } else if (e is SerializationException) {
             logger.error(e) { "Unexpected API response" }
-        } else if (e is CancellationException) {
-            // Normal behavior, operation cancelled
         } else {
             logger.error(e) { "Unknown API Error" }
         }

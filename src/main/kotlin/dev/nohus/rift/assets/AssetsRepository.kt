@@ -171,7 +171,9 @@ class AssetsRepository(
     }
 
     private suspend fun load() = withContext(Dispatchers.Default) {
+        logger.debug { "Loading assets requested" }
         loadingMutex.withLock {
+            logger.debug { "Loading assets" }
             val charactersWithAssetsScopes = localCharactersRepository.characters.value
                 .filter { ScopeGroups.readAssets in it.scopes }
             val charactersWithCorpAssetsScopes = localCharactersRepository.characters.value
@@ -207,6 +209,7 @@ class AssetsRepository(
             }
 
             val loadedState = loadAllAssetsWithLocations(characters, corporations).map {
+                logger.debug { "Assets loaded: ${it.size}" }
                 val assetBalances = getAssetBalances(it)
                 LoadedState(it, assetBalances, assetOwners, divisionNames.await())
             }.onFailure {
