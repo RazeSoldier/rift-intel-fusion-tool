@@ -43,11 +43,11 @@ import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.generated.resources.window_contacts
-import dev.nohus.rift.generated.resources.window_corporation
 import dev.nohus.rift.generated.resources.window_evemailtag
 import dev.nohus.rift.generated.resources.window_jukebox
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.generated.resources.window_map
+import dev.nohus.rift.generated.resources.window_opportunities
 import dev.nohus.rift.generated.resources.window_planets
 import dev.nohus.rift.generated.resources.window_quitgame
 import dev.nohus.rift.generated.resources.window_rift_64
@@ -92,7 +92,7 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_assets, name = "Assets") { viewModel.onButtonClick(RiftWindow.Assets) })
             add(ButtonModel(icon = Res.drawable.window_wallet, name = "Wallets") { viewModel.onButtonClick(RiftWindow.Wallet) })
             add(ButtonModel(icon = Res.drawable.window_planets, name = "Planetary Industry", "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
-            add(ButtonModel(icon = Res.drawable.window_corporation, name = "Corporation Projects", "Projects") { viewModel.onButtonClick(RiftWindow.CorporationProjects) })
+            add(ButtonModel(icon = Res.drawable.window_opportunities, name = "Opportunities") { viewModel.onButtonClick(RiftWindow.Opportunities) })
             add(ButtonModel(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) })
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })

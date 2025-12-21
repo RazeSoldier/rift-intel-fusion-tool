@@ -9,6 +9,10 @@ class FormattedTextBuilder {
         texts += text.toFormattedText()
     }
 
+    fun append(text: FormattedText) {
+        texts += text
+    }
+
     fun appendLine(text: String) {
         append(text)
         appendLine()

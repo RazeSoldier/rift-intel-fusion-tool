@@ -3,6 +3,14 @@ package dev.nohus.rift.repositories
 import dev.nohus.rift.database.static.Planets
 import dev.nohus.rift.database.static.StaticDatabase
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.planet_background_barren
+import dev.nohus.rift.generated.resources.planet_background_gas
+import dev.nohus.rift.generated.resources.planet_background_ice
+import dev.nohus.rift.generated.resources.planet_background_lava
+import dev.nohus.rift.generated.resources.planet_background_oceanic
+import dev.nohus.rift.generated.resources.planet_background_plasma
+import dev.nohus.rift.generated.resources.planet_background_storm
+import dev.nohus.rift.generated.resources.planet_background_temperate
 import dev.nohus.rift.generated.resources.planet_barren
 import dev.nohus.rift.generated.resources.planet_gas
 import dev.nohus.rift.generated.resources.planet_ice
@@ -83,19 +91,20 @@ object PlanetTypes {
         val typeId: Int,
         val name: String,
         val icon: DrawableResource,
+        val background: DrawableResource,
     )
 
     val types = listOf(
-        PlanetType(11, "Temperate", Res.drawable.planet_temperate),
-        PlanetType(12, "Ice", Res.drawable.planet_ice),
-        PlanetType(13, "Gas", Res.drawable.planet_gas),
-        PlanetType(2014, "Oceanic", Res.drawable.planet_ocean),
-        PlanetType(2015, "Lava", Res.drawable.planet_lava),
-        PlanetType(2016, "Barren", Res.drawable.planet_barren),
-        PlanetType(2017, "Storm", Res.drawable.planet_storm),
-        PlanetType(2063, "Plasma", Res.drawable.planet_plasma),
+        PlanetType(11, "Temperate", Res.drawable.planet_temperate, Res.drawable.planet_background_temperate),
+        PlanetType(12, "Ice", Res.drawable.planet_ice, Res.drawable.planet_background_ice),
+        PlanetType(13, "Gas", Res.drawable.planet_gas, Res.drawable.planet_background_gas),
+        PlanetType(2014, "Oceanic", Res.drawable.planet_ocean, Res.drawable.planet_background_oceanic),
+        PlanetType(2015, "Lava", Res.drawable.planet_lava, Res.drawable.planet_background_lava),
+        PlanetType(2016, "Barren", Res.drawable.planet_barren, Res.drawable.planet_background_barren),
+        PlanetType(2017, "Storm", Res.drawable.planet_storm, Res.drawable.planet_background_storm),
+        PlanetType(2063, "Plasma", Res.drawable.planet_plasma, Res.drawable.planet_background_plasma),
 
-        PlanetType(30889, "Shattered", Res.drawable.planet_lava),
-        PlanetType(73911, "Scorched Barren", Res.drawable.planet_barren),
+        PlanetType(30889, "Shattered", Res.drawable.planet_lava, Res.drawable.planet_background_lava),
+        PlanetType(73911, "Scorched Barren", Res.drawable.planet_barren, Res.drawable.planet_background_barren),
     )
 }

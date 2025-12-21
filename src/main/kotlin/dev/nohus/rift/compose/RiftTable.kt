@@ -7,6 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -67,6 +68,7 @@ sealed interface TableCell {
     data class RichTableCell(
         val sortingText: String,
         val height: Dp,
+        val naturalWidth: Dp,
         val content: @Composable () -> Unit,
     ) : TableCell
 }
@@ -117,7 +119,7 @@ fun RiftTable(
             row.cells.getOrNull(columnIndex)
         }.maxOf { cell ->
             when (cell) {
-                is TableCell.RichTableCell -> cell.height + cellHorizontalPadding * 2
+                is TableCell.RichTableCell -> cell.naturalWidth + cellHorizontalPadding * 2
                 is TableCell.TextTableCell -> textMeasurer.measure(cell.text, cellStyle).size.width.let {
                     LocalDensity.current.run { it.toDp() + cellHorizontalPadding * 2 }
                 }

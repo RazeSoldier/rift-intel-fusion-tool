@@ -11,7 +11,7 @@ class NamesRepository(
     private val esiApi: EsiApi,
 ) {
 
-    private val names = mutableMapOf<Long, String>()
+    private var names: Map<Long, String> = emptyMap()
     private val categories = mutableMapOf<Long, UniverseNamesCategory>()
 
     /**
@@ -45,6 +45,7 @@ class NamesRepository(
     }
 
     suspend fun resolveNames(originator: Originator, ids: Set<Long>) {
+        val newNames = mutableMapOf<Long, String>()
         ids
             .filter { it !in names }
             .filterNot { IdRanges.isSpawnedItem(it) }
@@ -56,8 +57,9 @@ class NamesRepository(
                 }
             }
             .forEach {
-                names += it.id to it.name
+                newNames += it.id to it.name
                 categories += it.id to it.category
             }
+        if (newNames.isNotEmpty()) names += newNames
     }
 }

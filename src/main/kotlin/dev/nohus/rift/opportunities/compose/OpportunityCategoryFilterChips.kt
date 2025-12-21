@@ -1,4 +1,4 @@
-package dev.nohus.rift.corpprojects
+package dev.nohus.rift.opportunities.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,13 +16,15 @@ import dev.nohus.rift.compose.RiftPill
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.opportunities.OpportunityCategoryFilter
+import dev.nohus.rift.opportunities.OpportunityCategoryFilterType
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun ProjectCategoryFilterChips(
-    filters: List<ProjectCategoryFilter>,
-    enabledFilters: Set<ProjectCategoryFilter>,
-    onCategoryFilterChange: (ProjectCategoryFilter) -> Unit,
+fun OpportunityCategoryFilterChips(
+    filters: List<OpportunityCategoryFilter>,
+    enabledFilters: Set<OpportunityCategoryFilter>,
+    onCategoryFilterChange: (OpportunityCategoryFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(
@@ -38,7 +40,7 @@ fun ProjectCategoryFilterChips(
                         modifier = Modifier.padding(Spacing.large),
                     ) {
                         Text(
-                            text = filter.type,
+                            text = filter.type.name,
                             style = RiftTheme.typography.bodySecondary,
                         )
                         Row(
@@ -67,6 +69,8 @@ fun ProjectCategoryFilterChips(
             ) {
                 RiftPill(
                     text = filter.name,
+                    icon = filter.icon.takeIf { filter.type == OpportunityCategoryFilterType.Feature },
+                    isIconColor = false,
                     isSelected = filter in enabledFilters,
                     onClick = {
                         onCategoryFilterChange(filter)

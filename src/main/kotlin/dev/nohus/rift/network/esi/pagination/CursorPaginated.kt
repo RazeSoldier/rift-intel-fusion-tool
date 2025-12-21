@@ -87,12 +87,14 @@ suspend fun <T> fetchCursorPaginated(
                     is Failure -> return@coroutineScope result
                     is Success -> result.data
                 }
-                val (afterItems, newAfter) = when (val result = afterItemsDeferred.await()) {
+                val (afterItems, nextAfter) = when (val result = afterItemsDeferred.await()) {
                     is Failure -> return@coroutineScope result
                     is Success -> result.data
                 }
 
-                Success((beforeItems + items + afterItems) to (newAfter ?: after))
+                val newAfter = nextAfter ?: initialResponse.data.cursor?.after ?: after
+
+                Success((beforeItems + items + afterItems) to newAfter)
             }
         }
     }

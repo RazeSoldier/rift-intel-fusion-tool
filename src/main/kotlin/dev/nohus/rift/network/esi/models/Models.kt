@@ -83,6 +83,9 @@ data class CharactersIdCharacter(
     val name: String,
     @SerialName("title")
     val title: String? = null,
+    @SerialName("birthday")
+    @Serializable(with = IsoDateTimeSerializer::class)
+    val birthday: Instant,
 )
 
 @Serializable

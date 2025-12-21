@@ -79,7 +79,7 @@ fun Pin(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = Spacing.small)
-                    .background(RiftTheme.colors.windowBackgroundSecondary)
+                    .background(RiftTheme.colors.windowBackgroundSecondary.copy(alpha = 0.75f))
                     .padding(vertical = Spacing.verySmall, horizontal = Spacing.small),
             ) {
                 Image(

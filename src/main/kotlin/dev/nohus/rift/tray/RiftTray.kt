@@ -26,11 +26,11 @@ import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.generated.resources.window_contacts
-import dev.nohus.rift.generated.resources.window_corporation
 import dev.nohus.rift.generated.resources.window_evemailtag
 import dev.nohus.rift.generated.resources.window_jukebox
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.generated.resources.window_map
+import dev.nohus.rift.generated.resources.window_opportunities
 import dev.nohus.rift.generated.resources.window_planets
 import dev.nohus.rift.generated.resources.window_quitgame
 import dev.nohus.rift.generated.resources.window_rift_64
@@ -125,7 +125,7 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Assets", Res.drawable.window_assets) { onButtonClick(RiftWindow.Assets) })
         add(TrayMenuTextItem("Wallets", Res.drawable.window_wallet) { onButtonClick(RiftWindow.Wallet) })
         add(TrayMenuTextItem("Planetary Industry", Res.drawable.window_planets) { onButtonClick(RiftWindow.PlanetaryIndustry) })
-        add(TrayMenuTextItem("Corporation Projects", Res.drawable.window_corporation) { onButtonClick(RiftWindow.CorporationProjects) })
+        add(TrayMenuTextItem("Opportunities", Res.drawable.window_opportunities) { onButtonClick(RiftWindow.Opportunities) })
         add(TrayMenuTextItem("Contacts", Res.drawable.window_contacts) { onButtonClick(RiftWindow.Contacts) })
         if (isJabberEnabled) {
             add(TrayMenuTextItem("Pings", Res.drawable.window_sovereignty) { onButtonClick(RiftWindow.Pings) })

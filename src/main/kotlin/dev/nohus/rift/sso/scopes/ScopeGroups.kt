@@ -158,16 +158,29 @@ object ScopeGroups {
     val readProjects = ScopeGroup(
         name = "Read corporation projects",
         reasons = listOf(
-            "Needed to show projects in the Corporation Projects window",
+            "Needed to show corporation projects in the Opportunities window",
         ),
         scopes = listOf(
             EsiScope.Corporations.ReadProjects,
         ),
     )
+    val readJobs = ScopeGroup(
+        name = "Read freelance jobs",
+        reasons = listOf(
+            "Needed to show freelance jobs your participate in in the Opportunities window",
+            "Needed to show freelance jobs created by your corporation in the Opportunities window",
+        ),
+        scopes = listOf(
+            EsiScope.Characters.ReadFreelanceJobs,
+            EsiScope.Corporations.ReadFreelanceJobs,
+        ),
+    )
     val readRoles = ScopeGroup(
         name = "Read corporation roles",
         reasons = listOf(
-            "Needed to show projects in the Corporation Projects window",
+            "Needed to show corporation assets in the Assets window",
+            "Needed to show corporation wallet details in the Wallets window",
+            "Needed to show corporation freelance jobs in the Opportunities window",
         ),
         scopes = listOf(
             EsiScope.Characters.ReadCorporationRoles,
@@ -191,6 +204,7 @@ object ScopeGroups {
         readAssets,
         readCorporationAssets,
         readProjects,
+        readJobs,
         readRoles,
     )
 

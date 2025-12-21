@@ -27,6 +27,7 @@ fun RiftVerticalGlowLine(
     pointerInteractionStateHolder: PointerInteractionStateHolder,
     color: Color,
     side: Side,
+    isSelected: Boolean = false,
 ) {
     val offset = when (side) {
         Side.Left -> (-4).dp
@@ -40,8 +41,9 @@ fun RiftVerticalGlowLine(
             .offset(offset)
             .zIndex(1f),
     ) {
-        val alpha by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 0.5f else 0.1f)
-        val blur by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 4f else 0.5f)
+        val isActive = pointerInteractionStateHolder.isHovered || isSelected
+        val alpha by animateFloatAsState(if (isActive) 0.5f else 0.1f)
+        val blur by animateFloatAsState(if (isActive) 4f else 0.5f)
         Box(
             modifier = Modifier
                 .fillMaxHeight()
@@ -53,7 +55,7 @@ fun RiftVerticalGlowLine(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(1.dp)
-                .background(color.copy(alpha = 0.5f)),
+                .background(color.copy(alpha = 0.8f)),
         ) {}
     }
 }

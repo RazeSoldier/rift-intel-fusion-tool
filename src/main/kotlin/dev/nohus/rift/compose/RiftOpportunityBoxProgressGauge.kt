@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -33,7 +35,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.corporation_project_state_checkmark_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_close_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
-import dev.nohus.rift.network.esi.models.CorporationProjectState
+import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.utils.formatNumber
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -70,13 +72,13 @@ fun RiftOpportunityCardProgressGauge(
             val innerGaugeProgress = gauge.ownProgress.toFloat() / (gauge.participationLimit ?: gauge.desiredProgress)
 
             val configuration = when (gauge.state) {
-                CorporationProjectState.Completed -> ProgressConfiguration(
+                OpportunityState.Completed -> ProgressConfiguration(
                     outerGauge = EveColors.successGreen,
                     innerGauge = null,
                     iconColor = EveColors.platinumGrey,
                     iconResource = Res.drawable.corporation_project_state_checkmark_16px,
                 )
-                CorporationProjectState.Active, CorporationProjectState.Unspecified -> {
+                OpportunityState.Active, OpportunityState.Unspecified -> {
                     val hasPersonallyCompleted = innerGaugeProgress >= 1f
                     ProgressConfiguration(
                         outerGauge = Color(0xFFA9DBE9),
@@ -85,13 +87,13 @@ fun RiftOpportunityCardProgressGauge(
                         iconResource = if (hasPersonallyCompleted) Res.drawable.corporation_project_state_checkmark_16px else null,
                     )
                 }
-                CorporationProjectState.Closed, CorporationProjectState.Deleted -> ProgressConfiguration(
+                OpportunityState.Closed, OpportunityState.Deleted -> ProgressConfiguration(
                     outerGauge = EveColors.warningOrange,
                     innerGauge = null,
                     iconColor = EveColors.warningOrange,
                     iconResource = Res.drawable.corporation_project_state_close_16px,
                 )
-                CorporationProjectState.Expired -> ProgressConfiguration(
+                OpportunityState.Expired -> ProgressConfiguration(
                     outerGauge = EveColors.dangerRed,
                     innerGauge = null,
                     iconColor = EveColors.dangerRed,
@@ -117,6 +119,133 @@ fun RiftOpportunityCardProgressGauge(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun RiftOpportunityCardSmallProgressGauge(
+    gauge: RiftOpportunityCardProgressGauge,
+) {
+    RiftTooltipArea(
+        tooltip = { ProgressGaugeTooltip(gauge) },
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.height(50.dp),
+        ) {
+            val progressPercent = (gauge.currentProgress.toFloat() * 100 / gauge.desiredProgress).toInt()
+            Text(
+                text = "$progressPercent%",
+                style = RiftTheme.typography.detailSecondary,
+            )
+
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
+            ) {
+                val diameter = 32.dp
+                val diameterPx = LocalDensity.current.run { diameter.toPx().toInt() }
+                val gaugeWidthPx = diameterPx * 0.15f
+                val outerGaugeDiameterPx = (diameterPx * 0.6).roundToInt()
+                val outerGaugeProgress = gauge.currentProgress.toFloat() / gauge.desiredProgress
+                val innerGaugeDiameterPx = (diameterPx * 0.25).roundToInt()
+                val innerGaugeProgress =
+                    gauge.ownProgress.toFloat() / (gauge.participationLimit ?: gauge.desiredProgress)
+
+                val configuration = when (gauge.state) {
+                    OpportunityState.Completed -> ProgressConfiguration(
+                        outerGauge = EveColors.successGreen,
+                        innerGauge = null,
+                        iconColor = EveColors.platinumGrey,
+                        iconResource = Res.drawable.corporation_project_state_checkmark_16px,
+                    )
+
+                    OpportunityState.Active, OpportunityState.Unspecified -> {
+                        val hasPersonallyCompleted = innerGaugeProgress >= 1f
+                        ProgressConfiguration(
+                            outerGauge = Color(0xFFA9DBE9),
+                            innerGauge = if (hasPersonallyCompleted) null else Color(0xFFA9DBE9),
+                            iconColor = if (hasPersonallyCompleted) EveColors.platinumGrey else null,
+                            iconResource = if (hasPersonallyCompleted) Res.drawable.corporation_project_state_checkmark_16px else null,
+                        )
+                    }
+
+                    OpportunityState.Closed, OpportunityState.Deleted -> ProgressConfiguration(
+                        outerGauge = EveColors.warningOrange,
+                        innerGauge = null,
+                        iconColor = EveColors.warningOrange,
+                        iconResource = Res.drawable.corporation_project_state_close_16px,
+                    )
+
+                    OpportunityState.Expired -> ProgressConfiguration(
+                        outerGauge = EveColors.dangerRed,
+                        innerGauge = null,
+                        iconColor = EveColors.dangerRed,
+                        iconResource = Res.drawable.corporation_project_state_time_16px,
+                    )
+                }
+
+                Canvas(
+                    modifier = Modifier.size(diameter, diameter),
+                ) {
+                    drawGauge(outerGaugeDiameterPx, gaugeWidthPx, outerGaugeProgress, configuration.outerGauge)
+                    if (configuration.innerGauge != null && innerGaugeProgress > 0f) {
+                        drawPieSliceGauge(innerGaugeDiameterPx, gaugeWidthPx, innerGaugeProgress, configuration.innerGauge)
+                    }
+                }
+
+                if (configuration.iconResource != null && configuration.iconColor != null) {
+                    Icon(
+                        painter = painterResource(configuration.iconResource),
+                        contentDescription = null,
+                        tint = configuration.iconColor,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun DrawScope.drawPieSliceGauge(
+    diameterPx: Int,
+    widthPx: Float,
+    progress: Float,
+    color: Color,
+) {
+    val canvasRadius = size.width / 2
+    val radiusPx = diameterPx.toFloat() / 2
+    val radiusStartPercent = (radiusPx - widthPx / 2) / canvasRadius
+    val widthPercent = widthPx / canvasRadius
+
+    drawCircle(
+        brush = Brush.radialGradient(
+            radiusStartPercent to EveColors.black,
+            radiusStartPercent + (widthPercent * 0.7f) to EveColors.black,
+            radiusStartPercent + widthPercent to Color.Transparent,
+            radius = canvasRadius,
+        ),
+    )
+
+    drawContext.canvas.withSaveLayer(size.toRect(), paint = saveLayerPaint) {
+        drawCircle(
+            brush = Brush.radialGradient(
+                radiusStartPercent to color,
+                radiusStartPercent + (widthPercent * 0.7f) to color,
+                radiusStartPercent + widthPercent to Color.Transparent,
+                radius = canvasRadius,
+            ),
+        )
+
+        drawArc(
+            color = Color.Transparent,
+            startAngle = -90f + (progress * 360f),
+            sweepAngle = (1f - progress) * 360f,
+            useCenter = true,
+            blendMode = BlendMode.Clear,
+        )
     }
 }
 

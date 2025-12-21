@@ -8,7 +8,7 @@ import org.koin.core.annotation.Single
 import retrofit2.Invocation
 
 @Single
-class CacheOverrideInterceptor() : Interceptor {
+class CacheOverrideInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
@@ -24,7 +24,11 @@ class CacheOverrideInterceptor() : Interceptor {
          */
         if (endpoint is Endpoint.GetCorporationsIdProjectsIdContributors ||
             endpoint is Endpoint.GetCorporationsIdProjectsIdContribution ||
-            endpoint is Endpoint.GetCorporationsIdProjectsId
+            endpoint is Endpoint.GetCorporationsIdProjectsId ||
+            endpoint is Endpoint.GetFreelanceJobsId ||
+            endpoint is Endpoint.GetCharactersIdFreelanceJobsIdParticipation ||
+            endpoint is Endpoint.GetCorporationsIdFreelanceJobsIdParticipants
+
         ) {
             val hasCacheBuster = request.url.queryParameter("cb") != null
             if (hasCacheBuster) {

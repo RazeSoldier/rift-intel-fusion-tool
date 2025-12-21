@@ -21,7 +21,7 @@ object GameLink {
         return "<url=opportunity:corporation_goals:$id>$name</url>"
     }
 
-    fun forFreelanceProject(id: String, name: String): String {
+    fun forFreelanceJob(id: String, name: String): String {
         return "<url=opportunity:freelance_projects:$id>$name</url>"
     }
 }
