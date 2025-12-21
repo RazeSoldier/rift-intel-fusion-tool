@@ -754,6 +754,20 @@ object WhatsNew {
                 - Characters settings copying now can be used even when you can't load character details for any reason
                 """.trimIndent(),
             )
+            add(
+                "5.14.0" description """
+                -! New Feature: Freelance Jobs
+                - The new Opportunities window allows you to see public Freelance Jobs, jobs from your corporations, and jobs you are participating in
+                - Easily filter, sort, and search for jobs
+                - See all the details for all types of jobs
+                - Check your contribution progress from all characters at once
+                - If you have the Project Manager role in your corporation, you can also see all the participants in a jobs and information about them
+                - Corporation Projects are now also available in the same place
+                
+                - Jump range display on the map was updated to only consider valid jump destinations, and will now ignore high-sec systems, Pochven, and similar
+                - ESI interactions were updated, which should result in an overall smoother experience, especially under heavy load
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

@@ -25,4 +25,7 @@ sealed class RateLimitGroup(val name: String) {
     data object CharIndustry : RateLimitGroup("char-industry")
     data object Industry : RateLimitGroup("industry")
     data object Killmail : RateLimitGroup("killmail")
+    data object FreelanceJob : RateLimitGroup("freelance-job")
+    data object CharFreelanceJob : RateLimitGroup("char-freelance-job")
+    data object CorpFreelanceJob : RateLimitGroup("corp-freelance-job")
 }

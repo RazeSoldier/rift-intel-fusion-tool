@@ -77,7 +77,6 @@ import dev.nohus.rift.generated.resources.menu_hide
 import dev.nohus.rift.generated.resources.menu_pinned
 import dev.nohus.rift.generated.resources.menu_unhide
 import dev.nohus.rift.generated.resources.menu_unpin
-import dev.nohus.rift.generated.resources.window_corporation
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.settings.persistence.LocationPinStatus

@@ -30,6 +30,11 @@ import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
 import dev.nohus.rift.network.esi.models.FactionWarfareSystem
 import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
+import dev.nohus.rift.network.esi.models.FreelanceJob
+import dev.nohus.rift.network.esi.models.FreelanceJobs
+import dev.nohus.rift.network.esi.models.FreelanceJobsId
+import dev.nohus.rift.network.esi.models.GetCharactersFreelanceJobsParticipation
+import dev.nohus.rift.network.esi.models.GetCorporationsFreelanceJobsParticipants
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.KillmailIdHash
@@ -47,15 +52,25 @@ import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import dev.nohus.rift.network.esi.models.WalletJournalEntry
 import dev.nohus.rift.network.esi.models.WalletTransaction
 import dev.nohus.rift.network.requests.Character
+import dev.nohus.rift.network.requests.Endpoint
+import dev.nohus.rift.network.requests.EndpointTag
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.requests.RateLimit
+import dev.nohus.rift.network.requests.RateLimitGroup
 import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.network.requests.RequestExecutor
+import dev.nohus.rift.network.requests.Scope
+import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.Tag
 import java.util.UUID
 
 @Single
@@ -451,6 +466,78 @@ class EsiApi(
     ): Result<CorporationsIdProjectsIdContributors> {
         return execute {
             service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, cacheBuster, characterId.authorization)
+        }
+    }
+
+    suspend fun getFreelanceJobs(
+        originator: Originator,
+        characterId: Int,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+        corporationId: Int? = null,
+    ): Result<FreelanceJobs> {
+        return execute {
+            service.getFreelanceJobs(originator, before, after, limit, corporationId, characterId.authorization)
+        }
+    }
+
+    suspend fun getFreelanceJobsId(
+        originator: Originator,
+        characterId: Int,
+        jobId: String,
+        cacheBuster: String,
+    ): Result<FreelanceJobsId> {
+        return execute {
+            service.getFreelanceJobsId(originator, jobId, cacheBuster, characterId.authorization)
+        }
+    }
+
+    suspend fun getCharactersIdFreelanceJobs(
+        originator: Originator,
+        characterId: Int,
+    ): Result<FreelanceJobs> {
+        return execute {
+            service.getCharactersIdFreelanceJobs(originator, characterId, characterId.authorization)
+        }
+    }
+
+    suspend fun getCharactersIdFreelanceJobsIdParticipation(
+        originator: Originator,
+        characterId: Int,
+        jobId: String,
+        cacheBuster: String,
+    ): Result<GetCharactersFreelanceJobsParticipation> {
+        return execute {
+            service.getCharactersIdFreelanceJobsIdParticipation(originator, characterId, jobId, cacheBuster, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdFreelanceJobs(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+    ): Result<FreelanceJobs> {
+        return execute {
+            service.getCorporationsIdFreelanceJobs(originator, corporationId, before, after, limit, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdFreelanceJobsIdParticipants(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+        jobId: String,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+        cacheBuster: String,
+    ): Result<GetCorporationsFreelanceJobsParticipants> {
+        return execute {
+            service.getCorporationsIdFreelanceJobsIdParticipants(originator, corporationId, jobId, before, after, limit, cacheBuster, characterId.authorization)
         }
     }
 

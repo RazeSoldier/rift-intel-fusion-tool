@@ -19,10 +19,13 @@ object IdRanges {
     val station = 60_000_000..69_999_999
     val playerCorporation = 98_000_000..98_999_999
     val playerAlliance = 99_000_000..99_999_999
+    val joveRegions = listOf(10000017, 10000019, 10000004)
 
     fun isNpcAgent(id: Int) = id in npcAgent
     fun isFaction(id: Int) = id in faction
     fun isNpcCorporation(id: Int) = id in npcCorporation
     fun isStation(id: Long) = id in station
     fun isSpawnedItem(id: Long) = id >= 1_000_000_000_000
+    fun isZarzakh(solarSystemId: Int) = solarSystemId == 30100000
+    fun isJoveRegion(regionId: Int) = regionId in joveRegions
 }

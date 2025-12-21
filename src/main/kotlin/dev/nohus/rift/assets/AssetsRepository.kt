@@ -192,7 +192,7 @@ class AssetsRepository(
                 } else {
                     null
                 }
-            }
+            }.groupBy { it.corporationId }.map { (_, corporations) -> corporations.first() }
             val assetOwners = charactersWithAssetsScopes.map {
                 AssetOwner.Character(it)
             } + corporations

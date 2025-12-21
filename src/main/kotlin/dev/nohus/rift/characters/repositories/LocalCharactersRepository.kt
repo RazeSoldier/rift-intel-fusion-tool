@@ -1,6 +1,7 @@
 package dev.nohus.rift.characters.repositories
 
 import dev.nohus.rift.characters.files.GetEveCharactersSettingsUseCase
+import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.combine
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.requests.Originator
@@ -19,6 +20,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
 import java.nio.file.Path
+import java.time.Instant
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
@@ -49,6 +51,7 @@ class LocalCharactersRepository(
         val corporationName: String,
         val allianceId: Int?,
         val allianceName: String?,
+        val birthday: Instant,
     )
 
     private val _characters = MutableStateFlow<List<LocalCharacter>>(emptyList())
@@ -153,7 +156,11 @@ class LocalCharactersRepository(
                         esiApi.getCharactersId(Originator.LocalCharacters, localCharacter.characterId)
                     },
                     async {
-                        esiApi.getCharactersIdRoles(Originator.LocalCharacters, localCharacter.characterId).map { it.roles }
+                        if (ScopeGroups.readRoles in localCharacter.scopes) {
+                            esiApi.getCharactersIdRoles(Originator.LocalCharacters, localCharacter.characterId).map { it.roles }
+                        } else {
+                            Result.Success(emptyList())
+                        }
                     },
                 ) { details, roles ->
                     val corporationId = affiliations[localCharacter.characterId]?.corporationId ?: details.corporationId
@@ -169,6 +176,7 @@ class LocalCharactersRepository(
                         corporationName = corporation.success?.name ?: "?",
                         allianceId = allianceId,
                         allianceName = if (alliance != null) alliance.success?.name ?: "?" else null,
+                        birthday = details.birthday,
                     )
                 }.success
 

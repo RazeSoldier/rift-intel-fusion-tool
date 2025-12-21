@@ -8,12 +8,14 @@ sealed class EsiScope(val id: String) {
         object ReadContacts : Corporations("esi-corporations.read_contacts.v1")
         object ReadProjects : Corporations("esi-corporations.read_projects.v1")
         object ReadDivisions : Corporations("esi-corporations.read_divisions.v1")
+        object ReadFreelanceJobs : Corporations("esi-corporations.read_freelance_jobs.v1")
     }
     abstract class Characters(id: String) : EsiScope(id) {
         object ReadContacts : Characters("esi-characters.read_contacts.v1")
         object WriteContacts : Characters("esi-characters.write_contacts.v1")
         object ReadCorporationRoles : Characters("esi-characters.read_corporation_roles.v1")
         object ReadLoyalty : Characters("esi-characters.read_loyalty.v1")
+        object ReadFreelanceJobs : Characters("esi-characters.read_freelance_jobs.v1")
     }
     abstract class Clones(id: String) : EsiScope(id) {
         object ReadClones : Clones("esi-clones.read_clones.v1")

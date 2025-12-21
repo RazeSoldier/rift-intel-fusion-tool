@@ -4,11 +4,13 @@ import dev.nohus.rift.network.requests.Character
 import dev.nohus.rift.network.requests.RateLimit
 import dev.nohus.rift.network.requests.RateLimitGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -16,6 +18,7 @@ import org.koin.core.annotation.Single
 import retrofit2.Invocation
 import java.time.Duration
 import java.time.Instant
+import java.util.UUID
 import kotlin.math.ln
 
 private val logger = KotlinLogging.logger {}
@@ -26,6 +29,7 @@ class EsiRateLimitInterceptor : Interceptor {
     private val mutex = Mutex()
     private val buckets = mutableMapOf<BucketKey, Bucket>()
     private val spentTokens = mutableMapOf<BucketKey, List<SpentTokens>>()
+    private val inflightRequests = mutableMapOf<BucketKey, List<UUID>>()
 
     data class BucketKey(
         val group: RateLimitGroup,
@@ -54,9 +58,19 @@ class EsiRateLimitInterceptor : Interceptor {
         if (group != null) {
             val character = request.tag(Character::class.java)
             val bucketKey = BucketKey(group, character)
-            handleRateLimit(group, bucketKey)
 
-            val response = chain.proceed(request)
+            val requestId = UUID.randomUUID()
+            val response = try {
+                mutex.withLock {
+                    inflightRequests[bucketKey] = (inflightRequests[bucketKey] ?: emptyList()) + requestId
+                }
+                handleRateLimit(group, bucketKey)
+                chain.proceed(request)
+            } finally {
+                mutex.withLock {
+                    inflightRequests[bucketKey] = (inflightRequests[bucketKey] ?: emptyList()) - requestId
+                }
+            }
             handleResponse(request, response, group, bucketKey)
 
             response
@@ -72,47 +86,80 @@ class EsiRateLimitInterceptor : Interceptor {
         }
     }
 
+    fun getTokensRemaining(group: RateLimitGroup, characterId: Int): Int {
+        return buckets[BucketKey(group, Character(characterId))]?.remaining ?: return Int.MAX_VALUE
+    }
+
     private fun getRateLimitGroup(request: Request): RateLimitGroup? {
         val invocation = request.tag(Invocation::class.java)
         val rateLimitGroupAnnotation = invocation?.method()?.getAnnotation(RateLimit::class.java)
         return rateLimitGroupAnnotation?.value?.objectInstance
     }
 
+    sealed interface RateLimitAction {
+        data object Proceed : RateLimitAction
+        data class ProceedAfterDelay(val delay: Duration) : RateLimitAction
+        data class RecheckAfterDelay(val delay: Duration) : RateLimitAction
+    }
+
     private suspend fun handleRateLimit(
         group: RateLimitGroup,
         bucketKey: BucketKey,
     ) {
-        val bucket = mutex.withLock {
-            buckets[bucketKey]
+        withContext(Dispatchers.Default) {
+            do {
+                val action = getRateLimitAction(group, bucketKey)
+                when (action) {
+                    RateLimitAction.Proceed -> {}
+                    is RateLimitAction.ProceedAfterDelay -> delay(action.delay)
+                    is RateLimitAction.RecheckAfterDelay -> delay(action.delay)
+                }
+            } while (action is RateLimitAction.RecheckAfterDelay)
         }
+    }
+
+    private suspend fun getRateLimitAction(
+        group: RateLimitGroup,
+        bucketKey: BucketKey,
+    ): RateLimitAction {
+        val (bucket, inflightCount) = mutex.withLock {
+            buckets[bucketKey] to (inflightRequests[bucketKey]?.size ?: 0)
+        }
+
         if (bucket == null) {
             // No bucket, there were no requests yet for this rate limit group
-            return
+            return RateLimitAction.Proceed
         }
+
         val now = Instant.now()
         if (bucket.retryAfter != null && bucket.retryAfter.isAfter(now)) {
-            logger.info { "Request in group \"${group.name}\" is being rate limited, waiting until ${bucket.retryAfter}" }
-            delay(Duration.between(now, bucket.retryAfter))
-        } else {
-            val replenishedTokens = mutex.withLock {
-                val replenished = spentTokens[bucketKey]?.takeWhile { it.returnTimestamp.isBefore(now) } ?: emptyList()
-                val sum = replenished.sumOf { it.tokens }
-                spentTokens[bucketKey] = spentTokens[bucketKey]?.drop(replenished.size) ?: emptyList()
-                buckets[bucketKey] = bucket.copy(remaining = bucket.remaining + sum)
-                sum
-            }
-            val tokensRemaining = bucket.remaining + replenishedTokens
+            logger.info { "Request in group \"${group.name}\" is being rate limited, waiting ${bucket.retryAfter} before rechecking" }
+            return RateLimitAction.RecheckAfterDelay(Duration.between(now, bucket.retryAfter))
+        }
 
-            if (tokensRemaining < 100) {
-                val tokensPerSecond = bucket.limit.tokens / bucket.limit.windowSeconds.toFloat()
-                val secondsToRegenerateTokensBackTo100 = ((100 - tokensRemaining) / tokensPerSecond)
-                val waitFactor = getWaitFactor(tokensRemaining)
-                val delayMillis = (secondsToRegenerateTokensBackTo100 * waitFactor * 1000).toLong()
-                logger.info { "Request in group \"${group.name}\", tokens remaining: $tokensRemaining, waiting for ${delayMillis}ms before sending" }
-                delay(delayMillis)
-            } else {
-                // 100+ tokens remaining, no need to throttle
-            }
+        val replenishedTokens = mutex.withLock {
+            val replenished = spentTokens[bucketKey]?.takeWhile { it.returnTimestamp.isBefore(now) } ?: emptyList()
+            val sum = replenished.sumOf { it.tokens }
+            spentTokens[bucketKey] = spentTokens[bucketKey]?.drop(replenished.size) ?: emptyList()
+            buckets[bucketKey] = bucket.copy(remaining = bucket.remaining + sum)
+            sum
+        }
+        val potentiallyUsedTokens = inflightCount * 5
+        val tokensRemaining = bucket.remaining + replenishedTokens - potentiallyUsedTokens
+
+        return if (tokensRemaining <= 0) {
+            logger.info { "Request in group \"${group.name}\", tokens remaining: $tokensRemaining (inflight $inflightCount), waiting for 10 seconds before rechecking" }
+            RateLimitAction.RecheckAfterDelay(Duration.ofSeconds(10))
+        } else if (tokensRemaining < 100) {
+            val tokensPerSecond = bucket.limit.tokens / bucket.limit.windowSeconds.toFloat()
+            val secondsToRegenerateTokensBackTo100 = ((100 - tokensRemaining) / tokensPerSecond)
+            val waitFactor = getWaitFactor(tokensRemaining)
+            val delayMillis = (secondsToRegenerateTokensBackTo100 * waitFactor * 1000).toLong()
+            logger.info { "Request in group \"${group.name}\", tokens remaining: $tokensRemaining (inflight $inflightCount), waiting for ${delayMillis}ms before sending" }
+            RateLimitAction.ProceedAfterDelay(Duration.ofMillis(delayMillis))
+        } else {
+            // 100+ tokens remaining, no need to throttle
+            RateLimitAction.Proceed
         }
     }
 
@@ -125,6 +172,7 @@ class EsiRateLimitInterceptor : Interceptor {
      * with a gradual non-linear ramp up inbetween.
      */
     private fun getWaitFactor(tokensRemaining: Int): Double {
+        if (tokensRemaining <= 0) return 1.0
         return (1.5513 - (ln(tokensRemaining.toDouble() + 5) / 3.0)).coerceIn(0.0..1.0)
     }
 

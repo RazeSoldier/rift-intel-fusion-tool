@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -36,9 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -441,43 +445,55 @@ private fun ColonyDetails(
     onRequestSimulation: () -> Unit,
     onSetSeekingColony: (SeekingColony?) -> Unit,
 ) {
-    Column {
-        var isViewingFastForward by remember { mutableStateOf(false) }
-        val scrollState = rememberScrollState()
-        with(sharedTransitionScope) {
-            ColonyTitle(
-                item = item,
-                isExpanded = true,
-                isViewingFastForward = isViewingFastForward,
-                onViewFastForwardChange = { isViewingFastForward = it },
-                onSetSeekingColony = onSetSeekingColony,
-                scrollState = scrollState,
-                colonyIconModifier = Modifier
-                    .sharedElement(rememberSharedContentState(item.colony.id), animatedVisibilityScope),
-                onDetailsClick = onBackClick,
-            )
-        }
+    Box(Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(item.colony.planet.type.background),
+            contentDescription = null,
+            contentScale = ContentScale.FillHeight,
+            alignment = Alignment.BottomEnd,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .scale(scaleX = 1f, scaleY = -1f)
+                .height(160.dp),
+        )
+        Column {
+            var isViewingFastForward by remember { mutableStateOf(false) }
+            val scrollState = rememberScrollState()
+            with(sharedTransitionScope) {
+                ColonyTitle(
+                    item = item,
+                    isExpanded = true,
+                    isViewingFastForward = isViewingFastForward,
+                    onViewFastForwardChange = { isViewingFastForward = it },
+                    onSetSeekingColony = onSetSeekingColony,
+                    scrollState = scrollState,
+                    colonyIconModifier = Modifier
+                        .sharedElement(rememberSharedContentState(item.colony.id), animatedVisibilityScope),
+                    onDetailsClick = onBackClick,
+                )
+            }
 
-        ScrollbarColumn(
-            scrollState = scrollState,
-            contentPadding = PaddingValues(top = Spacing.medium),
-        ) {
-            AnimatedContent(isViewingFastForward) {
-                if (it) {
-                    val colony = item.seekColony ?: item.ffwdColony
-                    ColonyPins(
-                        colony = colony,
-                        now = colony.currentSimTime,
-                        isAdvancingTime = false,
-                        onRequestSimulation = {},
-                    )
-                } else {
-                    ColonyPins(
-                        colony = item.colony,
-                        now = now,
-                        isAdvancingTime = true,
-                        onRequestSimulation = onRequestSimulation,
-                    )
+            ScrollbarColumn(
+                scrollState = scrollState,
+                contentPadding = PaddingValues(top = Spacing.medium),
+            ) {
+                AnimatedContent(isViewingFastForward) {
+                    if (it) {
+                        val colony = item.seekColony ?: item.ffwdColony
+                        ColonyPins(
+                            colony = colony,
+                            now = colony.currentSimTime,
+                            isAdvancingTime = false,
+                            onRequestSimulation = {},
+                        )
+                    } else {
+                        ColonyPins(
+                            colony = item.colony,
+                            now = now,
+                            isAdvancingTime = true,
+                            onRequestSimulation = onRequestSimulation,
+                        )
+                    }
                 }
             }
         }

@@ -74,7 +74,7 @@ class CharacterSettingsViewModel(
     }
 
     data class CopyingCharacter(
-        val character: CharacterItem
+        val character: CharacterItem,
     ) {
         val id get() = character.characterId
         val name get() = character.info?.name ?: character.characterId.toString()

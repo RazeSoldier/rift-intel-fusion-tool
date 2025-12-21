@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.onClick
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +55,7 @@ data class Tab(
     val title: String,
     val isCloseable: Boolean,
     val icon: DrawableResource? = null,
+    val badge: String? = null,
     val isNotified: Boolean = false,
     val payload: Any? = null,
 )
@@ -261,15 +264,32 @@ private fun TabBarTab(
                         .size(16.dp),
                 )
             } else {
-                Text(
-                    text = tab.title,
-                    style = RiftTheme.typography.bodyPrimary.copy(color = effectiveTextColor),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .modifyIf(fixedHeight == null) { padding(vertical = Spacing.medium) }
                         .padding(horizontal = Spacing.medium),
-                )
+                ) {
+                    Text(
+                        text = tab.title,
+                        style = RiftTheme.typography.bodyPrimary.copy(color = effectiveTextColor),
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                    )
+                    if (tab.badge != null) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = Spacing.small)
+                                .background(RiftTheme.colors.backgroundPrimaryLight, shape = RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp),
+                        ) {
+                            Text(
+                                text = tab.badge,
+                                style = RiftTheme.typography.bodyPrimary,
+                            )
+                        }
+                    }
+                }
             }
             if (fixedHeight != null) Spacer(Modifier.weight(1f))
             val underlineAlpha by animateFloatAsState(if (isSelected || isNotified) 1f else 0f)
