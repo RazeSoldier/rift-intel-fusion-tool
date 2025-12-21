@@ -2,6 +2,7 @@ package dev.nohus.rift.di
 
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
+import dev.nohus.rift.network.interceptors.CacheOverrideInterceptor
 import dev.nohus.rift.network.interceptors.EsiAuthorizationInterceptor
 import dev.nohus.rift.network.interceptors.EsiCompatibilityInterceptor
 import dev.nohus.rift.network.interceptors.EsiErrorLimitInterceptor
@@ -97,7 +98,7 @@ val factoryModule = module {
     }
     single<OkHttpClient>(qualifier = named("esi")) {
         val directory = get<AppDirectories>().getAppCacheDirectory().resolve("esi-cache")
-        val size = 50L * 1024 * 1024 // 50MB
+        val size = 100L * 1024 * 1024 // 100MB
         val dispatcher = Dispatcher().apply {
             maxRequests = 64
             maxRequestsPerHost = 64
@@ -111,6 +112,7 @@ val factoryModule = module {
             .addNetworkInterceptor(get<OriginatorRateLimitInterceptor>())
             .addNetworkInterceptor(get<EsiErrorLimitInterceptor>())
             .addNetworkInterceptor(get<EsiRateLimitInterceptor>())
+            .addNetworkInterceptor(get<CacheOverrideInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()

@@ -65,6 +65,10 @@ suspend fun <T> fetchCursorPaginated(
                 }
 
                 val afterItemsDeferred = async {
+                    if (after == null) {
+                        // We are only going back, so no need to fetch after items
+                        return@async Success(emptyList<T>() to null)
+                    }
                     val afterItems = mutableListOf<T>()
                     var after = initialResponse.data.cursor?.after
                     while (after != null) {

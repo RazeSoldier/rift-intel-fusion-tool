@@ -447,9 +447,10 @@ class EsiApi(
         before: String?,
         after: String?,
         limit: Int? = 100,
+        cacheBuster: String?,
     ): Result<CorporationsIdProjectsIdContributors> {
         return execute {
-            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, characterId.authorization)
+            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, cacheBuster, characterId.authorization)
         }
     }
 

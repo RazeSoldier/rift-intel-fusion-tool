@@ -747,7 +747,12 @@ object WhatsNew {
                 - Assets are shown in their corporation hangars and project delivery hangars
                 - Hangars use their in-game division names, if you have access
                 - New completely redesigned asset owner filtering allows you to choose which characters and corporations are you interested in. Choose one or any combination.
-                """.trimIndent()
+                """.trimIndent(),
+            )
+            add(
+                "5.13.0" description """
+                - Characters settings copying now can be used even when you can't load character details for any reason
+                """.trimIndent(),
             )
         }.reversed()
     }

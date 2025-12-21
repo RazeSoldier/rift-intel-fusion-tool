@@ -568,7 +568,7 @@ interface EsiService {
 
     @GET("/corporations/{id}/projects")
     @EndpointTag(Endpoint.GetCorporationsIdProjects::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjects(
         @Tag originator: Originator,
@@ -582,7 +582,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/projects/{project_id}")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsId::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjectsId(
         @Tag originator: Originator,
@@ -594,7 +594,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/projects/{project_id}/contribution/{character_id}")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsIdContribution::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjectsIdContribution(
         @Tag originator: Originator,
@@ -607,7 +607,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/projects/{project_id}/contributors")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsIdContributors::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjectsIdContributors(
         @Tag originator: Originator,
@@ -616,6 +616,7 @@ interface EsiService {
         @Query("before") before: String?,
         @Query("after") after: String?,
         @Query("limit") limit: Int?,
+        @Query("cb") cacheBuster: String?,
         @Tag character: Character,
     ): CorporationsIdProjectsIdContributors
 

@@ -278,7 +278,15 @@ class CorporationProjectsRepository(
         val contributorsDeferred: Deferred<Contributors> = async {
             projectManagersDeferred.await().firstOrNull()?.let { projectManager ->
                 fetchCursorPaginated(null) { before, after ->
-                    esiApi.getCorporationsIdProjectsIdContributors(Originator.CorporationProjects, projectManager, corporation.id, project.id, before, after)
+                    esiApi.getCorporationsIdProjectsIdContributors(
+                        originator = Originator.CorporationProjects,
+                        characterId = projectManager,
+                        corporationId = corporation.id,
+                        projectId = project.id,
+                        before = before,
+                        after = after,
+                        cacheBuster = cacheBuster,
+                    )
                 }.map { (contributors, newAfter) ->
                     val list = contributors.mapAsync {
                         Contributor(
