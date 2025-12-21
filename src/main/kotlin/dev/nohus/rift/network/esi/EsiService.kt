@@ -742,7 +742,7 @@ interface EsiService {
     @RateLimit(RateLimitGroup.Killmail::class)
     suspend fun getKillmailIdHash(
         @Tag originator: Originator,
-        @Path("killmail_id") killmailId: Long,
+        @Path("killmail_id") killmailId: String,
         @Path("killmail_hash") killmailHash: String,
     ): KillmailIdHash
 }

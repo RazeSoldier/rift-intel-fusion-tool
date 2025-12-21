@@ -28,10 +28,6 @@ class ZkillboardQueueApi(
     private val service = retrofit.create(ZkillboardQueueService::class.java)
 
     suspend fun getKillmailRedirect(originator: Originator, queueId: String, timeToWait: Int, filter: String): Result<Reply<Unit>> {
-        return executeWithHeaders { service.getKillmailRedirect(originator, queueId, timeToWait, filter) }
-    }
-
-    suspend fun getKillmail(originator: Originator, path: String): Result<ZkillboardQueueResponse> {
-        return execute { service.getKillmail(originator, path) }
+        return executeWithHeaders { service.getKillmailRedirect(originator, queueId, timeToWait, "y", filter) }
     }
 }

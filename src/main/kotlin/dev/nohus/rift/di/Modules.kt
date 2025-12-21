@@ -120,6 +120,7 @@ val factoryModule = module {
     single<OkHttpClient>(qualifier = named("zkillredisq")) {
         OkHttpClient.Builder()
             .followRedirects(false)
+            .readTimeout(Duration.ofSeconds(15))
             .addInterceptor(get<UserAgentInterceptor>())
             .addInterceptor(get<RedirectAsSuccessInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())

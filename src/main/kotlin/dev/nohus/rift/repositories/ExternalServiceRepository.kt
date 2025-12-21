@@ -4,7 +4,6 @@ import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.menu_anoikis
 import dev.nohus.rift.generated.resources.menu_dotlan
-import dev.nohus.rift.generated.resources.menu_evekill
 import dev.nohus.rift.generated.resources.menu_everef
 import dev.nohus.rift.generated.resources.menu_evewho
 import dev.nohus.rift.generated.resources.menu_newedenencyclopedia
@@ -14,7 +13,6 @@ import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.ExternalService
 import dev.nohus.rift.settings.persistence.ExternalService.Anoikis
 import dev.nohus.rift.settings.persistence.ExternalService.Dotlan
-import dev.nohus.rift.settings.persistence.ExternalService.EveKill
 import dev.nohus.rift.settings.persistence.ExternalService.EveRef
 import dev.nohus.rift.settings.persistence.ExternalService.EveWho
 import dev.nohus.rift.settings.persistence.ExternalService.NewEdenEncyclopedia
@@ -41,14 +39,13 @@ class ExternalServiceRepository(
 
     fun openCharacterPreferredService(characterId: Int) {
         val items = getCharacterItems(characterId)
-        val preferredService = getPreferredService(listOf(EveWho, ZKillboard, EveKill))
+        val preferredService = getPreferredService(listOf(ZKillboard, EveWho))
         items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
     }
 
     private fun getCharacterItems(characterId: Int): List<ServiceItem> {
         return listOf(
             ServiceItem(ZKillboard, "https://zkillboard.com/character/$characterId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/character/$characterId"),
             ServiceItem(EveWho, "https://evewho.com/character/$characterId"),
         )
     }
@@ -59,14 +56,13 @@ class ExternalServiceRepository(
 
     fun openCorporationPreferredService(corporationId: Int) {
         val items = getCorporationItems(corporationId)
-        val preferredService = getPreferredService(listOf(EveWho, ZKillboard, EveKill))
+        val preferredService = getPreferredService(listOf(ZKillboard, EveWho))
         items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
     }
 
     private fun getCorporationItems(corporationId: Int): List<ServiceItem> {
         return listOf(
             ServiceItem(ZKillboard, "https://zkillboard.com/corporation/$corporationId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/corporation/$corporationId"),
             ServiceItem(EveWho, "https://evewho.com/corporation/$corporationId"),
         )
     }
@@ -77,14 +73,13 @@ class ExternalServiceRepository(
 
     fun openAlliancePreferredService(allianceId: Int) {
         val items = getAllianceItems(allianceId)
-        val preferredService = getPreferredService(listOf(EveWho, ZKillboard, EveKill))
+        val preferredService = getPreferredService(listOf(ZKillboard, EveWho))
         items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
     }
 
     private fun getAllianceItems(allianceId: Int): List<ServiceItem> {
         return listOf(
             ServiceItem(ZKillboard, "https://zkillboard.com/alliance/$allianceId/"),
-            ServiceItem(EveKill, "https://eve-kill.com/alliance/$allianceId"),
             ServiceItem(EveWho, "https://evewho.com/alliance/$allianceId"),
         )
     }
@@ -95,7 +90,7 @@ class ExternalServiceRepository(
 
     fun openShipPreferredService(type: Type) {
         val items = getShipItems(type)
-        val preferredService = getPreferredService(listOf(UniWiki, EveRef, ZKillboard, EveKill, NewEdenEncyclopedia))
+        val preferredService = getPreferredService(listOf(UniWiki, EveRef, ZKillboard, NewEdenEncyclopedia))
         items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
     }
 
@@ -104,7 +99,6 @@ class ExternalServiceRepository(
             ServiceItem(UniWiki, "https://wiki.eveuniversity.org/${type.name.replace(' ', '_')}"),
             ServiceItem(EveRef, "https://everef.net/types/${type.id}"),
             ServiceItem(ZKillboard, "https://zkillboard.com/ship/${type.id}/"),
-            ServiceItem(EveKill, "https://eve-kill.com/item/${type.id}"),
             ServiceItem(NewEdenEncyclopedia, "https://newedenencyclopedia.net/type/${type.id}"),
         )
     }
@@ -115,7 +109,7 @@ class ExternalServiceRepository(
 
     fun openTypePreferredService(type: Type) {
         val items = getTypeItems(type)
-        val preferredService = getPreferredService(listOf(EveRef, ZKillboard, EveKill, NewEdenEncyclopedia))
+        val preferredService = getPreferredService(listOf(EveRef, ZKillboard, NewEdenEncyclopedia))
         items.firstOrNull { it.service == preferredService }?.url?.toURIOrNull()?.openBrowser()
     }
 
@@ -123,7 +117,6 @@ class ExternalServiceRepository(
         return listOf(
             ServiceItem(EveRef, "https://everef.net/type/${type.id}"),
             ServiceItem(ZKillboard, "https://zkillboard.com/item/${type.id}/"),
-            ServiceItem(EveKill, "https://eve-kill.com/item/${type.id}"),
             ServiceItem(NewEdenEncyclopedia, "https://newedenencyclopedia.net/type/${type.id}"),
         )
     }
@@ -139,7 +132,6 @@ class ExternalServiceRepository(
             }
             add(ServiceItem(Dotlan, "https://evemaps.dotlan.net/system/$system"))
             add(ServiceItem(ZKillboard, "https://zkillboard.com/system/$systemId/"))
-            add(ServiceItem(EveKill, "https://eve-kill.com/system/$systemId"))
         }
     }
 
@@ -153,7 +145,6 @@ class ExternalServiceRepository(
             text = when (service) {
                 EveWho -> "EveWho"
                 ZKillboard -> "zKillboard"
-                EveKill -> "EVE-KILL"
                 UniWiki -> "UniWiki"
                 EveRef -> "EVE Ref"
                 NewEdenEncyclopedia -> "New Eden Encyclopedia"
@@ -163,7 +154,6 @@ class ExternalServiceRepository(
             iconResource = when (service) {
                 EveWho -> Res.drawable.menu_evewho
                 ZKillboard -> Res.drawable.menu_zkillboard
-                EveKill -> Res.drawable.menu_evekill
                 UniWiki -> Res.drawable.menu_uniwiki
                 EveRef -> Res.drawable.menu_everef
                 NewEdenEncyclopedia -> Res.drawable.menu_newedenencyclopedia
@@ -179,7 +169,7 @@ class ExternalServiceRepository(
 
     private fun getPreferredService(services: List<ExternalService>): ExternalService {
         return settings.preferredExternalServices.firstOrNull { it in services }
-            ?: services.random().also { setPreferredService(it, services) }
+            ?: services.first().also { setPreferredService(it, services) }
     }
 
     private fun setPreferredService(service: ExternalService, among: List<ExternalService>) {
