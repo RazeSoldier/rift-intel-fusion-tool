@@ -19,6 +19,7 @@ sealed class RateLimitGroup(val name: String) {
     data object Sovereignty : RateLimitGroup("sovereignty")
     data object Ui : RateLimitGroup("ui")
     data object CharAsset : RateLimitGroup("char-asset")
+    data object CorpAsset : RateLimitGroup("corp-asset")
     data object Market : RateLimitGroup("market")
     data object Fleet : RateLimitGroup("fleet")
     data object CharIndustry : RateLimitGroup("char-industry")

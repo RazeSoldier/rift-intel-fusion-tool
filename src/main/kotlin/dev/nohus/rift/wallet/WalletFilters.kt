@@ -27,7 +27,6 @@ enum class TransferDirection {
 sealed interface WalletType {
     data object Character : WalletType
     data class SpecificCharacter(val characterId: Int) : WalletType
-    data object Corporation : WalletType
     data class SpecificCorporation(val corporationId: Int) : WalletType
     data class SpecificCorporationDivision(val corporationId: Int, val divisionId: Int) : WalletType
 }

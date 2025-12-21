@@ -1,13 +1,13 @@
 package dev.nohus.rift.network.esi
 
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.Asset
+import dev.nohus.rift.network.esi.models.AssetLocation
+import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
 import dev.nohus.rift.network.esi.models.CharacterIdOnline
 import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.network.esi.models.CharactersAffiliation
-import dev.nohus.rift.network.esi.models.CharactersIdAsset
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsLocation
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsName
 import dev.nohus.rift.network.esi.models.CharactersIdCharacter
 import dev.nohus.rift.network.esi.models.CharactersIdClones
 import dev.nohus.rift.network.esi.models.CharactersIdFleet
@@ -444,7 +444,7 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Query("page") page: Int,
         @Tag character: Character,
-    ): Response<List<CharactersIdAsset>>
+    ): Response<List<Asset>>
 
     @POST("/characters/{id}/assets/names/")
     @EndpointTag(Endpoint.GetCharactersIdAssetsNames::class)
@@ -455,7 +455,7 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Body assets: List<Long>,
         @Tag character: Character,
-    ): List<CharactersIdAssetsName>
+    ): List<AssetName>
 
     @POST("/characters/{id}/assets/locations/")
     @EndpointTag(Endpoint.GetCharactersIdAssetsLocations::class)
@@ -466,7 +466,40 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Body itemIds: List<Long>,
         @Tag character: Character,
-    ): List<CharactersIdAssetsLocation>
+    ): List<AssetLocation>
+
+    @GET("/corporations/{id}/assets/")
+    @EndpointTag(Endpoint.GetCorporationsIdAssets::class)
+    @RateLimit(RateLimitGroup.CorpAsset::class)
+    @Scope(EsiScope.Assets.ReadAssets::class)
+    suspend fun getCorporationsIdAssets(
+        @Tag originator: Originator,
+        @Path("id") corporationId: Int,
+        @Query("page") page: Int,
+        @Tag character: Character,
+    ): Response<List<Asset>>
+
+    @POST("/corporations/{id}/assets/names/")
+    @EndpointTag(Endpoint.GetCorporationsIdAssetsNames::class)
+    @RateLimit(RateLimitGroup.CorpAsset::class)
+    @Scope(EsiScope.Assets.ReadAssets::class)
+    suspend fun getCorporationsIdAssetsNames(
+        @Tag originator: Originator,
+        @Path("id") corporationId: Int,
+        @Body assets: List<Long>,
+        @Tag character: Character,
+    ): List<AssetName>
+
+    @POST("/corporations/{id}/assets/locations/")
+    @EndpointTag(Endpoint.GetCorporationsIdAssetsLocations::class)
+    @RateLimit(RateLimitGroup.CorpAsset::class)
+    @Scope(EsiScope.Assets.ReadAssets::class)
+    suspend fun getCorporationsIdAssetsLocations(
+        @Tag originator: Originator,
+        @Path("id") corporationId: Int,
+        @Body itemIds: List<Long>,
+        @Tag character: Character,
+    ): List<AssetLocation>
 
     @GET("/markets/prices/")
     @EndpointTag(Endpoint.GetMarketsPrices::class)
@@ -548,7 +581,6 @@ interface EsiService {
     ): CorporationsIdProjects
 
     @GET("/corporations/{corporation_id}/projects/{project_id}")
-    @Headers("Cache-Control: no-cache")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsId::class)
     @RateLimit(RateLimitGroup.CorpProjects::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
@@ -556,11 +588,11 @@ interface EsiService {
         @Tag originator: Originator,
         @Path("corporation_id") corporationId: Int,
         @Path("project_id") projectId: String,
+        @Query("cb") cacheBuster: String,
         @Tag character: Character,
     ): CorporationsIdProjectsId
 
     @GET("/corporations/{corporation_id}/projects/{project_id}/contribution/{character_id}")
-    @Headers("Cache-Control: no-cache")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsIdContribution::class)
     @RateLimit(RateLimitGroup.CorpProjects::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
@@ -569,6 +601,7 @@ interface EsiService {
         @Path("corporation_id") corporationId: Int,
         @Path("project_id") projectId: String,
         @Path("character_id") characterId: Int,
+        @Query("cb") cacheBuster: String,
         @Tag character: Character,
     ): CorporationsIdProjectsIdContribution
 

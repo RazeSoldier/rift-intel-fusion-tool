@@ -1,6 +1,8 @@
 package dev.nohus.rift.repositories
 
 object IdRanges {
+    val corporationOffice = 27
+
     val faction = 500_000..599_999
     val npcCorporation = 1_000_000..1_999_999
     val npcAgent = 3_000_000..3_999_999

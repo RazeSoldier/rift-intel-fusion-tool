@@ -146,6 +146,15 @@ object ScopeGroups {
             EsiScope.Assets.ReadAssets,
         ),
     )
+    val readCorporationAssets = ScopeGroup(
+        name = "Read corporation assets",
+        reasons = listOf(
+            "Needed to show corporation assets in the Assets window",
+        ),
+        scopes = listOf(
+            EsiScope.Assets.ReadCorporationAssets,
+        ),
+    )
     val readProjects = ScopeGroup(
         name = "Read corporation projects",
         reasons = listOf(
@@ -180,6 +189,7 @@ object ScopeGroups {
         updateAutopilot,
         openWindow,
         readAssets,
+        readCorporationAssets,
         readProjects,
         readRoles,
     )

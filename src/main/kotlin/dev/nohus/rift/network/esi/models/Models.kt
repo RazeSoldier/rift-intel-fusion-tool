@@ -359,7 +359,7 @@ data class CharactersIdSearch(
 )
 
 @Serializable
-data class CharactersIdAsset(
+data class Asset(
     @SerialName("is_blueprint_copy")
     val isBlueprintCopy: Boolean? = null,
     @SerialName("is_singleton")
@@ -371,7 +371,7 @@ data class CharactersIdAsset(
     @SerialName("location_id")
     val locationId: Long,
     @SerialName("location_type")
-    val locationType: CharactersIdAssetLocationType,
+    val locationType: AssetLocationType,
     @SerialName("quantity")
     val quantity: Int,
     @SerialName("type_id")
@@ -379,7 +379,7 @@ data class CharactersIdAsset(
 )
 
 @Serializable
-enum class CharactersIdAssetLocationType {
+enum class AssetLocationType {
     @SerialName("station")
     Station,
 
@@ -394,7 +394,7 @@ enum class CharactersIdAssetLocationType {
 }
 
 @Serializable
-data class CharactersIdAssetsName(
+data class AssetName(
     @SerialName("item_id")
     val itemId: Long,
     @SerialName("name")
@@ -402,7 +402,7 @@ data class CharactersIdAssetsName(
 )
 
 @Serializable
-data class CharactersIdAssetsLocation(
+data class AssetLocation(
     @SerialName("item_id")
     val itemId: Long,
     @SerialName("position")
@@ -808,12 +808,14 @@ data class CorporationWalletBalance(
 
 @Serializable
 data class CorporationDivisions(
+    @SerialName("hangar")
+    val hangarDivisions: List<Division>? = null,
     @SerialName("wallet")
-    val walletDivisions: List<WalletDivision>? = null,
+    val walletDivisions: List<Division>? = null,
 )
 
 @Serializable
-data class WalletDivision(
+data class Division(
     @SerialName("division")
     val id: Long? = null,
     @SerialName("name")

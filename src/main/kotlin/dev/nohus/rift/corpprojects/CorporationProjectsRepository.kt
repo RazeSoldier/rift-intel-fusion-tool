@@ -260,12 +260,13 @@ class CorporationProjectsRepository(
         projectManagersDeferred: Deferred<List<Int>>,
     ): Result<Project> {
         val characterIds = characters.map { it.characterId }
+        val cacheBuster = project.lastModified.epochSecond.toString()
         val detailsDeferred = async {
-            esiApi.getCorporationsIdProjectsId(Originator.CorporationProjects, characterIds.first(), corporation.id, project.id)
+            esiApi.getCorporationsIdProjectsId(Originator.CorporationProjects, characterIds.first(), corporation.id, project.id, cacheBuster)
         }
         val contributionsDeferred = characters.map { character ->
             async {
-                val contributionResult = esiApi.getCorporationsIdProjectsIdContribution(Originator.CorporationProjects, character.characterId, corporation.id, project.id)
+                val contributionResult = esiApi.getCorporationsIdProjectsIdContribution(Originator.CorporationProjects, character.characterId, corporation.id, project.id, cacheBuster)
                     .map { it.contributed }
                 Contribution(
                     characterId = character.characterId,

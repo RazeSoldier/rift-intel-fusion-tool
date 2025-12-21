@@ -43,6 +43,7 @@ sealed class EsiScope(val id: String) {
     }
     abstract class Assets(id: String) : EsiScope(id) {
         object ReadAssets : Assets("esi-assets.read_assets.v1")
+        object ReadCorporationAssets : Assets("esi-assets.read_corporation_assets.v1")
     }
     abstract class Fleets(id: String) : EsiScope(id) {
         object ReadFleet : Fleets("esi-fleets.read_fleet.v1")

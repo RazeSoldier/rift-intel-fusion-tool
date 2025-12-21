@@ -130,7 +130,7 @@ class TypesRepository(
             id = id,
             groupId = -1,
             categoryId = -1,
-            name = "Unknown",
+            name = namesRepository.getName(id) ?: "Unknown",
             volume = 0f,
             radius = null,
             repackagedVolume = null,
