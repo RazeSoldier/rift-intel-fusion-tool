@@ -51,13 +51,6 @@ fun WalletLoadingProgress(
         LoadingSpinnerAmbient()
         Spacer(Modifier.height(Spacing.medium))
         when (stage) {
-            WalletRepository.LoadingStage.CheckingRoles -> {
-                Text(
-                    text = "Checking corp roles…",
-                    style = RiftTheme.typography.headlinePrimary,
-                )
-            }
-
             WalletRepository.LoadingStage.LoadingJournal -> {
                 Text(
                     text = "Loading transactions…",
@@ -98,7 +91,6 @@ fun WalletLoadingProgress(
 
         AnimatedContent(stage) { stage ->
             when (stage) {
-                WalletRepository.LoadingStage.CheckingRoles,
                 WalletRepository.LoadingStage.LoadingJournal,
                 WalletRepository.LoadingStage.LoadingDatabase,
                 -> {
@@ -127,18 +119,6 @@ fun WalletLoadingProgress(
                                         )
                                         Divider(color = Color.White.copy(alpha = 0.15f))
                                         when (stage) {
-                                            WalletRepository.LoadingStage.CheckingRoles -> {
-                                                val (text, style) = if (character.hasCorpWalletScopes) {
-                                                    "Checking…" to RiftTheme.typography.bodyPrimary
-                                                } else {
-                                                    "No corp wallet scopes" to RiftTheme.typography.bodySecondary
-                                                }
-                                                Text(
-                                                    text = text,
-                                                    style = style,
-                                                )
-                                            }
-
                                             WalletRepository.LoadingStage.LoadingJournal, WalletRepository.LoadingStage.LoadingDatabase -> {
                                                 val text = if (character.isJournalLoaded) {
                                                     buildAnnotatedString {
@@ -186,7 +166,6 @@ fun WalletLoadingProgress(
                                         )
                                         Divider(color = Color.White.copy(alpha = 0.15f))
                                         when (stage) {
-                                            WalletRepository.LoadingStage.CheckingRoles -> {}
                                             WalletRepository.LoadingStage.LoadingJournal, WalletRepository.LoadingStage.LoadingDatabase -> {
                                                 val text = if (corpDivision.isJournalLoaded) {
                                                     buildAnnotatedString {

@@ -3,13 +3,13 @@ package dev.nohus.rift.network.esi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.Asset
+import dev.nohus.rift.network.esi.models.AssetLocation
+import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
 import dev.nohus.rift.network.esi.models.CharacterIdOnline
 import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.network.esi.models.CharactersAffiliation
-import dev.nohus.rift.network.esi.models.CharactersIdAsset
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsLocation
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsName
 import dev.nohus.rift.network.esi.models.CharactersIdCharacter
 import dev.nohus.rift.network.esi.models.CharactersIdClones
 import dev.nohus.rift.network.esi.models.CharactersIdFleet
@@ -327,21 +327,39 @@ class EsiApi(
         }
     }
 
-    suspend fun getCharactersIdAssets(originator: Originator, page: Int, characterId: Int): Result<Reply<List<CharactersIdAsset>>> {
+    suspend fun getCharactersIdAssets(originator: Originator, page: Int, characterId: Int): Result<Reply<List<Asset>>> {
         return executeWithHeaders {
             service.getCharactersIdAssets(originator, characterId, page, characterId.authorization)
         }
     }
 
-    suspend fun getCharactersIdAssetsNames(originator: Originator, characterId: Int, assets: List<Long>): Result<List<CharactersIdAssetsName>> {
+    suspend fun getCharactersIdAssetsNames(originator: Originator, characterId: Int, assets: List<Long>): Result<List<AssetName>> {
         return execute {
             service.getCharactersIdAssetsNames(originator, characterId, assets, characterId.authorization)
         }
     }
 
-    suspend fun getCharactersIdAssetsLocations(originator: Originator, characterId: Int, itemIds: List<Long>): Result<List<CharactersIdAssetsLocation>> {
+    suspend fun getCharactersIdAssetsLocations(originator: Originator, characterId: Int, itemIds: List<Long>): Result<List<AssetLocation>> {
         return execute {
             service.getCharactersIdAssetsLocations(originator, characterId, itemIds, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdAssets(originator: Originator, page: Int, characterId: Int, corporationId: Int): Result<Reply<List<Asset>>> {
+        return executeWithHeaders {
+            service.getCorporationsIdAssets(originator, corporationId, page, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdAssetsNames(originator: Originator, characterId: Int, corporationId: Int, assets: List<Long>): Result<List<AssetName>> {
+        return execute {
+            service.getCorporationsIdAssetsNames(originator, corporationId, assets, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdAssetsLocations(originator: Originator, characterId: Int, corporationId: Int, itemIds: List<Long>): Result<List<AssetLocation>> {
+        return execute {
+            service.getCorporationsIdAssetsLocations(originator, corporationId, itemIds, characterId.authorization)
         }
     }
 
@@ -402,9 +420,10 @@ class EsiApi(
         characterId: Int,
         corporationId: Int,
         projectId: String,
+        cacheBuster: String,
     ): Result<CorporationsIdProjectsId> {
         return execute {
-            service.getCorporationsIdProjectsId(originator, corporationId, projectId, characterId.authorization)
+            service.getCorporationsIdProjectsId(originator, corporationId, projectId, cacheBuster, characterId.authorization)
         }
     }
 
@@ -413,9 +432,10 @@ class EsiApi(
         characterId: Int,
         corporationId: Int,
         projectId: String,
+        cacheBuster: String,
     ): Result<CorporationsIdProjectsIdContribution> {
         return execute {
-            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, characterId.authorization)
+            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, cacheBuster, characterId.authorization)
         }
     }
 

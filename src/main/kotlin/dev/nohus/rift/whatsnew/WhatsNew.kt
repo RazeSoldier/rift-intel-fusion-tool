@@ -740,6 +740,15 @@ object WhatsNew {
                 - Significantly reduced memory usage when running RIFT over time
                 """.trimIndent(),
             )
+            add(
+                "5.12.0" description """
+                -! New feature: Corporation Assets
+                - The Assets window now includes corporation assets from all your corporations
+                - Assets are shown in their corporation hangars and project delivery hangars
+                - Hangars use their in-game division names, if you have access
+                - New completely redesigned asset owner filtering allows you to choose which characters and corporations are you interested in. Choose one or any combination.
+                """.trimIndent()
+            )
         }.reversed()
     }
 }
