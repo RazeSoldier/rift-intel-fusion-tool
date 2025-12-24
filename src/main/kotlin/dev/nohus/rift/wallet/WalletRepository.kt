@@ -124,7 +124,6 @@ class WalletRepository(
     )
 
     sealed interface LoadingStage {
-        data object CheckingRoles : LoadingStage
         data object LoadingJournal : LoadingStage
         data object LoadingDatabase : LoadingStage
         data object LoadingTypeDetails : LoadingStage
@@ -251,29 +250,22 @@ class WalletRepository(
                     )
                 }
             _state.update {
-                it.copy(loading = LoadingState(stage = LoadingStage.CheckingRoles, characters = loadingCharacters))
+                it.copy(loading = LoadingState(characters = loadingCharacters))
             }
 
-            val charactersWithRolesDeferred = async {
-                characterWithCorpWalletScopes.mapAsync { character ->
-                    character to esiApi.getCharactersIdRoles(Originator.Wallets, character.characterId)
-                }.mapNotNull { it.first to (it.second.success?.roles ?: return@mapNotNull null) }
+            val accountants = characterWithCorpWalletScopes.filter { character ->
+                val roles = character.info?.corporationRoles ?: emptyList()
+                "Accountant" in roles || "Junior_Accountant" in roles
+            }.map { it.characterId }
+            val directors = characterWithCorpWalletScopes.filter { character ->
+                val roles = character.info?.corporationRoles ?: emptyList()
+                "Director" in roles
             }
-            val accountantsDeferred = async {
-                charactersWithRolesDeferred.await().map { (character, roles) ->
-                    character.characterId to ("Accountant" in roles || "Junior_Accountant" in roles)
-                }.filter { it.second }.map { it.first }
-            }
-            val directorsDeferred = async {
-                charactersWithRolesDeferred.await().map { (character, roles) ->
-                    character to ("Director" in roles)
-                }.filter { it.second }.map { it.first }
-            }
+
             val divisionNamesJob = launch {
-                walletDivisionsRepository.load(directorsDeferred.await())
+                walletDivisionsRepository.load(directors)
             }
 
-            val accountants = accountantsDeferred.await()
             val corporationsToAccountantIds = localCharacters
                 .filter { it.characterId in accountants }
                 .mapNotNull { character ->

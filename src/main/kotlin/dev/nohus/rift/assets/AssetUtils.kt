@@ -7,14 +7,14 @@ fun Asset.getTotalItems(): Int {
 }
 
 fun Asset.getTotalPrice(): Double {
-    val price = price?.let { it * asset.quantity } ?: 0.0
+    val price = price?.let { it * quantity } ?: 0.0
     val childrenPrice = children.sumOf { it.getTotalPrice() }
     return price + childrenPrice
 }
 
 fun Asset.getTotalVolume(): Double {
-    val volume = type?.repackagedVolume?.toFloat() ?: type?.volume
-    val totalVolume = volume?.let { it * asset.quantity } ?: 0f
+    val volume = type.repackagedVolume?.toFloat() ?: type.volume
+    val totalVolume = volume * quantity
     val childrenVolume = children.sumOf { it.getTotalVolume() }
     return totalVolume + childrenVolume
 }

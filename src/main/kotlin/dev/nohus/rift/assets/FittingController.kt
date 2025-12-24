@@ -15,9 +15,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 private const val CATEGORY_MODULE = 7
 
 @Single
-class FittingController(
-    private val typesRepository: TypesRepository,
-) {
+class FittingController {
 
     data class Fitting(
         val eft: String,
@@ -42,13 +40,13 @@ class FittingController(
         val writer = BufferedWriter(OutputStreamWriter(GZIPOutputStream(byteArrayOutputStream)))
         writer.append(eft)
         writer.close()
-        val base64 = Base64.Default.encode(byteArrayOutputStream.toByteArray())
+        val base64 = Base64.encode(byteArrayOutputStream.toByteArray())
         return "https://eveship.fit/?fit=eft:$base64".toURIOrNull()
     }
 
     private fun getEftFitting(asset: Asset): Fitting? {
         if (asset.children.isEmpty()) return null
-        val typeName = typesRepository.getTypeName(asset.asset.typeId)
+        val typeName = asset.type.name
         val eftWithoutCargo = buildString {
             List(8) { "LoSlot$it" }.let { flags ->
                 if (hasAnyFlag(asset, flags)) {
@@ -122,12 +120,10 @@ class FittingController(
 
     private fun StringBuilder.addSlot(asset: Asset, locationFlag: String) {
         val itemsInSlot = asset.children
-            .filter { it.asset.locationFlag == locationFlag }
-            .sortedBy { it.type?.categoryId != CATEGORY_MODULE }
+            .filter { it.locationFlag == locationFlag }
+            .sortedBy { it.type.categoryId != CATEGORY_MODULE }
         if (itemsInSlot.isEmpty()) return
-        val line = itemsInSlot.joinToString(", ") {
-            typesRepository.getTypeName(it.asset.typeId) ?: "Unknown"
-        }
+        val line = itemsInSlot.joinToString(", ") { it.type.name }
         appendLine(line)
     }
 
@@ -136,20 +132,20 @@ class FittingController(
         locationFlags: List<String>,
         newLines: Int = 1,
     ) {
-        val items = asset.children.filter { it.asset.locationFlag in locationFlags }
+        val items = asset.children.filter { it.locationFlag in locationFlags }
         if (items.isNotEmpty()) {
             repeat(newLines) {
                 appendLine()
             }
-            items.groupBy { it.asset.typeId }.forEach { (typeId, items) ->
-                val name = typesRepository.getTypeName(typeId) ?: "$typeId"
-                val quantity = items.sumOf { it.asset.quantity }
+            items.groupBy { it.type }.forEach { (type, items) ->
+                val name = type.name
+                val quantity = items.sumOf { it.quantity }
                 appendLine("$name x$quantity")
             }
         }
     }
 
     private fun hasAnyFlag(asset: Asset, flags: List<String>): Boolean {
-        return flags.any { flag -> asset.children.any { it.asset.locationFlag == flag } }
+        return flags.any { flag -> asset.children.any { it.locationFlag == flag } }
     }
 }

@@ -1,42 +1,55 @@
-package dev.nohus.rift.corpprojects
+package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
-import dev.nohus.rift.corpprojects.GetProjectContributionAttributesUseCase.ProjectContributionAttributeType
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.Archetype
 import dev.nohus.rift.network.esi.models.ConflictType
 import dev.nohus.rift.network.esi.models.CorporationId
-import dev.nohus.rift.network.esi.models.CorporationProjectCareer
-import dev.nohus.rift.network.esi.models.CorporationProjectState
 import dev.nohus.rift.network.esi.models.DockableLocation
 import dev.nohus.rift.network.esi.models.Faction
 import dev.nohus.rift.network.esi.models.Identity
 import dev.nohus.rift.network.esi.models.Item
 import dev.nohus.rift.network.esi.models.Location
+import dev.nohus.rift.network.esi.models.OpportunityCareer
+import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.network.esi.models.OwnerType
+import dev.nohus.rift.network.esi.models.ParticipationState
 import dev.nohus.rift.network.esi.models.SignatureTypeId
+import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttributeType
 import dev.nohus.rift.repositories.SolarSystemChipState
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import java.time.Instant
 
-data class Project(
-    val corporation: Corporation,
+data class Opportunity(
+    val type: OpportunityType,
+    val creator: Creator,
     val currentProgress: Long,
     val desiredProgress: Long,
     val id: String,
     val lastModified: Instant,
     val name: String,
     val reward: Reward?,
-    val state: CorporationProjectState,
-    val details: ProjectDetails,
+    val state: OpportunityState,
+    val details: OpportunityDetails,
     val contributions: List<Contribution>,
     val contributors: Contributors,
     val eligibleCharacters: List<LocalCharacter>,
 )
 
+enum class OpportunityType {
+    CorporationProject,
+    FreelanceJob,
+}
+
 data class Reward(
     val initial: Double,
     val remaining: Double,
+)
+
+data class Creator(
+    val characterId: Int,
+    val characterName: String,
+    val corporation: Corporation,
 )
 
 data class Corporation(
@@ -48,6 +61,7 @@ data class Contribution(
     val characterId: Int,
     val characterName: String,
     val contribution: Result<Long>,
+    val participationState: Result<ParticipationState>,
 )
 
 sealed interface Contributors {
@@ -61,63 +75,70 @@ data class Contributor(
     val characterId: Int,
     val details: CharacterDetails?,
     val contributed: Long,
+    val participationState: ParticipationState,
 )
 
-data class ProjectDetails(
-    val configuration: ProjectConfiguration,
-    val contributionAttributes: List<ProjectContributionAttributeType>,
+data class OpportunityDetails(
+    val debugDetails: String,
+    val configuration: OpportunityConfiguration,
+    val contributionAttributes: List<OpportunityContributionAttributeType>,
+    val ageRequirement: AgeRequirement?,
     val solarSystemChipState: SolarSystemChipState?,
-    val matchingFilters: List<ProjectCategoryFilter>,
+    val matchingFilters: List<OpportunityCategoryFilter>,
     val participationLimit: Long?,
     val rewardPerContribution: Double?,
     val submissionLimit: Long?,
     val submissionMultiplier: Double?,
-    val creator: CharacterDetails?,
-    val career: CorporationProjectCareer,
+    val career: OpportunityCareer,
     val created: Instant,
     val description: String,
     val expires: Instant?,
     val finished: Instant?,
 )
 
-sealed interface ProjectConfiguration {
+data class AgeRequirement(
+    val minimumAge: Int?,
+    val maximumAge: Int?,
+)
+
+sealed interface OpportunityConfiguration {
     data class CaptureFwComplex(
         val archetypes: List<Archetype>?,
         val factions: List<Faction>?,
         val locations: List<Location>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class DamageShip(
         val identities: List<Identity>?,
         val locations: List<Location>?,
         val ships: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class DefendFwComplex(
         val archetypes: List<Archetype>?,
         val factions: List<Faction>?,
         val locations: List<Location>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class DeliverItem(
         val dockingLocations: List<DockableLocation>?,
         val items: List<Item>?,
         val officeId: Long?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class DestroyNpc(
         val locations: List<Location>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class DestroyShip(
         val identities: List<Identity>?,
         val locations: List<Location>?,
         val ships: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class EarnLoyaltyPoint(
         val corporations: List<CorporationId>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class ShipInsurance(
         val conflictType: ConflictType,
@@ -125,49 +146,49 @@ sealed interface ProjectConfiguration {
         val locations: List<Location>?,
         val reimburseImplants: Boolean,
         val ships: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class LostShip(
         val identities: List<Identity>?,
         val locations: List<Location>?,
         val ships: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
-    data object Manual : ProjectConfiguration
+    data object Manual : OpportunityConfiguration
 
     data class ManufactureItem(
         val dockingLocations: List<DockableLocation>?,
         val items: List<Item>?,
         val owner: OwnerType,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class MineMaterial(
         val locations: List<Location>?,
         val materials: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class RemoteBoostShield(
         val identities: List<Identity>?,
         val locations: List<Location>?,
         val ships: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class RemoteRepairArmor(
         val identities: List<Identity>?,
         val locations: List<Location>?,
         val ships: List<Item>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class SalvageWreck(
         val locations: List<Location>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class ScanSignature(
         val locations: List<Location>?,
         val signatures: List<SignatureTypeId>?,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 
     data class Unknown(
         val type: String,
-    ) : ProjectConfiguration
+    ) : OpportunityConfiguration
 }

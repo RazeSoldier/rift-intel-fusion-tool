@@ -65,6 +65,10 @@ suspend fun <T> fetchCursorPaginated(
                 }
 
                 val afterItemsDeferred = async {
+                    if (after == null) {
+                        // We are only going back, so no need to fetch after items
+                        return@async Success(emptyList<T>() to null)
+                    }
                     val afterItems = mutableListOf<T>()
                     var after = initialResponse.data.cursor?.after
                     while (after != null) {
@@ -83,12 +87,14 @@ suspend fun <T> fetchCursorPaginated(
                     is Failure -> return@coroutineScope result
                     is Success -> result.data
                 }
-                val (afterItems, newAfter) = when (val result = afterItemsDeferred.await()) {
+                val (afterItems, nextAfter) = when (val result = afterItemsDeferred.await()) {
                     is Failure -> return@coroutineScope result
                     is Success -> result.data
                 }
 
-                Success((beforeItems + items + afterItems) to (newAfter ?: after))
+                val newAfter = nextAfter ?: initialResponse.data.cursor?.after ?: after
+
+                Success((beforeItems + items + afterItems) to newAfter)
             }
         }
     }

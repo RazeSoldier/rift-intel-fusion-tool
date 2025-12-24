@@ -366,7 +366,7 @@ fun SystemIllustrationIconSmall(
                         else -> Color.Transparent to 0f
                     }
 
-                    val angle = (atan2(-x, y) + 2 * Math.PI) % (2 * Math.PI)
+                    val angle = (atan2(x, y) + 2 * Math.PI) % (2 * Math.PI)
                     val distance = sqrt(x * x + y * y)
                     val animatedAngle = angle * animation.value
                     val animatedX = sin(animatedAngle) * distance - diameter / 2

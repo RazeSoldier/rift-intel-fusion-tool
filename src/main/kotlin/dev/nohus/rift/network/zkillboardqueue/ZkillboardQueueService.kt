@@ -17,13 +17,7 @@ interface ZkillboardQueueService {
         @Tag originator: Originator,
         @Query("queueID") queueId: String,
         @Query("ttw") timeToWait: Int,
+        @Query("esi") esi: String,
         @Query("filter") filter: String,
     ): Response<Unit>
-
-    @GET
-    @EndpointTag(Endpoint.Zkillboard::class)
-    suspend fun getKillmail(
-        @Tag originator: Originator,
-        @Url path: String,
-    ): ZkillboardQueueResponse
 }

@@ -72,7 +72,6 @@ class TypesRepository(
                     ),
                 )
             }
-            typeIds = rows.associate { it[Types.typeName] to it[Types.typeId] }
             val groupRows = staticDatabase.transaction {
                 TypeGroups.selectAll().toList()
             }
@@ -85,6 +84,17 @@ class TypesRepository(
             categoryNames = categoryRows.associate {
                 it[TypeCategories.categoryId] to it[TypeCategories.categoryName]
             }
+            typeIds = rows.groupBy { it[Types.typeName] }.map { (name, rows) ->
+                name to if (rows.size == 1) {
+                    rows.single()[Types.typeId]
+                } else {
+                    // Duplicate type names
+                    rows.maxByOrNull {
+                        // Prefer ships
+                        it[Types.categoryId] in listOf(6)
+                    }!![Types.typeId]
+                }
+            }.toMap()
             hasLoaded.complete(Unit)
         }
     }
@@ -130,7 +140,7 @@ class TypesRepository(
             id = id,
             groupId = -1,
             categoryId = -1,
-            name = "Unknown",
+            name = namesRepository.getName(id) ?: "Unknown",
             volume = 0f,
             radius = null,
             repackagedVolume = null,

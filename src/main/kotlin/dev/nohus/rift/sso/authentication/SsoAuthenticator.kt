@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Factory
+import java.time.Duration
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
@@ -18,10 +19,11 @@ class SsoAuthenticator(
 ) {
     // One mutex per character to prevent concurrent refreshes for the same character
     private val refreshMutexes = mutableMapOf<Int, Mutex>()
+    private val minValidityDuration = Duration.ofMinutes(1)
 
     /**
      * Starts the SSO flow, redirecting the user to the SSO login page.
-     * Returns once the authentication flow has finished, or failed
+     * Returns once the authentication flow has finished or failed
      */
     suspend fun authenticate(authority: SsoAuthority, scopes: List<String>) {
         val authentication = ssoClient.authenticate(authority, scopes.sorted())
@@ -51,7 +53,8 @@ class SsoAuthenticator(
         if (scope != null && scope.id !in authentication.scopes) {
             throw NoAuthenticationException(characterId, scope)
         }
-        if (authentication.expiration.isAfter(Instant.now())) {
+        val expiresIn = Duration.between(Instant.now(), authentication.expiration)
+        if (expiresIn > minValidityDuration) {
             return authentication.accessToken
         }
 

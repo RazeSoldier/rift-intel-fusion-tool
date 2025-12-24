@@ -22,7 +22,6 @@ import dev.nohus.rift.charactersettings.CharacterSettingsWindow
 import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.configurationpack.ConfigurationPackReminderWindow
 import dev.nohus.rift.contacts.ContactsWindow
-import dev.nohus.rift.corpprojects.CorporationProjectsWindow
 import dev.nohus.rift.debug.DebugWindow
 import dev.nohus.rift.fleet.FleetsWindow
 import dev.nohus.rift.infodialog.InfoDialogInputModel
@@ -37,6 +36,7 @@ import dev.nohus.rift.map.MapWindow
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.map.markers.MapMarkersWindow
 import dev.nohus.rift.neocom.NeocomWindow
+import dev.nohus.rift.opportunities.OpportunitiesWindow
 import dev.nohus.rift.pings.PingsWindow
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryWindow
 import dev.nohus.rift.push.PushWindow
@@ -144,14 +144,18 @@ class WindowManager(
         @SerialName("JukeboxCollapsed")
         JukeboxCollapsed,
 
-        @SerialName("CorporationProjects")
-        CorporationProjects,
-
         @SerialName("InfoDialog")
         InfoDialog,
 
         @SerialName("Wallet")
         Wallet,
+
+        @SerialName("Opportunities")
+        Opportunities,
+
+        @Deprecated("Removed")
+        @SerialName("CorporationProjects")
+        CorporationProjects,
 
         @Deprecated("Removed")
         @SerialName("MapSettings")
@@ -267,9 +271,10 @@ class WindowManager(
                             RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings, state.uuid) })
                             RiftWindow.Jukebox -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Jukebox, state.uuid) })
                             RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
-                            RiftWindow.CorporationProjects -> CorporationProjectsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CorporationProjects, state.uuid) })
+                            RiftWindow.Opportunities -> OpportunitiesWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Opportunities, state.uuid) })
                             RiftWindow.InfoDialog -> InfoDialogWindow(state.inputModel as InfoDialogInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.InfoDialog, state.uuid) })
                             RiftWindow.Wallet -> WalletWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Wallet, state.uuid) })
+                            RiftWindow.CorporationProjects -> {}
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
                             RiftWindow.Pushover -> {}
@@ -408,7 +413,7 @@ class WindowManager(
             RiftWindow.ConfigurationPackReminder -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Assets -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = (500 to 300))
             RiftWindow.WhatsNew -> WindowSizing(defaultSize = (450 to 600), minimumSize = (450 to 600))
-            RiftWindow.Debug -> WindowSizing(defaultSize = saved ?: (450 to 500), minimumSize = (450 to 500))
+            RiftWindow.Debug -> WindowSizing(defaultSize = saved ?: (1500 to 950), minimumSize = (450 to 500))
             RiftWindow.LogLite -> WindowSizing(defaultSize = saved ?: (1200 to 600), minimumSize = (1000 to 500))
             RiftWindow.Fleets -> WindowSizing(defaultSize = saved ?: (300 to 300), minimumSize = 300 to 300)
             RiftWindow.PlanetaryIndustry -> WindowSizing(defaultSize = saved ?: (540 to 800), minimumSize = 540 to 360)
@@ -419,6 +424,7 @@ class WindowManager(
             RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.CorporationProjects -> WindowSizing(defaultSize = saved ?: (800 to 900), minimumSize = 540 to 700)
+            RiftWindow.Opportunities -> WindowSizing(defaultSize = saved ?: (1400 to 930), minimumSize = 600 to 700)
             RiftWindow.InfoDialog -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Wallet -> WindowSizing(defaultSize = saved ?: (800 to 600), minimumSize = 800 to 500)
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)

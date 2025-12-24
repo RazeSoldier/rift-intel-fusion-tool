@@ -11,9 +11,6 @@ import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.repositories.Position
 import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -42,6 +39,7 @@ class ZkillboardObserver(
     private val queueId = UUID.randomUUID().toString()
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
     private var maxAge: Duration = Duration.ofMinutes(5)
+    private var esiRedirectRegex = """https://esi\.evetech\.net/killmails/(\d+)/([\da-f]+)""".toRegex()
 
     suspend fun start() = coroutineScope {
         launch {
@@ -57,7 +55,7 @@ class ZkillboardObserver(
                     val startTime = clock.markNow()
                     val fromDate = dateFormatter.format(Instant.now() - maxAge)
                     val filter = "killmail_time>=$fromDate"
-                    when (val result = zkillboardQueueApi.getKillmailRedirect(Killmails, queueId, 5, filter)) {
+                    when (val result = zkillboardQueueApi.getKillmailRedirect(Killmails, queueId, 10, filter)) {
                         is Result.Success -> {
                             handleRedirect(result.data)
                         }
@@ -82,17 +80,13 @@ class ZkillboardObserver(
         val location = reply.headers["Location"]
         if (location != null) {
             if ("objectID=null" !in location) {
-                when (val result = zkillboardQueueApi.getKillmail(Killmails, location)) {
-                    is Result.Success -> {
-                        val payload = result.data.payload
-                        if (payload != null) {
-                            handlePackage(payload)
-                        }
-                    }
-                    is Result.Failure -> {
-                        logger.error { "Failed to receive killmail object: ${result.cause?.message ?: "unknown error"}" }
-                        delay(FAILED_REQUEST_DELAY)
-                    }
+                val match = esiRedirectRegex.find(location)
+                if (match != null) {
+                    val killmailId = match.groupValues[1]
+                    val killmailHash = match.groupValues[2]
+                    handleKillmail(killmailId, killmailHash)
+                } else {
+                    logger.error { "Invalid killmail redirect: $location" }
                 }
             } else {
                 // No new killmail
@@ -103,8 +97,8 @@ class ZkillboardObserver(
         }
     }
 
-    private suspend fun handlePackage(payload: Package) {
-        when (val killmail = getKillmail(payload)) {
+    private suspend fun handleKillmail(killmailId: String, killmailHash: String) {
+        when (val killmail = getKillmail(killmailId, killmailHash)) {
             is Result.Success -> killmailProcessor.submit(killmail.data)
             is Result.Failure -> {
                 logger.error { "Failed to get killmail from ESI: ${killmail.cause?.message ?: "unknown error"}" }
@@ -112,8 +106,8 @@ class ZkillboardObserver(
         }
     }
 
-    suspend fun getKillmail(zkillboardPackage: Package): Result<Killmail> {
-        return esiApi.getKillmailIdHash(Killmails, zkillboardPackage.killmailId, zkillboardPackage.zkb.hash)
+    suspend fun getKillmail(killmailId: String, killmailHash: String): Result<Killmail> {
+        return esiApi.getKillmailIdHash(Killmails, killmailId, killmailHash)
             .map { killmail ->
                 Killmail(
                     killmailId = killmail.killmailId,

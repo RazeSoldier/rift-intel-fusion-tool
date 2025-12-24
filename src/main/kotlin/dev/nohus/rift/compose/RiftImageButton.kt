@@ -37,6 +37,7 @@ fun RiftImageButton(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     tint: Color? = null,
+    isFullAlpha: Boolean = false,
     iconPadding: Dp = 0.dp,
     highlightModifier: Float = 1f,
 ) {
@@ -54,7 +55,7 @@ fun RiftImageButton(
         }
         val iconAlpha by transition.animateFloat {
             when (it) {
-                PointerInteractionState.Normal -> 0.75f
+                PointerInteractionState.Normal -> if (isFullAlpha) 1f else 0.75f
                 PointerInteractionState.Hover -> 1f
                 PointerInteractionState.Press -> 1f
             }

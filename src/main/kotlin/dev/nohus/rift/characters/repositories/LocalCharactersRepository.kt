@@ -1,6 +1,8 @@
 package dev.nohus.rift.characters.repositories
 
 import dev.nohus.rift.characters.files.GetEveCharactersSettingsUseCase
+import dev.nohus.rift.network.Result
+import dev.nohus.rift.network.combine
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.settings.persistence.Settings
@@ -18,6 +20,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
 import java.nio.file.Path
+import java.time.Instant
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
@@ -43,10 +46,12 @@ class LocalCharactersRepository(
 
     data class CharacterInfo(
         val name: String,
+        val corporationRoles: List<String>,
         val corporationId: Int,
         val corporationName: String,
         val allianceId: Int?,
         val allianceName: String?,
+        val birthday: Instant,
     )
 
     private val _characters = MutableStateFlow<List<LocalCharacter>>(emptyList())
@@ -146,21 +151,35 @@ class LocalCharactersRepository(
 
         for (localCharacter in characters) {
             launch {
-                val characterInfo = esiApi.getCharactersId(Originator.LocalCharacters, localCharacter.characterId).map { character ->
-                    val corporationId = affiliations[localCharacter.characterId]?.corporationId ?: character.corporationId
-                    val allianceId = affiliations[localCharacter.characterId]?.allianceId ?: character.allianceId
+                val characterInfo = combine(
+                    async {
+                        esiApi.getCharactersId(Originator.LocalCharacters, localCharacter.characterId)
+                    },
+                    async {
+                        if (ScopeGroups.readRoles in localCharacter.scopes) {
+                            esiApi.getCharactersIdRoles(Originator.LocalCharacters, localCharacter.characterId).map { it.roles }
+                        } else {
+                            Result.Success(emptyList())
+                        }
+                    },
+                ) { details, roles ->
+                    val corporationId = affiliations[localCharacter.characterId]?.corporationId ?: details.corporationId
+                    val allianceId = affiliations[localCharacter.characterId]?.allianceId ?: details.allianceId
                     val corporationDeferred = async { esiApi.getCorporationsId(Originator.LocalCharacters, corporationId) }
                     val allianceDeferred = if (allianceId != null) async { esiApi.getAlliancesId(Originator.LocalCharacters, allianceId) } else null
                     val corporation = corporationDeferred.await()
                     val alliance = allianceDeferred?.await()
                     CharacterInfo(
-                        name = character.name,
+                        name = details.name,
+                        corporationRoles = roles,
                         corporationId = corporationId,
                         corporationName = corporation.success?.name ?: "?",
                         allianceId = allianceId,
                         allianceName = if (alliance != null) alliance.success?.name ?: "?" else null,
+                        birthday = details.birthday,
                     )
                 }.success
+
                 val updatedCharacter = localCharacter.copy(info = characterInfo ?: localCharacter.info)
                 withContext(MainUIDispatcher) {
                     var isExistingCharacterUpdated = false

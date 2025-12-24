@@ -3,13 +3,13 @@ package dev.nohus.rift.network.esi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.Asset
+import dev.nohus.rift.network.esi.models.AssetLocation
+import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
 import dev.nohus.rift.network.esi.models.CharacterIdOnline
 import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.network.esi.models.CharactersAffiliation
-import dev.nohus.rift.network.esi.models.CharactersIdAsset
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsLocation
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsName
 import dev.nohus.rift.network.esi.models.CharactersIdCharacter
 import dev.nohus.rift.network.esi.models.CharactersIdClones
 import dev.nohus.rift.network.esi.models.CharactersIdFleet
@@ -30,6 +30,11 @@ import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
 import dev.nohus.rift.network.esi.models.FactionWarfareSystem
 import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
+import dev.nohus.rift.network.esi.models.FreelanceJob
+import dev.nohus.rift.network.esi.models.FreelanceJobs
+import dev.nohus.rift.network.esi.models.FreelanceJobsId
+import dev.nohus.rift.network.esi.models.GetCharactersFreelanceJobsParticipation
+import dev.nohus.rift.network.esi.models.GetCorporationsFreelanceJobsParticipants
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.KillmailIdHash
@@ -47,15 +52,25 @@ import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import dev.nohus.rift.network.esi.models.WalletJournalEntry
 import dev.nohus.rift.network.esi.models.WalletTransaction
 import dev.nohus.rift.network.requests.Character
+import dev.nohus.rift.network.requests.Endpoint
+import dev.nohus.rift.network.requests.EndpointTag
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.requests.RateLimit
+import dev.nohus.rift.network.requests.RateLimitGroup
 import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.network.requests.RequestExecutor
+import dev.nohus.rift.network.requests.Scope
+import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.Tag
 import java.util.UUID
 
 @Single
@@ -327,21 +342,39 @@ class EsiApi(
         }
     }
 
-    suspend fun getCharactersIdAssets(originator: Originator, page: Int, characterId: Int): Result<Reply<List<CharactersIdAsset>>> {
+    suspend fun getCharactersIdAssets(originator: Originator, page: Int, characterId: Int): Result<Reply<List<Asset>>> {
         return executeWithHeaders {
             service.getCharactersIdAssets(originator, characterId, page, characterId.authorization)
         }
     }
 
-    suspend fun getCharactersIdAssetsNames(originator: Originator, characterId: Int, assets: List<Long>): Result<List<CharactersIdAssetsName>> {
+    suspend fun getCharactersIdAssetsNames(originator: Originator, characterId: Int, assets: List<Long>): Result<List<AssetName>> {
         return execute {
             service.getCharactersIdAssetsNames(originator, characterId, assets, characterId.authorization)
         }
     }
 
-    suspend fun getCharactersIdAssetsLocations(originator: Originator, characterId: Int, itemIds: List<Long>): Result<List<CharactersIdAssetsLocation>> {
+    suspend fun getCharactersIdAssetsLocations(originator: Originator, characterId: Int, itemIds: List<Long>): Result<List<AssetLocation>> {
         return execute {
             service.getCharactersIdAssetsLocations(originator, characterId, itemIds, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdAssets(originator: Originator, page: Int, characterId: Int, corporationId: Int): Result<Reply<List<Asset>>> {
+        return executeWithHeaders {
+            service.getCorporationsIdAssets(originator, corporationId, page, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdAssetsNames(originator: Originator, characterId: Int, corporationId: Int, assets: List<Long>): Result<List<AssetName>> {
+        return execute {
+            service.getCorporationsIdAssetsNames(originator, corporationId, assets, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdAssetsLocations(originator: Originator, characterId: Int, corporationId: Int, itemIds: List<Long>): Result<List<AssetLocation>> {
+        return execute {
+            service.getCorporationsIdAssetsLocations(originator, corporationId, itemIds, characterId.authorization)
         }
     }
 
@@ -402,9 +435,10 @@ class EsiApi(
         characterId: Int,
         corporationId: Int,
         projectId: String,
+        cacheBuster: String,
     ): Result<CorporationsIdProjectsId> {
         return execute {
-            service.getCorporationsIdProjectsId(originator, corporationId, projectId, characterId.authorization)
+            service.getCorporationsIdProjectsId(originator, corporationId, projectId, cacheBuster, characterId.authorization)
         }
     }
 
@@ -413,9 +447,10 @@ class EsiApi(
         characterId: Int,
         corporationId: Int,
         projectId: String,
+        cacheBuster: String,
     ): Result<CorporationsIdProjectsIdContribution> {
         return execute {
-            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, characterId.authorization)
+            service.getCorporationsIdProjectsIdContribution(originator, corporationId, projectId, characterId, cacheBuster, characterId.authorization)
         }
     }
 
@@ -427,9 +462,82 @@ class EsiApi(
         before: String?,
         after: String?,
         limit: Int? = 100,
+        cacheBuster: String?,
     ): Result<CorporationsIdProjectsIdContributors> {
         return execute {
-            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, characterId.authorization)
+            service.getCorporationsIdProjectsIdContributors(originator, corporationId, projectId, before, after, limit, cacheBuster, characterId.authorization)
+        }
+    }
+
+    suspend fun getFreelanceJobs(
+        originator: Originator,
+        characterId: Int,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+        corporationId: Int? = null,
+    ): Result<FreelanceJobs> {
+        return execute {
+            service.getFreelanceJobs(originator, before, after, limit, corporationId, characterId.authorization)
+        }
+    }
+
+    suspend fun getFreelanceJobsId(
+        originator: Originator,
+        characterId: Int,
+        jobId: String,
+        cacheBuster: String,
+    ): Result<FreelanceJobsId> {
+        return execute {
+            service.getFreelanceJobsId(originator, jobId, cacheBuster, characterId.authorization)
+        }
+    }
+
+    suspend fun getCharactersIdFreelanceJobs(
+        originator: Originator,
+        characterId: Int,
+    ): Result<FreelanceJobs> {
+        return execute {
+            service.getCharactersIdFreelanceJobs(originator, characterId, characterId.authorization)
+        }
+    }
+
+    suspend fun getCharactersIdFreelanceJobsIdParticipation(
+        originator: Originator,
+        characterId: Int,
+        jobId: String,
+        cacheBuster: String,
+    ): Result<GetCharactersFreelanceJobsParticipation> {
+        return execute {
+            service.getCharactersIdFreelanceJobsIdParticipation(originator, characterId, jobId, cacheBuster, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdFreelanceJobs(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+    ): Result<FreelanceJobs> {
+        return execute {
+            service.getCorporationsIdFreelanceJobs(originator, corporationId, before, after, limit, characterId.authorization)
+        }
+    }
+
+    suspend fun getCorporationsIdFreelanceJobsIdParticipants(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+        jobId: String,
+        before: String?,
+        after: String?,
+        limit: Int? = 100,
+        cacheBuster: String,
+    ): Result<GetCorporationsFreelanceJobsParticipants> {
+        return execute {
+            service.getCorporationsIdFreelanceJobsIdParticipants(originator, corporationId, jobId, before, after, limit, cacheBuster, characterId.authorization)
         }
     }
 
@@ -474,7 +582,7 @@ class EsiApi(
 
     suspend fun getKillmailIdHash(
         originator: Originator,
-        killmailId: Long,
+        killmailId: String,
         killmailHash: String,
     ): Result<KillmailIdHash> {
         return execute {
