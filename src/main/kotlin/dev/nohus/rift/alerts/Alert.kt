@@ -155,25 +155,32 @@ data class JumpRange(
     val max: Int,
 )
 
+/**
+ * Represents an action in the game that is directed at a specific target, identified by a name or part of a name.
+ */
+interface TargetedAction {
+    val nameContaining: String?
+}
+
 @Serializable
 sealed interface GameActionType {
     @Serializable
     @SerialName("InCombat")
     data class InCombat(
-        val nameContaining: String?,
-    ) : GameActionType
+        override val nameContaining: String?,
+    ) : GameActionType, TargetedAction
 
     @Serializable
     @SerialName("UnderAttack")
     data class UnderAttack(
-        val nameContaining: String?,
-    ) : GameActionType
+        override val nameContaining: String?,
+    ) : GameActionType, TargetedAction
 
     @Serializable
     @SerialName("Attacking")
     data class Attacking(
-        val nameContaining: String?,
-    ) : GameActionType
+        override val nameContaining: String?,
+    ) : GameActionType, TargetedAction
 
     @Serializable
     @SerialName("BeingWarpScrambled")

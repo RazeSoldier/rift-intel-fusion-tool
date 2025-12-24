@@ -45,6 +45,7 @@ import dev.nohus.rift.alerts.JabberPingType
 import dev.nohus.rift.alerts.JumpRange
 import dev.nohus.rift.alerts.PapType
 import dev.nohus.rift.alerts.PiEventType
+import dev.nohus.rift.alerts.TargetedAction
 import dev.nohus.rift.alerts.create.CreateAlertDialog
 import dev.nohus.rift.alerts.creategroup.CreateGroupDialog
 import dev.nohus.rift.alerts.list.AlertsViewModel.UiState
@@ -68,15 +69,21 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.contacts.ContactsRepository.Label
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.AnnotatedStringTemplate
+import dev.nohus.rift.i18n.ApplicationLocale
+import dev.nohus.rift.i18n.getPluralStringSync
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
-import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.sound.Sound
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import java.nio.file.Path
 import java.time.Duration
+import java.util.Locale
 import kotlin.io.path.nameWithoutExtension
 
 @Composable
@@ -164,17 +171,15 @@ private fun AlertsWindowContent(
                         stickyHeader {
                             val text = buildAnnotatedString {
                                 withColor(RiftTheme.colors.textPrimary) {
-                                    append(group ?: "Default")
+                                    append(group ?: getStringSync(Res.string.default))
                                 }
                                 val total = alertsInGroup.size
                                 val enabled = alertsInGroup.count { it.isEnabled }
                                 append(" - ")
-                                append(total.toString())
-                                append(" alert${total.plural}")
+                                append(pluralStringResource(Res.plurals.alert_count, total, total))
                                 if (enabled < total) {
                                     append(" - ")
-                                    append(enabled.toString())
-                                    append(" enabled")
+                                    append(stringResource(Res.string.alert_enabled_count, enabled, enabled))
                                 }
                             }
                             AlertGroupHeader(
@@ -638,360 +643,681 @@ private fun getAlertText(
     val secondary = SpanStyle(color = RiftTheme.colors.textSecondary)
     val primary = SpanStyle(color = RiftTheme.colors.textPrimary)
     return buildAnnotatedString {
+        val groupBuilders: MutableList<AnnotatedStringTemplate.GroupBuilder> = arrayListOf()
         withStyle(secondary) {
-            append("When ")
             when (val trigger = alert.trigger) {
                 is AlertTrigger.IntelReported -> {
-                    if (trigger.reportTypes.size != 1) {
-                        append("any of ")
-                    }
-                    val types = trigger.reportTypes.joinToString { type ->
-                        when (type) {
-                            IntelReportType.AnyCharacter -> "characters"
-                            is IntelReportType.SpecificCharacters -> {
-                                if (type.characters.size == 1) {
-                                    type.characters.single()
-                                } else {
-                                    "${type.characters.size} specific characters"
-                                }
-                            }
-                            IntelReportType.AnyShip -> "ships"
-                            is IntelReportType.SpecificShipClasses -> {
-                                if (type.classes.size == 1) {
-                                    "${type.classes.single()}-class ships"
-                                } else {
-                                    "${type.classes.size} ship classes"
-                                }
-                            }
-                            is IntelReportType.LabeledContacts -> {
-                                if (type.labels.size == 1) {
-                                    val label = type.labels.single()
-                                    val name = labels.firstOrNull { it.owner.id == label.ownerId && it.id == label.id }?.name ?: "Unknown"
-                                    "characters labeled $name"
-                                } else {
-                                    "characters under ${type.labels.size} labels"
-                                }
-                            }
-                            IntelReportType.Bubbles -> "bubbles"
-                            IntelReportType.GateCamp -> "gate camps"
-                            IntelReportType.Wormhole -> "wormholes"
-                            IntelReportType.Ess -> "ESS"
-                            IntelReportType.Skyhook -> "Skyhooks"
-                        }
-                    }
-                    withStyle(primary) {
-                        append(types)
-                    }
-                    append(" are reported ")
-                    val location = when (val location = trigger.reportLocation) {
-                        is IntelReportLocation.System -> "${getRangePrefixText(location.jumpsRange)} ${location.systemName}"
-                        is IntelReportLocation.AnyOwnedCharacter if location.onlyUndocked -> "${getRangePrefixText(location.jumpsRange)} any undocked character's location"
-                        is IntelReportLocation.AnyOwnedCharacter -> "${getRangePrefixText(location.jumpsRange)} any online character's location"
-                        is IntelReportLocation.OwnedCharacter if location.onlyUndocked -> {
-                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name ?: location.characterId.toString()
-                            "${getRangePrefixText(location.jumpsRange)} $character's undocked location"
-                        }
-                        is IntelReportLocation.OwnedCharacter -> {
-                            val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name ?: location.characterId.toString()
-                            "${getRangePrefixText(location.jumpsRange)} $character's location"
-                        }
-                    }
-                    withStyle(primary) {
-                        append(location)
-                    }
+                    groupBuilders.addAll(intelReportedTemplateGroupBuilder(labels, characters, trigger, primary, this))
                 }
-                is AlertTrigger.GameAction -> {
-                    trigger.actionTypes.forEachIndexed { index, type ->
-                        if (index != 0) append(", or ")
-                        when (type) {
-                            is GameActionType.InCombat -> {
-                                append("you are ")
-                                withStyle(primary) { append("in combat") }
-                                if (type.nameContaining != null) {
-                                    append(" with ")
-                                    withStyle(primary) { append(type.nameContaining) }
-                                }
-                            }
-                            is GameActionType.UnderAttack -> {
-                                append("you are ")
-                                withStyle(primary) { append("under attack") }
-                                if (type.nameContaining != null) {
-                                    append(" by ")
-                                    withStyle(primary) { append(type.nameContaining) }
-                                }
-                            }
-                            is GameActionType.Attacking -> {
-                                append("you are ")
-                                withStyle(primary) { append("attacking") }
-                                if (type.nameContaining != null) {
-                                    append(" target ")
-                                    withStyle(primary) { append(type.nameContaining) }
-                                }
-                            }
-                            GameActionType.BeingWarpScrambled -> {
-                                append("you are ")
-                                withStyle(primary) { append("being warp scrambled") }
-                            }
-                            is GameActionType.Decloaked -> {
-                                append("you are ")
-                                withStyle(primary) { append("decloaked") }
-                                if (type.ignoredKeywords.isNotEmpty()) {
-                                    append(" with exceptions")
-                                }
-                            }
-                            is GameActionType.CombatStopped -> {
-                                append("you are ")
-                                withStyle(primary) { append("no longer in combat") }
-                                if (type.nameContaining != null) {
-                                    append(" with ")
-                                    withStyle(primary) { append(type.nameContaining) }
-                                }
-                                append(" for ")
-                                val minutes = type.durationSeconds / 60
-                                withStyle(primary) {
-                                    if (minutes == 1) {
-                                        append("$minutes minute")
-                                    } else if (minutes > 1) {
-                                        append("$minutes minutes")
-                                    } else {
-                                        append("${type.durationSeconds} seconds")
-                                    }
-                                }
-                            }
-                            GameActionType.RanOutOfCharges -> {
-                                append("a module has run ")
-                                withStyle(primary) { append("out of charges") }
-                            }
 
-                            is GameActionType.Custom -> {
-                                append("a game action has happened containing ")
-                                if (type.isRegex) append("regex ")
-                                withStyle(primary) { append(type.messageContaining) }
-                            }
-                        }
-                    }
+                is AlertTrigger.GameAction -> {
+                    groupBuilders.addAll(gameActionTemplateGroupBuilder(primary, trigger, this))
                 }
+
                 is AlertTrigger.PlanetaryIndustry -> {
-                    append("on ")
-                    val coloniesFilter = when {
-                        trigger.coloniesFilter == null -> "any colony"
-                        trigger.coloniesFilter.size == 1 -> "a specific colony"
-                        else -> "${trigger.coloniesFilter.size} specific colonies"
-                    }
-                    withStyle(primary) {
-                        append(coloniesFilter)
-                    }
-                    append(" ")
-                    trigger.eventTypes.forEachIndexed { index, type ->
-                        if (index != 0) append(", or ")
-                        val text = when (type) {
-                            PiEventType.ExtractorInactive -> "extractors stop"
-                            PiEventType.Idle -> "production stops"
-                            PiEventType.NotSetup -> "setup is unfinished"
-                            PiEventType.StorageFull -> "storage becomes full"
-                        }
-                        withStyle(primary) {
-                            append(text)
-                        }
-                    }
-                    if (trigger.alertBeforeSeconds > 0) {
-                        val duration = Duration.ofSeconds(trigger.alertBeforeSeconds.toLong())
-                        val text = when {
-                            duration.toHours() >= 1 -> "${duration.toHours()} hour${duration.toHours().plural}"
-                            else -> "${duration.toMinutes()} minutes"
-                        }
-                        append(" in ")
-                        withStyle(primary) {
-                            append(text)
-                        }
-                    }
+                    groupBuilders.addAll(planetaryIndustryTemplateGroupBuilder(trigger, primary, this))
                 }
+
                 is AlertTrigger.ChatMessage -> {
-                    append("a chat message")
-                    if (trigger.messageContaining != null) {
-                        append(" containing ")
-                        if (trigger.isRegex) {
-                            append("regex ")
-                        }
-                        withStyle(primary) {
-                            append(trigger.messageContaining)
-                        }
-                    }
-                    append(" is sent")
-                    if (trigger.sender != null) {
-                        append(" by ")
-                        withStyle(primary) {
-                            append(trigger.sender)
-                        }
-                    }
-                    if (trigger.isExcludingSelf) {
-                        append(" excluding my messages")
-                    }
-                    append(" in ")
-                    val channel = when (val channel = trigger.channel) {
-                        ChatMessageChannel.Any -> "any channel"
-                        is ChatMessageChannel.Channel -> channel.name
-                    }
-                    withStyle(primary) {
-                        append(channel)
-                    }
+                    groupBuilders.addAll(chatMessageTemplateGroupBuilder(trigger, primary, this))
                 }
+
                 is AlertTrigger.JabberPing -> {
                     @Suppress("DEPRECATION")
                     when (trigger.pingType) {
                         JabberPingType.Message -> {}
                         is JabberPingType.Message2 -> {
-                            append("a message ping ")
-                            if (trigger.pingType.target != null) {
-                                append("for ")
-                                withStyle(primary) {
-                                    append(trigger.pingType.target)
-                                }
-                                append(" ")
-                            }
-                            append("is received")
+                            groupBuilders.addAll(jabberPingMessageTemplateGroupBuilder(trigger, this, primary))
                         }
+
                         is JabberPingType.Fleet -> {
-                            append("a fleet ping ")
-                            if (trigger.pingType.target != null) {
-                                append("for ")
-                                withStyle(primary) {
-                                    append(trigger.pingType.target)
-                                }
-                                append(" ")
-                            }
-                            append("is received")
-                            if (trigger.pingType.fleetCommanders.isNotEmpty()) {
-                                append(", with ")
-                                if (trigger.pingType.fleetCommanders.size == 1) {
-                                    withStyle(primary) {
-                                        append(trigger.pingType.fleetCommanders.single())
-                                        append(" as FC")
-                                    }
-                                } else {
-                                    withStyle(primary) {
-                                        append("${trigger.pingType.fleetCommanders.size} specific FC's")
-                                    }
-                                }
-                            }
-                            if (trigger.pingType.formupSystem != null) {
-                                append(", forming in ")
-                                withStyle(primary) {
-                                    append(trigger.pingType.formupSystem)
-                                }
-                            }
-                            if (trigger.pingType.papType != PapType.Any) {
-                                append(", with ")
-                                withStyle(primary) {
-                                    val type = when (trigger.pingType.papType) {
-                                        PapType.Any -> "any"
-                                        PapType.Peacetime -> "Peacetime"
-                                        PapType.Strategic -> "Strategic"
-                                    }
-                                    append(type)
-                                }
-                                append(" PAP")
-                            }
-                            if (trigger.pingType.doctrineContaining != null) {
-                                append(", with doctrine containing ")
-                                withStyle(primary) {
-                                    append(trigger.pingType.doctrineContaining)
-                                }
-                            }
+                            groupBuilders.addAll(jabberPingTemplateGroupBuilder(trigger, primary, this))
                         }
                     }
                 }
+
                 is AlertTrigger.JabberMessage -> {
-                    append("a Jabber message")
-                    if (trigger.messageContaining != null) {
-                        append(" containing ")
-                        if (trigger.isRegex) {
-                            append("regex ")
-                        }
-                        withStyle(primary) {
-                            append(trigger.messageContaining)
-                        }
-                    }
-                    append(" is sent")
-                    if (trigger.sender != null) {
-                        append(" by ")
-                        withStyle(primary) {
-                            append(trigger.sender)
-                        }
-                    }
-                    append(" in ")
-                    val channel = when (val channel = trigger.channel) {
-                        JabberMessageChannel.Any -> "any chat"
-                        is JabberMessageChannel.Channel -> channel.name
-                        JabberMessageChannel.DirectMessage -> "a direct message"
-                    }
-                    withStyle(primary) {
-                        append(channel)
-                    }
+                    groupBuilders.addAll(jabberMessageTemplateGroupBuilder(trigger, this, primary))
                 }
+
                 is AlertTrigger.NoChannelActivity -> {
-                    append("no message is received in ")
-                    val channel = when (val channel = trigger.channel) {
-                        IntelChannel.All -> "all intel channels"
-                        IntelChannel.Any -> "any intel channel"
-                        is IntelChannel.Channel -> channel.name
-                    }
-                    withStyle(primary) {
-                        append(channel)
-                    }
-                    append(" for ")
-                    val minutes = trigger.durationSeconds / 60
-                    withStyle(primary) {
-                        if (minutes == 1) {
-                            append("$minutes minute")
-                        } else if (minutes > 1) {
-                            append("$minutes minutes")
-                        } else {
-                            append("${trigger.durationSeconds} seconds")
-                        }
-                    }
+                    groupBuilders.addAll(noChannelActivityTemplateGroupBuilder(trigger, primary, this))
                 }
             }
-            append(" then ")
-            val actions = alert.actions.joinToString { action ->
-                when (action) {
-                    AlertAction.RiftNotification -> "send a RIFT notification"
-                    AlertAction.SystemNotification -> "send a system notification"
-                    AlertAction.PushNotification -> "send a push notification"
-                    is AlertAction.Sound -> "play sound \"${sounds.firstOrNull { it.id == action.id }?.name ?: "?"}\""
-                    is AlertAction.CustomSound -> "play sound ${Path.of(action.path).nameWithoutExtension}"
-                    AlertAction.ShowPing -> "show the ping"
-                    AlertAction.ShowColonies -> "show colonies"
-                }
+            if (groupBuilders.size > 2) {
+                handleActionTemplateGroup(alert, sounds, primary, this, groupBuilders)
+                handleCooldownGroup(alert, primary, this, groupBuilders)
             }
-            withStyle(primary) {
-                append(actions)
-            }
-            if (alert.cooldownSeconds != 0) {
-                append(", don't repeat for ")
-                val text = when (val minutes = alert.cooldownSeconds / 60) {
-                    0 -> "${alert.cooldownSeconds} seconds"
-                    1 -> "1 minute"
-                    else -> "$minutes minutes"
+
+            val builder =
+                AnnotatedStringTemplate.Builder(this)
+            groupBuilders.map { it.build() }.forEach { builder.addGroup(it) }
+            builder.build().expand()
+        }
+    }
+}
+
+@Composable
+private fun intelReportedTemplateGroupBuilder(
+    labels: List<Label>,
+    characters: List<LocalCharacter>,
+    trigger: AlertTrigger.IntelReported,
+    primary: SpanStyle,
+    annotatedStringBuilder: AnnotatedString.Builder,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    fun getTypeText(trigger: AlertTrigger.IntelReported): String {
+        return trigger.reportTypes.joinToString { type ->
+            when (type) {
+                IntelReportType.AnyCharacter -> getStringSync(Res.string.characters_lowercase)
+                is IntelReportType.SpecificCharacters -> {
+                    if (type.characters.size == 1) {
+                        type.characters.single()
+                    } else {
+                        getStringSync(Res.string.trailing_characters, type.characters.size)
+                    }
                 }
-                withStyle(primary) {
-                    append(text)
+
+                IntelReportType.AnyShip -> getStringSync(Res.string.ships_lowercase)
+                is IntelReportType.SpecificShipClasses -> {
+                    if (type.classes.size == 1) {
+                        getStringSync(Res.string.sepecific_ship_classes_one, type.classes.single())
+                    } else {
+                        getStringSync(Res.string.sepecific_ship_classes_other, type.classes.size)
+                    }
                 }
+
+                is IntelReportType.LabeledContacts -> {
+                    if (type.labels.size == 1) {
+                        val label = type.labels.single()
+                        val name =
+                            labels.firstOrNull { it.owner.id == label.ownerId && it.id == label.id }?.name
+                                ?: getStringSync(Res.string.unknown)
+                        getStringSync(Res.string.labeled_character, name)
+                    } else {
+                        getStringSync(Res.string.mutil_labeled_character, type.labels.size)
+                    }
+                }
+
+                IntelReportType.Bubbles -> getStringSync(Res.string.bubbles_lowercase)
+                IntelReportType.GateCamp -> getStringSync(Res.string.gate_camp_lowercase)
+                IntelReportType.Wormhole -> getStringSync(Res.string.wormholes_lowercase)
+                IntelReportType.Ess -> getStringSync(Res.string.ESS)
+                IntelReportType.Skyhook -> getStringSync(Res.string.skyhook_lowercase)
             }
         }
+    }
+
+    fun getLocationText(location: IntelReportLocation): String {
+        return when (location) {
+            is IntelReportLocation.System -> getIntelSystemText(location)
+            is IntelReportLocation.AnyOwnedCharacter if location.onlyUndocked -> getIntelAnyUndockCharacterText(location)
+            is IntelReportLocation.AnyOwnedCharacter -> getIntelAnyOnlineCharacterText(location)
+            is IntelReportLocation.OwnedCharacter if location.onlyUndocked -> getIntelSpecificUndockCharacterText(location, characters)
+            is IntelReportLocation.OwnedCharacter -> getIntelSpecificOnlineCharacterText(location, characters)
+        }
+    }
+    return AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_when_intel_reported))
+        .also {
+            val optionGroups = it.optionGroups()
+            optionGroups[0].apply {
+                predicate = { trigger.reportTypes.size != 1 }
+                whatShouldPassBlock = AnnotatedStringTemplate.BlockParameterType.WHOLE_GROUP_TEXT
+            }
+            optionGroups[1].apply {
+                applyStyleToGroup(this, annotatedStringBuilder, primary, getTypeText(trigger))
+            }
+            optionGroups[2].apply {
+                applyStyleToGroup(this, annotatedStringBuilder, primary, getLocationText(trigger.reportLocation))
+            }
+        }
+}
+
+private fun getIntelSystemText(location: IntelReportLocation.System): String {
+    return if (ApplicationLocale.current == Locale.CHINESE) {
+        "在${location.systemName}${getRangePrefixText(location.jumpsRange)} "
+    } else {
+        "${getRangePrefixText(location.jumpsRange)} ${location.systemName}"
+    }
+}
+
+private fun getIntelAnyUndockCharacterText(location: IntelReportLocation.AnyOwnedCharacter): String {
+    val jumpsRange = location.jumpsRange
+    return if (ApplicationLocale.current == Locale.CHINESE) {
+        if (jumpsRange.min == 0 && jumpsRange.max == 0) {
+            "出现任何出站角色当前位置"
+        } else {
+            "距离任何出站角色${getRangePrefixText(jumpsRange)}"
+        }
+    } else {
+        "${getRangePrefixText(jumpsRange)} any undocked character's location"
+    }
+}
+
+private fun getIntelSpecificUndockCharacterText(
+    location: IntelReportLocation.OwnedCharacter,
+    characters: List<LocalCharacter>,
+): String {
+    val jumpsRange = location.jumpsRange
+    val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name
+        ?: location.characterId.toString()
+    return if (ApplicationLocale.current == Locale.CHINESE) {
+        if (jumpsRange.min == 0 && jumpsRange.max == 0) {
+            "出现在出站的${character}当前位置"
+        } else {
+            "距离出站的${character}${getRangePrefixText(jumpsRange)}"
+        }
+    } else {
+        "${getRangePrefixText(location.jumpsRange)} $character's undocked location"
+    }
+}
+
+private fun getIntelSpecificOnlineCharacterText(
+    location: IntelReportLocation.OwnedCharacter,
+    characters: List<LocalCharacter>,
+): String {
+    val jumpsRange = location.jumpsRange
+    val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name
+        ?: location.characterId.toString()
+    return if (ApplicationLocale.current == Locale.CHINESE) {
+        if (jumpsRange.min == 0 && jumpsRange.max == 0) {
+            "出现在${character}当前位置"
+        } else {
+            "距离${character}${getRangePrefixText(jumpsRange)}"
+        }
+    } else {
+        "${getRangePrefixText(location.jumpsRange)} $character's location"
+    }
+}
+
+private fun getIntelAnyOnlineCharacterText(location: IntelReportLocation.AnyOwnedCharacter): String {
+    val jumpsRange = location.jumpsRange
+    return if (ApplicationLocale.current == Locale.CHINESE) {
+        if (jumpsRange.min == 0 && jumpsRange.max == 0) {
+            "出现任何在线角色当前位置"
+        } else {
+            "距离任何在线角色${getRangePrefixText(jumpsRange)}"
+        }
+    } else {
+        "${getRangePrefixText(jumpsRange)} any online character's location"
     }
 }
 
 private fun getRangePrefixText(range: JumpRange): String {
     val (min, max) = range.min to range.max
-    val plural = if (max > 1) "s" else ""
-    return if (min == 0 && max == 0) {
-        "in"
-    } else if (min == 0) {
-        "up to $max jump$plural from"
-    } else if (min == max) {
-        "exactly $max jump$plural from"
+    return if (ApplicationLocale.current == Locale.CHINESE) {
+        when {
+            min == 0 && max == 0 -> ""
+            min == 0 -> "${max}跳内"
+            min == max -> "${min}跳位"
+            else -> "${min}-${max}跳之间"
+        }
     } else {
-        "between $min–$max jump$plural from"
+        val plural = if (max > 1) "s" else ""
+        if (min == 0 && max == 0) {
+            "in"
+        } else if (min == 0) {
+            "up to $max jump$plural from"
+        } else if (min == max) {
+            "exactly $max jump$plural from"
+        } else {
+            "between $min–$max jump$plural from"
+        }
+    }
+}
+
+@Composable
+private fun gameActionTemplateGroupBuilder(
+    primary: SpanStyle,
+    trigger: AlertTrigger.GameAction,
+    annotatedStringBuilder: AnnotatedString.Builder,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val builderList: MutableList<AnnotatedStringTemplate.GroupBuilder> = arrayListOf()
+    val typeSeparatorGroup = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.type_separator))
+
+    @Composable
+    fun parseTargetedActionTemplate(
+        type: TargetedAction,
+        stringResource: StringResource,
+    ): List<AnnotatedStringTemplate.GroupBuilder> {
+        return AnnotatedStringTemplate.parseGroup(stringResource(stringResource)).also {
+            val optionGroups = it.optionGroups()
+            optionGroups[0].apply { applyStyleToGroup(this, annotatedStringBuilder, primary) }
+            optionGroups[1].apply {
+                predicate = { type.nameContaining != null }
+                block = {
+                    annotatedStringBuilder.withStyle(primary) {
+                        append(type.nameContaining)
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun parseOneGroupTemplate(templateResource: StringResource): List<AnnotatedStringTemplate.GroupBuilder> =
+        AnnotatedStringTemplate.parseGroup(stringResource(templateResource))
+            .also {
+                val optionGroups = it.optionGroups()
+                optionGroups[0].apply { applyStyleToGroup(this, annotatedStringBuilder, primary) }
+            }
+
+    builderList.add(AnnotatedStringTemplate.GroupBuilder(false, stringResource(Res.string.`when`)).apply { predicate = { true } })
+    trigger.actionTypes.forEachIndexed { index, type ->
+        if (index != 0) {
+            builderList.addAll(typeSeparatorGroup)
+        }
+        when (type) {
+            is GameActionType.InCombat -> {
+                parseTargetedActionTemplate(type, Res.string.alert_in_combat).appendToBuilderList(builderList)
+            }
+
+            is GameActionType.UnderAttack -> {
+                parseTargetedActionTemplate(type, Res.string.alert_under_attack).appendToBuilderList(builderList)
+            }
+
+            is GameActionType.Attacking -> {
+                parseTargetedActionTemplate(type, Res.string.alert_you_are_attacking).appendToBuilderList(builderList)
+            }
+
+            GameActionType.BeingWarpScrambled -> {
+                parseOneGroupTemplate(Res.string.alert_you_are_being_warp_scrambled).appendToBuilderList(builderList)
+            }
+
+            is GameActionType.Decloaked -> {
+                AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_you_are_decloaked))
+                    .also {
+                        val optionGroups = it.optionGroups()
+                        optionGroups[0].apply { applyStyleToGroup(this, annotatedStringBuilder, primary) }
+                        optionGroups[1].apply {
+                            predicate = { type.ignoredKeywords.isNotEmpty() }
+                            whatShouldPassBlock = AnnotatedStringTemplate.BlockParameterType.WHOLE_GROUP_TEXT
+                        }
+                    }.appendToBuilderList(builderList)
+            }
+
+            is GameActionType.CombatStopped -> {
+                AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_you_are_no_longer_in_combat))
+                    .also {
+                        val optionGroups = it.optionGroups()
+                        optionGroups[0].apply { applyStyleToGroup(this, annotatedStringBuilder, primary) }
+                        optionGroups[1].apply {
+                            predicate = { type.nameContaining != null }
+                            placeholders["name"] = { type.nameContaining }
+                            block = {
+                                annotatedStringBuilder.withStyle(primary) {
+                                    append(it)
+                                }
+                            }
+                        }
+                        optionGroups[2].apply {
+                            val minutes = type.durationSeconds / 60
+                            val text = if (minutes >= 1) {
+                                pluralStringResource(Res.plurals.trailing_minutes, minutes, minutes)
+                            } else {
+                                pluralStringResource(Res.plurals.trailing_seconds, type.durationSeconds, type.durationSeconds)
+                            }
+                            applyStyleToGroup(this, annotatedStringBuilder, primary, text)
+                        }
+                    }.appendToBuilderList(builderList)
+            }
+
+            GameActionType.RanOutOfCharges -> {
+                parseOneGroupTemplate(Res.string.alert_a_module_out_of_charges).appendToBuilderList(builderList)
+            }
+
+            is GameActionType.Custom -> {
+                AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_custom))
+                    .also {
+                        val optionGroups = it.optionGroups()
+                        optionGroups[0].apply {
+                            predicate = { type.isRegex }
+                            whatShouldPassBlock = AnnotatedStringTemplate.BlockParameterType.WHOLE_GROUP_TEXT
+                        }
+                        optionGroups[1].apply { applyStyleToGroup(this, annotatedStringBuilder, primary, type.messageContaining) }
+                    }.appendToBuilderList(builderList)
+            }
+        }
+    }
+
+    builderList.addAll(AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_suffix)))
+    return builderList
+}
+
+@Composable
+private fun planetaryIndustryTemplateGroupBuilder(
+    trigger: AlertTrigger.PlanetaryIndustry,
+    primary: SpanStyle,
+    builder: AnnotatedString.Builder,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_when_planetary_industry))
+    val optionGroups = groupBuilders.optionGroups()
+    optionGroups[0].apply {
+        val coloniesFilter = when {
+            trigger.coloniesFilter == null -> stringResource(Res.string.any_colony)
+            else -> pluralStringResource(
+                Res.plurals.trailing_colonies,
+                trigger.coloniesFilter.size,
+                trigger.coloniesFilter.size
+            )
+        }
+        applyStyleToGroup(this, builder, primary, coloniesFilter)
+    }
+    optionGroups[1].apply {
+        predicate = { true }
+        block = {
+            trigger.eventTypes.forEachIndexed { index, type ->
+                if (index != 0) builder.append(getStringSync(Res.string.type_separator))
+                val text = when (type) {
+                    PiEventType.ExtractorInactive -> getStringSync(Res.string.alert_pi_extractor_inactive)
+                    PiEventType.Idle -> getStringSync(Res.string.alert_pi_production_stopped)
+                    PiEventType.NotSetup -> getStringSync(Res.string.alert_pi_setup_uncompleted)
+                    PiEventType.StorageFull -> getStringSync(Res.string.alert_pi_storage_full)
+                }
+                builder.withStyle(primary) {
+                    append(text)
+                }
+            }
+        }
+    }
+    optionGroups[2].apply {
+        predicate = { trigger.alertBeforeSeconds > 0 }
+        block = {
+            val duration = Duration.ofSeconds(trigger.alertBeforeSeconds.toLong())
+            val text = when {
+                duration.toHours() >= 1 -> getPluralStringSync(Res.plurals.trailing_hours, duration.toHours().toInt(), duration.toHours())
+                else -> getPluralStringSync(Res.plurals.trailing_minutes, duration.toMinutes().toInt(), duration.toMinutes())
+            }
+            builder.withStyle(primary) {
+                append(text)
+            }
+        }
+    }
+
+    return groupBuilders
+}
+
+@Composable
+private fun chatMessageTemplateGroupBuilder(
+    trigger: AlertTrigger.ChatMessage,
+    primary: SpanStyle,
+    builder: AnnotatedString.Builder,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_when_chat_message))
+    val optionGroups = groupBuilders.optionGroups()
+    optionGroups[0].apply {
+        predicate = { trigger.messageContaining != null }
+        block = {
+            if (trigger.isRegex) {
+                builder.append("regex ")
+            }
+            builder.withStyle(primary) {
+                append(trigger.messageContaining)
+            }
+        }
+    }
+    optionGroups[1].apply {
+        predicate = { trigger.sender != null }
+        block = {
+            builder.withStyle(primary) {
+                append(trigger.sender)
+            }
+        }
+    }
+    optionGroups[2].apply { predicate = { trigger.isExcludingSelf } }
+    optionGroups[3].apply {
+        val channel = when (val channel = trigger.channel) {
+            ChatMessageChannel.Any -> stringResource(Res.string.chat_message_channel_any_lowercase)
+            is ChatMessageChannel.Channel -> channel.name
+        }
+        applyStyleToGroup(this, builder, primary, channel)
+    }
+
+    return groupBuilders
+}
+
+@Composable
+private fun jabberPingMessageTemplateGroupBuilder(
+    trigger: AlertTrigger.JabberPing,
+    builder: AnnotatedString.Builder,
+    primary: SpanStyle,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val text = stringResource(Res.string.alert_when_jabber_ping_message)
+    val groupBuilders = AnnotatedStringTemplate.parseGroup(text)
+    val optionGroups = groupBuilders.optionGroups()
+    val pingType = trigger.pingType as JabberPingType.Message2
+    optionGroups[0].apply {
+        predicate = { pingType.target != null }
+        placeholders["target"] = { pingType.target }
+        block = {
+            builder.withStyle(primary) {
+                append(it)
+            }
+        }
+    }
+
+    return groupBuilders
+}
+
+@Composable
+private fun jabberPingTemplateGroupBuilder(
+    trigger: AlertTrigger.JabberPing,
+    primary: SpanStyle,
+    builder: AnnotatedString.Builder,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val text = stringResource(Res.string.alert_when_jabber_ping)
+    val groupBuilders = AnnotatedStringTemplate.parseGroup(text)
+    val target = (trigger.pingType as JabberPingType.Fleet).target
+
+    @Composable
+    fun applyPrimaryStyle(): (String) -> Unit = {
+        builder.withStyle(primary) {
+            append(it)
+        }
+    }
+
+    val optionGroups = groupBuilders.optionGroups()
+
+    optionGroups[0].apply {
+        placeholders["target"] = { target }
+        predicate = { target != null }
+        block = applyPrimaryStyle()
+    }
+    optionGroups[1].apply {
+        placeholders["fc"] = {
+            if (trigger.pingType.fleetCommanders.size == 1) {
+                getStringSync(
+                    Res.string.jabber_ping_fc_one,
+                    trigger.pingType.fleetCommanders.single()
+                )
+            } else {
+                getStringSync(
+                    Res.string.jabber_ping_fc_one,
+                    trigger.pingType.fleetCommanders.size
+                )
+            }
+        }
+        predicate = { trigger.pingType.fleetCommanders.isNotEmpty() }
+        block = applyPrimaryStyle()
+    }
+    optionGroups[2].apply {
+        placeholders["system"] = { trigger.pingType.formupSystem }
+        predicate = { trigger.pingType.formupSystem != null }
+        block = applyPrimaryStyle()
+    }
+    optionGroups[3].apply {
+        placeholders["pap"] = {
+            when (trigger.pingType.papType) {
+                PapType.Peacetime -> getStringSync(Res.string.jabber_ping_fleet_pap_type_peacetime)
+                PapType.Strategic -> getStringSync(Res.string.jabber_ping_fleet_pap_type_strategic)
+                else -> trigger.pingType.papType.toString()
+            }
+        }
+        predicate = { trigger.pingType.papType != PapType.Any }
+        block = applyPrimaryStyle()
+    }
+    optionGroups[4].apply {
+        placeholders["doctrine"] = { trigger.pingType.doctrineContaining }
+        predicate = { trigger.pingType.doctrineContaining != null }
+        block = applyPrimaryStyle()
+    }
+
+    return groupBuilders
+}
+
+@Composable
+private fun jabberMessageTemplateGroupBuilder(
+    trigger: AlertTrigger.JabberMessage,
+    builder: AnnotatedString.Builder,
+    primary: SpanStyle,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val text = stringResource(Res.string.alert_when_jabber_message)
+    val groupBuilders = AnnotatedStringTemplate.parseGroup(text)
+    val optionGroups = groupBuilders.optionGroups()
+
+    optionGroups[0].apply {
+        predicate = { trigger.messageContaining != null }
+        block = {
+            if (trigger.isRegex) {
+                builder.append("regex ")
+            }
+            builder.withStyle(primary) {
+                append(trigger.messageContaining)
+            }
+        }
+    }
+    optionGroups[1].apply {
+        predicate = { trigger.sender != null }
+        block = {
+            builder.withStyle(primary) {
+                append(trigger.sender)
+            }
+        }
+    }
+    optionGroups[2].apply {
+        val channel = when (val channel = trigger.channel) {
+            JabberMessageChannel.Any -> stringResource(Res.string.jabber_message_channel_any_lowercase)
+            is JabberMessageChannel.Channel -> channel.name
+            JabberMessageChannel.DirectMessage -> stringResource(Res.string.jabber_message_channel_direct_message_lowercase)
+        }
+        applyStyleToGroup(this, builder, primary, channel)
+    }
+
+    return groupBuilders
+}
+
+@Composable
+private fun noChannelActivityTemplateGroupBuilder(
+    trigger: AlertTrigger.NoChannelActivity,
+    primary: SpanStyle,
+    builder: AnnotatedString.Builder,
+): List<AnnotatedStringTemplate.GroupBuilder> {
+    val groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.alert_when_no_channel_activity))
+    val optionGroups = groupBuilders.optionGroups()
+    optionGroups[0].apply {
+        val channel = when (val channel = trigger.channel) {
+            IntelChannel.All -> stringResource(Res.string.all_intel_channels)
+            IntelChannel.Any -> stringResource(Res.string.any_intel_channels)
+            is IntelChannel.Channel -> channel.name
+        }
+        applyStyleToGroup(this, builder, primary, channel)
+    }
+    optionGroups[1].apply {
+        val minutes = trigger.durationSeconds / 60
+        val time = if (minutes == 1) {
+            pluralStringResource(Res.plurals.trailing_minutes, minutes, minutes)
+        } else if (minutes > 1) {
+            pluralStringResource(Res.plurals.trailing_minutes, 1, 1)
+        } else {
+            pluralStringResource(Res.plurals.trailing_seconds, trigger.durationSeconds, trigger.durationSeconds)
+        }
+        applyStyleToGroup(this, builder, primary, time)
+    }
+
+    return groupBuilders
+}
+
+private fun handleActionTemplateGroup(
+    alert: Alert,
+    sounds: List<Sound>,
+    primary: SpanStyle,
+    builder: AnnotatedString.Builder,
+    groupBuilders: List<AnnotatedStringTemplate.GroupBuilder>,
+) {
+    val actions = alert.actions.joinToString { action ->
+        when (action) {
+            AlertAction.RiftNotification -> getStringSync(Res.string.alert_action_rift_notification)
+            AlertAction.SystemNotification -> getStringSync(Res.string.alert_action_system_notification)
+            AlertAction.PushNotification -> getStringSync(Res.string.alert_action_push_notification)
+            is AlertAction.Sound -> getStringSync(Res.string.alert_action_play_sound_lowercase) + " \"${sounds.firstOrNull { it.id == action.id }?.name ?: "?"}\""
+            is AlertAction.CustomSound -> getStringSync(Res.string.alert_action_play_sound_lowercase) + " ${
+                Path.of(
+                    action.path
+                ).nameWithoutExtension
+            }"
+            AlertAction.ShowPing -> getStringSync(Res.string.alert_action_show_ping_lowercase)
+            AlertAction.ShowColonies -> getStringSync(Res.string.alert_action_show_colonies_lowercase)
+        }
+    }
+    val optionGroups = groupBuilders.optionGroups()
+    optionGroups[optionGroups.size - 2].apply {
+        applyStyleToGroup(this, builder, primary, actions)
+    }
+}
+
+private fun handleCooldownGroup(
+    alert: Alert,
+    primary: SpanStyle,
+    builder: AnnotatedString.Builder,
+    groupBuilders: List<AnnotatedStringTemplate.GroupBuilder>,
+) {
+    val optionGroups = groupBuilders.optionGroups()
+    optionGroups[optionGroups.size - 1].apply {
+        placeholders["time"] = {
+            when (val minutes = alert.cooldownSeconds / 60) {
+                0 -> getPluralStringSync(Res.plurals.trailing_seconds, alert.cooldownSeconds, alert.cooldownSeconds)
+                1 -> getPluralStringSync(Res.plurals.trailing_minutes, 1, 1)
+                else -> getPluralStringSync(Res.plurals.trailing_minutes, minutes, minutes)
+            }
+        }
+        predicate = { alert.cooldownSeconds != 0 }
+        block = {
+            builder.withStyle(primary) {
+                append(it)
+            }
+        }
+    }
+}
+
+private fun List<AnnotatedStringTemplate.GroupBuilder>.optionGroups(): List<AnnotatedStringTemplate.GroupBuilder> {
+    return filter { it.isOption }
+}
+
+private fun List<AnnotatedStringTemplate.GroupBuilder>.appendToBuilderList(builderList: MutableList<AnnotatedStringTemplate.GroupBuilder>) {
+    builderList.addAll(this)
+}
+
+/**
+ * Used to help configure [AnnotatedStringTemplate.GroupBuilder].
+ * Applies a given [style] to the text within a [groupBuilder].
+ * The [appendText] can be optionally provided to append another text while applying the style.
+ * If [appendText] is not provided, the original text from the group will be used.
+ *
+ * @param groupBuilder the builder for the group to which the style will be applied
+ * @param annotatedStringBuilder the builder for the annotated string where the styled text will be added
+ * @param style the style to apply to the text
+ * @param appendText optional text to append while applying the style; if null, the original group text is used
+ */
+private fun applyStyleToGroup(
+    groupBuilder: AnnotatedStringTemplate.GroupBuilder,
+    annotatedStringBuilder: AnnotatedString.Builder,
+    style: SpanStyle,
+    appendText: String? = null,
+) {
+    groupBuilder.predicate = { true }
+    groupBuilder.whatShouldPassBlock = AnnotatedStringTemplate.BlockParameterType.WHOLE_GROUP_TEXT
+    groupBuilder.block = {
+        annotatedStringBuilder.withStyle(style) {
+            append(appendText ?: it)
+        }
     }
 }
