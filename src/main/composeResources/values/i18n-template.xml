@@ -1,0 +1,18 @@
+<resources>
+    <string name="alert_when_intel_reported">When[ any of] [$type] are reported [$location] then [$action][, don't repeat for $time]</string>
+    <string name="alert_in_combat">you are [in combat][ with $name]</string>
+    <string name="alert_under_attack">you are [under attack][ by $name]</string>
+    <string name="alert_you_are_attacking">you are [attacking][ target $name]</string>
+    <string name="alert_you_are_being_warp_scrambled">you are [being warp scrambled]</string>
+    <string name="alert_you_are_decloaked">you are [decloaked][ with exceptions]</string>
+    <string name="alert_you_are_no_longer_in_combat">you are [no longer in combat][ with $name] for [$time]</string>
+    <string name="alert_a_module_out_of_charges">a module has run [out of charges]</string>
+    <string name="alert_custom">a game action has happened containing [regex ][$name]</string>
+    <string name="alert_suffix"> then [$action][, don't repeat for $time]</string>
+    <string name="alert_when_planetary_industry">When on [$colonies] [$event][ in $duration] then [$action][, don't repeat for $time]</string>
+    <string name="alert_when_chat_message">When a chat message[ containing $keywords] is sent[ by $sender][ excluding my messages] in [$channel] then [$action][, don't repeat for $time]</string>
+    <string name="alert_when_jabber_ping_message">When a message ping [for $target ]is received then [$action][, don't repeat for $time]</string>
+    <string name="alert_when_jabber_ping">When a fleet ping[ for $target] is received[, with $fc][, forming in $system][, with $pap][, with doctrine containing $doctrine] then [$action][, don't repeat for $time]</string>
+    <string name="alert_when_jabber_message">When a Jabber message[ containing $keywords] is sent[ by $sender] in [$channel] then [$action][, don't repeat for $time]</string>
+    <string name="alert_when_no_channel_activity">When no message is received in [$channel] for [$time] then [$action][, don't repeat for $time]</string>
+</resources>

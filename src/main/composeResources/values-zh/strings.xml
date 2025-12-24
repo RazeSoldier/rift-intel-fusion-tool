@@ -3,6 +3,8 @@
     <string name="back">返回</string>
     <string name="continue">继续</string>
     <string name="finish">完成</string>
+    <string name="default">默认</string>
+    <string name="unknown">未知</string>
     <!-- NeocomWindow.kt -->
     <string name="alerts">预警</string>
     <string name="map">星图</string>
@@ -30,6 +32,60 @@
     <string name="create_group">新建预警组</string>
     <string name="create_alert">新建预警设置</string>
     <string name="edit_action">编辑动作</string>
+    <plurals name="alert_count">
+        <item quantity="other">%1$d个预警设置</item>
+    </plurals>
+    <string name="alert_enabled_count">%1$d个启用</string>
+    <string name="characters_lowercase">角色</string>
+    <string name="trailing_characters">%1$s个指定角色</string>
+    <string name="ships_lowercase">任何船型</string>
+    <string name="sepecific_ship_classes_one">%1$s</string>
+    <string name="sepecific_ship_classes_other">%1$s种指定船型</string>
+    <string name="labeled_character">%1$s的角色</string>
+    <string name="mutil_labeled_character">%1$s种被标签的角色</string>
+    <string name="bubbles_lowercase">泡泡</string>
+    <string name="gate_camp_lowercase">堵门</string>
+    <string name="wormholes_lowercase">虫洞</string>
+    <string name="ESS">事件检测</string>
+    <string name="skyhook_lowercase">天沟</string>
+    <string name="alert_intel_report_mid">被预警</string>
+    <string name="alert_in_group_header">预警设置</string>
+    <string name="enabled_in_group_header">启用</string>
+    <string name="when">当</string>
+    <string name="a_fleet_ping">一个舰队ping</string>
+    <string name="is_received"/>
+    <string name="for">来自</string>
+    <string name="jabber_ping_fc_one">指定 %1$s 作为FC</string>
+    <string name="jabber_ping_fc_more">%1$s个FC</string>
+    <string name="alert_action_send_rift_notification">发送RIFT通知</string>
+    <string name="alert_action_send_system_notification">发送系统通知</string>
+    <string name="alert_action_send_push_notification">发送手机通知</string>
+    <string name="alert_action_play_sound_lowercase">播放声音</string>
+    <string name="alert_action_show_ping_lowercase">显示ping</string>
+    <string name="alert_action_show_colonies_lowercase">显示菜地</string>
+    <string name="jabber_message_channel_any_lowercase">任意频道</string>
+    <string name="jabber_message_channel_direct_message_lowercase">私聊</string>
+    <plurals name="trailing_minutes">
+        <item quantity="other">%1$d分钟</item>
+    </plurals>
+    <plurals name="trailing_seconds">
+        <item quantity="other">%1$d秒</item>
+    </plurals>
+    <string name="all_intel_channels">所有预警频道</string>
+    <string name="any_intel_channels">任意预警频道</string>
+    <string name="chat_message_channel_any_lowercase">任意频道</string>
+    <string name="any_colony">任意菜地</string>
+    <plurals name="trailing_colonies">
+        <item quantity="other">%1$d个指定菜地</item>
+    </plurals>
+    <plurals name="trailing_hours">
+        <item quantity="other">%1$d小时</item>
+    </plurals>
+    <string name="type_separator">或</string>
+    <string name="alert_pi_extractor_inactive">提取器停止</string>
+    <string name="alert_pi_production_stopped">生产停止</string>
+    <string name="alert_pi_setup_uncompleted">设置未完成</string>
+    <string name="alert_pi_storage_full">仓库满了</string>
     <!-- CreateAlertDialog.kt -->
     <string name="new_alert">新建预警设置</string>
     <string name="system_name">星系名称</string>
@@ -212,7 +268,7 @@
     <string name="test_sound">测试声音</string>
     <string name="delete">删除</string>
     <string name="group">组：</string>
-    <string name="default">默认</string>
+
     <string name="no_alerts_in_this_group">此组中没有警报</string>
     <string name="disable_all_alerts">禁用所有警报</string>
     <string name="enable_all_alerts">启用所有警报</string>

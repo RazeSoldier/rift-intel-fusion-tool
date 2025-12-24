@@ -1,0 +1,18 @@
+<resources>
+    <string name="alert_when_intel_reported">当[以下任意][$type][$location]被预警时[$action][，$time内不重复提醒]</string>
+    <string name="alert_in_combat">你正在[战斗中][与$name]</string>
+    <string name="alert_under_attack">你正在[被攻击][被$name攻击]</string>
+    <string name="alert_you_are_attacking">你正在[攻击][目标$name]</string>
+    <string name="alert_you_are_being_warp_scrambled">你正在[被反跳]</string>
+    <string name="alert_you_are_decloaked">你[被解除隐身][除非有例外情况]</string>
+    <string name="alert_you_are_no_longer_in_combat">你[不再战斗][与$name][$time内]</string>
+    <string name="alert_a_module_out_of_charges">一个模块[耗尽了弹药]</string>
+    <string name="alert_custom">一个游戏事件包含[正则表达式：][$name]</string>
+    <string name="alert_suffix">时[$action][，$time内不重复提醒]</string>
+    <string name="alert_when_planetary_industry">当[$colonies][$event][发生在$duration]时[$action][，$time内不重复提醒]</string>
+    <string name="alert_when_chat_message">当一个[包含$keywords的]消息[由$sender]发送[，排除我的消息]在[$channel频道]时[$action][，$time内不重复提醒]</string>
+    <string name="alert_when_jabber_ping_message">当收到一个[来自$target的]消息ping时[$action][，$time内不重复提醒]</string>
+    <string name="alert_when_jabber_ping">当一个[来自$target的]舰队ping[，由$fc带队][，于$system集结][，$pap分][，建制包含$doctrine]时[$action][，$time内不重复提醒]</string>
+    <string name="alert_when_jabber_message">当一个[包含$keywords的]Jabber消息[由$sender]发送在[$channel]时[$action][，$time内不重复提醒]</string>
+    <string name="alert_when_no_channel_activity">当[$channel]在[$time]内没有消息时[$action][，$time内不重复提醒]</string>
+</resources>

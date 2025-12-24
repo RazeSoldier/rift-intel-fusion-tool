@@ -3,6 +3,8 @@
     <string name="back">Back</string>
     <string name="continue">Continue</string>
     <string name="finish">Finish</string>
+    <string name="default">Default</string>
+    <string name="unknown">Unknown</string>
     <!-- NeocomWindow.kt -->
     <string name="alerts">Alerts</string>
     <string name="map">Map</string>
@@ -30,6 +32,66 @@
     <string name="create_group">Create group</string>
     <string name="create_alert">Create alert</string>
     <string name="edit_action">Edit action</string>
+    <plurals name="alert_count">
+        <item quantity="one">%1$d alert</item>
+        <item quantity="other">%1$d alerts</item>
+    </plurals>
+    <string name="alert_enabled_count">%1$d enabled</string>
+    <string name="characters_lowercase">characters</string>
+    <string name="trailing_characters">%1$d specific characters</string>
+    <string name="ships_lowercase">ships</string>
+    <string name="sepecific_ship_classes_one">%1$d-class ships</string>
+    <string name="sepecific_ship_classes_other">%1$d ship classes</string>
+    <string name="labeled_character">characters labeled %1$d</string>
+    <string name="mutil_labeled_character">characters under %1$d labels</string>
+    <string name="bubbles_lowercase">bubbles</string>
+    <string name="gate_camp_lowercase">gate camps</string>
+    <string name="wormholes_lowercase">wormholes</string>
+    <string name="ESS">ESS</string>
+    <string name="skyhook_lowercase">skyhook</string>
+    <string name="alert_intel_report_mid"> are reported </string>
+    <string name="alert_in_group_header">alert</string>
+    <string name="enabled_in_groupd_header">enabled</string>
+    <string name="when">When</string>
+    <string name="a_fleet_ping">a fleet ping</string>
+    <string name="is_received">is received</string>
+    <string name="for">for</string>
+    <string name="with">with</string>
+    <string name="jabber_ping_fc_one">%1$s as fc</string>
+    <string name="jabber_ping_fc_more">%1$s specific FC's</string>
+    <string name="alert_action_send_rift_notification">send a RIFT notification</string>
+    <string name="alert_action_send_system_notification">send a system notification</string>
+    <string name="alert_action_send_push_notification">send a push notification</string>
+    <string name="alert_action_play_sound_lowercase">play a sound</string>
+    <string name="alert_action_show_ping_lowercase">show the ping</string>
+    <string name="alert_action_show_colonies_lowercase">show the colonies</string>
+    <string name="jabber_message_channel_any_lowercase">any chat</string>
+    <string name="jabber_message_channel_direct_message_lowercase">a direct message</string>
+    <plurals name="trailing_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="trailing_seconds">
+        <item quantity="one">%1$d second</item>
+        <item quantity="other">%1$d seconds</item>
+    </plurals>
+    <string name="all_intel_channels">all intel channels</string>
+    <string name="any_intel_channels">any intel channel</string>
+    <string name="chat_message_channel_any_lowercase">any channel</string>
+    <string name="any_colony">any colony</string>
+    <plurals name="trailing_colonies">
+        <item quantity="one">a specific colony</item>
+        <item quantity="other">%1$d specific colonies</item>
+    </plurals>
+    <plurals name="trailing_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <string name="type_separator">, or </string>
+    <string name="alert_pi_extractor_inactive">extractors stop</string>
+    <string name="alert_pi_production_stopped">production stops</string>
+    <string name="alert_pi_setup_uncompleted">setup is unfinished</string>
+    <string name="alert_pi_storage_full">storage becomes full</string>
     <!-- CreateAlertDialog.kt -->
     <string name="new_alert">New alert</string>
     <string name="system_name">System name</string>
@@ -212,7 +274,6 @@
     <string name="test_sound">Test sound</string>
     <string name="delete">Delete</string>
     <string name="group">Group:</string>
-    <string name="default">Default</string>
     <string name="no_alerts_in_this_group">No alerts in this group</string>
     <string name="disable_all_alerts">Disable all alerts</string>
     <string name="enable_all_alerts">Enable all alerts</string>
