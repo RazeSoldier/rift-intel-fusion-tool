@@ -1,9 +1,13 @@
 package dev.nohus.rift.compose
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateBounds
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -11,7 +15,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -25,9 +31,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
@@ -36,9 +45,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlurEffect
@@ -55,15 +68,19 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardCharacter
+import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardCorporation
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardProgressGauge
+import dev.nohus.rift.compose.animatedcontentfixed.animateContentSize
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.careerpaths_enforcer_16px
 import dev.nohus.rift.generated.resources.careerpaths_enforcer_flair
@@ -75,8 +92,11 @@ import dev.nohus.rift.generated.resources.careerpaths_sof_flair
 import dev.nohus.rift.generated.resources.careerpaths_soldier_of_fortune_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_flair
-import dev.nohus.rift.network.esi.models.CorporationProjectState
+import dev.nohus.rift.map.systemcolor.EntityColorRepository
+import dev.nohus.rift.network.esi.models.OpportunityState
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemChipState
+import dev.nohus.rift.utils.multiplyBrightness
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
@@ -122,28 +142,37 @@ sealed interface RiftOpportunityCardTopRight {
         val id: Int?,
     ) : RiftOpportunityCardTopRight
 
+    data class RiftOpportunityCardCorporation(
+        val name: String,
+        val id: Int,
+        val progressGauge: RiftOpportunityCardProgressGauge,
+    ) : RiftOpportunityCardTopRight
+
     data class RiftOpportunityCardProgressGauge(
         val currentProgress: Long,
         val desiredProgress: Long,
         val ownProgress: Long,
         val participationLimit: Long?,
-        val state: CorporationProjectState,
+        val state: OpportunityState,
     ) : RiftOpportunityCardTopRight
 }
 
 data class RiftOpportunityCardButton(
     val resource: DrawableResource,
+    val colorTint: Color? = null,
     val isAlwaysVisible: Boolean = true,
     val tooltipContent: @Composable (() -> Unit)? = null,
     val action: (() -> Unit)?,
 ) {
     constructor(
         resource: DrawableResource,
+        colorTint: Color? = null,
         isAlwaysVisible: Boolean = true,
         tooltip: String,
         action: (() -> Unit)?,
     ) : this(
         resource = resource,
+        colorTint = colorTint,
         isAlwaysVisible = isAlwaysVisible,
         tooltipContent = {
             Text(
@@ -201,30 +230,7 @@ fun RiftOpportunityCard(
             }
             .height(IntrinsicSize.Min),
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(7.dp)
-                .offset(4.dp)
-                .zIndex(1f),
-        ) {
-            val alpha by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 0.5f else 0.1f)
-            val blur by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 4f else 0.5f)
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(5.dp)
-                    .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                    .background(RiftTheme.colors.primary.copy(alpha = alpha)),
-            ) {}
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(1.dp)
-                    .background(RiftTheme.colors.primary.copy(alpha = 0.5f)),
-            ) {}
-        }
+        LeftGlowLine(pointerInteractionStateHolder)
         val background by animateColorAsState(
             if (pointerInteractionStateHolder.isHovered) {
                 RiftTheme.colors.backgroundPrimary
@@ -242,6 +248,10 @@ fun RiftOpportunityCard(
                     image = category.flair,
                     offset = DpOffset(24.dp, 20.dp),
                 )
+
+                val corporationStandardWidth = 48.dp + (Spacing.large * 2)
+                CorporationColorsSwatch(topRight, corporationStandardWidth, pointerInteractionStateHolder)
+
                 Column {
                     Column(
                         modifier = Modifier
@@ -254,11 +264,16 @@ fun RiftOpportunityCard(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Column(
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clipToBounds()
+                                    .fadingRightEdge()
+                                    .wrapContentWidth(align = Alignment.Start, unbounded = true),
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(bottom = Spacing.medium),
+                                    modifier = Modifier
+                                        .padding(bottom = Spacing.medium),
                                 ) {
                                     RiftOpportunityTypeIcon(category.icon, category.name)
                                     if (type.icon != null) {
@@ -272,10 +287,6 @@ fun RiftOpportunityCard(
                                         maxLines = 1,
                                         overflow = TextOverflow.Visible,
                                         softWrap = false,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clipToBounds()
-                                            .fadingRightEdge(),
                                     )
                                 }
                                 if (solarSystemChipState != null) {
@@ -289,110 +300,230 @@ fun RiftOpportunityCard(
                                     hasPadding = true,
                                     size = 42.dp,
                                 )
+                                is RiftOpportunityCardCorporation -> {
+                                    RiftOpportunityCardSmallProgressGauge(topRight.progressGauge)
+                                    Spacer(Modifier.width(Spacing.large * 2))
+                                    ClickableCorporation(topRight.id) {
+                                        RiftTooltipArea(
+                                            text = topRight.name,
+                                        ) {
+                                            AsyncCorporationLogo(
+                                                corporationId = topRight.id,
+                                                size = 64,
+                                                modifier = Modifier.size(48.dp),
+                                            )
+                                        }
+                                    }
+                                }
                                 is RiftOpportunityCardProgressGauge -> RiftOpportunityCardProgressGauge(topRight)
                                 null -> {}
                             }
                         }
                         content()
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White.copy(alpha = 0.05f)),
+                            .height(IntrinsicSize.Min),
                     ) {
+                        Box(
+                            Modifier
+                                .modifyIf(topRight is RiftOpportunityCardCorporation) {
+                                    padding(end = corporationStandardWidth)
+                                }
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .background(Color.White.copy(alpha = 0.05f)),
+                        )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(start = Spacing.large, end = Spacing.medium)
-                                .padding(vertical = Spacing.mediumLarge),
+                                .fillMaxWidth(),
                         ) {
-                            when (bottomContent) {
-                                is RiftOpportunityCardBottomContent.Timestamp -> {
-                                    val now = getNow()
-                                    val age = key(now) { getRelativeTime(bottomContent.timestamp, bottomContent.displayTimezone) }
-                                    val text = buildAnnotatedString {
-                                        if (bottomContent.text != null) {
-                                            withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                                                append(bottomContent.text)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = Spacing.large, end = Spacing.medium)
+                                    .padding(vertical = Spacing.mediumLarge),
+                            ) {
+                                when (bottomContent) {
+                                    is RiftOpportunityCardBottomContent.Timestamp -> {
+                                        val now = getNow()
+                                        val age = key(now) { getRelativeTime(bottomContent.timestamp, bottomContent.displayTimezone) }
+                                        val text = buildAnnotatedString {
+                                            if (bottomContent.text != null) {
+                                                withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
+                                                    append(bottomContent.text)
+                                                }
+                                                append(", ")
                                             }
-                                            append(", ")
+                                            append(age)
                                         }
-                                        append(age)
+                                        Text(
+                                            text = text,
+                                            style = RiftTheme.typography.headerSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
                                     }
-                                    Text(
-                                        text = text,
-                                        style = RiftTheme.typography.headerSecondary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                                is RiftOpportunityCardBottomContent.Text -> {
-                                    RiftTooltipArea(
-                                        text = bottomContent.tooltip,
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            if (bottomContent.icon != null) {
-                                                Icon(
-                                                    painter = painterResource(bottomContent.icon),
-                                                    contentDescription = null,
-                                                    tint = RiftTheme.colors.textSecondary,
-                                                    modifier = Modifier.size(16.dp),
-                                                )
-                                                Spacer(Modifier.width(Spacing.medium))
-                                            }
-                                            Text(
-                                                text = bottomContent.text,
-                                                style = RiftTheme.typography.headerPrimary,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                            )
-                                        }
-                                    }
-                                }
-                                RiftOpportunityCardBottomContent.None -> {
-                                    Text(
-                                        text = "",
-                                        style = RiftTheme.typography.headerSecondary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            }
-                        }
-
-                        if (buttons.isNotEmpty()) {
-                            Row {
-                                buttons.forEach { button ->
-                                    AnimatedVisibility(
-                                        visible = button.isAlwaysVisible || pointerInteractionStateHolder.isHovered,
-                                        enter = fadeIn(),
-                                        exit = fadeOut(),
-                                    ) {
+                                    is RiftOpportunityCardBottomContent.Text -> {
                                         RiftTooltipArea(
-                                            tooltip = button.tooltipContent,
+                                            text = bottomContent.tooltip,
                                         ) {
-                                            RiftImageButton(
-                                                resource = button.resource,
-                                                size = 16.dp,
-                                                iconPadding = 8.dp,
-                                                onClick = button.action,
-                                                tint = if (button.action == null) RiftTheme.colors.textSecondary else null,
-                                                modifier = Modifier.size(24.dp),
-                                            )
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                if (bottomContent.icon != null) {
+                                                    Icon(
+                                                        painter = painterResource(bottomContent.icon),
+                                                        contentDescription = null,
+                                                        tint = RiftTheme.colors.textSecondary,
+                                                        modifier = Modifier.size(16.dp),
+                                                    )
+                                                    Spacer(Modifier.width(Spacing.medium))
+                                                }
+                                                Text(
+                                                    text = bottomContent.text,
+                                                    style = RiftTheme.typography.headerPrimary,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                )
+                                            }
+                                        }
+                                    }
+                                    RiftOpportunityCardBottomContent.None -> {
+                                        Text(
+                                            text = "",
+                                            style = RiftTheme.typography.headerSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (buttons.isNotEmpty()) {
+                                Box(
+                                    modifier = Modifier,
+                                ) {
+                                    if (topRight is RiftOpportunityCardCorporation) {
+                                        val width = 24.dp * buttons.count { it.isAlwaysVisible || pointerInteractionStateHolder.isHovered }
+                                        val animatedWidth by animateDpAsState(width)
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .clip(RoundedCornerShape(100))
+                                                .background(Color.Black.copy(alpha = 0.6f))
+                                                .modifyIf(width.value > 0) {
+                                                    padding(start = 8.dp, end = 4.dp)
+                                                }
+                                                .height(24.dp)
+                                                .width(animatedWidth),
+                                        ) {}
+                                    }
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(start = 8.dp, end = 4.dp),
+                                    ) {
+                                        buttons.forEach { button ->
+                                            AnimatedVisibility(
+                                                visible = button.isAlwaysVisible || pointerInteractionStateHolder.isHovered,
+                                                enter = fadeIn(),
+                                                exit = fadeOut(),
+                                            ) {
+                                                RiftTooltipArea(
+                                                    tooltip = button.tooltipContent,
+                                                ) {
+                                                    RiftImageButton(
+                                                        resource = button.resource,
+                                                        size = 16.dp,
+                                                        iconPadding = 8.dp,
+                                                        onClick = button.action,
+                                                        tint = button.colorTint ?: if (button.action == null) RiftTheme.colors.textSecondary else null,
+                                                        isFullAlpha = button.colorTint != null,
+                                                        highlightModifier = 0.5f,
+                                                        modifier = Modifier.size(24.dp),
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
+                            Spacer(Modifier.width(20.dp))
                         }
-                        Spacer(Modifier.width(Spacing.veryLarge))
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BoxScope.CorporationColorsSwatch(
+    topRight: RiftOpportunityCardTopRight?,
+    corporationStandardWidth: Dp,
+    pointerInteractionStateHolder: PointerInteractionStateHolder,
+) {
+    if (topRight is RiftOpportunityCardCorporation) {
+        val colors by produceCorporationColors(topRight.id)
+        val primaryColor by animateColorAsState(colors.primary)
+        val secondaryColor by animateColorAsState(colors.secondary)
+        val isActive = pointerInteractionStateHolder.isHovered
+        val alpha by animateFloatAsState(if (isActive) 0.5f else 0.1f)
+        val blur by animateFloatAsState(if (isActive) 4f else 0.5f)
+        val extent by animateFloatAsState(if (isActive) 4f else 2f)
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(corporationStandardWidth)
+                .fillMaxHeight()
+                .background(primaryColor),
+        ) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
+                    .clip(CutCornerShape(topStartPercent = 100))
+                    .size((48 + extent).dp)
+                    .background(secondaryColor.copy(alpha = alpha)),
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .clip(CutCornerShape(topStartPercent = 100))
+                    .size(48.dp)
+                    .background(secondaryColor),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LeftGlowLine(pointerInteractionStateHolder: PointerInteractionStateHolder) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(7.dp)
+            .offset(4.dp)
+            .zIndex(1f),
+    ) {
+        val alpha by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 0.5f else 0.1f)
+        val blur by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 4f else 0.5f)
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(5.dp)
+                .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
+                .background(RiftTheme.colors.primary.copy(alpha = alpha)),
+        ) {}
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(RiftTheme.colors.primary.copy(alpha = 0.5f)),
+        ) {}
     }
 }
 

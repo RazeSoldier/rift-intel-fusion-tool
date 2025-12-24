@@ -81,7 +81,7 @@ data class SettingsModel(
     val sovereigntyUpgrades: Map<String, List<Int>> = emptyMap(),
     val isSovereigntyUpgradesHackImportingEnabled: Boolean = true,
     val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean = false,
-    val preferredExternalServices: List<ExternalService> = emptyList(),
+    val preferredExternalServices2: List<ExternalService> = emptyList(),
     val corpWalletDivisionNames: Map<Int, Map<Int, String>> = emptyMap(),
     val newVersionSeenTimestamp: Long? = null,
 )
@@ -403,7 +403,6 @@ enum class LocationPinStatus {
 enum class ExternalService {
     EveWho,
     ZKillboard,
-    EveKill,
     UniWiki,
     EveRef,
     NewEdenEncyclopedia,

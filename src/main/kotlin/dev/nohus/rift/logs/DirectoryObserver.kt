@@ -65,7 +65,7 @@ class DirectoryObserver(
             directory.fileSystem.newWatchService().also {
                 directory.register(it, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE, OVERFLOW)
             }
-        } catch (e: FileSystemException) {
+        } catch (e: IOException) {
             logger.error { "Cannot register directory observer: $e" }
             stop()
             return@coroutineScope

@@ -1,4 +1,4 @@
-package dev.nohus.rift.corpprojects
+package dev.nohus.rift.opportunities.compose
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

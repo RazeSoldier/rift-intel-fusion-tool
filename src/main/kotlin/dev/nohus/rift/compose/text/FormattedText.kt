@@ -19,7 +19,13 @@ sealed interface FormattedText {
 
 sealed class Span(open val target: SpanTarget) {
     data class Color(override val target: SpanTarget, val color: FormattedTextColor) : Span(target)
+    data class CustomColor(override val target: SpanTarget, val color: androidx.compose.ui.graphics.Color) : Span(target)
     data class Weight(override val target: SpanTarget, val fontWeight: FontWeight) : Span(target)
+    data class Italics(override val target: SpanTarget) : Span(target)
+    data class Underline(override val target: SpanTarget) : Span(target)
+    data class Size(override val target: SpanTarget, val size: Int) : Span(target)
+    data class Url(override val target: SpanTarget, val url: String) : Span(target)
+    data class InGameLink(override val target: SpanTarget, val url: String) : Span(target)
 }
 
 sealed interface SpanTarget {

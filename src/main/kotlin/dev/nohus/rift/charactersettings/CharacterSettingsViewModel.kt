@@ -74,9 +74,11 @@ class CharacterSettingsViewModel(
     }
 
     data class CopyingCharacter(
-        val id: Int,
-        val name: String,
-    )
+        val character: CharacterItem,
+    ) {
+        val id get() = character.characterId
+        val name get() = character.info?.name ?: character.characterId.toString()
+    }
 
     private val _state = MutableStateFlow(
         UiState(
@@ -125,14 +127,13 @@ class CharacterSettingsViewModel(
 
     fun onCopySourceClick(characterId: Int) {
         val character = _state.value.characters.firstOrNull { it.characterId == characterId } ?: return
-        val name = character.info?.name ?: return
         val profiles = character.settingsFiles.keys.takeIf { it.isNotEmpty() }?.toList() ?: return
         if (profiles.size > 1) {
             // This character has settings in more than 1 profile, so we need to select the source profile
-            _state.update { it.copy(copying = CopyingState.SelectingSourceLauncherProfile(CopyingCharacter(characterId, name), profiles)) }
+            _state.update { it.copy(copying = CopyingState.SelectingSourceLauncherProfile(CopyingCharacter(character), profiles)) }
         } else {
             // This character has 1 profile, no need to select the source profile
-            onSourceProfileSelected(CopyingCharacter(characterId, name), profiles.single())
+            onSourceProfileSelected(CopyingCharacter(character), profiles.single())
         }
     }
 
@@ -150,19 +151,19 @@ class CharacterSettingsViewModel(
     fun onCopyDestinationClick(characterId: Int) {
         val state = _state.value.copying
         if (state is CopyingState.SelectingDestination) {
-            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.name ?: return
+            val destinationCharacter = _state.value.characters.firstOrNull { it.characterId == characterId } ?: return
             _state.update {
                 it.copy(
                     copying = CopyingState.DestinationSelected(
                         source = state.source,
-                        destination = listOf(CopyingCharacter(characterId, destinationName)),
+                        destination = listOf(CopyingCharacter(destinationCharacter)),
                         sourceLauncherProfile = state.sourceLauncherProfile,
                     ),
                 )
             }
         } else if (state is CopyingState.DestinationSelected) {
-            val destinationName = _state.value.characters.firstOrNull { it.characterId == characterId }?.info?.name ?: return
-            val destinations = state.destination + CopyingCharacter(characterId, destinationName)
+            val destinationCharacter = _state.value.characters.firstOrNull { it.characterId == characterId } ?: return
+            val destinations = state.destination + CopyingCharacter(destinationCharacter)
             _state.update {
                 it.copy(
                     copying = CopyingState.DestinationSelected(

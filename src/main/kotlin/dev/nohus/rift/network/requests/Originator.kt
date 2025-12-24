@@ -12,6 +12,7 @@ sealed class Originator(val name: String, val color: Color) {
     data object Clones : Originator("Clones", EveColors.smokeBlue)
     data object Contacts : Originator("Contacts", EveColors.ultramarineBlue)
     data object CorporationProjects : Originator("Corporation Projects", EveColors.airTurquoise)
+    data object FreelanceJobs : Originator("Freelance Jobs", EveColors.paragonBlue)
     data object Fleets : Originator("Fleets", EveColors.auraPurple)
     data object Autopilot : Originator("Autopilot", EveColors.destinationYellow)
     data object GameUi : Originator("Game UI", EveColors.cryoBlue)

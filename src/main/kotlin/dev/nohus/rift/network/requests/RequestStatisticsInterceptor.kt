@@ -82,7 +82,9 @@ class RequestStatisticsInterceptor : Interceptor {
 
     private suspend fun getCurrentBucket(): Bucket {
         cleanOldBuckets()
-        val latestBucket = _buckets.lastOrNull()
+        val latestBucket = mutex.withLock {
+            _buckets.lastOrNull()
+        }
         val currentEpochSeconds = Instant.now().epochSecond
         return if (latestBucket == null || currentEpochSeconds > latestBucket.epochSeconds) {
             Bucket(currentEpochSeconds).also {

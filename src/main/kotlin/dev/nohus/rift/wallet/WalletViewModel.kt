@@ -534,7 +534,6 @@ class WalletViewModel(
                 filters.walletTypes.any { walletType ->
                     when (walletType) {
                         WalletType.Character -> it.wallet is Wallet.Character
-                        WalletType.Corporation -> it.wallet is Wallet.Corporation
                         is WalletType.SpecificCharacter -> it.wallet is Wallet.Character && it.wallet.characterId == walletType.characterId
                         is WalletType.SpecificCorporation -> it.wallet is Wallet.Corporation && it.wallet.corporationId == walletType.corporationId
                         is WalletType.SpecificCorporationDivision -> it.wallet is Wallet.Corporation && it.wallet.corporationId == walletType.corporationId && it.wallet.divisionId == walletType.divisionId

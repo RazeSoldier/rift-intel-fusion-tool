@@ -162,7 +162,6 @@ fun WalletsContent(
                             onClick = {
                                 val updated = filters
                                     .toggle(WalletType.SpecificCorporation(corporation.id))
-                                    .filter { it !is WalletType.Corporation }
                                     .filter { !(it is WalletType.SpecificCorporationDivision && it.corporationId == corporation.id) }
                                 updateFilters(updated)
                             },
@@ -176,8 +175,7 @@ fun WalletsContent(
                             val name = remember(nameKey) { walletDivisionsRepository.getDivisionNameOrDefault(corporation.id, divisionId) }
                             val editableName = remember(nameKey) { walletDivisionsRepository.getDivisionName(corporation.id, divisionId) }
                             val isSelected = WalletType.SpecificCorporationDivision(corporation.id, divisionId) in filters ||
-                                WalletType.SpecificCorporation(corporation.id) in filters ||
-                                WalletType.Corporation in filters
+                                WalletType.SpecificCorporation(corporation.id) in filters
 
                             WalletCard(
                                 icon = {
@@ -201,7 +199,6 @@ fun WalletsContent(
                                 onClick = {
                                     val updated = filters
                                         .toggle(WalletType.SpecificCorporationDivision(corporation.id, divisionId))
-                                        .filter { it !is WalletType.Corporation }
                                         .filter { !(it is WalletType.SpecificCorporation && it.corporationId == corporation.id) }
                                     updateFilters(updated)
                                 },

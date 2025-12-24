@@ -110,7 +110,7 @@ class MapStatusRepository(
                 storms,
                 wormholes,
                 industryIndices,
-                assetsRepository.assets,
+                assetsRepository.state,
                 mapJumpRangeController.state.map { it.systemDistances },
                 mapPlanetsController.state,
                 planetaryIndustryRepository.colonies,
@@ -190,8 +190,9 @@ class MapStatusRepository(
         }
     }
 
-    private fun getAssetCountPerSystem(assets: AssetsRepository.Assets): Map<Int, Int> {
-        return assets.list.mapNotNull {
+    private fun getAssetCountPerSystem(state: AssetsRepository.State): Map<Int, Int> {
+        val assets = state.loadedState?.success?.assets ?: emptyList()
+        return assets.mapNotNull {
             when (val location = it.location) {
                 is AssetsRepository.AssetLocation.Station -> location.systemId
                 is AssetsRepository.AssetLocation.Structure -> location.systemId

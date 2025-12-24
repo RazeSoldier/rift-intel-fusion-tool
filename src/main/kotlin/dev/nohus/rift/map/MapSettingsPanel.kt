@@ -529,6 +529,7 @@ private fun PlanetsPanel(
                 RiftPill(
                     text = type.name,
                     icon = type.icon,
+                    isIconColor = true,
                     isSelected = isSelected,
                     onClick = {
                         val new = if (isSelected) {

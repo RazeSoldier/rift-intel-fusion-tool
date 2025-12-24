@@ -78,18 +78,30 @@ class GameUiController(
     }
 
     fun pushFreelanceProject(id: String, name: String) {
-        pushLink(GameLink.forFreelanceProject(id, name), "freelance project")
+        pushLink(GameLink.forFreelanceJob(id, name), "freelance project")
     }
 
-    private fun pushLink(link: String, category: String) {
-        val subject = "${category.replaceFirstChar { it.titlecase(Locale.ENGLISH) }} link from RIFT Intel Fusion Tool"
+    fun pushUrl(link: String, name: String) {
+        pushLink("<url=$link>$name</url>", null)
+    }
+
+    private fun pushLink(link: String, category: String?) {
+        val subject = if (category != null) {
+            "${category.replaceFirstChar { it.titlecase(Locale.ENGLISH) }} link from RIFT Intel Fusion Tool"
+        } else {
+            "Link from RIFT Intel Fusion Tool"
+        }
         val body = buildString {
             append("<font size=\"30\">")
             append("→ ")
             append(link)
             append(" ←")
             append("</font><br>")
-            append("<b>Click the link to view the $category</b><br>")
+            if (category != null) {
+                append("<b>Click the link to view the $category</b><br>")
+            } else {
+                append("<b>Click the link to view</b><br>")
+            }
             append("<br><br><br><br>")
             append("<font size=\"12\" color=\"#ff4c4c4c\">You can close this window. It's only here to let you click your link.</font><br><br>")
             append("<b><font color=\"#ffC3E9FF\">R</font>IFT <font color=\"#ffC3E9FF\">I</font>ntel <font color=\"#ffC3E9FF\">F</font>usion <font color=\"#ffC3E9FF\">T</font>ool</b>")
@@ -97,7 +109,7 @@ class GameUiController(
         openNewMailWindow(subject, body)
     }
 
-    private fun openNewMailWindow(
+    fun openNewMailWindow(
         subject: String,
         body: String,
     ) {

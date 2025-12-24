@@ -1,4 +1,4 @@
-package dev.nohus.rift.corpprojects
+package dev.nohus.rift.opportunities.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,37 +27,37 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.checkmark_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_close_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
-import dev.nohus.rift.network.esi.models.CorporationProjectState
+import dev.nohus.rift.network.esi.models.OpportunityState
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-private data class ProjectState(
+private data class OpportunityState(
     val text: String,
     val color: Color,
     val icon: DrawableResource,
 )
 
 @Composable
-fun ProjectStateInfo(state: CorporationProjectState) {
+fun OpportunityStateInfo(state: OpportunityState) {
     val state = when (state) {
-        CorporationProjectState.Unspecified -> null
-        CorporationProjectState.Active -> null
-        CorporationProjectState.Closed -> ProjectState(
+        OpportunityState.Unspecified -> null
+        OpportunityState.Active -> null
+        OpportunityState.Closed -> OpportunityState(
             text = "Closed",
             color = EveColors.warningOrange,
             icon = Res.drawable.corporation_project_state_close_16px,
         )
-        CorporationProjectState.Completed -> ProjectState(
+        OpportunityState.Completed -> OpportunityState(
             text = "Completed",
             color = EveColors.successGreen,
             icon = Res.drawable.checkmark_16px,
         )
-        CorporationProjectState.Expired -> ProjectState(
+        OpportunityState.Expired -> OpportunityState(
             text = "Expired",
             color = EveColors.dangerRed,
             icon = Res.drawable.corporation_project_state_time_16px,
         )
-        CorporationProjectState.Deleted -> null
+        OpportunityState.Deleted -> null
     }
 
     if (state != null) {

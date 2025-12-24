@@ -34,35 +34,14 @@ data class CorporationProject(
     val name: String,
 
     @SerialName("progress")
-    val progress: Progress,
+    val progress: CorporationProjectProgress,
 
     @SerialName("reward")
-    val reward: Reward? = null,
+    val reward: CorporationProjectReward? = null,
 
     @SerialName("state")
-    val state: CorporationProjectState,
+    val state: OpportunityState,
 )
-
-@Serializable
-enum class CorporationProjectState {
-    @SerialName("Unspecified")
-    Unspecified,
-
-    @SerialName("Active")
-    Active,
-
-    @SerialName("Closed")
-    Closed,
-
-    @SerialName("Completed")
-    Completed,
-
-    @SerialName("Expired")
-    Expired,
-
-    @SerialName("Deleted")
-    Deleted,
-}
 
 @Serializable
 data class CorporationsIdProjectsId(
@@ -89,17 +68,17 @@ data class CorporationsIdProjectsId(
     val name: String,
 
     @SerialName("progress")
-    val progress: Progress,
+    val progress: CorporationProjectProgress,
 
     @SerialName("reward")
-    val reward: Reward? = null,
+    val reward: CorporationProjectReward? = null,
 
     @SerialName("state")
-    val state: CorporationProjectState,
+    val state: OpportunityState,
 )
 
 @Serializable
-data class Progress(
+data class CorporationProjectProgress(
     @SerialName("current")
     val current: Long,
 
@@ -108,7 +87,7 @@ data class Progress(
 )
 
 @Serializable
-data class Reward(
+data class CorporationProjectReward(
     @SerialName("initial")
     val initial: Double,
 
@@ -486,7 +465,7 @@ data class CorporationProjectCreator(
 @Serializable
 data class CorporationProjectDetails(
     @SerialName("career")
-    val career: CorporationProjectCareer,
+    val career: OpportunityCareer,
 
     @SerialName("created")
     @Serializable(with = IsoDateTimeSerializer::class)
@@ -505,7 +484,7 @@ data class CorporationProjectDetails(
 )
 
 @Serializable
-enum class CorporationProjectCareer {
+enum class OpportunityCareer {
     @SerialName("Unspecified")
     Unspecified,
 

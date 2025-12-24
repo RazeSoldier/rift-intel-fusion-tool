@@ -11,7 +11,6 @@ import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.compose.SmartAlwaysAboveRepository
 import dev.nohus.rift.contacts.ContactsRepository
-import dev.nohus.rift.corpprojects.CorporationProjectsRepository
 import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.gamelogs.GameLogWatcher
 import dev.nohus.rift.intel.ChatLogWatcher
@@ -22,6 +21,8 @@ import dev.nohus.rift.loglite.LogLiteParser
 import dev.nohus.rift.loglite.LogLiteServer
 import dev.nohus.rift.map.MapJumpRangeController
 import dev.nohus.rift.network.zkillboardqueue.ZkillboardObserver
+import dev.nohus.rift.opportunities.CorporationProjectsRepository
+import dev.nohus.rift.opportunities.FreelanceJobsRepository
 import dev.nohus.rift.pings.PingsRepository
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.MapStatusRepository
@@ -70,6 +71,7 @@ class BackgroundProcesses(
     private val logLiteParser: LogLiteParser,
     private val sovereigntyUpgradesHackWatcher: SovereigntyUpgradesHackWatcher,
     private val corporationProjectsRepository: CorporationProjectsRepository,
+    private val freelanceJobsRepository: FreelanceJobsRepository,
     private val checkForUpdatesUseCase: CheckForUpdatesUseCase,
     private val settings: Settings,
 ) {
@@ -172,6 +174,9 @@ class BackgroundProcesses(
             }
             launch {
                 corporationProjectsRepository.start()
+            }
+            launch {
+                freelanceJobsRepository.start()
             }
         }
     }

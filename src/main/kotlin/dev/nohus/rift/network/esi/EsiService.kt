@@ -1,13 +1,13 @@
 package dev.nohus.rift.network.esi
 
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.Asset
+import dev.nohus.rift.network.esi.models.AssetLocation
+import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
 import dev.nohus.rift.network.esi.models.CharacterIdOnline
 import dev.nohus.rift.network.esi.models.CharacterIdShip
 import dev.nohus.rift.network.esi.models.CharactersAffiliation
-import dev.nohus.rift.network.esi.models.CharactersIdAsset
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsLocation
-import dev.nohus.rift.network.esi.models.CharactersIdAssetsName
 import dev.nohus.rift.network.esi.models.CharactersIdCharacter
 import dev.nohus.rift.network.esi.models.CharactersIdClones
 import dev.nohus.rift.network.esi.models.CharactersIdFleet
@@ -28,6 +28,11 @@ import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
 import dev.nohus.rift.network.esi.models.FactionWarfareSystem
 import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
+import dev.nohus.rift.network.esi.models.FreelanceJob
+import dev.nohus.rift.network.esi.models.FreelanceJobs
+import dev.nohus.rift.network.esi.models.FreelanceJobsId
+import dev.nohus.rift.network.esi.models.GetCharactersFreelanceJobsParticipation
+import dev.nohus.rift.network.esi.models.GetCorporationsFreelanceJobsParticipants
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.KillmailIdHash
@@ -444,7 +449,7 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Query("page") page: Int,
         @Tag character: Character,
-    ): Response<List<CharactersIdAsset>>
+    ): Response<List<Asset>>
 
     @POST("/characters/{id}/assets/names/")
     @EndpointTag(Endpoint.GetCharactersIdAssetsNames::class)
@@ -455,7 +460,7 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Body assets: List<Long>,
         @Tag character: Character,
-    ): List<CharactersIdAssetsName>
+    ): List<AssetName>
 
     @POST("/characters/{id}/assets/locations/")
     @EndpointTag(Endpoint.GetCharactersIdAssetsLocations::class)
@@ -466,7 +471,40 @@ interface EsiService {
         @Path("id") characterId: Int,
         @Body itemIds: List<Long>,
         @Tag character: Character,
-    ): List<CharactersIdAssetsLocation>
+    ): List<AssetLocation>
+
+    @GET("/corporations/{id}/assets/")
+    @EndpointTag(Endpoint.GetCorporationsIdAssets::class)
+    @RateLimit(RateLimitGroup.CorpAsset::class)
+    @Scope(EsiScope.Assets.ReadAssets::class)
+    suspend fun getCorporationsIdAssets(
+        @Tag originator: Originator,
+        @Path("id") corporationId: Int,
+        @Query("page") page: Int,
+        @Tag character: Character,
+    ): Response<List<Asset>>
+
+    @POST("/corporations/{id}/assets/names/")
+    @EndpointTag(Endpoint.GetCorporationsIdAssetsNames::class)
+    @RateLimit(RateLimitGroup.CorpAsset::class)
+    @Scope(EsiScope.Assets.ReadAssets::class)
+    suspend fun getCorporationsIdAssetsNames(
+        @Tag originator: Originator,
+        @Path("id") corporationId: Int,
+        @Body assets: List<Long>,
+        @Tag character: Character,
+    ): List<AssetName>
+
+    @POST("/corporations/{id}/assets/locations/")
+    @EndpointTag(Endpoint.GetCorporationsIdAssetsLocations::class)
+    @RateLimit(RateLimitGroup.CorpAsset::class)
+    @Scope(EsiScope.Assets.ReadAssets::class)
+    suspend fun getCorporationsIdAssetsLocations(
+        @Tag originator: Originator,
+        @Path("id") corporationId: Int,
+        @Body itemIds: List<Long>,
+        @Tag character: Character,
+    ): List<AssetLocation>
 
     @GET("/markets/prices/")
     @EndpointTag(Endpoint.GetMarketsPrices::class)
@@ -535,7 +573,7 @@ interface EsiService {
 
     @GET("/corporations/{id}/projects")
     @EndpointTag(Endpoint.GetCorporationsIdProjects::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjects(
         @Tag originator: Originator,
@@ -548,33 +586,33 @@ interface EsiService {
     ): CorporationsIdProjects
 
     @GET("/corporations/{corporation_id}/projects/{project_id}")
-    @Headers("Cache-Control: no-cache")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsId::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjectsId(
         @Tag originator: Originator,
         @Path("corporation_id") corporationId: Int,
         @Path("project_id") projectId: String,
+        @Query("cb") cacheBuster: String,
         @Tag character: Character,
     ): CorporationsIdProjectsId
 
     @GET("/corporations/{corporation_id}/projects/{project_id}/contribution/{character_id}")
-    @Headers("Cache-Control: no-cache")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsIdContribution::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjectsIdContribution(
         @Tag originator: Originator,
         @Path("corporation_id") corporationId: Int,
         @Path("project_id") projectId: String,
         @Path("character_id") characterId: Int,
+        @Query("cb") cacheBuster: String,
         @Tag character: Character,
     ): CorporationsIdProjectsIdContribution
 
     @GET("/corporations/{corporation_id}/projects/{project_id}/contributors")
     @EndpointTag(Endpoint.GetCorporationsIdProjectsIdContributors::class)
-    @RateLimit(RateLimitGroup.CorpProjects::class)
+    @RateLimit(RateLimitGroup.CorpProject::class)
     @Scope(EsiScope.Corporations.ReadProjects::class)
     suspend fun getCorporationsIdProjectsIdContributors(
         @Tag originator: Originator,
@@ -583,8 +621,81 @@ interface EsiService {
         @Query("before") before: String?,
         @Query("after") after: String?,
         @Query("limit") limit: Int?,
+        @Query("cb") cacheBuster: String?,
         @Tag character: Character,
     ): CorporationsIdProjectsIdContributors
+
+    @GET("/freelance-jobs")
+    @EndpointTag(Endpoint.GetFreelanceJobs::class)
+    @RateLimit(RateLimitGroup.FreelanceJob::class)
+    suspend fun getFreelanceJobs(
+        @Tag originator: Originator,
+        @Query("before") before: String?,
+        @Query("after") after: String?,
+        @Query("limit") limit: Int?,
+        @Query("corporation_id") corporationId: Int?,
+        @Tag character: Character,
+    ): FreelanceJobs
+
+    @GET("/freelance-jobs/{job_id}")
+    @EndpointTag(Endpoint.GetFreelanceJobsId::class)
+    @RateLimit(RateLimitGroup.FreelanceJob::class)
+    suspend fun getFreelanceJobsId(
+        @Tag originator: Originator,
+        @Path("job_id") jobId: String,
+        @Query("cb") cacheBuster: String,
+        @Tag character: Character,
+    ): FreelanceJobsId
+
+    @GET("/characters/{character_id}/freelance-jobs")
+    @EndpointTag(Endpoint.GetCharactersIdFreelanceJobs::class)
+    @RateLimit(RateLimitGroup.CharFreelanceJob::class)
+    @Scope(EsiScope.Characters.ReadFreelanceJobs::class)
+    suspend fun getCharactersIdFreelanceJobs(
+        @Tag originator: Originator,
+        @Path("character_id") characterId: Int,
+        @Tag character: Character,
+    ): FreelanceJobs
+
+    @GET("/characters/{character_id}/freelance-jobs/{job_id}/participation")
+    @EndpointTag(Endpoint.GetCharactersIdFreelanceJobsIdParticipation::class)
+    @RateLimit(RateLimitGroup.CharFreelanceJob::class)
+    @Scope(EsiScope.Characters.ReadFreelanceJobs::class)
+    suspend fun getCharactersIdFreelanceJobsIdParticipation(
+        @Tag originator: Originator,
+        @Path("character_id") characterId: Int,
+        @Path("job_id") jobId: String,
+        @Query("cb") cacheBuster: String?,
+        @Tag character: Character,
+    ): GetCharactersFreelanceJobsParticipation
+
+    @GET("/corporations/{corporation_id}/freelance-jobs")
+    @EndpointTag(Endpoint.GetCorporationsIdFreelanceJobs::class)
+    @RateLimit(RateLimitGroup.CorpFreelanceJob::class)
+    @Scope(EsiScope.Corporations.ReadFreelanceJobs::class)
+    suspend fun getCorporationsIdFreelanceJobs(
+        @Tag originator: Originator,
+        @Path("corporation_id") corporationId: Int,
+        @Query("before") before: String?,
+        @Query("after") after: String?,
+        @Query("limit") limit: Int?,
+        @Tag character: Character,
+    ): FreelanceJobs
+
+    @GET("/corporations/{corporation_id}/freelance-jobs/{job_id}/participants")
+    @EndpointTag(Endpoint.GetCorporationsIdFreelanceJobsIdParticipants::class)
+    @RateLimit(RateLimitGroup.CorpFreelanceJob::class)
+    @Scope(EsiScope.Corporations.ReadFreelanceJobs::class)
+    suspend fun getCorporationsIdFreelanceJobsIdParticipants(
+        @Tag originator: Originator,
+        @Path("corporation_id") corporationId: Int,
+        @Path("job_id") jobId: String,
+        @Query("before") before: String?,
+        @Query("after") after: String?,
+        @Query("limit") limit: Int?,
+        @Query("cb") cacheBuster: String?,
+        @Tag character: Character,
+    ): GetCorporationsFreelanceJobsParticipants
 
     @GET("/characters/{character_id}/roles")
     @EndpointTag(Endpoint.GetCharactersIdRoles::class)
@@ -631,7 +742,7 @@ interface EsiService {
     @RateLimit(RateLimitGroup.Killmail::class)
     suspend fun getKillmailIdHash(
         @Tag originator: Originator,
-        @Path("killmail_id") killmailId: Long,
+        @Path("killmail_id") killmailId: String,
         @Path("killmail_hash") killmailHash: String,
     ): KillmailIdHash
 }
