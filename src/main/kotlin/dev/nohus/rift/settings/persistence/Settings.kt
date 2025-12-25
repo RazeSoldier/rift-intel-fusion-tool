@@ -1,6 +1,7 @@
 package dev.nohus.rift.settings.persistence
 
 import dev.nohus.rift.alerts.Alert
+import dev.nohus.rift.i18n.ApplicationLocale
 import dev.nohus.rift.standings.StandingsRepository.Standings
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -20,6 +21,12 @@ class Settings(
     private var model = persistence.load()
     private val _updateFlow = MutableStateFlow(model)
     val updateFlow = _updateFlow.asStateFlow()
+
+    init {
+        // Initialize the application locale while bootstrap
+        // Ensure that stuff that depends on locale works correctly at startup
+        ApplicationLocale.useSettingsLocale(this)
+    }
 
     private fun update(update: SettingsModel.() -> SettingsModel) {
         val newModel = model.update()

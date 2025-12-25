@@ -45,7 +45,6 @@ private fun ApplicationScope.riftApplication() {
         val viewModel: ApplicationViewModel = viewModel()
         val windowManager: WindowManager = remember { koin.get() }
         val notificationsController: NotificationsController = remember { koin.get() }
-        ApplicationLocale.useSettingsLocale()
         val state by viewModel.state.collectAsState()
 
         Locale.setDefault(ApplicationLocale.current)
