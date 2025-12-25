@@ -1,5 +1,6 @@
 package dev.nohus.rift.i18n
 
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.settings.persistence.Settings
 import java.util.Locale
 
@@ -26,8 +27,7 @@ object ApplicationLocale {
     /**
      * Applies the language setting from the application's settings to the current locale.
      */
-    fun useSettingsLocale() {
-        val settings = dev.nohus.rift.di.koin.get<Settings>()
+    fun useSettingsLocale(settings: Settings = koin.get<Settings>()) {
         appLocale = settings.language
     }
 
