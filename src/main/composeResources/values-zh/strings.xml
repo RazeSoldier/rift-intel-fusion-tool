@@ -283,7 +283,6 @@
     <string name="test_sound">测试声音</string>
     <string name="delete">删除</string>
     <string name="group">组：</string>
-
     <string name="no_alerts_in_this_group">此组中没有警报</string>
     <string name="disable_all_alerts">禁用所有警报</string>
     <string name="enable_all_alerts">启用所有警报</string>
@@ -297,6 +296,7 @@
     <string name="command_center">行星指挥中心</string>
     <string name="launchpad">行星发射平台</string>
     <string name="storage">行星储藏设施</string>
+    <!-- CharactersWindow.kt -->
     <string name="ship_inspace_if_unknown_ship_name">在太空中</string>
     <string name="station">空间站</string>
     <string name="a_with_space"/>
