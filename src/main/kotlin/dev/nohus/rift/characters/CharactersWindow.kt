@@ -68,12 +68,12 @@ fun CharactersWindow(
     val viewModel: CharactersViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Characters",
+        title = stringResource(Res.string.character_window_title),
         icon = Res.drawable.window_characters,
         state = windowState,
         tuneContextMenuItems = listOf(
             ContextMenuItem.CheckboxItem(
-                text = "Show clones",
+                text = stringResource(Res.string.character_window_show_clones),
                 isSelected = state.isShowingClones,
                 onClick = { viewModel.onIsShowingCharactersClonesChange(!state.isShowingClones) },
             ),
@@ -273,10 +273,10 @@ private fun TopRow(
                 } else {
                     SsoButton(onClick = onSsoClick)
                     RiftTooltipArea(
-                        text = "Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.",
+                        text = stringResource(Res.string.character_window_copy_settings_tooltip),
                     ) {
                         RiftButton(
-                            text = "Copy settings",
+                            text = stringResource(Res.string.character_window_copy_settings),
                             onClick = onCopySettingsClick,
                         )
                     }

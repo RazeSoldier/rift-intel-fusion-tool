@@ -34,6 +34,7 @@
     <string name="settings">设置</string>
     <string name="about">关于</string>
     <string name="quit">退出</string>
+    <string name="skip">跳过</string>
     <!-- RiftWindow.kt -->
     <string name="disable_always_above">禁用始终在上</string>
     <string name="enable_always_above">启用始终在上</string>
@@ -303,6 +304,10 @@
     <string name="dockedin_if_known_ship_name"> 在 </string>
     <string name="dockedin_if_unknown_ship_name">在 </string>
     <string name="structure">建筑</string>
+    <string name="character_window_title">角色</string>
+    <string name="character_window_show_clones">显示克隆体</string>
+    <string name="character_window_copy_settings">复制设置</string>
+    <string name="character_window_copy_settings_tooltip">在角色之间复制EVE设置\n(窗口位置、总览等)</string>
     <!-- SettingsWindow.kt -->
     <string name="language">语言</string>
     <string name="settings_window_title">RIFT设置</string>
@@ -439,4 +444,38 @@
     <string name="file_chooser_button_select">选择</string>
     <!-- SettingsViewModel.kt -->
     <string name="language_restart_dialog">需要重启应用使更改客户端语言生效</string>
+    <string name="wizard_window_welcome_title">欢迎，舰长！</string>
+    <string name="wizard_window_welcome_content">\n\n您现在拥有RIFT，这是一个原型军事系统，通过提供额外情报来增强您的态势感知能力。 \n\n我会指导您入门。</string>
+    <string name="wizard_window_continue_anyway">强行继续</string>
+    <string name="wizard_window_eve_not_detected">未检测到EVE</string>
+    <string name="wizard_window_eve_not_detected_content">\n\n要正确设置RIFT，我需要知道您的EVE安装位置</string>
+    <string name="wizard_window_eve_detected">检测到EVE</string>
+    <string name="wizard_window_eve_detected_content">\n\n我已经找到您安装的EVE</string>
+    <string name="wizard_window_eve_located">已定位EVE</string>
+    <string name="wizard_window_eve_located_content">\n\n您的EVE安装已正确完成。</string>
+    <string name="wizard_window_select_installation_button">选择安装目录</string>
+    <string name="wizard_window_check_installation_button">检查安装目录</string>
+    <string name="wizard_window_change_installation_button">修改安装目录</string>
+    <string name="wizard_window_no_characters_detected">没有检测到角色</string>
+    <string name="wizard_window_no_characters_detected_content">\n\n我没有在该设备检测到任何使用的角色。</string>
+    <string name="wizard_window_characters_detected">检测到角色</string>
+    <string name="wizard_window_characters_detected_content">\n\n我检测到你有%1$d个角色。\n\n让我们对他们进行身份验证，以便与RIFT一起使用。</string>
+    <string name="wizard_window_characters_partially_setup">部分角色已设置</string>
+    <string name="wizard_window_characters_partially_setup_content">\n\n我检测到你有%1$d个角色，但您只验证了其中的%2$d个</string>
+    <string name="wizard_window_characters_setup">角色已设置</string>
+    <string name="wizard_window_characters_setup_content">\n\n您的所有角色均已通过验证，可立即在RIFT中使用。</string>
+    <string name="wizard_window_authenticate_characters_button">验证角色</string>
+    <string name="wizard_window_check_characters_button">检测角色</string>
+    <string name="wizard_window_alliance_features">联盟功能</string>
+    <string name="wizard_window_enable_pack_question">\n\n您是否想要启用%1$s特有的功能？</string>
+    <string name="wizard_window_enable_pack_default">\n\n您选择了默认设置</string>
+    <string name="wizard_window_configuration_pack">配置包</string>
+    <string name="wizard_window_intel_channels_setup">预警频道已设置</string>
+    <string name="wizard_window_intel_channels_setup_content">\n\n您已经配置好您的预警频道。</string>
+    <string name="wizard_window_intel_chanels_not_setup">预警频道</string>
+    <string name="wizard_window_intel_chanels_not_setup_content">\n\n如果您的联盟有预警频道，您可以让RIFT监控这些频道的情报报告。</string>
+    <string name="wizard_window_add_intel_channel_button">添加预警频道</string>
+    <string name="wizard_window_change_intel_chanel">修改预警频道</string>
+    <string name="wizard_window_all_done">全部完成！</string>
+    <string name="wizard_window_all_done_content">\n\nRIFT现已准备就绪，可增强您的能力。请查找此托盘图标访问所有功能：</string>
 </resources>
