@@ -355,7 +355,7 @@
     <string name="settings_window_show_setup_wizard_on_nextstart">在下次启动时显示向导</string>
     <string name="settings_window_show_setup_wizard_on_nextstart_tooltip">你是否知道奥拉是个向导？</string>
     <string name="settings_window_intel_channels">预警频道</string>
-    <string name="settings_winddow_intel_channels_tooltip">预警报告将会从这些频道读取：</string>
+    <string name="settings_window_intel_channels_tooltip">预警报告将会从这些频道读取：</string>
     <string name="settings_window_no_intel_channels_configured">没有配置预警频道</string>
     <string name="settings_window_channel_name">频道名</string>
     <string name="settings_window_choose_region">选择星域</string>
