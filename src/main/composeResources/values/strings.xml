@@ -20,6 +20,7 @@
     <string name="search">Search</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="skip">Skip</string>
     <!-- NeocomWindow.kt -->
     <string name="alerts">Alerts</string>
     <string name="map">Map</string>
@@ -310,6 +311,10 @@
     <string name="dockedin_if_known_ship_name"> docked in </string>
     <string name="dockedin_if_unknown_ship_name">Docked in </string>
     <string name="structure">Structure</string>
+    <string name="character_window_title">Characters</string>
+    <string name="character_window_show_clones">Show clones</string>
+    <string name="character_window_copy_settings">Copy settings</string>
+    <string name="character_window_copy_settings_tooltip">Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.</string>
     <!-- SettingsWindow.kt -->
     <string name="language">Language</string>
     <string name="settings_window_title">RIFT Settings</string>
@@ -446,4 +451,38 @@
     <string name="file_chooser_button_select">Select</string>
     <!-- SettingsViewModel.kt -->
     <string name="language_restart_dialog">Changing the language will take effect after you restart the application.</string>
+    <string name="wizard_window_welcome_title">Welcome, capsuleer!</string>
+    <string name="wizard_window_welcome_content">\n\nYou are now in possession of RIFT, a prototype military system that will aid your situational awareness with additional intel.\n\nI will get you started.</string>
+    <string name="wizard_window_continue_anyway">Continue anyway</string>
+    <string name="wizard_window_eve_not_detected">EVE Online not detected</string>
+    <string name="wizard_window_eve_not_detected_content">\n\nTo set up RIFT properly, I need to know the location of your EVE installation.</string>
+    <string name="wizard_window_eve_detected">EVE Online detected</string>
+    <string name="wizard_window_eve_detected_content">\n\nI have located your installation of EVE.</string>
+    <string name="wizard_window_eve_located">EVE Online located</string>
+    <string name="wizard_window_eve_located_content">\n\nYour installation of EVE is now set up correctly.</string>
+    <string name="wizard_window_select_installation_button">Select installation</string>
+    <string name="wizard_window_check_installation_button">Check installation</string>
+    <string name="wizard_window_change_installation_button">Change installation</string>
+    <string name="wizard_window_no_characters_detected">No characters detected</string>
+    <string name="wizard_window_no_characters_detected_content">\n\nI did not detect any characters that were used on this device.</string>
+    <string name="wizard_window_characters_detected">Characters detected</string>
+    <string name="wizard_window_characters_detected_content">\n\nI have detected %1$d of your characters.\n\nLet's authenticate them in order to use them with RIFT.</string>
+    <string name="wizard_window_characters_partially_setup">Characters partially set up</string>
+    <string name="wizard_window_characters_partially_setup_content">\n\nI have detected %1$d of your characters, but you have only authenticated %2$d of them.</string>
+    <string name="wizard_window_characters_setup">Characters set up</string>
+    <string name="wizard_window_characters_setup_content">\n\nAll of your characters are authenticated and ready to use with RIFT.</string>
+    <string name="wizard_window_authenticate_characters_button">Authenticate characters</string>
+    <string name="wizard_window_check_characters_button">Check characters</string>
+    <string name="wizard_window_alliance_features">Alliance features</string>
+    <string name="wizard_window_enable_pack_question">\n\nDo you want to enable features specific to %1$s?</string>
+    <string name="wizard_window_enable_pack_default">\n\nYou selected default settings.</string>
+    <string name="wizard_window_configuration_pack">Configuration pack:</string>
+    <string name="wizard_window_intel_channels_setup">Intel channels set up</string>
+    <string name="wizard_window_intel_channels_setup_content">\n\nYou have configured your intel channels.</string>
+    <string name="wizard_window_intel_chanels_not_setup">Intel channels</string>
+    <string name="wizard_window_intel_chanels_not_setup_content">\n\nIf you are in an alliance with intel channels, you can have RIFT monitor them for intel reports.</string>
+    <string name="wizard_window_add_intel_channel_button">Add intel channels</string>
+    <string name="wizard_window_change_intel_chanel">Change intel channels</string>
+    <string name="wizard_window_all_done">All done!</string>
+    <string name="wizard_window_all_done_content">\n\nRIFT is now ready to enhance your capabilities. Look for this tray icon to access all features:</string>
 </resources>

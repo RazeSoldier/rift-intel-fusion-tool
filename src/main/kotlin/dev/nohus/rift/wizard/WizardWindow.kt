@@ -43,9 +43,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.configurationpack.displayName
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.partner_400
-import dev.nohus.rift.generated.resources.tray_tray_64
-import dev.nohus.rift.generated.resources.window_agent
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.get
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.viewModel
@@ -54,6 +52,7 @@ import dev.nohus.rift.wizard.WizardViewModel.EveInstallationState
 import dev.nohus.rift.wizard.WizardViewModel.UiState
 import dev.nohus.rift.wizard.WizardViewModel.WizardStep
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WizardWindow(
@@ -173,13 +172,9 @@ private fun WelcomeStep(
     ) {
         val text = buildAnnotatedString {
             withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                append("Welcome, capsuleer!")
+                append(stringResource(Res.string.wizard_window_welcome_title))
             }
-            append(
-                "\n\nYou are now in possession of RIFT, a prototype military system that will " +
-                    "aid your situational awareness with additional intel.\n\n" +
-                    "I will get you started.",
-            )
+            append(stringResource(Res.string.wizard_window_welcome_content),)
         }
         TypingText(
             text = text,
@@ -211,27 +206,21 @@ private fun EveInstallationStep(
             when (step.state) {
                 EveInstallationState.None -> {
                     withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                        append("EVE Online not detected")
+                        append(stringResource(Res.string.wizard_window_eve_not_detected))
                     }
-                    append(
-                        "\n\nTo set up RIFT properly, I need to know the location of your EVE installation.",
-                    )
+                    append(stringResource(Res.string.wizard_window_eve_not_detected_content),)
                 }
                 EveInstallationState.Detected -> {
                     withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                        append("EVE Online detected")
+                        append(stringResource(Res.string.wizard_window_eve_detected))
                     }
-                    append(
-                        "\n\nI have located your installation of EVE.",
-                    )
+                    append(stringResource(Res.string.wizard_window_eve_detected_content))
                 }
                 EveInstallationState.Set -> {
                     withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                        append("EVE Online located")
+                        append(stringResource(Res.string.wizard_window_eve_located))
                     }
-                    append(
-                        "\n\nYour installation of EVE is now set up correctly.",
-                    )
+                    append(stringResource(Res.string.wizard_window_eve_located_content))
                 }
             }
         }
@@ -248,9 +237,9 @@ private fun EveInstallationStep(
                 .align(Alignment.CenterHorizontally),
         ) {
             val (type, buttonText) = when (step.state) {
-                EveInstallationState.None -> ButtonType.Primary to "Select installation"
-                EveInstallationState.Detected -> ButtonType.Secondary to "Check installation"
-                EveInstallationState.Set -> ButtonType.Secondary to "Change installation"
+                EveInstallationState.None -> ButtonType.Primary to stringResource(Res.string.wizard_window_select_installation_button)
+                EveInstallationState.Detected -> ButtonType.Secondary to stringResource(Res.string.wizard_window_check_installation_button)
+                EveInstallationState.Set -> ButtonType.Secondary to stringResource(Res.string.wizard_window_change_installation_button)
             }
             RiftButton(
                 text = buttonText,
@@ -277,35 +266,25 @@ private fun CharactersStep(
         val text = buildAnnotatedString {
             if (step.characterCount == 0) {
                 withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                    append("No characters detected")
+                    append(stringResource(Res.string.wizard_window_no_characters_detected))
                 }
-                append(
-                    "\n\nI did not detect any characters that were used on this device.",
-                )
+                append(stringResource(Res.string.wizard_window_no_characters_detected_content))
             } else {
                 if (step.authenticatedCharacterCount == 0) {
                     withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                        append("Characters detected")
+                        append(stringResource(Res.string.wizard_window_characters_detected))
                     }
-                    append(
-                        "\n\nI have detected ${step.characterCount} of your characters.\n\n" +
-                            "Let's authenticate them in order to use them with RIFT.",
-                    )
+                    append(stringResource(Res.string.wizard_window_characters_detected_content, step.characterCount, step.characterCount))
                 } else if (step.authenticatedCharacterCount < step.characterCount) {
                     withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                        append("Characters partially set up")
+                        append(stringResource(Res.string.wizard_window_characters_partially_setup))
                     }
-                    append(
-                        "\n\nI have detected ${step.characterCount} of your characters, " +
-                            "but you have only authenticated ${step.authenticatedCharacterCount} of them.",
-                    )
+                    append(stringResource(Res.string.wizard_window_characters_partially_setup_content, step.characterCount, step.authenticatedCharacterCount))
                 } else {
                     withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                        append("Characters set up")
+                        append(stringResource(Res.string.wizard_window_characters_setup))
                     }
-                    append(
-                        "\n\nAll of your characters are authenticated and ready to use with RIFT.",
-                    )
+                    append(stringResource(Res.string.wizard_window_characters_setup_content))
                 }
             }
         }
@@ -322,9 +301,9 @@ private fun CharactersStep(
                 .align(Alignment.CenterHorizontally),
         ) {
             val (type, buttonText) = if (step.authenticatedCharacterCount < step.characterCount) {
-                ButtonType.Primary to "Authenticate characters"
+                ButtonType.Primary to stringResource(Res.string.wizard_window_authenticate_characters_button)
             } else {
-                ButtonType.Secondary to "Check characters"
+                ButtonType.Secondary to stringResource(Res.string.wizard_window_check_characters_button)
             }
             RiftButton(
                 text = buttonText,
@@ -349,16 +328,12 @@ private fun ConfigurationPacksStep(
     ) {
         val text = buildAnnotatedString {
             withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                append("Alliance features")
+                append(stringResource(Res.string.wizard_window_alliance_features))
             }
             if (step.pack != null) {
-                append(
-                    "\n\nDo you want to enable features specific to ${getPackName(step.pack)}?",
-                )
+                append(stringResource(Res.string.wizard_window_enable_pack_question, getPackName(step.pack)))
             } else {
-                append(
-                    "\n\nYou selected default settings.",
-                )
+                append(stringResource(Res.string.wizard_window_enable_pack_default))
             }
         }
         TypingText(
@@ -374,7 +349,7 @@ private fun ConfigurationPacksStep(
                 .align(Alignment.CenterHorizontally),
         ) {
             RiftDropdownWithLabel(
-                label = "Configuration pack:",
+                label = stringResource(Res.string.wizard_window_configuration_pack),
                 items = listOf(null) + ConfigurationPack.entries,
                 selectedItem = step.pack,
                 onItemSelected = onConfigurationPackChange,
@@ -395,23 +370,19 @@ private fun IntelChannelsStep(
         onContinueClick = onContinueClick,
         isContinueVisible = hasFinishedTyping,
         isWarning = !step.hasChannels,
-        warningButtonText = "Skip",
+        warningButtonText = stringResource(Res.string.skip),
     ) {
         val text = buildAnnotatedString {
             if (step.hasChannels) {
                 withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                    append("Intel channels set up")
+                    append(stringResource(Res.string.wizard_window_intel_channels_setup))
                 }
-                append(
-                    "\n\nYou have configured your intel channels.",
-                )
+                append(stringResource(Res.string.wizard_window_intel_channels_setup_content))
             } else {
                 withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                    append("Intel channels")
+                    append(stringResource(Res.string.wizard_window_intel_chanels_not_setup))
                 }
-                append(
-                    "\n\nIf you are in an alliance with intel channels, you can have RIFT monitor them for intel reports.",
-                )
+                append(stringResource(Res.string.wizard_window_intel_chanels_not_setup_content))
             }
         }
         TypingText(
@@ -427,9 +398,9 @@ private fun IntelChannelsStep(
                 .align(Alignment.CenterHorizontally),
         ) {
             val (type, buttonText) = if (!step.hasChannels) {
-                ButtonType.Primary to "Add intel channels"
+                ButtonType.Primary to stringResource(Res.string.wizard_window_add_intel_channel_button)
             } else {
-                ButtonType.Secondary to "Change intel channels"
+                ButtonType.Secondary to stringResource(Res.string.wizard_window_change_intel_chanel)
             }
             RiftButton(
                 text = buttonText,
@@ -452,11 +423,9 @@ private fun FinishStep(
     ) {
         val text = buildAnnotatedString {
             withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted, fontSize = RiftTheme.typography.headlineHighlighted.fontSize)) {
-                append("All done!")
+                append(stringResource(Res.string.wizard_window_all_done))
             }
-            append(
-                "\n\nRIFT is now ready to enhance your capabilities. Look for this tray icon to access all features:",
-            )
+            append(stringResource(Res.string.wizard_window_all_done_content))
         }
         TypingText(
             text = text,
@@ -482,7 +451,7 @@ private fun StepContent(
     onContinueClick: () -> Unit,
     isContinueVisible: Boolean = true,
     isWarning: Boolean = false,
-    warningButtonText: String = "Continue anyway",
+    warningButtonText: String = stringResource(Res.string.wizard_window_continue_anyway),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -495,7 +464,7 @@ private fun StepContent(
             enter = fadeIn(),
             modifier = Modifier.align(Alignment.End),
         ) {
-            val text = if (isWarning) warningButtonText else "Continue"
+            val text = if (isWarning) warningButtonText else stringResource(Res.string.`continue`)
             val type = if (isWarning) ButtonType.Negative else ButtonType.Primary
             RiftButton(
                 text = text,
