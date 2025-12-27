@@ -1,17 +1,18 @@
 package dev.nohus.rift.whatsnew
 
+import org.semver4j.Semver
+
 object VersionUtils {
 
     private const val SEGMENTS = 3
 
     fun isNewer(base: String, test: String): Boolean {
-        val aParts = base.split(".")
-        val bParts = test.split(".")
-        if (aParts.size < SEGMENTS || bParts.size < SEGMENTS) return false
-        repeat(SEGMENTS) {
-            if (bParts[it].toInt() > aParts[it].toInt()) return true
-            if (bParts[it].toInt() < aParts[it].toInt()) return false
-        }
-        return false
+        val baseVersion = Semver.parse(base)
+        val testVersion = Semver.parse(test)
+        return isNewer(baseVersion!!, testVersion!!)
+    }
+
+    fun isNewer(base: Semver, test: Semver): Boolean {
+        return test.isGreaterThan(base)
     }
 }

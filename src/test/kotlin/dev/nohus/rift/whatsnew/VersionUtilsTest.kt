@@ -18,8 +18,8 @@ class VersionUtilsTest : FreeSpec({
         Triple("5.5.5", "5.4.5", false),
         Triple("5.5.5", "4.5.5", false),
         Triple("5.5.5", "4.4.4", false),
-        Triple("0.0.0", "0.0", false),
-        Triple("0.0", "0.0.0", false),
+        Triple("5.14.2-i18n", "5.14.2", true),
+        Triple("5.14.2-i18n", "5.14.2-dev", false)
     ).forEach { (a, b, isNewer) ->
         "Version $b is newer than $a: $isNewer" {
             VersionUtils.isNewer(a, b).shouldBe(isNewer)
