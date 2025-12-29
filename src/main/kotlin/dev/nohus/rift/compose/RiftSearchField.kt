@@ -13,7 +13,9 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.search
 import dev.nohus.rift.generated.resources.search_16px
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RiftSearchField(
@@ -30,7 +32,7 @@ fun RiftSearchField(
         text = search,
         suggestions = suggestions,
         icon = Res.drawable.search_16px,
-        placeholder = "Search",
+        placeholder = stringResource(Res.string.search),
         onTextChanged = {
             search = it
             onSearchChange(it)
