@@ -88,10 +88,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.abstract_layout_32px
-import dev.nohus.rift.generated.resources.focus_viewfinder_32px
-import dev.nohus.rift.generated.resources.map_fit_view_32px
-import dev.nohus.rift.generated.resources.window_map
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterRegionsMap
 import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
@@ -137,6 +134,7 @@ import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -150,7 +148,7 @@ fun MapWindow(
     val viewModel: MapViewModel = viewModel(windowState.uuid)
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Intel Map",
+        title = stringResource(Res.string.map_window_title),
         icon = Res.drawable.window_map,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -300,7 +298,7 @@ private fun BoxScope.BottomControlButtons(
         AnimatedVisibility(mapType != DistanceMap) {
             RiftTooltipArea(
                 tooltip = {
-                    KeyName("Focus Current Location", "Enter")
+                    KeyName(stringResource(Res.string.map_window_focus_current_location), stringResource(Res.string.map_window_focus_current_location_key))
                 },
             ) {
                 RiftImageButton(
@@ -312,7 +310,7 @@ private fun BoxScope.BottomControlButtons(
         }
         RiftTooltipArea(
             tooltip = {
-                KeyName("Fit To Window", "Space")
+                KeyName(stringResource(Res.string.map_window_fit_to_window), stringResource(Res.string.map_window_fit_to_window_key))
             },
         ) {
             RiftImageButton(
@@ -323,7 +321,7 @@ private fun BoxScope.BottomControlButtons(
         }
         AnimatedVisibility(mapType is ClusterSystemsMap) {
             RiftTooltipArea(
-                text = "Toggle 2D Layout",
+                text = stringResource(Res.string.map_window_toggle_2d_layout),
             ) {
                 RiftImageButton(
                     resource = Res.drawable.abstract_layout_32px,
