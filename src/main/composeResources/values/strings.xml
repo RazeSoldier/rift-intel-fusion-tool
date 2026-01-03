@@ -721,4 +721,17 @@
     <string name="system_entities_gate">Gate</string>
     <string name="system_entities_wormhole">Wormhole</string>
     <string name="system_entities_no_visual">No visual</string>
+    <!-- ClickableEntity.kt -->
+    <string name="clickable_entity_show_info">Show Info</string>
+    <string name="clickable_entity_set_destination">Set Destination</string>
+    <string name="clickable_entity_add_waypoint">Add Waypoint</string>
+    <string name="clickable_entity_clear_autopilot">Clear Autopilot</string>
+    <string name="clickable_entity_all_characters">All Characters</string>
+    <string name="clickable_entity_copy_name">Copy Name</string>
+    <string name="clickable_entity_add_marker">Add Marker</string>
+    <string name="clickable_entity_show_on_map">Show on Map</string>
+    <string name="clickable_entity_show_in_new_eden">Show in New Eden</string>
+    <string name="clickable_entity_show_in_region">Show in Region</string>
+    <string name="clickable_entity_edit_contact">Edit Contact</string>
+    <string name="clickable_entity_add_contact">Add Contact</string>
 </resources>

@@ -20,9 +20,7 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.game.GameUiController
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.map_marker_place_bookmark
-import dev.nohus.rift.generated.resources.menu_add
-import dev.nohus.rift.generated.resources.menu_set_destination
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.map.MapExternalControl
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.markers.MapMarkersInputModel
@@ -32,6 +30,7 @@ import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ClickableLocation(
@@ -125,7 +124,7 @@ fun GetSystemContextMenuItems(
     return buildList {
         add(
             ContextMenuItem.TextItem(
-                text = "Show Info",
+                text = stringResource(Res.string.clickable_entity_show_info),
                 iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                 onClick = {
                     if (locationId != null && locationTypeId != null) {
@@ -139,7 +138,7 @@ fun GetSystemContextMenuItems(
         add(ContextMenuItem.DividerItem)
         add(
             ContextMenuItem.TextItem(
-                text = "Set Destination",
+                text = stringResource(Res.string.clickable_entity_set_destination),
                 iconResource = Res.drawable.menu_set_destination,
                 onClick = {
                     autopilotController.setDestination(locationId ?: systemId.toLong(), systemId)
@@ -148,7 +147,7 @@ fun GetSystemContextMenuItems(
         )
         add(
             ContextMenuItem.TextItem(
-                text = "Add Waypoint",
+                text = stringResource(Res.string.clickable_entity_add_waypoint),
                 onClick = {
                     autopilotController.addWaypoint(locationId ?: systemId.toLong(), systemId)
                 },
@@ -156,7 +155,7 @@ fun GetSystemContextMenuItems(
         )
         add(
             ContextMenuItem.TextItem(
-                text = "Clear Autopilot",
+                text = stringResource(Res.string.clickable_entity_clear_autopilot),
                 onClick = {
                     autopilotController.clearRoute()
                 },
@@ -164,7 +163,7 @@ fun GetSystemContextMenuItems(
         )
         add(
             ContextMenuItem.CheckboxItem(
-                text = "All Characters",
+                text = stringResource(Res.string.clickable_entity_all_characters),
                 isSelected = isSettingAutopilotToAll,
                 onClick = {
                     isSettingAutopilotToAll = !isSettingAutopilotToAll
@@ -175,7 +174,7 @@ fun GetSystemContextMenuItems(
         add(ContextMenuItem.DividerItem)
         add(
             ContextMenuItem.TextItem(
-                text = "Copy Name",
+                text = stringResource(Res.string.clickable_entity_copy_name),
                 onClick = {
                     Clipboard.copy(system.name)
                 },
@@ -183,7 +182,7 @@ fun GetSystemContextMenuItems(
         )
         add(
             ContextMenuItem.TextItem(
-                text = "Add Marker",
+                text = stringResource(Res.string.clickable_entity_add_marker),
                 iconResource = Res.drawable.map_marker_place_bookmark,
                 onClick = {
                     val inputModel = MapMarkersInputModel.AddToSystem(systemId)
@@ -195,7 +194,7 @@ fun GetSystemContextMenuItems(
             if (mapType == null) {
                 add(
                     ContextMenuItem.TextItem(
-                        text = "Show on Map",
+                        text = stringResource(Res.string.clickable_entity_show_on_map),
                         onClick = {
                             mapExternalControl.showSystemOnMap(systemId)
                         },
@@ -205,7 +204,7 @@ fun GetSystemContextMenuItems(
                 if (mapType !is MapType.ClusterSystemsMap) {
                     add(
                         ContextMenuItem.TextItem(
-                            text = "Show in New Eden",
+                            text = stringResource(Res.string.clickable_entity_show_in_new_eden),
                             onClick = {
                                 mapExternalControl.showSystemOnNewEdenMap(systemId)
                             },
@@ -215,7 +214,7 @@ fun GetSystemContextMenuItems(
                 if (mapType !is MapType.RegionMap) {
                     add(
                         ContextMenuItem.TextItem(
-                            text = "Show in Region",
+                            text = stringResource(Res.string.clickable_entity_show_in_region),
                             onClick = {
                                 mapExternalControl.showSystemOnRegionMap(systemId)
                             },
@@ -244,7 +243,7 @@ fun ClickableCharacter(
         buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = stringResource(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.openInfoWindow(characterId) },
                 ),
@@ -279,7 +278,7 @@ fun ClickableCorporation(
         buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = stringResource(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.openInfoWindow(corporationId) },
                 ),
@@ -314,7 +313,7 @@ fun ClickableAlliance(
         buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = stringResource(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.openInfoWindow(allianceId) },
                 ),
@@ -342,9 +341,9 @@ private fun getContactMenuItem(id: Int, type: EntityType): ContextMenuItem {
         contactsExternalControl.editContact(id, type)
     }
     return if (contactsRepository.isCharacterContact(id)) {
-        ContextMenuItem.TextItem("Edit Contact", null, onClick = onEditContact)
+        ContextMenuItem.TextItem(stringResource(Res.string.clickable_entity_edit_contact), null, onClick = onEditContact)
     } else {
-        ContextMenuItem.TextItem("Add Contact", Res.drawable.menu_add, onClick = onEditContact)
+        ContextMenuItem.TextItem(stringResource(Res.string.clickable_entity_add_contact), Res.drawable.menu_add, onClick = onEditContact)
     }
 }
 
@@ -359,7 +358,7 @@ fun ClickableShip(
         buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = stringResource(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.pushType(type, "ship") },
                 ),
@@ -388,7 +387,7 @@ fun ClickableType(
         buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = stringResource(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.pushType(type, "type") },
                 ),
