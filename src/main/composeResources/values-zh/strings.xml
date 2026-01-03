@@ -21,6 +21,9 @@
     <string name="cancel">取消</string>
     <string name="confirm">确认</string>
     <string name="from">从：</string>
+    <string name="compact_mode">紧凑模式</string>
+    <string name="kill">击杀</string>
+    <string name="loss">损失</string>
     <!-- NeocomWindow.kt -->
     <string name="alerts">预警</string>
     <string name="map">星图</string>
@@ -378,7 +381,6 @@
     <string name="settings_window_alerts_mobile_push_notifaications">手机推送</string>
     <string name="settings_window_alerts_mobile_push_notifaications_configure">配置</string>
     <string name="settings_window_map_ui_section_title">星图用户界面</string>
-    <string name="settings_window_compact_mode">紧凑模式</string>
     <string name="settings_window_map_follow_character">移动星图跟随角色</string>
     <string name="settings_window_map_follow_character_tooltip">当你跳跃到另一个\n在当前星图上可见的星系时\n地图中心会移动到新星系</string>
     <string name="settings_window_map_switch_follow_character">切换星图跟随角色</string>
@@ -667,4 +669,46 @@
     <string name="map_window_plasma_planet">等离子</string>
     <string name="map_window_shattered_planet">破碎</string>
     <string name="map_window_scorched_barren_planet">焦灼荒芜之地</string>
+    <!-- IntelFeedWindow.kt -->
+    <string name="intel_feed_empty_filters">所有地点已被过滤\n更新你的地点过滤器</string>
+    <string name="intel_feed_empty_type">所有类型已被过滤\n更新你的地点过滤器</string>
+    <string name="intel_feed_emty_system">所有预警已被过滤\n更新你的地点过滤器</string>
+    <string name="intel_feed_no_intel">目前没有预警情报\n请等待报告</string>
+    <string name="intel_feed_location_filter_known_space">已知空间</string>
+    <string name="intel_feed_location_filter_wormhole_space">虫洞空间</string>
+    <string name="intel_feed_location_filter_abysal_space">深渊空间</string>
+    <string name="intel_feed_location_filter_opened_map">已打开的星域地图</string>
+    <string name="intel_feed_location_filter">地点</string>
+    <string name="intel_feed_distance_filter_all">所有</string>
+    <string name="intel_feed_distance_filter_within_region">星域内</string>
+    <string name="intel_feed_distance_filter_9jumps">9跳内</string>
+    <string name="intel_feed_distance_filter_7jumps">7跳内</string>
+    <string name="intel_feed_distance_filter_5jumps">5跳内</string>
+    <string name="intel_feed_distance_filter_3jumps">3跳内</string>
+    <string name="intel_feed_distance_filter">距离</string>
+    <string name="intel_feed_type_filter_killmail">击杀邮件</string>
+    <string name="intel_feed_type_filter_character_ship">角色 &amp; 船型</string>
+    <string name="intel_feed_tyoe_filter_other">其他预警</string>
+    <string name="intel_feed_type_filter">类型</string>
+    <string name="intel_feed_sorting_by_time">根据时间</string>
+    <string name="intel_feed_sorting_by_distance">根据距离</string>
+    <string name="intel_feed_sorting_filter">排序</string>
+    <!-- SystemEntities.kt -->
+    <string name="system_entities_friendly">友军</string>
+    <plurals name="system_entities_hostiles">
+        <item quantity="other">敌对</item>
+    </plurals>
+    <string name="system_entities_npc_corp">NPC军团</string>
+    <plurals name="system_entities_hostile_count">
+        <item quantity="other">%1$d敌对</item>
+    </plurals>
+    <string name="system_entities_bubbles">泡泡</string>
+    <string name="system_entities_combat_probes">作战针</string>
+    <string name="system_entities_skyhook">天沟</string>
+    <string name="system_entities_gate_camp">堵门</string>
+    <string name="system_entities_spike">大量</string>
+    <string name="system_entities_ansiblex">跳桥</string>
+    <string name="system_entities_gate">星门</string>
+    <string name="system_entities_wormhole">虫洞</string>
+    <string name="system_entities_no_visual">不可见</string>
 </resources>

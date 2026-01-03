@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -24,14 +25,19 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.system_distance
+import dev.nohus.rift.i18n.AnnotatedStringTemplate
+import dev.nohus.rift.i18n.ApplicationLocale
 import dev.nohus.rift.location.LocationRepository
 import dev.nohus.rift.repositories.GetSystemDistanceFromCharacterUseCase
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.WormholeRegionClasses
 import dev.nohus.rift.standings.getColor
-import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.withColor
+import org.jetbrains.compose.resources.pluralStringResource
+import java.util.Locale
 
 @Composable
 fun RowScope.SystemDetails(
@@ -272,13 +278,10 @@ private fun SystemDistanceIndicator(
     ) {
         RiftTooltipArea(
             buildAnnotatedString {
-                withColor(RiftTheme.colors.textHighlighted) {
-                    append("${characterDistance.distance}")
-                }
-                append(" jump${characterDistance.distance.plural} from ")
-                withColor(RiftTheme.colors.textHighlighted) {
-                    append(characterName ?: "${characterDistance.distance}")
-                }
+                val color = RiftTheme.colors.textHighlighted
+                val builder = AnnotatedStringTemplate.Builder(this)
+                buildAnnotatedStringForCharacterDistance(characterDistance, color, characterName, builder)
+                builder.build().expand()
             },
         ) {
             Text(
@@ -288,6 +291,57 @@ private fun SystemDistanceIndicator(
             )
         }
     }
+}
+
+@Composable
+private fun AnnotatedString.Builder.buildAnnotatedStringForCharacterDistance(
+    characterDistance: GetSystemDistanceFromCharacterUseCase.CharacterDistance,
+    color: Color,
+    characterName: String?,
+    builder: AnnotatedStringTemplate.Builder,
+) {
+    AnnotatedStringTemplate.parseGroup(
+        pluralStringResource(
+            Res.plurals.system_distance,
+            characterDistance.distance
+        )
+    ).also {
+        val optionGroups = it.filter { it.isOption }
+        fun distanceGroupConfig(builder: AnnotatedStringTemplate.GroupBuilder) {
+            builder.predicate = { true }
+            builder.whatShouldPassBlock = AnnotatedStringTemplate.BlockParameterType.WHOLE_GROUP_TEXT
+            builder.block = {
+                withColor(color) {
+                    append("${characterDistance.distance}")
+                }
+            }
+        }
+
+        fun nameGroupConfig(builder: AnnotatedStringTemplate.GroupBuilder) {
+            builder.predicate = { true }
+            builder.whatShouldPassBlock = AnnotatedStringTemplate.BlockParameterType.WHOLE_GROUP_TEXT
+            builder.block = {
+                withColor(color) {
+                    append(characterName ?: "${characterDistance.distance}")
+                }
+            }
+        }
+        if (ApplicationLocale.current == Locale.ENGLISH) {
+            optionGroups[0].apply {
+                distanceGroupConfig(this)
+            }
+            optionGroups[1].apply {
+                nameGroupConfig(this)
+            }
+        } else {
+            optionGroups[0].apply {
+                nameGroupConfig(this)
+            }
+            optionGroups[1].apply {
+                distanceGroupConfig(this)
+            }
+        }
+    }.map { it.build() }.forEach { builder.addGroup(it) }
 }
 
 private fun getDistanceColor(distance: Int): Color {

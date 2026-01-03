@@ -805,7 +805,7 @@ private fun MapUserInterfaceSection(
     SectionTitle(stringResource(Res.string.settings_window_map_ui_section_title), Modifier.padding(bottom = Spacing.medium))
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         RiftCheckboxWithLabel(
-            label = stringResource(Res.string.settings_window_compact_mode),
+            label = stringResource(Res.string.compact_mode),
             isChecked = state.intelMap.isUsingCompactMode,
             onCheckedChange = viewModel::onIsUsingCompactModeChange,
         )

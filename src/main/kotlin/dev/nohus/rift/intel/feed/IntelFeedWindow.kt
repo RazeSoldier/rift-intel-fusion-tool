@@ -68,8 +68,8 @@ import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.bars_sort_ascending_16px
-import dev.nohus.rift.generated.resources.window_satellite
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.intel.feed.IntelFeedViewModel.UiState
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
@@ -81,6 +81,7 @@ import dev.nohus.rift.settings.persistence.LocationFilter
 import dev.nohus.rift.settings.persistence.SortingFilter
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun IntelFeedWindow(
@@ -90,7 +91,7 @@ fun IntelFeedWindow(
     val viewModel: IntelFeedViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Intel Feed",
+        title = stringResource(Res.string.intel_feed),
         icon = Res.drawable.window_satellite,
         state = windowState,
         tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),
@@ -115,7 +116,7 @@ private fun getTuneContextMenuItems(
 ): List<ContextMenuItem>? {
     val isUsingCompactMode = state.settings.isUsingCompactMode
     return buildList {
-        add(CheckboxItem("Compact mode", isSelected = isUsingCompactMode, onClick = { viewModel.onIsUsingCompactModeChange(!isUsingCompactMode) }))
+        add(CheckboxItem(getStringSync(Res.string.compact_mode), isSelected = isUsingCompactMode, onClick = { viewModel.onIsUsingCompactModeChange(!isUsingCompactMode) }))
     }.takeIf { it.isNotEmpty() }
 }
 
@@ -194,13 +195,13 @@ private fun IntelFeedWindowContent(
 @Composable
 private fun EmptyState(state: UiState) {
     val text = if (state.settings.locationFilters.isEmpty()) {
-        "All locations have been filtered out.\nUpdate your locations filter."
+        stringResource(Res.string.intel_feed_empty_filters)
     } else if (state.settings.entityFilters.isEmpty()) {
-        "All types have been filtered out.\nUpdate your types filter."
+        stringResource(Res.string.intel_feed_empty_type)
     } else if (state.totalIntelSystems > 0) {
-        "All intel has been filtered out.\nUpdate your filters."
+        stringResource(Res.string.intel_feed_emty_system)
     } else {
-        "No intel available.\nWaiting for reports."
+        stringResource(Res.string.intel_feed_no_intel)
     }
     Text(
         text = text,
@@ -370,22 +371,22 @@ private fun FiltersRow(
 
         val locationFilterItems = listOf<ContextMenuItem>(
             ContextMenuItem.CheckboxItem(
-                text = "Known space",
+                text = stringResource(Res.string.intel_feed_location_filter_known_space),
                 onClick = { onLocationFilterSelect(LocationFilter.KnownSpace) },
                 isSelected = LocationFilter.KnownSpace in settings.locationFilters,
             ),
             ContextMenuItem.CheckboxItem(
-                text = "Wormhole space",
+                text = stringResource(Res.string.intel_feed_location_filter_wormhole_space),
                 onClick = { onLocationFilterSelect(LocationFilter.WormholeSpace) },
                 isSelected = LocationFilter.WormholeSpace in settings.locationFilters,
             ),
             ContextMenuItem.CheckboxItem(
-                text = "Abyssal space",
+                text = stringResource(Res.string.intel_feed_location_filter_abysal_space),
                 onClick = { onLocationFilterSelect(LocationFilter.AbyssalSpace) },
                 isSelected = LocationFilter.AbyssalSpace in settings.locationFilters,
             ),
             ContextMenuItem.CheckboxItem(
-                text = "Opened map regions",
+                text = stringResource(Res.string.intel_feed_location_filter_opened_map),
                 onClick = { onLocationFilterSelect(LocationFilter.CurrentMapRegion) },
                 isSelected = LocationFilter.CurrentMapRegion in settings.locationFilters,
             ),
@@ -393,7 +394,7 @@ private fun FiltersRow(
         Box(contentAlignment = Alignment.BottomStart) {
             var isShown by remember { mutableStateOf(false) }
             RiftButton(
-                text = "Location",
+                text = stringResource(Res.string.intel_feed_location_filter),
                 isCompact = settings.isUsingCompactMode,
                 onClick = { isShown = true },
             )
@@ -411,32 +412,32 @@ private fun FiltersRow(
 
         val distanceFilterItems = listOf<ContextMenuItem>(
             ContextMenuItem.RadioItem(
-                text = "All",
+                text = stringResource(Res.string.intel_feed_distance_filter_all),
                 onClick = { onDistanceFilterSelect(DistanceFilter.All) },
                 isSelected = DistanceFilter.All == settings.distanceFilter,
             ),
             ContextMenuItem.RadioItem(
-                text = "Within region",
+                text = stringResource(Res.string.intel_feed_distance_filter_within_region),
                 onClick = { onDistanceFilterSelect(DistanceFilter.CharacterLocationRegions) },
                 isSelected = DistanceFilter.CharacterLocationRegions == settings.distanceFilter,
             ),
             ContextMenuItem.RadioItem(
-                text = "Within 9 jumps",
+                text = stringResource(Res.string.intel_feed_distance_filter_9jumps),
                 onClick = { onDistanceFilterSelect(DistanceFilter.WithinDistance(9)) },
                 isSelected = DistanceFilter.WithinDistance(9) == settings.distanceFilter,
             ),
             ContextMenuItem.RadioItem(
-                text = "Within 7 jumps",
+                text = stringResource(Res.string.intel_feed_distance_filter_7jumps),
                 onClick = { onDistanceFilterSelect(DistanceFilter.WithinDistance(7)) },
                 isSelected = DistanceFilter.WithinDistance(7) == settings.distanceFilter,
             ),
             ContextMenuItem.RadioItem(
-                text = "Within 5 jumps",
+                text = stringResource(Res.string.intel_feed_distance_filter_5jumps),
                 onClick = { onDistanceFilterSelect(DistanceFilter.WithinDistance(5)) },
                 isSelected = DistanceFilter.WithinDistance(5) == settings.distanceFilter,
             ),
             ContextMenuItem.RadioItem(
-                text = "Within 3 jumps",
+                text = stringResource(Res.string.intel_feed_distance_filter_3jumps),
                 onClick = { onDistanceFilterSelect(DistanceFilter.WithinDistance(3)) },
                 isSelected = DistanceFilter.WithinDistance(3) == settings.distanceFilter,
             ),
@@ -444,7 +445,7 @@ private fun FiltersRow(
         Box(contentAlignment = Alignment.BottomStart) {
             var isShown by remember { mutableStateOf(false) }
             RiftButton(
-                text = "Distance",
+                text = stringResource(Res.string.intel_feed_distance_filter),
                 isCompact = settings.isUsingCompactMode,
                 onClick = { isShown = true },
             )
@@ -462,17 +463,17 @@ private fun FiltersRow(
 
         val entityFilterItems = listOf<ContextMenuItem>(
             ContextMenuItem.CheckboxItem(
-                text = "Killmails",
+                text = stringResource(Res.string.intel_feed_type_filter_killmail),
                 onClick = { onEntityFilterSelect(EntityFilter.Killmails) },
                 isSelected = EntityFilter.Killmails in settings.entityFilters,
             ),
             ContextMenuItem.CheckboxItem(
-                text = "Characters & ships",
+                text = stringResource(Res.string.intel_feed_type_filter_character_ship),
                 onClick = { onEntityFilterSelect(EntityFilter.Characters) },
                 isSelected = EntityFilter.Characters in settings.entityFilters,
             ),
             ContextMenuItem.CheckboxItem(
-                text = "Other intel",
+                text = stringResource(Res.string.intel_feed_tyoe_filter_other),
                 onClick = { onEntityFilterSelect(EntityFilter.Other) },
                 isSelected = EntityFilter.Other in settings.entityFilters,
             ),
@@ -480,7 +481,7 @@ private fun FiltersRow(
         Box(contentAlignment = Alignment.BottomStart) {
             var isShown by remember { mutableStateOf(false) }
             RiftButton(
-                text = "Types",
+                text = stringResource(Res.string.intel_feed_type_filter),
                 isCompact = settings.isUsingCompactMode,
                 onClick = { isShown = true },
             )
@@ -498,12 +499,12 @@ private fun FiltersRow(
 
         val sortingFilterItems = listOf<ContextMenuItem>(
             ContextMenuItem.RadioItem(
-                text = "By time",
+                text = stringResource(Res.string.intel_feed_sorting_by_time),
                 onClick = { onSortingFilterSelect(SortingFilter.Time) },
                 isSelected = SortingFilter.Time == settings.sortingFilter,
             ),
             ContextMenuItem.RadioItem(
-                text = "By distance",
+                text = stringResource(Res.string.intel_feed_sorting_by_distance),
                 onClick = { onSortingFilterSelect(SortingFilter.Distance) },
                 isSelected = SortingFilter.Distance == settings.sortingFilter,
             ),
@@ -511,7 +512,7 @@ private fun FiltersRow(
         Box(contentAlignment = Alignment.BottomStart) {
             var isShown by remember { mutableStateOf(false) }
             RiftButton(
-                text = "Sorting",
+                text = stringResource(Res.string.intel_feed_sorting_filter),
                 icon = Res.drawable.bars_sort_ascending_16px,
                 isCompact = settings.isUsingCompactMode,
                 onClick = { isShown = true },
