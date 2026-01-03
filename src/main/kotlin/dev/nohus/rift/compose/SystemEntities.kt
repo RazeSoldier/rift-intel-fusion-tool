@@ -32,15 +32,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.keywords_combat_probe
-import dev.nohus.rift.generated.resources.keywords_ess
-import dev.nohus.rift.generated.resources.keywords_gatecamp
-import dev.nohus.rift.generated.resources.keywords_interdiction_probe
-import dev.nohus.rift.generated.resources.keywords_killreport
-import dev.nohus.rift.generated.resources.keywords_no_visual
-import dev.nohus.rift.generated.resources.keywords_skyhook
-import dev.nohus.rift.generated.resources.keywords_spike
-import dev.nohus.rift.generated.resources.keywords_wormhole
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.intel.state.CharacterBound
 import dev.nohus.rift.intel.state.Clearable
 import dev.nohus.rift.intel.state.SystemEntity
@@ -52,10 +44,11 @@ import dev.nohus.rift.repositories.character.CharacterDetailsRepository.Characte
 import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.standings.isFriendly
 import dev.nohus.rift.utils.openBrowser
-import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.toURIOrNull
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SystemEntities(
@@ -114,7 +107,7 @@ fun SystemEntities(
 
             var style = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold)
             killmail.victim.standing?.getColor()?.let { style = style.copy(color = it) }
-            val ticket = killmail.victim.allianceTicker ?: if (killmail.victim.corporationId?.isNpcCorp() == true) "NPC Corp" else killmail.victim.corporationTicker ?: ""
+            val ticket = killmail.victim.allianceTicker ?: if (killmail.victim.corporationId?.isNpcCorp() == true) stringResource(Res.string.system_entities_npc_corp) else killmail.victim.corporationTicker ?: ""
             if (rowHeight < 32.dp) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -125,7 +118,7 @@ fun SystemEntities(
                         style = RiftTheme.typography.bodySecondary,
                     )
                     Text(
-                        text = if (killmail.victim.standing?.isFriendly == true) "Loss" else "Kill",
+                        text = if (killmail.victim.standing?.isFriendly == true) stringResource(Res.string.loss) else stringResource(Res.string.kill),
                         style = style,
                     )
                 }
@@ -134,7 +127,7 @@ fun SystemEntities(
                     modifier = Modifier.padding(horizontal = Spacing.small),
                 ) {
                     Text(
-                        text = if (killmail.victim.standing?.isFriendly == true) "Loss" else "Kill",
+                        text = if (killmail.victim.standing?.isFriendly == true) stringResource(Res.string.loss) else stringResource(Res.string.kill),
                         style = style,
                     )
                     Text(
@@ -179,10 +172,10 @@ fun SystemEntities(
                     CharactersPortraits(characters.map { it.details }, rowHeight)
 
                     val representative = characters.first().details
-                    val characterWord = if (representative.standingLevel.isFriendly) "friendly" else "hostile${characters.size.plural}"
+                    val characterWord = if (representative.standingLevel.isFriendly) stringResource(Res.string.system_entities_friendly) else pluralStringResource(Res.plurals.system_entities_hostiles, characters.size)
                     var style = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold)
                     representative.standingLevel.getColor()?.let { style = style.copy(color = it) }
-                    val ticker = representative.allianceTicker ?: if (representative.corporationId.isNpcCorp()) "NPC Corp" else representative.corporationTicker ?: ""
+                    val ticker = representative.allianceTicker ?: if (representative.corporationId.isNpcCorp()) stringResource(Res.string.system_entities_npc_corp) else representative.corporationTicker ?: ""
                     if (rowHeight < 32.dp) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -227,8 +220,9 @@ fun SystemEntities(
             (entities.filterIsInstance<SystemEntity.Character>() + entities.filterIsInstance<SystemEntity.Ship>()).isNotEmpty()
         val unspecified = it as SystemEntity.UnspecifiedCharacter
         val content = @Composable {
+            val hostileCount = pluralStringResource(Res.plurals.system_entities_hostile_count, unspecified.count, unspecified.count)
             Text(
-                text = "${if (hasNamedHostiles) "+" else ""}${unspecified.count} hostile${unspecified.count.plural}",
+                text = "${if (hasNamedHostiles) "+" else ""}${hostileCount}",
                 style = RiftTheme.typography.bodyHighlighted,
                 modifier = Modifier.padding(4.dp),
             )
@@ -243,15 +237,15 @@ fun SystemEntities(
     }
     entities.forEach { entity ->
         when (entity) {
-            SystemEntity.Bubbles -> IconInfoRow(Res.drawable.keywords_interdiction_probe, "Bubbles", rowHeight, isHorizontal)
-            SystemEntity.CombatProbes -> IconInfoRow(Res.drawable.keywords_combat_probe, "Combat probes", rowHeight, isHorizontal)
-            SystemEntity.Ess -> IconInfoRow(Res.drawable.keywords_ess, "ESS", rowHeight, isHorizontal)
-            SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "Skyhook", rowHeight, isHorizontal)
+            SystemEntity.Bubbles -> IconInfoRow(Res.drawable.keywords_interdiction_probe, stringResource(Res.string.intel_report_type_bubbles), rowHeight, isHorizontal)
+            SystemEntity.CombatProbes -> IconInfoRow(Res.drawable.keywords_combat_probe, stringResource(Res.string.system_entities_combat_probes), rowHeight, isHorizontal)
+            SystemEntity.Ess -> IconInfoRow(Res.drawable.keywords_ess, stringResource(Res.string.ESS), rowHeight, isHorizontal)
+            SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, stringResource(Res.string.system_entities_skyhook), rowHeight, isHorizontal)
             is SystemEntity.Gate -> GateInfoRow(system, entity, rowHeight, isHorizontal)
             is SystemEntity.Celestial -> CelestialInfoRow(entity, rowHeight, isHorizontal)
-            SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "Gate camp", rowHeight, isHorizontal)
+            SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, stringResource(Res.string.system_entities_gate_camp), rowHeight, isHorizontal)
             SystemEntity.NoVisual -> NoVisualRow(rowHeight, isHorizontal)
-            SystemEntity.Spike -> IconInfoRow(Res.drawable.keywords_spike, "Spike", rowHeight, isHorizontal)
+            SystemEntity.Spike -> IconInfoRow(Res.drawable.keywords_spike, stringResource(Res.string.system_entities_spike), rowHeight, isHorizontal)
             SystemEntity.Wormhole -> WormholeInfoRow(rowHeight, isHorizontal)
             is SystemEntity.Character -> {}
             is SystemEntity.UnspecifiedCharacter -> {}
@@ -404,7 +398,7 @@ private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
                 .rotate(-rotation),
         )
         Text(
-            text = "Wormhole",
+            text = stringResource(Res.string.system_entities_wormhole),
             style = RiftTheme.typography.bodyPrimary,
             modifier = Modifier.padding(4.dp),
         )
@@ -415,7 +409,7 @@ private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
 private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHeight: Dp, isHorizontal: Boolean) {
     val starGatesRepository: StarGatesRepository = remember { koin.get() }
     val gate = starGatesRepository.getGate(entity.isAnsiblex, system.id, entity.system2.id)
-    val gateText = if (entity.isAnsiblex) "Ansiblex" else "Gate"
+    val gateText = if (entity.isAnsiblex) stringResource(Res.string.system_entities_ansiblex) else stringResource(Res.string.system_entities_gate)
     val name = "${entity.system2.name} $gateText"
     ClickableLocation(
         systemId = system.id,
@@ -506,7 +500,7 @@ private fun NoVisualRow(
             modifier = Modifier.size(16.dp),
         )
         Text(
-            text = "No visual",
+            text = stringResource(Res.string.system_entities_no_visual),
             style = RiftTheme.typography.detailPrimary,
             modifier = Modifier.padding(horizontal = 4.dp),
         )

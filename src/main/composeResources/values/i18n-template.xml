@@ -15,4 +15,8 @@
     <string name="alert_when_jabber_ping">When a fleet ping[ for $target] is received[, with $fc][, forming in $system][, with $pap][, with doctrine containing $doctrine] then [$action][, don't repeat for $time]</string>
     <string name="alert_when_jabber_message">When a Jabber message[ containing $keywords] is sent[ by $sender] in [$channel] then [$action][, don't repeat for $time]</string>
     <string name="alert_when_no_channel_activity">When no message is received in [$channel] for [$time] then [$action][, don't repeat for $time]</string>
+    <plurals name="system_distance">
+        <item quantity="one">[$distance] jump from [$name]</item>
+        <item quantity="other">[$distance] jumps from [$name]</item>
+    </plurals>
 </resources>

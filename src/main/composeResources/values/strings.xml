@@ -22,6 +22,9 @@
     <string name="confirm">Confirm</string>
     <string name="skip">Skip</string>
     <string name="from">From:</string>
+    <string name="compact_mode">Compact mode</string>
+    <string name="kill">Kill</string>
+    <string name="loss">Loss</string>
     <!-- NeocomWindow.kt -->
     <string name="alerts">Alerts</string>
     <string name="map">Map</string>
@@ -385,7 +388,6 @@
     <string name="settings_window_alerts_mobile_push_notifaications">Mobile push notifications:</string>
     <string name="settings_window_alerts_mobile_push_notifaications_configure">Configure</string>
     <string name="settings_window_map_ui_section_title">Map User Interface</string>
-    <string name="settings_window_compact_mode">Compact mode</string>
     <string name="settings_window_map_follow_character">Move map to follow character</string>
     <string name="settings_window_map_follow_character_tooltip">When you jump to another system visible\non your current map, the map will move\nto center on the new system</string>
     <string name="settings_window_map_switch_follow_character">Switch maps to follow character</string>
@@ -675,4 +677,48 @@
     <string name="map_window_plasma_planet">Plasma</string>
     <string name="map_window_shattered_planet">Shattered</string>
     <string name="map_window_scorched_barren_planet">Scorched Barren</string>
+    <!-- IntelFeedWindow.kt -->
+    <string name="intel_feed_empty_filters">All locations have been filtered out.\nUpdate your locations filter.</string>
+    <string name="intel_feed_empty_type">All types have been filtered out.\nUpdate your types filter.</string>
+    <string name="intel_feed_emty_system">All intel has been filtered out.\nUpdate your filters.</string>
+    <string name="intel_feed_no_intel">No intel available.\nWaiting for reports.</string>
+    <string name="intel_feed_location_filter_known_space">Known space</string>
+    <string name="intel_feed_location_filter_wormhole_space">Wormhole space</string>
+    <string name="intel_feed_location_filter_abysal_space">Abyssal space</string>
+    <string name="intel_feed_location_filter_opened_map">Opened map regions</string>
+    <string name="intel_feed_location_filter">Location</string>
+    <string name="intel_feed_distance_filter_all">All</string>
+    <string name="intel_feed_distance_filter_within_region">Within region</string>
+    <string name="intel_feed_distance_filter_9jumps">Within 9 jumps</string>
+    <string name="intel_feed_distance_filter_7jumps">Within 7 jumps</string>
+    <string name="intel_feed_distance_filter_5jumps">Within 5 jumps</string>
+    <string name="intel_feed_distance_filter_3jumps">Within 3 jumps</string>
+    <string name="intel_feed_distance_filter">Distance</string>
+    <string name="intel_feed_type_filter_killmail">Killmails</string>
+    <string name="intel_feed_type_filter_character_ship">Characters &amp; ships</string>
+    <string name="intel_feed_tyoe_filter_other">Other intel</string>
+    <string name="intel_feed_type_filter">Types</string>
+    <string name="intel_feed_sorting_by_time">By time</string>
+    <string name="intel_feed_sorting_by_distance">By distance</string>
+    <string name="intel_feed_sorting_filter">Sorting</string>
+    <!-- SystemEntities.kt -->
+    <string name="system_entities_friendly">friendly</string>
+    <plurals name="system_entities_hostiles">
+        <item quantity="one">hostile</item>
+        <item quantity="other">hostiles</item>
+    </plurals>
+    <string name="system_entities_npc_corp">NPC Corp</string>
+    <plurals name="system_entities_hostile_count">
+        <item quantity="one">%1$d hostile</item>
+        <item quantity="other">%1$d hostiles</item>
+    </plurals>
+    <string name="system_entities_bubbles">Bubbles</string>
+    <string name="system_entities_combat_probes">Combat probes</string>
+    <string name="system_entities_skyhook">Skyhook</string>
+    <string name="system_entities_gate_camp">Gate camp</string>
+    <string name="system_entities_spike">Spike</string>
+    <string name="system_entities_ansiblex">Ansiblex</string>
+    <string name="system_entities_gate">Gate</string>
+    <string name="system_entities_wormhole">Wormhole</string>
+    <string name="system_entities_no_visual">No visual</string>
 </resources>
