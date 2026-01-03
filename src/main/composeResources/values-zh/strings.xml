@@ -711,4 +711,17 @@
     <string name="system_entities_gate">星门</string>
     <string name="system_entities_wormhole">虫洞</string>
     <string name="system_entities_no_visual">不可见</string>
+    <!-- ClickableEntity.kt -->
+    <string name="clickable_entity_show_info">显示信息</string>
+    <string name="clickable_entity_set_destination">设置终点</string>
+    <string name="clickable_entity_add_waypoint">添加航点</string>
+    <string name="clickable_entity_clear_autopilot">清除自动驾驶</string>
+    <string name="clickable_entity_all_characters">所有角色</string>
+    <string name="clickable_entity_copy_name">复制名字</string>
+    <string name="clickable_entity_add_marker">添加标记</string>
+    <string name="clickable_entity_show_on_map">在星图上显示</string>
+    <string name="clickable_entity_show_in_new_eden">在新伊甸地图上显示</string>
+    <string name="clickable_entity_show_in_region">在星域地图上显示</string>
+    <string name="clickable_entity_edit_contact">编辑联系人</string>
+    <string name="clickable_entity_add_contact">添加联系人</string>
 </resources>
