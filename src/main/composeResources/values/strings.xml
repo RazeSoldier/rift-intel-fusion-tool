@@ -734,4 +734,22 @@
     <string name="clickable_entity_show_in_region">Show in Region</string>
     <string name="clickable_entity_edit_contact">Edit Contact</string>
     <string name="clickable_entity_add_contact">Add Contact</string>
+    <!-- IntelReportsWindow.kt -->
+    <string name="intel_reports_window_title">Intel Reports</string>
+    <string name="intel_reports_user_interface">User interface</string>
+    <string name="intel_reports_show_newest_on_top">Show newest on top</string>
+    <string name="intel_reports_shown_info">Shown information</string>
+    <string name="intel_reports_show_reporter_name">Show reporter name</string>
+    <string name="intel_reports_show_channel_name">Show channel name</string>
+    <string name="intel_reports_show_channel_region">Show channel region</string>
+    <string name="intel_reports_intel_channels_no_configured">No intel channels configured.\nSet some up in the settings.</string>
+    <string name="intel_reports_intel_not_found">No intel messages found.\nChange your search term to see others.</string>
+    <string name="intel_reports_intel_not_found_in_channel">No intel messages received in %1$s.\nChange your filter to see others.</string>
+    <string name="intel_reports_no_intel_received">No intel messages received.\nMake sure you have your intel channels open in-game.</string>
+    <string name="intel_reports_no_online_characters">No intel messages received.\nLog in to the game.</string>
+    <string name="intel_reports_all_channels">All channels</string>
+    <string name="intel_reports_filter">Filter:</string>
+    <!-- ChatMessage.kt -->
+    <string name="chat_message_original_message">Original message:\n%1$s</string>
+    <string name="chat_message_clear">Clear</string>
 </resources>

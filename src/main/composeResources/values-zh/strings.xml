@@ -724,4 +724,22 @@
     <string name="clickable_entity_show_in_region">在星域地图上显示</string>
     <string name="clickable_entity_edit_contact">编辑联系人</string>
     <string name="clickable_entity_add_contact">添加联系人</string>
+    <!-- IntelReportsWindow.kt -->
+    <string name="intel_reports_window_title">预警报告</string>
+    <string name="intel_reports_user_interface">用户界面</string>
+    <string name="intel_reports_show_newest_on_top">最新预警置顶</string>
+    <string name="intel_reports_shown_info">显示信息</string>
+    <string name="intel_reports_show_reporter_name">显示报告者角色名</string>
+    <string name="intel_reports_show_channel_name">显示频道名</string>
+    <string name="intel_reports_show_channel_region">显示频道星域</string>
+    <string name="intel_reports_intel_channels_no_configured">未配置预警频道\n请在设置里配置一些</string>
+    <string name="intel_reports_intel_not_found">没找到预警消息\n修改搜索词查看其他</string>
+    <string name="intel_reports_intel_not_found_in_channel">频道%1$s没接受到预警消息.\n修改过滤器查看其他</string>
+    <string name="intel_reports_no_intel_received">没接受到预警消息\n确保你游戏里打开了预警频道</string>
+    <string name="intel_reports_no_online_characters">没接受到预警消息\n请登录游戏</string>
+    <string name="intel_reports_all_channels">所有频道</string>
+    <string name="intel_reports_filter">过滤器</string>
+    <!-- ChatMessage.kt -->
+    <string name="chat_message_original_message">原始消息：\n%1$s</string>
+    <string name="chat_message_clear">安全</string>
 </resources>
