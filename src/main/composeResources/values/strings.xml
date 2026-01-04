@@ -318,6 +318,24 @@
     <string name="character_window_show_clones">Show clones</string>
     <string name="character_window_copy_settings">Copy settings</string>
     <string name="character_window_copy_settings_tooltip">Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.</string>
+    <string name="character_window_no_implants">No implants</string>
+    <string name="character_window_active_clone">Active clone</string>
+    <string name="character_window_missing_esi_scopes">Missing ESI scopes:</string>
+    <string name="character_window_missing_esi_scopes_tooltip">Some features won't work.</string>
+    <string name="character_window_no_auth">Not authenticated with ESI.\nClick the log in button above.</string>
+    <string name="character_window_disabled_character_tooltip">Disabled characters will not be used in RIFT.</string>
+    <string name="character_window_disabled_character">Disabled characters</string>
+    <string name="character_window_no_disabled_characters">No disabled characters</string>
+    <string name="character_window_enable_disable_character">Enable or disable characters you don't want to use.</string>
+    <string name="character_window_done">Done</string>
+    <string name="character_window_could_not_load">Could not load</string>
+    <string name="character_window_delete_character">Delete this character</string>
+    <string name="character_window_enable_character">Enable this character</string>
+    <string name="character_window_disable_character">Disable this character</string>
+    <string name="character_window_character_id">character ID %1$d</string>
+    <string name="character_window_trailing_delete_name">Delete %1$s?</string>
+    <string name="character_window_delete_character_dialog">The settings files for this character will be deleted from your installation of EVE Online, and RIFT's connection with ESI for this character will be removed.</string>
+    <string name="character_window_no_character_found">No characters found.\n\nMake sure the game directory is selected in settings, and that you have logged in to at least one character on this computer before.</string>
     <!-- SettingsWindow.kt -->
     <string name="language">Language</string>
     <string name="settings_window_title">RIFT Settings</string>

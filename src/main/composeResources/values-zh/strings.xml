@@ -311,6 +311,24 @@
     <string name="character_window_show_clones">显示克隆体</string>
     <string name="character_window_copy_settings">复制设置</string>
     <string name="character_window_copy_settings_tooltip">在角色之间复制EVE设置\n(窗口位置、总览等)</string>
+    <string name="character_window_no_implants">没有植入体</string>
+    <string name="character_window_active_clone">当前克隆</string>
+    <string name="character_window_missing_esi_scopes">缺失ESI授权：</string>
+    <string name="character_window_missing_esi_scopes_tooltip">部分功能将无法使用</string>
+    <string name="character_window_no_auth">没有授权ESI\n点击上面的登录按钮</string>
+    <string name="character_window_disabled_character_tooltip">禁用角色将不会在RIFT中使用</string>
+    <string name="character_window_disabled_character">禁用的角色</string>
+    <string name="character_window_no_disabled_characters">没有禁用的角色</string>
+    <string name="character_window_enable_disable_character">启用或禁用你不想使用的角色</string>
+    <string name="character_window_done">完成</string>
+    <string name="character_window_could_not_load">无法加载</string>
+    <string name="character_window_delete_character">删除这个角色</string>
+    <string name="character_window_enable_character">启用这个角色</string>
+    <string name="character_window_disable_character">禁用这个角色</string>
+    <string name="character_window_character_id">角色ID %1$d</string>
+    <string name="character_window_trailing_delete_name">删除%1$s？</string>
+    <string name="character_window_delete_character_dialog">该角色的设置文件将从你的EVE客户端中删除，且RIFT与这个角色的ESI连接将被移除</string>
+    <string name="character_window_no_character_found">找不到角色\n\n确保游戏目录正确设置，且之前你已经在电脑上至少登录过一个角色</string>
     <!-- SettingsWindow.kt -->
     <string name="language">语言</string>
     <string name="settings_window_title">RIFT设置</string>
