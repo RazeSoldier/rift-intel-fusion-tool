@@ -34,13 +34,15 @@ import dev.nohus.rift.compose.TitleBarStyle
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_bleedchannel
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.intel.reports.IntelReportsViewModel.UiState
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.stringResource
 import java.time.Instant
 
 @Composable
@@ -51,7 +53,7 @@ fun IntelReportsWindow(
     val viewModel: IntelReportsViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Intel Reports",
+        title = stringResource(Res.string.intel_reports_window_title),
         icon = Res.drawable.window_bleedchannel,
         state = windowState,
         tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),
@@ -77,13 +79,13 @@ private fun getTuneContextMenuItems(
     val isShowingChannel = state.settings.isShowingChannel
     val isShowingRegion = state.settings.isShowingRegion
     return buildList {
-        add(HeaderItem("User interface"))
-        add(CheckboxItem("Compact mode", isSelected = isUsingCompactMode, onClick = { viewModel.onIsUsingCompactModeChange(!isUsingCompactMode) }))
-        add(CheckboxItem("Show newest on top", isSelected = isUsingReverseOrder, onClick = { viewModel.onIsUsingReverseOrderChange(!isUsingReverseOrder) }))
-        add(HeaderItem("Shown information"))
-        add(CheckboxItem("Show reporter name", isSelected = isShowingReporter, onClick = { viewModel.onIsShowingReporterChange(!isShowingReporter) }))
-        add(CheckboxItem("Show channel name", isSelected = isShowingChannel, onClick = { viewModel.onIsShowingChannelChange(!isShowingChannel) }))
-        add(CheckboxItem("Show channel region", isSelected = isShowingRegion, onClick = { viewModel.onIsShowingRegionChange(!isShowingRegion) }))
+        add(HeaderItem(getStringSync(Res.string.intel_reports_user_interface)))
+        add(CheckboxItem(getStringSync(Res.string.compact_mode), isSelected = isUsingCompactMode, onClick = { viewModel.onIsUsingCompactModeChange(!isUsingCompactMode) }))
+        add(CheckboxItem(getStringSync(Res.string.intel_reports_show_newest_on_top), isSelected = isUsingReverseOrder, onClick = { viewModel.onIsUsingReverseOrderChange(!isUsingReverseOrder) }))
+        add(HeaderItem(getStringSync(Res.string.intel_reports_shown_info)))
+        add(CheckboxItem(getStringSync(Res.string.intel_reports_show_reporter_name), isSelected = isShowingReporter, onClick = { viewModel.onIsShowingReporterChange(!isShowingReporter) }))
+        add(CheckboxItem(getStringSync(Res.string.intel_reports_show_channel_name), isSelected = isShowingChannel, onClick = { viewModel.onIsShowingChannelChange(!isShowingChannel) }))
+        add(CheckboxItem(getStringSync(Res.string.intel_reports_show_channel_region), isSelected = isShowingRegion, onClick = { viewModel.onIsShowingRegionChange(!isShowingRegion) }))
     }.takeIf { it.isNotEmpty() }
 }
 
@@ -109,17 +111,17 @@ private fun IntelReportsWindowContent(
         )
         if (state.channelChatMessages.isEmpty()) {
             val text = if (state.intelChannels.isEmpty()) {
-                "No intel channels configured.\nSet some up in the settings."
+                stringResource(Res.string.intel_reports_intel_channels_no_configured)
             } else if (state.hasOnlineCharacters) {
                 if (state.search != null) {
-                    "No intel messages found.\nChange your search term to see others."
+                    stringResource(Res.string.intel_reports_intel_not_found)
                 } else if (state.filteredChannel != null) {
-                    "No intel messages received in ${state.filteredChannel.name}.\nChange your filter to see others."
+                    stringResource(Res.string.intel_reports_intel_not_found_in_channel, state.filteredChannel.name)
                 } else {
-                    "No intel messages received.\nMake sure you have your intel channels open in-game."
+                    stringResource(Res.string.intel_reports_no_intel_received)
                 }
             } else {
-                "No intel messages received.\nLog in to the game."
+                stringResource(Res.string.intel_reports_no_online_characters)
             }
             Text(
                 text = text,
@@ -146,9 +148,9 @@ private fun FiltersRow(
             .fillMaxWidth()
             .padding(start = padding, end = padding, bottom = Spacing.medium),
     ) {
-        val allChannelsOption = "All channels"
+        val allChannelsOption = stringResource(Res.string.intel_reports_all_channels)
         RiftDropdownWithLabel(
-            label = "Filter:",
+            label = stringResource(Res.string.intel_reports_filter),
             items = listOf(allChannelsOption) + state.intelChannels.map { it.name }.toSet(),
             selectedItem = state.filteredChannel?.name ?: allChannelsOption,
             onItemSelected = onIntelChannelFilterSelect,
