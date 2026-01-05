@@ -11,6 +11,7 @@ import dev.nohus.rift.network.esi.models.UniverseStationsId
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.repositories.StationsRepository
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -43,6 +44,7 @@ class AssetsRepository(
     private val planetaryIndustryCommoditiesRepository: PlanetaryIndustryCommoditiesRepository,
     private val isNameableAssetUseCase: IsNameableAssetUseCase,
     private val esiApi: EsiApi,
+    private val stationsRepository: StationsRepository,
 ) {
 
     data class State(
@@ -268,19 +270,13 @@ class AssetsRepository(
                     else -> {}
                 }
             }
-        val stationsByIdDeferred = stationIds.map { stationId ->
-            async { stationId to esiApi.getUniverseStationsId(Originator.Assets, stationId.toInt()) }
-        }
+        val stationsById = stationIds.mapNotNull { stationIds ->
+            stationsRepository.getStation(stationIds.toInt())
+        }.associate { it.id.toLong() to UniverseStationsId(it.name, it.corporationId, it.systemId, it.typeId) }
         val structuresByIdDeferred = structureIds.map { structureId ->
             async {
                 val characterId = allAssets.first { it.asset.locationId == structureId }.owner.character.characterId
                 structureId to esiApi.getUniverseStructuresId(Originator.Assets, structureId, characterId)
-            }
-        }
-        val stationsById = stationsByIdDeferred.awaitAll().associate { (id, result) ->
-            when (result) {
-                is Result.Success -> id to result.data
-                is Result.Failure -> return@coroutineScope result
             }
         }
         val (structuresById, unresolveableIds) = structuresByIdDeferred.awaitAll().map { (id, result) ->
