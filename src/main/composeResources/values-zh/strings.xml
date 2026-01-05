@@ -760,4 +760,55 @@
     <!-- ChatMessage.kt -->
     <string name="chat_message_original_message">原始消息：\n%1$s</string>
     <string name="chat_message_clear">安全</string>
+    <!-- AssetsWindow.kt -->
+    <string name="assets_window_title">资产</string>
+    <string name="assets_window_tab_owners">拥有者</string>
+    <string name="assets_window_tab_assets">资产</string>
+    <string name="assets_window_loading_assets">正在加载资产...</string>
+    <string name="assets_window_could_not_load_assets">无法加载资产</string>
+    <string name="assets_window_try_again">尝试</string>
+    <!-- OwnersContent.kt -->
+    <string name="assets_window_chose_owners">选择一个拥有者过滤资产</string>
+    <string name="assets_window_chose_characters">选择一个角色过滤资产</string>
+    <string name="assets_window_all_character_assets">所有角色资产</string>
+    <string name="assets_window_no_assets">没有资产</string>
+    <plurals name="assets_window_assets_count">
+        <item quantity="other">%1$d个资产</item>
+    </plurals>
+    <!-- AssetsContent.kt -->
+    <string name="assets_window_sort_by">排序</string>
+    <string name="assets_window_sort_by_distance">距离</string>
+    <string name="assets_window_sort_by_name">名字</string>
+    <string name="assets_window_sort_by_count">资产数量</string>
+    <string name="assets_window_sort_by_price">总价值</string>
+    <string name="assets_window_total">总计：</string>
+    <plurals name="assets_window_location_count">
+        <item quantity="other">%1$d个位置</item>
+    </plurals>
+    <plurals name="assets_window_item_count">
+        <item quantity="other">%1$d个物品</item>
+    </plurals>
+    <string name="assets_window_all_assets_filtered">所有资产均已筛选</string>
+    <string name="assets_window_no_assets_on_bottom">没有资产</string>
+    <string name="assets_window_delayed_tooltip">最多延迟1小时</string>
+    <string name="assets_window_reload">重新加载</string>
+    <string name="assets_window_unpin">在资产里取消置顶</string>
+    <string name="assets_window_unhide">在资产里取消隐藏</string>
+    <string name="assets_window_pin">在资产里置顶</string>
+    <string name="assets_window_hide">在资产里隐藏</string>
+    <plurals name="assets_window_route_distance">
+        <item quantity="other">路线：%1$d跳</item>
+    </plurals>
+    <string name="assets_window_copy_fit">复制配置</string>
+    <string name="assets_window_copy_fit_and_cargo">复制配置和货舱</string>
+    <string name="assets_window_view_fit">查看配置</string>
+    <string name="assets_window_unknown_owner">未知拥有者</string>
+    <plurals name="assets_window_item_count_lowercase">
+        <item quantity="other">%1$d个物品</item>
+    </plurals>
+    <string name="assets_window_units_count">%1$d个单位</string>
+    <!-- AssetsViewModel.kt -->
+    <string name="assets_view_model_asset_safety">资产安全</string>
+    <string name="assets_view_model_unknown">未知</string>
+    <string name="assets_view_model_office_skyhook">行星办公室/天沟</string>
 </resources>
