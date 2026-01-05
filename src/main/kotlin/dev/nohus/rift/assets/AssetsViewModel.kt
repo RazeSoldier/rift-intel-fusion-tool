@@ -9,6 +9,9 @@ import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.clipboard.Clipboard
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.requests.Originator
@@ -393,15 +396,15 @@ class AssetsViewModel(
             }
 
             is AssetsRepository.AssetLocation.AssetSafety -> {
-                AssetLocation(location.locationId, null, null, "Asset Safety", null, null)
+                AssetLocation(location.locationId, null, null, getStringSync(Res.string.assets_view_model_asset_safety), null, null)
             }
 
             is AssetsRepository.AssetLocation.Unknown -> {
-                AssetLocation(location.locationId, null, null, "Unknown", null, null)
+                AssetLocation(location.locationId, null, null, getStringSync(Res.string.assets_view_model_unknown), null, null)
             }
 
             is AssetsRepository.AssetLocation.CustomsOffice -> {
-                AssetLocation(location.locationId, null, null, "Customs Office / Skyhook", null, null)
+                AssetLocation(location.locationId, null, null, getStringSync(Res.string.assets_view_model_office_skyhook), null, null)
             }
         }
     }

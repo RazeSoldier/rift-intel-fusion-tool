@@ -81,11 +81,8 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.menu_hide
-import dev.nohus.rift.generated.resources.menu_pinned
-import dev.nohus.rift.generated.resources.menu_unhide
-import dev.nohus.rift.generated.resources.menu_unpin
-import dev.nohus.rift.generated.resources.window_assets
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.settings.persistence.LocationPinStatus
@@ -104,6 +101,7 @@ import dev.nohus.rift.wallet.compose.TransactionsContent
 import dev.nohus.rift.wallet.compose.WalletsContent
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.text.NumberFormat
 
 @Composable
@@ -114,7 +112,7 @@ fun AssetsWindow(
     val viewModel: AssetsViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Assets",
+        title = stringResource(Res.string.assets_window_title),
         icon = Res.drawable.window_assets,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -150,8 +148,8 @@ private fun ToolbarRow(
         val tabs = remember {
             AssetsTab.entries.mapIndexed { index, tab ->
                 val title = when (tab) {
-                    AssetsTab.Owners -> "Owners"
-                    AssetsTab.Assets -> "Assets"
+                    AssetsTab.Owners -> getStringSync(Res.string.assets_window_tab_owners)
+                    AssetsTab.Assets -> getStringSync(Res.string.assets_window_tab_assets)
                 }
                 Tab(id = index, title = title, isCloseable = false)
             }
@@ -199,7 +197,7 @@ private fun AssetsWindowContent(
             ) {
                 LoadingSpinnerAmbient()
                 Text(
-                    text = "Loading assets…",
+                    text = stringResource(Res.string.assets_window_loading_assets),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
@@ -212,12 +210,12 @@ private fun AssetsWindowContent(
                         modifier = Modifier.fillMaxWidth().padding(Spacing.large),
                     ) {
                         Text(
-                            text = "Could not load assets",
+                            text = stringResource(Res.string.assets_window_could_not_load_assets),
                             style = RiftTheme.typography.headerPrimary,
                             textAlign = TextAlign.Center,
                         )
                         RiftButton(
-                            text = "Try again",
+                            text = stringResource(Res.string.assets_window_try_again),
                             type = ButtonType.Primary,
                             onClick = onReloadClick,
                         )

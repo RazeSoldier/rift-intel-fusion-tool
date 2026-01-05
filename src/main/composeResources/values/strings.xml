@@ -770,4 +770,60 @@
     <!-- ChatMessage.kt -->
     <string name="chat_message_original_message">Original message:\n%1$s</string>
     <string name="chat_message_clear">Clear</string>
+    <!-- AssetsWindow.kt -->
+    <string name="assets_window_title">Assets</string>
+    <string name="assets_window_tab_owners">Owners</string>
+    <string name="assets_window_tab_assets">Assets</string>
+    <string name="assets_window_loading_assets">Loading assets…</string>
+    <string name="assets_window_could_not_load_assets">Could not load assets</string>
+    <string name="assets_window_try_again">Try again</string>
+    <!-- OwnersContent.kt -->
+    <string name="assets_window_chose_owners">Choose owners to filter assets</string>
+    <string name="assets_window_chose_characters">Choose characters to filter assets</string>
+    <string name="assets_window_all_character_assets">All character assets</string>
+    <string name="assets_window_no_assets">0 assets</string>
+    <plurals name="assets_window_assets_count">
+        <item quantity="one">%1$d asset</item>
+        <item quantity="other">%1$d assets</item>
+    </plurals>
+    <!-- AssetsContent.kt -->
+    <string name="assets_window_sort_by">Sort By</string>
+    <string name="assets_window_sort_by_distance">Distance</string>
+    <string name="assets_window_sort_by_name">Name</string>
+    <string name="assets_window_sort_by_count">Asset count</string>
+    <string name="assets_window_sort_by_price">Total price</string>
+    <string name="assets_window_total">Total: </string>
+    <plurals name="assets_window_location_count">
+        <item quantity="one">%1$d Location</item>
+        <item quantity="other">%1$d Locations</item>
+    </plurals>
+    <plurals name="assets_window_item_count">
+        <item quantity="one">%1$d Item</item>
+        <item quantity="other">%1$d Items</item>
+    </plurals>
+    <string name="assets_window_all_assets_filtered">All assets filtered out</string>
+    <string name="assets_window_no_assets_on_bottom">No assets</string>
+    <string name="assets_window_delayed_tooltip">Delayed up to 1 hour</string>
+    <string name="assets_window_reload">Reload</string>
+    <string name="assets_window_unpin">Unpin in Assets</string>
+    <string name="assets_window_unhide">Unhide in Assets</string>
+    <string name="assets_window_pin">Pin in Assets</string>
+    <string name="assets_window_hide">Hide in Assets</string>
+    <plurals name="assets_window_route_distance">
+        <item quantity="one">Route: %1$d Jump</item>
+        <item quantity="other">Route: %1$d Jumps</item>
+    </plurals>
+    <string name="assets_window_copy_fit">Copy fit</string>
+    <string name="assets_window_copy_fit_and_cargo">Copy fit &amp; cargo</string>
+    <string name="assets_window_view_fit">View fit</string>
+    <string name="assets_window_unknown_owner">Unknown owner</string>
+    <plurals name="assets_window_item_count_lowercase">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <string name="assets_window_units_count">%1$d units</string>
+    <!-- AssetsViewModel.kt -->
+    <string name="assets_view_model_asset_safety">Asset Safety</string>
+    <string name="assets_view_model_unknown">Unknown</string>
+    <string name="assets_view_model_office_skyhook">Customs Office / Skyhook</string>
 </resources>

@@ -29,13 +29,13 @@ import dev.nohus.rift.compose.VerticalGrid
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_agent
-import dev.nohus.rift.generated.resources.window_assets
-import dev.nohus.rift.generated.resources.window_wallet
-import dev.nohus.rift.utils.plural
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getPluralStringSync
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.utils.toggle
 import dev.nohus.rift.wallet.WalletType
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun OwnersContent(
@@ -45,9 +45,9 @@ fun OwnersContent(
 ) {
     Column {
         val text = if (data.owners.any { it is AssetOwner.Corporation }) {
-            "Choose owners to filter assets"
+            stringResource(Res.string.assets_window_chose_owners)
         } else {
-            "Choose characters to filter assets"
+            stringResource(Res.string.assets_window_chose_characters)
         }
         Text(
             text = text,
@@ -88,7 +88,7 @@ fun OwnersContent(
                             )
                         }
                     },
-                    name = "All character assets",
+                    name = stringResource(Res.string.assets_window_all_character_assets),
                     isSelected = OwnerType.Character in filters,
                     onClick = {
                         val updated = filters
@@ -164,6 +164,6 @@ fun OwnersContent(
 }
 
 private fun formatBalance(count: Int?): String {
-    if (count == null) return "0 assets"
-    return "$count asset${count.plural}"
+    if (count == null) return getStringSync(Res.string.assets_window_no_assets)
+    return getPluralStringSync(Res.plurals.assets_window_assets_count, count, count)
 }
