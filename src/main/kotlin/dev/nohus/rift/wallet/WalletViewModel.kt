@@ -2,6 +2,10 @@ package dev.nohus.rift.wallet
 
 import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.wallet_window_purchase_item
+import dev.nohus.rift.generated.resources.wallet_window_sale_item
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.settings.persistence.Settings
@@ -493,9 +497,9 @@ class WalletViewModel(
                         val categoryId = (transaction.type as? TypeDetail.Type)?.type?.categoryId
                         val categoryName = categoryId?.let { id -> typesRepository.getCategoryName(id) } ?: return@groupingBy "No category"
                         if (transaction.isBuy) {
-                            "Purchase: $categoryName"
+                            getStringSync(Res.string.wallet_window_purchase_item, categoryName)
                         } else {
-                            "Sale: $categoryName"
+                            getStringSync(Res.string.wallet_window_sale_item, categoryName)
                         }
                     })
                     .fold(0.0) { acc, item -> acc + item.amount }

@@ -1,19 +1,24 @@
 package dev.nohus.rift.wallet
 
 import androidx.compose.ui.graphics.Color
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.ApplicationLocale
+import dev.nohus.rift.i18n.getStringSync
+import java.util.Locale
 
 sealed class TransactionGroup(
     val name: String,
     val color: Color,
 ) {
-    data object CorporationAlliance : TransactionGroup(name = "Corp and Alliance", color = Color(0xFF5c59d8))
-    data object AgentsAndMissions : TransactionGroup(name = "Agents and Missions", color = Color(0xFFe68348))
-    data object Trade : TransactionGroup(name = "Trade", color = Color(0xFF31c4a1))
-    data object Bounty : TransactionGroup(name = "Bounties", color = Color(0xFFe53a3a))
-    data object Industry : TransactionGroup(name = "Industry", color = Color(0xFF3de53a))
-    data object Transfer : TransactionGroup(name = "Transfers", color = Color(0xFFe6e048))
-    data object Misc : TransactionGroup(name = "Miscellaneous", color = Color(0xFF808080))
-    data object HypernetRelay : TransactionGroup(name = "Hypernet", color = Color(0xFF3aa8e5))
+    data object CorporationAlliance : TransactionGroup(name = getStringSync(Res.string.transaction_group_corp_and_alliance), color = Color(0xFF5c59d8))
+    data object AgentsAndMissions : TransactionGroup(name = getStringSync(Res.string.transaction_group_agents_and_missions), color = Color(0xFFe68348))
+    data object Trade : TransactionGroup(name = getStringSync(Res.string.transaction_group_trade), color = Color(0xFF31c4a1))
+    data object Bounty : TransactionGroup(name = getStringSync(Res.string.transaction_group_bounties), color = Color(0xFFe53a3a))
+    data object Industry : TransactionGroup(name = getStringSync(Res.string.transaction_group_industry), color = Color(0xFF3de53a))
+    data object Transfer : TransactionGroup(name = getStringSync(Res.string.transaction_group_transfers), color = Color(0xFFe6e048))
+    data object Misc : TransactionGroup(name = getStringSync(Res.string.transaction_group_miscellaneous), color = Color(0xFF808080))
+    data object HypernetRelay : TransactionGroup(name = getStringSync(Res.string.transaction_group_hypernet), color = Color(0xFF3aa8e5))
 
     companion object {
         fun byReferenceType(referenceType: String) = when (referenceType) {
@@ -178,8 +183,56 @@ sealed class TransactionGroup(
 }
 
 fun getReferenceTypeName(referenceType: String): String {
+    if (ApplicationLocale.current == Locale.CHINESE) {
+        val name = getReferenceTypeNameL10n(referenceType)
+        if (name != null) {
+            return name
+        }
+    }
     return referenceType
         .split('_')
         .joinToString(" ") { it.replaceFirstChar { c -> c.titlecase() } }
         .replace("Ess", "ESS")
 }
+
+private fun getReferenceTypeNameL10n(referenceType: String): String? {
+    return refTypeZhMap.getOrDefault(referenceType, null)
+}
+
+private val refTypeZhMap: Map<String, String> = mapOf(
+    "agent_location_services" to "代理人查人服务",
+    "agent_mission_reward" to "代理人任务奖励",
+    "agent_mission_time_bonus_reward" to "代理人任务时间奖励",
+    "asset_safety_recovery_tax" to "资产安全赎回费",
+    "bounty_prizes" to "海盗击杀赏金",
+    "brokers_fee" to "中介费收入",
+    "contract_auction_bid" to "拍卖合同出价",
+    "contract_auction_bid_corp" to "拍卖合同军团出价",
+    "contract_brokers_fee" to "合同中介费",
+    "contract_brokers_fee_corp" to "军团合同中介费",
+    "contract_price" to "合同费",
+    "contract_price_payment_corp" to "合同费（军团支付）",
+    "contract_reward" to "合同酬劳",
+    "contract_reward_deposited" to "预付完成合同的酬劳",
+    "corporate_reward_payout" to "势力奖励",
+    "corporation_account_withdrawal" to "军团账户支出",
+    "daily_goal_payouts" to "每日任务奖励",
+    "ess_escrow_transfer" to "事件监测收入",
+    "industry_job_tax" to "工业税",
+    "insurance" to "保险",
+    "jump_clone_activation_fee" to "跳跃克隆激活费",
+    "jump_clone_installation_fee" to "跳跃克隆安装费",
+    "manufacturing" to "制造税",
+    "market_escrow" to "市场契约金",
+    "market_provider_tax" to "市场商业税",
+    "market_transaction" to "市场交易",
+    "office_rental_fee" to "军团办公室租金",
+    "player_donation" to "玩家转账",
+    "player_trading" to "玩家交易",
+    "project_discovery_reward" to "探索计划奖励",
+    "reaction" to "反应税",
+    "reprocessing_tax" to "化矿税",
+    "skill_purchase" to "技能购买",
+    "structure_gate_jump" to "跳桥费",
+    "transaction_tax" to "交易税",
+)

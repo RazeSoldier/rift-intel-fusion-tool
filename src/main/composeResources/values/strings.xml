@@ -317,7 +317,7 @@
     <string name="character_window_title">Characters</string>
     <string name="character_window_show_clones">Show clones</string>
     <string name="character_window_copy_settings">Copy settings</string>
-    <string name="character_window_copy_settings_tooltip">Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.</string>
+    <string name="character_window_copy_settings_tooltip">Copy Eve settings\n(window positions, overview, etc.)\3nbetween selected characters.</string>
     <string name="character_window_no_implants">No implants</string>
     <string name="character_window_active_clone">Active clone</string>
     <string name="character_window_missing_esi_scopes">Missing ESI scopes:</string>
@@ -826,4 +826,116 @@
     <string name="assets_view_model_asset_safety">Asset Safety</string>
     <string name="assets_view_model_unknown">Unknown</string>
     <string name="assets_view_model_office_skyhook">Customs Office / Skyhook</string>
+    <!-- WalletWindow.kt -->
+    <string name="wallet_window_title">Wallets</string>
+    <string name="wallet_window_tab_overview">Overview</string>
+    <string name="wallet_window_tab_transactions">Transactions</string>
+    <string name="wallet_window_tab_insights">Insights</string>
+    <string name="wallet_window_tab_lp_point">Loyalty Points</string>
+    <string name="wallet_window_choose_wallets">Choose wallets to filter transactions and insights</string>
+    <string name="wallet_window_all_character_wallets">All character wallets</string>
+    <string name="wallet_window_could_not_load_wallets">Could not load wallets</string>
+    <string name="wallet_window_timespan_dropdown_tooltip">ESI only provides wallet transactions from the last 30 days,\nbut RIFT will remember them indefinitely.\n\nThis means if you use RIFT for a year,\nyou will have complete wallet history for the last year.</string>
+    <string name="wallet_window_last_xx_hours">Last %1$d hours</string>
+    <string name="wallet_window_last_xx_days">Last %1$d days</string>
+    <string name="wallet_window_all_transactions_filtered_out">All transactions filtered out</string>
+    <string name="wallet_window_no_transactions">No transactions</string>
+    <plurals name="wallet_window_deposit">
+        <item quantity="one">deposit</item>
+        <item quantity="other">deposits</item>
+    </plurals>
+    <plurals name="wallet_window_withdrawal">
+        <item quantity="one">withdrawal</item>
+        <item quantity="other">withdrawals</item>
+    </plurals>
+    <plurals name="wallet_window_transaction">
+        <item quantity="one">transaction</item>
+        <item quantity="other">transactions</item>
+    </plurals>
+    <plurals name="wallet_window_wallet">
+        <item quantity="one">wallet</item>
+        <item quantity="other">wallets</item>
+    </plurals>
+    <plurals name="wallet_window_type">
+        <item quantity="one">type</item>
+        <item quantity="other">types</item>
+    </plurals>
+    <string name="wallet_window_showing">Showing</string>
+    <string name="wallet_window_based_on">Based on</string>
+    <string name="wallet_window_transaction_wallet_count">%1$s</string>
+    <string name="wallet_window_type_count">%1$s</string>
+    <string name="wallet_window_income">Income</string>
+    <string name="wallet_window_expenses">Expenses</string>
+    <string name="wallet_window_balance">Balance</string>
+    <string name="wallet_window_purchase_item">Purchase: %1$s</string>
+    <string name="wallet_window_sale_item">Sale: %1$s</string>
+    <string name="wallet_window_all_type">All types</string>
+    <string name="wallet_window_market_transactions">Market Transactions</string>
+    <string name="wallet_window_other_types">Other Types</string>
+    <string name="wallet_window_type_filter">Types</string>
+    <string name="wallet_window_all">All</string>
+    <plurals name="wallet_window_day_income">
+        <item quantity="one">%1$d Day Income</item>
+        <item quantity="other">%1$d Days Income</item>
+    </plurals>
+    <plurals name="wallet_window_day_expenses">
+        <item quantity="one">%1$d Day Expenses</item>
+        <item quantity="other">%1$d Days Expenses</item>
+    </plurals>
+    <string name="wallet_window_loading_transactions">Loading transactions…</string>
+    <string name="wallet_window_processing_transactions">Processing transactions…</string>
+    <string name="wallet_window_loading_transactions_details">Loading transaction details…</string>
+    <string name="wallet_window_loading_corp_division_names">Loading corporation division names…</string>
+    <string name="wallet_window_loading_balances">Loading balances…</string>
+    <string name="wallet_window_wallet_transactions_loaded">%1$s wallet transactions loaded</string>
+    <string name="wallet_window_market_transactions_loaded">%1$s market transactions loaded</string>
+    <string name="wallet_window_wallet_transactions_loading">%1$s wallet transactions, loading…</string>
+    <string name="wallet_window_market_transactions_loading">%1$s market transactions, loading…</string>
+    <string name="wallet_window_transactions_referencing">%1$d transactions referencing</string>
+    <string name="wallet_window_structures_stations_count">%1$d structures and stations</string>
+    <string name="wallet_window_done">, done!</string>
+    <string name="wallet_window_character_count">%1$d characters</string>
+    <string name="wallet_window_corp_alliance_count">%1$d corporations and alliances</string>
+    <string name="wallet_window_corp_systems_count">%1$d systems…</string>
+    <string name="wallet_window_corp_types_count">%1$d types…</string>
+    <string name="wallet_window_division_name">Division name</string>
+    <string name="wallet_window_paid">paid</string>
+    <string name="wallet_window_reason">Reason: "</string>
+    <string name="wallet_window_tax_received">received tax: %1$s</string>
+    <string name="wallet_window_income_by_party">Income by party</string>
+    <string name="wallet_window_expense_by_party">Expense by party</string>
+    <string name="wallet_window_balance_by_party">Balance by party</string>
+    <string name="wallet_window_destroyed_rat_by_party">Wanted ships destroyed</string>
+    <string name="wallet_window_daily_goals">Daily goals</string>
+    <string name="wallet_window_activity">Activity</string>
+    <string name="wallet_window_view_all">View all</string>
+    <string name="wallet_window_only_show_transactions">Showing only transactions involving:</string>
+    <string name="wallet_window_remove_filter">Remove filter</string>
+    <string name="wallet_window_lp_totals">Loyalty points totals from all your characters</string>
+    <string name="wallet_window_lp_each_character">Loyalty points and the closest loyalty point store for each character</string>
+    <string name="wallet_window_no_lp">No loyalty points</string>
+    <string name="wallet_window_no_lp_match">No loyalty points matching your search</string>
+    <string name="wallet_window_no_lp_character">No characters with loyalty points</string>
+    <string name="wallet_window_by_character">By character</string>
+    <string name="wallet_window_total">Total</string>
+    <!-- TransactionGroups.kt -->
+    <string name="transaction_group_corp_and_alliance">Corp and Alliance</string>
+    <string name="transaction_group_agents_and_missions">Agents and Missions</string>
+    <string name="transaction_group_trade">Trade</string>
+    <string name="transaction_group_bounties">Bounties</string>
+    <string name="transaction_group_industry">Industry</string>
+    <string name="transaction_group_transfers">Transfers</string>
+    <string name="transaction_group_miscellaneous">Miscellaneous</string>
+    <string name="transaction_group_hypernet">Hypernet</string>
+    <!-- Formatting.kt -->
+    <string name="formatting_number_suffix_thouand"> thousand</string>
+    <string name="formatting_number_suffix_million"> million</string>
+    <string name="formatting_number_suffix_billion"> billion</string>
+    <string name="formatting_number_suffix_trillion"> trillion</string>
+    <!-- TypeDetailItem.kt -->
+    <string name="type_detail_item_bought">Bought</string>
+    <string name="type_detail_item_sold">Sold</string>
+    <string name="type_detail_item_unit_price">%1$s at %2$d per unit</string>
+    <string name="type_detail_item_corp_project">Corporation Project</string>
+    <string name="type_detail_item_freelance_project">Freelance Project</string>
 </resources>

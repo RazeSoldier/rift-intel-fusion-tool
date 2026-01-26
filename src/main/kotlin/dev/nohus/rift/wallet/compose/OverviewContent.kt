@@ -41,7 +41,7 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.navigate_back_16px
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.wallet.TransactionGroup
@@ -50,6 +50,7 @@ import dev.nohus.rift.wallet.WalletFilters
 import dev.nohus.rift.wallet.WalletViewModel.Statistics
 import dev.nohus.rift.wallet.WalletViewModel.UiState
 import dev.nohus.rift.wallet.WalletViewModel.WalletTab
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -115,7 +116,7 @@ fun OverviewContent(
                         )
                         Column {
                             Text(
-                                text = "Income",
+                                text = stringResource(Res.string.wallet_window_income),
                                 style = RiftTheme.typography.bodyPrimary,
                             )
                             Text(
@@ -143,7 +144,7 @@ fun OverviewContent(
                         )
                         Column {
                             Text(
-                                text = "Expenses",
+                                text = stringResource(Res.string.wallet_window_expenses),
                                 style = RiftTheme.typography.bodyPrimary,
                             )
                             Text(
@@ -162,7 +163,7 @@ fun OverviewContent(
                         Spacer(Modifier.width(20.dp))
                         Column {
                             Text(
-                                text = "Balance",
+                                text = stringResource(Res.string.wallet_window_balance),
                                 style = RiftTheme.typography.bodyPrimary,
                             )
                             Text(
@@ -222,7 +223,7 @@ fun OverviewContent(
                             verticalArrangement = Arrangement.spacedBy(Spacing.small),
                         ) {
                             Spacer(Modifier.height(Spacing.medium))
-                            RiftTooltipArea("Back", modifier = Modifier.align(Alignment.End)) {
+                            RiftTooltipArea(stringResource(Res.string.back), modifier = Modifier.align(Alignment.End)) {
                                 RiftIconButton(
                                     icon = Res.drawable.navigate_back_16px,
                                     onClick = { selectedGroup = null },

@@ -811,4 +811,105 @@
     <string name="assets_view_model_asset_safety">资产安全</string>
     <string name="assets_view_model_unknown">未知</string>
     <string name="assets_view_model_office_skyhook">行星办公室/天沟</string>
+    <!-- WalletWindow.kt -->
+    <string name="wallet_window_title">钱包</string>
+    <string name="wallet_window_tab_overview">概览</string>
+    <string name="wallet_window_tab_transactions">交易</string>
+    <string name="wallet_window_tab_insights">洞察</string>
+    <string name="wallet_window_tab_lp_point">忠诚点</string>
+    <string name="wallet_window_choose_wallets">选择一个钱包过滤交易和洞察</string>
+    <string name="wallet_window_all_character_wallets">所有角色的钱包</string>
+    <string name="wallet_window_could_not_load_wallets">无法加载钱包</string>
+    <string name="wallet_window_timespan_dropdown_tooltip">ESI仅能提供最近30天的钱包交易记录，\n但RIFT会永远存储它们。\n\n这意味着如果你使用RIFT一年，\n你将拥有过去一年的完整钱包历史记录。</string>
+    <string name="wallet_window_last_xx_hours">最近%1$d小时</string>
+    <string name="wallet_window_last_xx_days">最近%1$d天</string>
+    <string name="wallet_window_all_transactions_filtered_out">所有交易均已过滤</string>
+    <string name="wallet_window_no_transactions">没有交易</string>
+    <plurals name="wallet_window_deposit">
+        <item quantity="other">存入</item>
+    </plurals>
+    <plurals name="wallet_window_withdrawal">
+        <item quantity="other">提取</item>
+    </plurals>
+    <plurals name="wallet_window_transaction">
+        <item quantity="other">交易</item>
+    </plurals>
+    <plurals name="wallet_window_wallet">
+        <item quantity="other">钱包</item>
+    </plurals>
+    <plurals name="wallet_window_type">
+        <item quantity="other">类型</item>
+    </plurals>
+    <string name="wallet_window_showing">显示</string>
+    <string name="wallet_window_based_on">基于</string>
+    <string name="wallet_window_transaction_wallet_count">%1$s个</string>
+    <string name="wallet_window_type_count">%1$s种</string>
+    <string name="wallet_window_income">收入</string>
+    <string name="wallet_window_expenses">支出</string>
+    <string name="wallet_window_balance">余额</string>
+    <string name="wallet_window_purchase_item">购买：%1$s</string>
+    <string name="wallet_window_sale_item">卖出：%1$s</string>
+    <string name="wallet_window_all_type">所有类型</string>
+    <string name="wallet_window_market_transactions">市场交易</string>
+    <string name="wallet_window_other_types">其他类型</string>
+    <string name="wallet_window_type_filter">类型</string>
+    <string name="wallet_window_all">所有</string>
+    <plurals name="wallet_window_day_income">
+        <item quantity="other">%1$d天收入</item>
+    </plurals>
+    <plurals name="wallet_window_day_expenses">
+        <item quantity="other">%1$d天支出</item>
+    </plurals>
+    <string name="wallet_window_loading_transactions">正在加载交易...</string>
+    <string name="wallet_window_processing_transactions">正在处理交易...</string>
+    <string name="wallet_window_loading_transactions_details">正在加载交易详情...</string>
+    <string name="wallet_window_loading_corp_division_names">正在加载军团部门名称...</string>
+    <string name="wallet_window_loading_balances">正在加载余额...</string>
+    <string name="wallet_window_transactions_referencing">%1$d条交易正在引用</string>
+    <string name="wallet_window_structures_stations_count">%1$d个建筑和空间站</string>
+    <string name="wallet_window_done">，完成！</string>
+    <string name="wallet_window_character_count">%1$d个角色</string>
+    <string name="wallet_window_corp_alliance_count">%1$d个军团和联盟</string>
+    <string name="wallet_window_corp_systems_count">%1$d个星系…</string>
+    <string name="wallet_window_corp_types_count">%1$d个类型…</string>
+    <string name="wallet_window_division_name">部门名</string>
+    <string name="wallet_window_paid">支付</string>
+    <string name="wallet_window_reason">原因: "</string>
+    <string name="wallet_window_tax_received">收到税：%1$s</string>
+    <string name="wallet_window_income_by_party">按收入</string>
+    <string name="wallet_window_expense_by_party">按支出</string>
+    <string name="wallet_window_balance_by_party">按结余</string>
+    <string name="wallet_window_destroyed_rat_by_party">海盗击毁</string>
+    <string name="wallet_window_daily_goals">每日奖励</string>
+    <string name="wallet_window_activity">活动</string>
+    <string name="wallet_window_view_all">查看所有</string>
+    <string name="wallet_window_only_show_transactions">仅显示涉及这些方面的交易:</string>
+    <string name="wallet_window_remove_filter">移除过滤器</string>
+    <string name="wallet_window_lp_totals">来自你所有角色的忠诚点</string>
+    <string name="wallet_window_lp_each_character">每个角色的忠诚点和最近的忠诚点商店</string>
+    <string name="wallet_window_no_lp">没有忠诚点</string>
+    <string name="wallet_window_no_lp_match">没有匹配的忠诚点</string>
+    <string name="wallet_window_no_lp_character">没有角色拥有忠诚点</string>
+    <string name="wallet_window_by_character">按角色</string>
+    <string name="wallet_window_total">总数</string>
+    <!-- TransactionGroups.kt -->
+    <string name="transaction_group_corp_and_alliance">军团和联盟</string>
+    <string name="transaction_group_agents_and_missions">代理人和任务</string>
+    <string name="transaction_group_trade">交易</string>
+    <string name="transaction_group_bounties">赏金</string>
+    <string name="transaction_group_industry">工业</string>
+    <string name="transaction_group_transfers">转账</string>
+    <string name="transaction_group_miscellaneous">杂项</string>
+    <string name="transaction_group_hypernet">超网</string>
+    <!-- Formatting.kt -->
+    <string name="formatting_number_suffix_thouand"> 千</string>
+    <string name="formatting_number_suffix_million"> 百万</string>
+    <string name="formatting_number_suffix_billion"> 十亿</string>
+    <string name="formatting_number_suffix_trillion"> 兆</string>
+    <!-- TypeDetailItem.kt -->
+    <string name="type_detail_item_bought">购买</string>
+    <string name="type_detail_item_sold">卖出</string>
+    <string name="type_detail_item_unit_price">每单位%2$d%1$s</string>
+    <string name="type_detail_item_corp_project">军团项目</string>
+    <string name="type_detail_item_freelance_project">自由职业项目</string>
 </resources>

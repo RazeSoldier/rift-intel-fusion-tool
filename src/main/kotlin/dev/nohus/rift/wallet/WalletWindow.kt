@@ -33,7 +33,8 @@ import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_wallet
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.wallet.WalletViewModel.InsightsTab
@@ -49,6 +50,7 @@ import dev.nohus.rift.wallet.compose.TransactionsContent
 import dev.nohus.rift.wallet.compose.WalletLoadingProgress
 import dev.nohus.rift.wallet.compose.WalletsContent
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WalletWindow(
@@ -58,7 +60,7 @@ fun WalletWindow(
     val viewModel: WalletViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Wallets",
+        title = stringResource(Res.string.wallet_window_title),
         icon = Res.drawable.window_wallet,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -96,11 +98,11 @@ private fun ToolbarRow(
         val tabs = remember {
             WalletTab.entries.mapIndexed { index, tab ->
                 val title = when (tab) {
-                    WalletTab.Wallets -> "Wallets"
-                    WalletTab.Overview -> "Overview"
-                    WalletTab.Transactions -> "Transactions"
-                    WalletTab.Insights -> "Insights"
-                    WalletTab.LoyaltyPoints -> "Loyalty Points"
+                    WalletTab.Wallets -> getStringSync(Res.string.wallet_window_title)
+                    WalletTab.Overview -> getStringSync(Res.string.wallet_window_tab_overview)
+                    WalletTab.Transactions -> getStringSync(Res.string.wallet_window_tab_transactions)
+                    WalletTab.Insights -> getStringSync(Res.string.wallet_window_tab_insights)
+                    WalletTab.LoyaltyPoints -> getStringSync(Res.string.wallet_window_tab_lp_point)
                 }
                 Tab(id = index, title = title, isCloseable = false)
             }
@@ -153,12 +155,12 @@ private fun WalletWindowContent(
                         modifier = Modifier.fillMaxWidth().padding(Spacing.large),
                     ) {
                         Text(
-                            text = "Could not load wallets",
+                            text = stringResource(Res.string.wallet_window_could_not_load_wallets),
                             style = RiftTheme.typography.headerPrimary,
                             textAlign = TextAlign.Center,
                         )
                         RiftButton(
-                            text = "Try again",
+                            text = stringResource(Res.string.assets_window_try_again),
                             type = ButtonType.Primary,
                             onClick = onReloadClick,
                         )

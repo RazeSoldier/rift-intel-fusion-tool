@@ -27,10 +27,13 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.game.GameUiController
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.wallet.TypeDetail
 import dev.nohus.rift.wallet.WalletTransactionItem
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 
 /**
@@ -126,10 +129,10 @@ fun TypeDetailItem(
                         )
                         val unitPrice = transaction?.unitPrice
                         if (unitPrice != null) {
-                            val verb = if (transaction.isBuy) "Bought" else "Sold"
+                            val verb = if (transaction.isBuy) stringResource(Res.string.type_detail_item_bought) else stringResource(Res.string.type_detail_item_sold)
                             val showCents = if (unitPrice.absoluteValue < 10) true else showCents
                             Text(
-                                text = "$verb at ${formatIsk(unitPrice, showCents)} per unit",
+                                text = stringResource(Res.string.type_detail_item_unit_price, verb, formatIsk(unitPrice, showCents)),
                                 style = RiftTheme.typography.bodySecondary,
                             )
                         }
@@ -152,7 +155,7 @@ fun TypeDetailItem(
                             style = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold),
                         )
                         Text(
-                            text = "Corporation Project",
+                            text = stringResource(Res.string.type_detail_item_corp_project),
                             style = RiftTheme.typography.bodySecondary,
                         )
                     }
@@ -174,7 +177,7 @@ fun TypeDetailItem(
                             style = RiftTheme.typography.bodyHighlighted.copy(fontWeight = FontWeight.Bold),
                         )
                         Text(
-                            text = "Freelance Project",
+                            text = stringResource(Res.string.type_detail_item_freelance_project),
                             style = RiftTheme.typography.bodySecondary,
                         )
                     }

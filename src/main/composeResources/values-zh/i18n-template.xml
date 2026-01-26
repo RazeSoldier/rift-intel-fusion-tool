@@ -18,4 +18,5 @@
     <plurals name="system_distance">
         <item quantity="other">距离 [$name] [$distance]跳</item>
     </plurals>
+    <string name="wallet_description">[$prefix][$transactionNumber][$transaction]，来自[$walletNumber][$wallets][，匹配$typeNumber][$type]</string>
 </resources>
