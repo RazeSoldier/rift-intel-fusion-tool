@@ -45,6 +45,9 @@ import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.utils.formatDate
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.formatIskReadable
@@ -64,6 +67,7 @@ import dev.nohus.rift.wallet.WalletViewModel.WalletTab
 import dev.nohus.rift.wallet.getReferenceTypeName
 import dev.nohus.rift.wallet.isMatching
 import dev.nohus.rift.wallet.toEveLocalDate
+import org.jetbrains.compose.resources.stringResource
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -103,12 +107,12 @@ fun InsightsContent(
             val tabs = remember {
                 InsightsTab.entries.mapIndexed { index, tab ->
                     val title = when (tab) {
-                        InsightsTab.IncomeByParty -> "Income by party"
-                        InsightsTab.ExpenseByParty -> "Expense by party"
-                        InsightsTab.BalanceByParty -> "Balance by party"
-                        InsightsTab.DestroyedRatsByParty -> "Wanted ships destroyed"
-                        InsightsTab.DailyGoals -> "Daily goals"
-                        InsightsTab.Activity -> "Activity"
+                        InsightsTab.IncomeByParty -> getStringSync(Res.string.wallet_window_income_by_party)
+                        InsightsTab.ExpenseByParty -> getStringSync(Res.string.wallet_window_expense_by_party)
+                        InsightsTab.BalanceByParty -> getStringSync(Res.string.wallet_window_balance_by_party)
+                        InsightsTab.DestroyedRatsByParty -> getStringSync(Res.string.wallet_window_destroyed_rat_by_party)
+                        InsightsTab.DailyGoals -> getStringSync(Res.string.wallet_window_daily_goals)
+                        InsightsTab.Activity -> getStringSync(Res.string.wallet_window_activity)
                     }
                     Tab(id = index, title = title, isCloseable = false)
                 }
@@ -176,7 +180,7 @@ fun InsightsContent(
                             }
 
                             RiftButton(
-                                text = "View all",
+                                text = stringResource(Res.string.wallet_window_view_all),
                                 type = ButtonType.Secondary,
                                 onClick = { onViewPartyTransactions(item) },
                             )

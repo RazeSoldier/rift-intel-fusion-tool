@@ -47,7 +47,7 @@ import dev.nohus.rift.compose.ToggleButtonType
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.evermarks
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.repositories.StationsRepository
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.multiplyBrightness
@@ -55,6 +55,7 @@ import dev.nohus.rift.wallet.WalletFilters
 import dev.nohus.rift.wallet.WalletViewModel.LoadedData
 import dev.nohus.rift.wallet.WalletViewModel.UiState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LoyaltyPointsContent(
@@ -70,9 +71,9 @@ fun LoyaltyPointsContent(
         if (data.loyaltyPointBalances.isNotEmpty()) {
             var isShowingTotal by remember { mutableStateOf(false) }
             val text = if (isShowingTotal) {
-                "Loyalty points totals from all your characters"
+                stringResource(Res.string.wallet_window_lp_totals)
             } else {
-                "Loyalty points and the closest loyalty point store for each character"
+                stringResource(Res.string.wallet_window_lp_each_character)
             }
             Text(
                 text = text,
@@ -83,14 +84,14 @@ fun LoyaltyPointsContent(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
                 RiftToggleButton(
-                    text = "By character",
+                    text = stringResource(Res.string.wallet_window_by_character),
                     isSelected = !isShowingTotal,
                     type = ToggleButtonType.Left,
                     onClick = { isShowingTotal = false },
                     modifier = Modifier.width(150.dp),
                 )
                 RiftToggleButton(
-                    text = "Total",
+                    text = stringResource(Res.string.wallet_window_total),
                     isSelected = isShowingTotal,
                     type = ToggleButtonType.Right,
                     onClick = { isShowingTotal = true },
@@ -199,12 +200,12 @@ fun LoyaltyPointsContent(
                         item {
                             if (balances.isEmpty()) {
                                 Text(
-                                    text = "No loyalty points",
+                                    text = stringResource(Res.string.wallet_window_no_lp),
                                     style = RiftTheme.typography.bodySecondary,
                                 )
                             } else {
                                 Text(
-                                    text = "No loyalty points matching your search",
+                                    text = stringResource(Res.string.wallet_window_no_lp_match),
                                     style = RiftTheme.typography.bodySecondary,
                                 )
                             }
@@ -214,7 +215,7 @@ fun LoyaltyPointsContent(
             }
         } else {
             Text(
-                text = "No characters with loyalty points",
+                text = stringResource(Res.string.wallet_window_no_lp_character),
                 style = RiftTheme.typography.displaySecondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier

@@ -33,10 +33,14 @@ import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.VerticalGrid
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.multiplyBrightness
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.wallet.WalletRepository
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WalletLoadingProgress(
@@ -53,35 +57,35 @@ fun WalletLoadingProgress(
         when (stage) {
             WalletRepository.LoadingStage.LoadingJournal -> {
                 Text(
-                    text = "Loading transactions…",
+                    text = stringResource(Res.string.wallet_window_loading_transactions),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
 
             WalletRepository.LoadingStage.LoadingDatabase -> {
                 Text(
-                    text = "Processing transactions…",
+                    text = stringResource(Res.string.wallet_window_processing_transactions),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
 
             WalletRepository.LoadingStage.LoadingTypeDetails -> {
                 Text(
-                    text = "Loading transaction details…",
+                    text = stringResource(Res.string.wallet_window_loading_transactions_details),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
 
             WalletRepository.LoadingStage.LoadingDivisionNames -> {
                 Text(
-                    text = "Loading corporation division names…",
+                    text = stringResource(Res.string.wallet_window_loading_corp_division_names),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
 
             WalletRepository.LoadingStage.LoadingBalances -> {
                 Text(
-                    text = "Loading balances…",
+                    text = stringResource(Res.string.wallet_window_loading_balances),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
@@ -123,14 +127,14 @@ fun WalletLoadingProgress(
                                                 val text = if (character.isJournalLoaded) {
                                                     buildAnnotatedString {
                                                         withColor(RiftTheme.colors.textSecondary) {
-                                                            appendLine("${formatNumber(character.loadedJournalItems)} wallet transactions loaded")
-                                                            appendLine("${formatNumber(character.loadedTransactions)} market transactions loaded")
+                                                            appendLine(getStringSync(Res.string.wallet_window_wallet_transactions_loaded, formatNumber(character.loadedJournalItems)))
+                                                            appendLine(getStringSync(Res.string.wallet_window_market_transactions_loaded, formatNumber(character.loadedTransactions)))
                                                         }
                                                     }
                                                 } else {
                                                     buildAnnotatedString {
-                                                        appendLine("${formatNumber(character.loadedJournalItems)} wallet transactions, loading…")
-                                                        appendLine("${formatNumber(character.loadedTransactions)} market transactions, loading…")
+                                                        appendLine(getStringSync(Res.string.wallet_window_wallet_transactions_loading, formatNumber(character.loadedJournalItems)))
+                                                        appendLine(getStringSync(Res.string.wallet_window_market_transactions_loading, formatNumber(character.loadedTransactions)))
                                                     }
                                                 }.trim() as AnnotatedString
                                                 Text(
@@ -170,14 +174,14 @@ fun WalletLoadingProgress(
                                                 val text = if (corpDivision.isJournalLoaded) {
                                                     buildAnnotatedString {
                                                         withColor(RiftTheme.colors.textSecondary) {
-                                                            appendLine("${formatNumber(corpDivision.loadedJournalItems)} wallet transactions loaded")
-                                                            appendLine("${formatNumber(corpDivision.loadedTransactions)} market transactions loaded")
+                                                            appendLine(getStringSync(Res.string.wallet_window_wallet_transactions_loaded, formatNumber(corpDivision.loadedJournalItems)))
+                                                            appendLine(getStringSync(Res.string.wallet_window_market_transactions_loaded, formatNumber(corpDivision.loadedTransactions)))
                                                         }
                                                     }
                                                 } else {
                                                     buildAnnotatedString {
-                                                        appendLine("${formatNumber(corpDivision.loadedJournalItems)} wallet transactions, loading…")
-                                                        appendLine("${formatNumber(corpDivision.loadedTransactions)} market transactions, loading…")
+                                                        appendLine(getStringSync(Res.string.wallet_window_wallet_transactions_loading, formatNumber(corpDivision.loadedJournalItems)))
+                                                        appendLine(getStringSync(Res.string.wallet_window_market_transactions_loading, formatNumber(corpDivision.loadedTransactions)))
                                                     }
                                                 }.trim() as AnnotatedString
                                                 Text(
@@ -199,27 +203,27 @@ fun WalletLoadingProgress(
                 WalletRepository.LoadingStage.LoadingTypeDetails -> {
                     Text(
                         text = buildAnnotatedString {
-                            appendLine("${formatNumber(loading.totalJournalItems)} transactions referencing")
-                            append("${loading.typeDetails.structureIds} structures and stations")
+                            appendLine(getStringSync(Res.string.wallet_window_transactions_referencing, formatNumber(loading.totalJournalItems)))
+                            append(getStringSync(Res.string.wallet_window_structures_stations_count, loading.typeDetails.structureIds))
                             if (loading.typeDetails.isStructuresLoaded) {
-                                appendLine(", done!")
+                                appendLine(getStringSync(Res.string.wallet_window_done))
                             } else {
                                 appendLine("…")
                             }
-                            append("${loading.typeDetails.characterIds} characters")
+                            append(getStringSync(Res.string.wallet_window_character_count, loading.typeDetails.characterIds))
                             if (loading.typeDetails.isCharactersLoaded) {
-                                appendLine(", done!")
+                                appendLine(getStringSync(Res.string.wallet_window_done))
                             } else {
                                 appendLine("…")
                             }
-                            append("${loading.typeDetails.groupIds} corporations and alliances")
+                            append(getStringSync(Res.string.wallet_window_corp_alliance_count, loading.typeDetails.groupIds))
                             if (loading.typeDetails.isGroupsLoaded) {
-                                appendLine(", done!")
+                                appendLine(getStringSync(Res.string.wallet_window_done))
                             } else {
                                 appendLine("…")
                             }
-                            appendLine("${loading.typeDetails.systemIds} systems…")
-                            appendLine("${loading.typeDetails.typeIds} types…")
+                            appendLine(getStringSync(Res.string.wallet_window_corp_systems_count, loading.typeDetails.systemIds))
+                            appendLine(getStringSync(Res.string.wallet_window_corp_types_count, loading.typeDetails.typeIds))
                         }.trim() as AnnotatedString,
                         style = RiftTheme.typography.headerSecondary,
                     )

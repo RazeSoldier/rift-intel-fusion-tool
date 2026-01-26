@@ -32,11 +32,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.wallet_window_day_income
+import dev.nohus.rift.generated.resources.wallet_window_day_expenses
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.wallet.TransactionGroup
 import dev.nohus.rift.wallet.TransferDirection
 import dev.nohus.rift.wallet.WalletViewModel.Segment
+import org.jetbrains.compose.resources.pluralStringResource
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.sqrt
@@ -196,8 +200,8 @@ private fun CenterInfo(
         Spacer(Modifier.height(Spacing.small))
         Text(
             text = when (shownBreakdown) {
-                TransferDirection.Income -> "$days Day${days.plural} Income"
-                TransferDirection.Expense -> "$days Day${days.plural} Expenses"
+                TransferDirection.Income -> pluralStringResource(Res.plurals.wallet_window_day_income, days, days)
+                TransferDirection.Expense -> pluralStringResource(Res.plurals.wallet_window_day_expenses, days, days)
             },
             style = RiftTheme.typography.bodySecondary,
         )

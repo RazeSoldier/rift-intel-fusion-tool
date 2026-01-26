@@ -31,7 +31,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_wallet
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.utils.toggle
 import dev.nohus.rift.wallet.WalletDivisionsRepository
 import dev.nohus.rift.wallet.WalletFilters
@@ -40,6 +40,7 @@ import dev.nohus.rift.wallet.WalletType
 import dev.nohus.rift.wallet.WalletViewModel.LoadedData
 import dev.nohus.rift.wallet.WalletViewModel.UiState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.time.Instant
 
 @Composable
@@ -50,7 +51,7 @@ fun WalletsContent(
 ) {
     Column {
         Text(
-            text = "Choose wallets to filter transactions and insights",
+            text = stringResource(Res.string.wallet_window_choose_wallets),
             style = RiftTheme.typography.bodySecondary,
             modifier = Modifier.padding(bottom = Spacing.medium),
         )
@@ -85,7 +86,7 @@ fun WalletsContent(
                             )
                         }
                     },
-                    name = "All character wallets",
+                    name = stringResource(Res.string.wallet_window_all_character_wallets),
                     isSelected = WalletType.Character in filters,
                     onClick = {
                         val updated = filters

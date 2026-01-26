@@ -19,4 +19,5 @@
         <item quantity="one">[$distance] jump from [$name]</item>
         <item quantity="other">[$distance] jumps from [$name]</item>
     </plurals>
+    <string name="wallet_description">[$prefix] [$transactionNumber] [$transaction] from [$walletNumber] [$wallets][ matching $typeNumber][ $type]</string>
 </resources>

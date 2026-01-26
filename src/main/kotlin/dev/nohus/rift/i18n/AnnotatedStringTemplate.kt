@@ -133,3 +133,7 @@ class AnnotatedStringTemplate(
         }
     }
 }
+
+fun List<AnnotatedStringTemplate.GroupBuilder>.optionGroups(): List<AnnotatedStringTemplate.GroupBuilder> {
+    return filter { it.isOption }
+}
