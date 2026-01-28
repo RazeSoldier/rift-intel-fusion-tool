@@ -149,6 +149,14 @@ class ChatLogWatcher(
                         details = characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, token.type.characterId),
                     ),
                 )
+            } else if (token.type is ChatMessageParser.TokenType.Kill) {
+                token.type.characterId?.let { characterId ->
+                    token.copy(
+                        type = token.type.copy(
+                            details = characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, characterId),
+                        ),
+                    )
+                } ?: token
             } else {
                 token
             }

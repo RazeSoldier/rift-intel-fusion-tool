@@ -44,7 +44,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.about.GetPatronsUseCase.Patron
-import dev.nohus.rift.compose.AsyncPlayerPortrait
+import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
@@ -278,7 +278,7 @@ private fun Patron(patron: Patron, modifier: Modifier = Modifier) {
                 .clip(CircleShape)
                 .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
         ) {
-            AsyncPlayerPortrait(
+            AsyncCharacterPortrait(
                 characterId = patron.characterId,
                 size = 32,
                 modifier = Modifier.size(32.dp),

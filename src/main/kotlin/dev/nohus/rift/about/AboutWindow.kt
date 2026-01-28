@@ -342,14 +342,22 @@ private fun getUpdateDialogText(
     return when (operatingSystem) {
         Linux -> {
             buildAnnotatedString {
-                append(
-                    "If you installed the DEB package, you can update the app with your package manager as normal. " +
-                        "For example you can run ",
-                )
+                append("If you installed the ")
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append("DEB")
+                }
+                append(" package, you can update the app with your package manager as normal. For example you can run ")
                 withColor(RiftTheme.colors.textHighlighted) {
                     append("sudo apt update && sudo apt upgrade")
                 }
                 append(".")
+                appendLine()
+                appendLine()
+                append("If you downloaded the ")
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append("AppImage")
+                }
+                append(", you can either use the AppImageUpdate tool, or just download the new version manually.")
                 appendLine()
                 appendLine()
                 append("If you downloaded the ")

@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.RiftTheme
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 
 @Composable
 fun RiftCircularCharacterPortrait(
@@ -31,13 +32,24 @@ fun RiftCircularCharacterPortrait(
             text = name,
         ) {
             ClickableCharacter(characterId) {
-                AsyncPlayerPortrait(
-                    characterId = characterId,
-                    size = 64,
-                    modifier = Modifier
-                        .size(size)
-                        .clip(CircleShape),
-                )
+                if (characterId != null) {
+                    DynamicCharacterPortraitParallax(
+                        characterId = characterId,
+                        size = size,
+                        enterTimestamp = null,
+                        pointerInteractionStateHolder = null,
+                        modifier = Modifier
+                            .clip(CircleShape),
+                    )
+                } else {
+                    AsyncCharacterPortrait(
+                        characterId = characterId,
+                        size = 64,
+                        modifier = Modifier
+                            .size(size)
+                            .clip(CircleShape),
+                    )
+                }
             }
         }
     }

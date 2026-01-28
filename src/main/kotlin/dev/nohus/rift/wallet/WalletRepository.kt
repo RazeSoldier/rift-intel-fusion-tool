@@ -26,7 +26,6 @@ import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
-import dev.nohus.rift.utils.mapAsync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -49,7 +48,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.skiko.MainUIDispatcher
 import org.koin.core.annotation.Single
-import kotlin.Int
 import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}

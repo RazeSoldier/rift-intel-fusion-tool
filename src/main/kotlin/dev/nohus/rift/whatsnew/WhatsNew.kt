@@ -768,6 +768,17 @@ object WhatsNew {
                 - ESI interactions were updated, which should result in an overall smoother experience, especially under heavy load
                 """.trimIndent(),
             )
+            add(
+                "5.15.0" description """
+                - Using a new computer vision pipeline, RIFT is now able to process character portraits to separate the characters from their backgrounds, allowing to display them in more creative ways
+                - In many places, characters portraits are now shown with a subtle parallax effect
+                - Characters in intel contexts now more clearly show their standings by coloring their portrait backgrounds, which makes it easier to tell friend from foe at a glance
+                - The character portraits are cached and will load much faster for characters you are not seeing for the first time
+                
+                - Significant internal upgrades were made, improving performance and memory use
+                - The Linux release of RIFT is now available as an AppImage, making it very easy run on any distribution
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

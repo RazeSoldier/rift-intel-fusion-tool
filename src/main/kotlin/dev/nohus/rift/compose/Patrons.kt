@@ -83,7 +83,7 @@ private fun Patron(patron: Patron, modifier: Modifier = Modifier) {
                 .clip(CircleShape)
                 .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
         ) {
-            AsyncPlayerPortrait(
+            AsyncCharacterPortrait(
                 characterId = patron.characterId,
                 size = 32,
                 modifier = Modifier.size(32.dp),

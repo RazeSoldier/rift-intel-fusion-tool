@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ClickableAlliance
 import dev.nohus.rift.compose.ClickableCharacter
@@ -42,8 +41,10 @@ import dev.nohus.rift.compose.SystemIllustrationIconSmall
 import dev.nohus.rift.compose.VerticalGrid
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttribute
+import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.DrawableResource
@@ -247,10 +248,11 @@ private fun OpportunityAttributeValuesGrid(
                     type = "Capsuleer",
                     name = value.character?.name ?: "${value.id}",
                     icon = {
-                        AsyncPlayerPortrait(
+                        DynamicCharacterPortraitStandings(
                             characterId = value.id,
-                            size = 32,
-                            modifier = Modifier.size(32.dp),
+                            size = 32.dp,
+                            standingLevel = value.character?.standingLevel ?: Standing.Neutral,
+                            isAnimated = true,
                         )
                     },
                     decorator = {
