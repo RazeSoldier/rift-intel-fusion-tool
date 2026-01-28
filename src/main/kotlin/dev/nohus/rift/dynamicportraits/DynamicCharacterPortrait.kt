@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,10 +33,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import dev.nohus.rift.compose.PointerInteractionStateHolder
+import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength
+import dev.nohus.rift.settings.persistence.CharacterPortraitsStandingsTargets
+import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.getColor
+import dev.nohus.rift.standings.isFriendly
+import dev.nohus.rift.standings.isHostile
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.sqrt
@@ -52,9 +60,15 @@ fun DynamicCharacterPortraitParallax(
     pointerInteractionStateHolder: PointerInteractionStateHolder?,
     modifier: Modifier = Modifier,
 ) {
-    val backgroundSize = size + size / 4
+    val settings: Settings = remember { koin.get() }
+    val parallaxStrength by settings.updateFlow.map { it.characterPortraits.parallaxStrength }.collectAsState(initial = CharacterPortraitsParallaxStrength.Normal)
+    val backgroundSize = if (parallaxStrength == CharacterPortraitsParallaxStrength.None) {
+        size
+    } else {
+        size + size / 4
+    }
     DynamicPortraitContainer(characterId, size, backgroundSize, modifier) { dynamicPortrait ->
-        ParallaxEffect(dynamicPortrait, size, backgroundSize, enterTimestamp, pointerInteractionStateHolder)
+        ParallaxEffect(dynamicPortrait, size, backgroundSize, parallaxStrength, enterTimestamp, pointerInteractionStateHolder)
     }
 }
 
@@ -120,11 +134,18 @@ private fun BoxScope.ParallaxEffect(
     dynamicPortrait: DynamicPortrait,
     size: Dp,
     backgroundSize: Dp,
+    parallaxStrength: CharacterPortraitsParallaxStrength,
     enterTimestamp: Instant?,
     pointerInteractionStateHolder: PointerInteractionStateHolder?,
 ) {
     val portraitEnterOffset = remember { Animatable(-1f) }
-    val loop = rememberSynchronizedAnimationLoop(durationMillis = 8000)
+    val duration = when (parallaxStrength) {
+        CharacterPortraitsParallaxStrength.None -> 8_000
+        CharacterPortraitsParallaxStrength.Reduced -> 16_000
+        CharacterPortraitsParallaxStrength.Normal -> 8_000
+    }
+    val loop = rememberSynchronizedAnimationLoop(durationMillis = duration)
+
     LaunchedEffect(dynamicPortrait, size, backgroundSize, enterTimestamp) {
         if (enterTimestamp == null) {
             portraitEnterOffset.snapTo(0f)
@@ -156,9 +177,11 @@ private fun BoxScope.ParallaxEffect(
         contentDescription = null,
         modifier = Modifier
             .blur(blur)
-            .graphicsLayer {
-                translationX = offsetPx * loop
-                this.alpha = alpha
+            .modifyIf(parallaxStrength != CharacterPortraitsParallaxStrength.None) {
+                graphicsLayer {
+                    translationX = offsetPx * loop
+                    this.alpha = alpha
+                }
             }
             .align(alignment = Alignment.BottomCenter)
             .requiredSize(backgroundSize),
@@ -189,26 +212,41 @@ private fun StandingsEffect(
         modifier = Modifier
             .size(size),
     )
-    val alpha = remember { Animatable(if (isAnimated) 1f else 0.3f) }
-    LaunchedEffect(dynamicPortrait, size, standingLevel, enterTimestamp) {
-        if (isAnimated && Duration.between(enterTimestamp, Instant.now()) < Duration.ofMillis(500)) {
-            alpha.animateTo(0.3f, animationSpec = tween(1000, easing = FastOutSlowInEasing))
-        } else {
-            alpha.snapTo(0.3f)
-        }
+
+    val settings: Settings = remember { koin.get() }
+    val targets by settings.updateFlow.map { it.characterPortraits.standingsTargets }.collectAsState(initial = CharacterPortraitsStandingsTargets.All)
+    val isEnabled = when (targets) {
+        CharacterPortraitsStandingsTargets.All -> true
+        CharacterPortraitsStandingsTargets.OnlyFriendly -> standingLevel.isFriendly
+        CharacterPortraitsStandingsTargets.OnlyHostile -> standingLevel.isHostile
+        CharacterPortraitsStandingsTargets.OnlyNonNeutral -> standingLevel != Standing.Neutral
+        CharacterPortraitsStandingsTargets.None -> false
     }
-    Box(
-        modifier = Modifier
-            .background(
-                Brush.horizontalGradient(
-                    0f to color,
-                    0.3f to color.copy(alpha = alpha.value),
-                    0.7f to color.copy(alpha = alpha.value),
-                    1f to color,
-                ),
-            )
-            .requiredSize(size * sqrt(2f)),
-    )
+    if (isEnabled) {
+        val standingsEffectStrength by settings.updateFlow.map { it.characterPortraits.standingsEffectStrength }.collectAsState(initial = 1f)
+        val alphaTarget = 0.3f
+        val alpha = remember { Animatable(if (isAnimated) 1f else alphaTarget) }
+        LaunchedEffect(dynamicPortrait, size, standingLevel, enterTimestamp, alphaTarget) {
+            if (isAnimated && Duration.between(enterTimestamp, Instant.now()) < Duration.ofMillis(500)) {
+                alpha.animateTo(alphaTarget, animationSpec = tween(1000, easing = FastOutSlowInEasing))
+            } else {
+                alpha.snapTo(alphaTarget)
+            }
+        }
+        Box(
+            modifier = Modifier
+                .background(
+                    Brush.horizontalGradient(
+                        0f to color.copy(alpha = standingsEffectStrength),
+                        0.3f to color.copy(alpha = alpha.value * standingsEffectStrength),
+                        0.7f to color.copy(alpha = alpha.value * standingsEffectStrength),
+                        1f to color.copy(alpha = standingsEffectStrength),
+                    ),
+                )
+                .requiredSize(size * sqrt(2f)),
+        )
+    }
+
     Image(
         bitmap = dynamicPortrait.portrait,
         contentDescription = null,

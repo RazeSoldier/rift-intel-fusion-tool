@@ -279,7 +279,7 @@ private fun AboutWindowContent(
                     )
 
                     Text(
-                        text = "© 2023–2025 Nohus",
+                        text = "© 2023–2026 Nohus",
                         style = RiftTheme.typography.bodySecondary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
@@ -422,12 +422,6 @@ private fun getCreditsText(): AnnotatedString {
             append("smultar")
         }
         append(" for designing the app icon.")
-        appendLine()
-        append("Thanks to ")
-        withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
-            append("Steve Ronuken")
-        }
-        append(" for the SDE conversions.")
         appendLine()
         append("Thanks to ")
         withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {

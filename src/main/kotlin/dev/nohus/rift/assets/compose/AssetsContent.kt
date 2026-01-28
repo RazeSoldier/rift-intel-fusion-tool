@@ -363,9 +363,9 @@ private fun LocationHeader(
                     .fillMaxWidth()
                     .background(RiftTheme.colors.windowBackgroundSecondary)
                     .hoverBackground()
+                    .onClick { onClick() }
                     .padding(vertical = Spacing.small)
-                    .padding(start = depthOffset)
-                    .onClick { onClick() },
+                    .padding(start = depthOffset),
             ) {
                 ExpandChevron(isExpanded = isExpanded)
                 val text = buildAnnotatedString {

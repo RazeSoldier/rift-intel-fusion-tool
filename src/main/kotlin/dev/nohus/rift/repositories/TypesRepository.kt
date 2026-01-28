@@ -28,7 +28,7 @@ class TypesRepository(
         val name: String,
         val volume: Float,
         val radius: Float?,
-        val repackagedVolume: Int?,
+        val repackagedVolume: Float?,
         val iconId: Int,
         val dogmas: Dogmas,
     )

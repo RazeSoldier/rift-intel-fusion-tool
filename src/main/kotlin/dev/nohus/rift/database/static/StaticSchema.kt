@@ -74,7 +74,7 @@ object Types : Table() {
     val typeName = varchar("typeName", 100)
     val volume = float("volume")
     val radius = float("radius").nullable()
-    val repackagedVolume = integer("repackagedVolume").nullable()
+    val repackagedVolume = float("repackagedVolume").nullable()
     val iconId = integer("iconID").nullable()
     override val primaryKey = PrimaryKey(typeId)
 }

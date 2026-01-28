@@ -13,7 +13,7 @@ fun Asset.getTotalPrice(): Double {
 }
 
 fun Asset.getTotalVolume(): Double {
-    val volume = type.repackagedVolume?.toFloat() ?: type.volume
+    val volume = type.repackagedVolume ?: type.volume
     val totalVolume = volume * quantity
     val childrenVolume = children.sumOf { it.getTotalVolume() }
     return totalVolume + childrenVolume

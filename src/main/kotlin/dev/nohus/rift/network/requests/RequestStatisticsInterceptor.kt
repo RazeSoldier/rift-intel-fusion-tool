@@ -73,9 +73,9 @@ class RequestStatisticsInterceptor : Interceptor {
     /**
      * Adds a request to the statistics without intercepting it
      */
-    fun addExternalRequest(originator: Originator, endpoint: Endpoint) = runBlocking {
+    fun addExternalRequest(originator: Originator, endpoint: Endpoint, isSuccess: Boolean) = runBlocking {
         val now = Instant.now()
-        val statisticsResponse = StatisticsResponse(now, isSuccess = true)
+        val statisticsResponse = StatisticsResponse(now, isSuccess)
         val statisticsRequest = StatisticsRequest(endpoint, originator, now, statisticsResponse)
         addRequest(statisticsRequest)
     }

@@ -19,6 +19,7 @@ import dev.nohus.rift.alerts.list.AlertsWindow
 import dev.nohus.rift.assets.AssetsWindow
 import dev.nohus.rift.characters.CharactersWindow
 import dev.nohus.rift.charactersettings.CharacterSettingsWindow
+import dev.nohus.rift.clipboard.ClipboardTestWindow
 import dev.nohus.rift.compose.UiScaleController
 import dev.nohus.rift.configurationpack.ConfigurationPackReminderWindow
 import dev.nohus.rift.contacts.ContactsWindow
@@ -153,6 +154,9 @@ class WindowManager(
         @SerialName("Opportunities")
         Opportunities,
 
+        @SerialName("ClipboardTest")
+        ClipboardTest,
+
         @Deprecated("Removed")
         @SerialName("CorporationProjects")
         CorporationProjects,
@@ -274,6 +278,7 @@ class WindowManager(
                             RiftWindow.Opportunities -> OpportunitiesWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Opportunities, state.uuid) })
                             RiftWindow.InfoDialog -> InfoDialogWindow(state.inputModel as InfoDialogInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.InfoDialog, state.uuid) })
                             RiftWindow.Wallet -> WalletWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Wallet, state.uuid) })
+                            RiftWindow.ClipboardTest -> ClipboardTestWindow(state, onCloseRequest = { onWindowClose(RiftWindow.ClipboardTest, state.uuid) })
                             RiftWindow.CorporationProjects -> {}
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
@@ -418,13 +423,14 @@ class WindowManager(
             RiftWindow.Fleets -> WindowSizing(defaultSize = saved ?: (300 to 300), minimumSize = 300 to 300)
             RiftWindow.PlanetaryIndustry -> WindowSizing(defaultSize = saved ?: (540 to 800), minimumSize = 540 to 360)
             RiftWindow.StartupWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
-            RiftWindow.Push -> WindowSizing(defaultSize = (350 to 435), minimumSize = 350 to 435)
+            RiftWindow.Push -> WindowSizing(defaultSize = (350 to 445), minimumSize = 350 to 445)
             RiftWindow.Contacts -> WindowSizing(defaultSize = saved ?: (650 to 600), minimumSize = 650 to 600)
             RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
             RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.CorporationProjects -> WindowSizing(defaultSize = saved ?: (800 to 900), minimumSize = 540 to 700)
             RiftWindow.Opportunities -> WindowSizing(defaultSize = saved ?: (1400 to 930), minimumSize = 600 to 700)
+            RiftWindow.ClipboardTest -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.InfoDialog -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Wallet -> WindowSizing(defaultSize = saved ?: (800 to 600), minimumSize = 800 to 500)
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)

@@ -89,6 +89,8 @@ data class SettingsModel(
     val preferredExternalServices2: List<ExternalService> = emptyList(),
     val corpWalletDivisionNames: Map<Int, Map<Int, String>> = emptyMap(),
     val newVersionSeenTimestamp: Long? = null,
+    val characterPortraits: CharacterPortraits = CharacterPortraits(),
+    val isZkillboardMonitoringEnabled: Boolean = true,
 )
 
 @Serializable
@@ -222,7 +224,7 @@ data class SsoAuthentication(
 @Serializable
 data class IntelChannel(
     val name: String,
-    val region: String,
+    val region: String?,
 )
 
 @Serializable
@@ -413,4 +415,27 @@ enum class ExternalService {
     NewEdenEncyclopedia,
     Dotlan,
     Anoikis,
+}
+
+@Serializable
+data class CharacterPortraits(
+    val standingsEffectStrength: Float = 1f,
+    val standingsTargets: CharacterPortraitsStandingsTargets = CharacterPortraitsStandingsTargets.OnlyNonNeutral,
+    val parallaxStrength: CharacterPortraitsParallaxStrength = CharacterPortraitsParallaxStrength.Normal,
+)
+
+@Serializable
+enum class CharacterPortraitsStandingsTargets {
+    All,
+    OnlyFriendly,
+    OnlyHostile,
+    OnlyNonNeutral,
+    None,
+}
+
+@Serializable
+enum class CharacterPortraitsParallaxStrength {
+    None,
+    Reduced,
+    Normal,
 }
