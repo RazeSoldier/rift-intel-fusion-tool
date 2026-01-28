@@ -24,7 +24,9 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.Cursors
+import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.multicolor_checkmark
 import dev.nohus.rift.generated.resources.multicolor_circlebg
 import dev.nohus.rift.generated.resources.multicolor_exclamationmark
 import dev.nohus.rift.generated.resources.multicolor_info
@@ -50,6 +52,13 @@ sealed class MulticolorIconType(
         foregroundResource = Res.drawable.multicolor_exclamationmark,
         backgroundTint = Color(0xFFF39058),
         foregroundTint = null,
+    )
+
+    data object Check : MulticolorIconType(
+        backgroundResource = Res.drawable.multicolor_checkmark,
+        foregroundResource = Res.drawable.multicolor_checkmark,
+        backgroundTint = EveColors.successGreen,
+        foregroundTint = EveColors.successGreen,
     )
 }
 

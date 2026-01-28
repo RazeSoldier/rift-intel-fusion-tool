@@ -47,6 +47,7 @@ enum class ToggleButtonState {
 
 enum class ToggleButtonType {
     Left,
+    Middle,
     Right,
 }
 
@@ -163,6 +164,7 @@ private fun createButtonShape(type: ToggleButtonType): Shape {
             val cutoutSmallSize = with(density) { 2.dp.toPx() }
             val path = when (type) {
                 ToggleButtonType.Left -> createLeftButtonPath(size, cutoutSize, cutoutSmallSize)
+                ToggleButtonType.Middle -> createMiddleButtonPath(size, cutoutSize, cutoutSmallSize)
                 ToggleButtonType.Right -> createRightButtonPath(size, cutoutSize, cutoutSmallSize)
             }
             return Outline.Generic(path)
@@ -196,6 +198,24 @@ private fun createRightButtonPath(size: Size, cutoutSize: Float, cutoutSmallSize
         lineTo(0f, size.height)
         lineTo(size.width - cutoutSize, size.height)
         lineTo(size.width, size.height - cutoutSize)
+        close()
+    }
+}
+
+private fun createMiddleButtonPath(size: Size, cutoutSize: Float, cutoutSmallSize: Float): Path {
+    return Path().apply {
+        moveTo(0f, 0f)
+        lineTo(size.width, 0f)
+        lineTo(size.width, cutoutSize)
+        lineTo(size.width - cutoutSmallSize, cutoutSize + cutoutSmallSize)
+        lineTo(size.width - cutoutSmallSize, size.height - cutoutSize - cutoutSmallSize)
+        lineTo(size.width, size.height - cutoutSize)
+        lineTo(size.width, size.height)
+        lineTo(0f, size.height)
+        lineTo(0f, size.height - cutoutSize)
+        lineTo(cutoutSmallSize, size.height - cutoutSize - cutoutSmallSize)
+        lineTo(cutoutSmallSize, cutoutSize + cutoutSmallSize)
+        lineTo(0f, cutoutSize)
         close()
     }
 }

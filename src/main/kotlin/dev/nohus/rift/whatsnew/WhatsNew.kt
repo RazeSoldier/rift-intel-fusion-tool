@@ -779,6 +779,14 @@ object WhatsNew {
                 - The Linux release of RIFT is now available as an AppImage, making it very easy run on any distribution
                 """.trimIndent(),
             )
+            add(
+                "5.16.0" description """
+                - Added new settings for character portraits, allowing to change the strength of the background parallax effect, choose when to highlight backgrounds for standings, and the intensity of the highlights
+                - Added an option to add an intel channel that isn't specific to any region
+                - Added an option to turn off zKillboard killmail monitoring
+                - Added a Clipboard Import Tester in Settings, to troubleshoot importing jump bridges and sovereignty upgrades, and see if the format is correct, or why it isn't
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

@@ -200,6 +200,6 @@ class ChatLogWatcher(
     }
 
     private fun getIntelRegions(message: ChannelChatMessage): List<String> {
-        return settings.intelChannels.filter { it.name == message.metadata.channelName }.map { it.region }
+        return settings.intelChannels.filter { it.name == message.metadata.channelName }.mapNotNull { it.region }
     }
 }

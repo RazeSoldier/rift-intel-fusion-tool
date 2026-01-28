@@ -13,6 +13,7 @@ import org.bytedeco.opencv.global.opencv_imgcodecs.IMREAD_UNCHANGED
 import org.bytedeco.opencv.global.opencv_imgcodecs.imdecode
 import org.bytedeco.opencv.opencv_core.Mat
 import org.koin.core.annotation.Single
+import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
 
@@ -73,7 +74,12 @@ class DynamicPortraitRepository(
      * Loads a portrait image from the image server to a Mat
      */
     private suspend fun getPortraitFromImageServer(characterId: Int): Mat? {
-        val portraitBytes = imageServer.getCharacterPortraitOpenCv(Originator.DataPreloading, imageSize, characterId) ?: return null
+        val portraitBytes = try {
+            imageServer.getCharacterPortraitOpenCv(Originator.DataPreloading, imageSize, characterId) ?: return null
+        } catch (e: IOException) {
+            logger.error { "Failed to download portrait for character $characterId: ${e.message}" }
+            return null
+        }
         return withContext(Dispatchers.Default) {
             val bytePointer = BytePointer(*portraitBytes)
             val buf = Mat(1, portraitBytes.size, CV_8UC1, bytePointer)
