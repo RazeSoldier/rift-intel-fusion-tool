@@ -8,6 +8,7 @@ import dev.nohus.rift.settings.persistence.ConfigurationPack.TheInitiative
 import dev.nohus.rift.settings.persistence.IntelChannel
 import dev.nohus.rift.settings.persistence.Settings
 import org.koin.core.annotation.Single
+import java.time.LocalDate
 
 @Single
 class ConfigurationPackRepository(
@@ -58,9 +59,11 @@ class ConfigurationPackRepository(
                 99010877, // Out of the Blue.
                 99010931, // WE FORM BL0B
             )
+
             TheInitiative -> listOf(
                 1900696668, // The Initiative.
             )
+
             PhoenixCoalition -> listOf(
                 99002685, // Synergy of Steel
                 741557221, // Razor Alliance
@@ -78,6 +81,7 @@ class ConfigurationPackRepository(
                 99013759, // Imurukka Conglomerate
                 99012410, // DECOY
             )
+
             null -> emptyList()
         }
     }
@@ -110,6 +114,7 @@ class ConfigurationPackRepository(
                     IntelChannel("triangle.imperium", "Pochven"),
                 ),
             )
+
             TheInitiative -> SuggestedIntelChannels(
                 promptTitleText = "Would you like intel channels of The Initiative. to be configured automatically?",
                 promptButtonText = "Add Init channels",
@@ -122,15 +127,16 @@ class ConfigurationPackRepository(
                     IntelChannel("I. C Ring Intel", "Cloud Ring"),
                 ),
             )
+
             PhoenixCoalition -> SuggestedIntelChannels(
                 promptTitleText = "Would you like intel channels of the Phoenix Coalition to be configured automatically?",
                 promptButtonText = "Add Phoenix Coalition channels",
                 channels = listOf(
-                    IntelChannel("Phoenix_Intel", "Fade"),
-                    IntelChannel("Phoenix_Intel", "Cloud Ring"),
-                    IntelChannel("Phoenix_Intel", "Pure Blind"),
+                    IntelChannel("Phoenix_Intel", "Delve"),
+                    IntelChannel("Phoenix_Intel", "Querious"),
                 ),
             )
+
             null -> null
         }
     }
@@ -144,11 +150,33 @@ class ConfigurationPackRepository(
         }
     }
 
-    fun getJumpBridgeNetworkUrl(): String? {
+    sealed class JumpBridgesReference(open val packName: String) {
+        data class Url(override val packName: String, val url: String) : JumpBridgesReference(packName)
+        data class Text(override val packName: String, val text: String, val date: LocalDate) :
+            JumpBridgesReference(packName)
+    }
+
+    fun getJumpBridges(): JumpBridgesReference? {
         return when (settings.configurationPack) {
-            Imperium -> "https://wiki.goonswarm.org/w/Alliance:Stargate"
+            Imperium -> JumpBridgesReference.Url(
+                packName = "The Imperium",
+                url = "https://wiki.goonswarm.org/w/Alliance:Stargate",
+            )
             TheInitiative -> null
-            PhoenixCoalition -> "https://auth.synergyofsteel.de/wiki/willkommen/"
+            PhoenixCoalition -> JumpBridgesReference.Text(
+                packName = "Phoenix Coalition",
+                text = """
+                W-KQPI -> F2OY-X
+                E3OI-U -> 4O-239
+                D-3GIQ -> RF-K9W
+                K-6K16 -> 5V-BJI
+                QY6-RK -> 6Z-CKS
+                F-TE1T -> CX8-6K
+                AJI-MA -> A-BO4V
+                """.trimIndent(),
+                date = LocalDate.of(2026, 1, 28),
+            )
+
             null -> null
         }
     }

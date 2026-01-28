@@ -39,6 +39,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
@@ -73,6 +74,7 @@ import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.displayName
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
@@ -95,6 +97,7 @@ import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.utils.OperatingSystem.MacOs
+import dev.nohus.rift.utils.formatDate
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.toURIOrNull
@@ -1164,39 +1167,52 @@ private fun JumpBridgeNetworkSection(
                                         .padding(top = Spacing.medium),
                                 ) {
                                     Text("Import jump bridges by copying a list to clipboard")
-                                    if (state.jumpBridgeNetworkUrl != null) {
-                                        Text("You can press Ctrl+A, Ctrl+C on this page:")
-                                        LinkText(
-                                            text = "Alliance Jump Bridge List",
-                                            onClick = { state.jumpBridgeNetworkUrl.toURIOrNull()?.openBrowser() },
-                                        )
-                                    } else {
-                                        val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
-                                        RiftTooltipArea(
-                                            text = buildAnnotatedString {
-                                                appendLine("Any format will work as long as there are\ntwo system names somewhere in each line:")
-                                                appendLine()
-                                                withColor(RiftTheme.colors.textHighlighted) {
-                                                    appendLine("Jita -> Perimeter")
-                                                    appendLine("New Caldari -> Alikara")
-                                                    append("Hirtamon -> Ikuchi")
-                                                }
-                                            },
-                                        ) {
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                                modifier = Modifier
-                                                    .pointerInteraction(pointerInteractionStateHolder)
-                                                    .padding(vertical = Spacing.small),
+                                    when (state.jumpBridgesReference) {
+                                        is ConfigurationPackRepository.JumpBridgesReference.Url -> {
+                                            Text("You can press Ctrl+A, Ctrl+C on this page:")
+                                            LinkText(
+                                                text = "${state.jumpBridgesReference.packName} Jump Bridge List",
+                                                onClick = { state.jumpBridgesReference.url.toURIOrNull()?.openBrowser() },
+                                            )
+                                        }
+                                        is ConfigurationPackRepository.JumpBridgesReference.Text -> {
+                                            Text(
+                                                text = "A list of jump bridges for ${state.jumpBridgesReference.packName} from ${formatDate(state.jumpBridgesReference.date)} is available",
+                                                textAlign = TextAlign.Center,
+                                            )
+                                            LinkText(
+                                                text = "Click to use it",
+                                                onClick = { Clipboard.copy(state.jumpBridgesReference.text) },
+                                            )
+                                        }
+                                        null -> {
+                                            val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
+                                            RiftTooltipArea(
+                                                text = buildAnnotatedString {
+                                                    appendLine("Any format will work as long as there are\ntwo system names somewhere in each line:")
+                                                    appendLine()
+                                                    withColor(RiftTheme.colors.textHighlighted) {
+                                                        appendLine("Jita -> Perimeter")
+                                                        appendLine("New Caldari -> Alikara")
+                                                        append("Hirtamon -> Ikuchi")
+                                                    }
+                                                },
                                             ) {
-                                                Text(
-                                                    text = "Format info",
-                                                    style = RiftTheme.typography.bodySecondary,
-                                                )
-                                                RiftMulticolorIcon(
-                                                    type = MulticolorIconType.Info,
-                                                    parentPointerInteractionStateHolder = pointerInteractionStateHolder,
-                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                                    modifier = Modifier
+                                                        .pointerInteraction(pointerInteractionStateHolder)
+                                                        .padding(vertical = Spacing.small),
+                                                ) {
+                                                    Text(
+                                                        text = "Format info",
+                                                        style = RiftTheme.typography.bodySecondary,
+                                                    )
+                                                    RiftMulticolorIcon(
+                                                        type = MulticolorIconType.Info,
+                                                        parentPointerInteractionStateHolder = pointerInteractionStateHolder,
+                                                    )
+                                                }
                                             }
                                         }
                                     }

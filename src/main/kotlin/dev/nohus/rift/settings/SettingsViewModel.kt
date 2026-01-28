@@ -7,6 +7,7 @@ import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
+import dev.nohus.rift.configurationpack.ConfigurationPackRepository.JumpBridgesReference
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
@@ -99,7 +100,7 @@ class SettingsViewModel(
         val isUsingRiftAutopilotRoute: Boolean,
         val jumpBridgeNetwork: List<JumpBridgeConnection>,
         val jumpBridgeCopyState: JumpBridgeCopyState,
-        val jumpBridgeNetworkUrl: String?,
+        val jumpBridgesReference: JumpBridgesReference?,
         val jumpBridgeSearchState: JumpBridgeSearchState,
         val isJumpBridgeSearchDialogShown: Boolean,
         val sovereigntyUpgradesCopyState: SovereigntyUpgradesCopyState,
@@ -172,7 +173,7 @@ class SettingsViewModel(
             isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
             jumpBridgeNetwork = jumpBridgesRepository.getConnections(),
             jumpBridgeCopyState = JumpBridgeCopyState.NotCopied,
-            jumpBridgeNetworkUrl = configurationPackRepository.getJumpBridgeNetworkUrl(),
+            jumpBridgesReference = configurationPackRepository.getJumpBridges(),
             jumpBridgeSearchState = JumpBridgeSearchState.NotSearched,
             isJumpBridgeSearchDialogShown = false,
             sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.NotCopied,
