@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.BorderedToken
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.ContextMenuItem.CheckboxItem
-import dev.nohus.rift.compose.ContextMenuItem.HeaderItem
 import dev.nohus.rift.compose.IntelTimer
 import dev.nohus.rift.compose.LocalNow
 import dev.nohus.rift.compose.PointerInteractionState

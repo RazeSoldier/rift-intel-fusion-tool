@@ -46,7 +46,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.assets.PlanetaryIndustryCommoditiesRepository
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.modifyIf
@@ -57,6 +56,7 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.pi_disc_shadow
 import dev.nohus.rift.generated.resources.pi_ecu_top
@@ -145,10 +145,11 @@ fun ColonyPlanetSnippet(
                     .clip(CircleShape)
                     .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
             ) {
-                AsyncPlayerPortrait(
+                DynamicCharacterPortraitParallax(
                     characterId = colony.characterId,
-                    size = 32,
-                    modifier = Modifier.size(32.dp),
+                    size = 32.dp,
+                    enterTimestamp = null,
+                    pointerInteractionStateHolder = null,
                 )
             }
         }

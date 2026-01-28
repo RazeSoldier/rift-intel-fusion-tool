@@ -126,7 +126,7 @@ fun AsyncTypeIcon(
  * Shows a portrait of an EVE Online character
  */
 @Composable
-fun AsyncPlayerPortrait(
+fun AsyncCharacterPortrait(
     characterId: Int?,
     size: Int,
     modifier: Modifier = Modifier,

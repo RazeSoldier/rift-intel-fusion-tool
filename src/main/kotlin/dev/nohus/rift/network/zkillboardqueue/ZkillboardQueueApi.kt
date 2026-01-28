@@ -1,6 +1,5 @@
 package dev.nohus.rift.network.zkillboardqueue
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.requests.Reply
@@ -11,6 +10,7 @@ import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 @Single
 class ZkillboardQueueApi(

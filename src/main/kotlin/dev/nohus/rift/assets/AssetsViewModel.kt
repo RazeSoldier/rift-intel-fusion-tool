@@ -16,12 +16,12 @@ import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.PricesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
-import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.LocationPinStatus
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.utils.openBrowser
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
+
+private val logger = KotlinLogging.logger {}
 
 @Factory
 class AssetsViewModel(
@@ -118,24 +120,24 @@ class AssetsViewModel(
         ),
     )
     val state = _state.asStateFlow()
-    private val updateAssetsFlow = MutableSharedFlow<Unit>()
+    private val reloadRequest = MutableStateFlow(false)
 
     private val isProcessing = MutableStateFlow(false)
 
     init {
         viewModelScope.launch {
             assetsRepository.state.map { it.loadedState }.distinctUntilChanged().collect {
-                updateAssetsFlow.emit(Unit)
+                reloadRequest.value = true
             }
         }
         viewModelScope.launch {
             activeCharacterRepository.activeCharacter.collect {
-                updateAssetsFlow.emit(Unit)
+                reloadRequest.value = true
             }
         }
         viewModelScope.launch {
             characterLocationRepository.locations.collect {
-                updateAssetsFlow.emit(Unit)
+                reloadRequest.value = true
             }
         }
         viewModelScope.launch {
@@ -144,7 +146,8 @@ class AssetsViewModel(
             }
         }
         viewModelScope.launch {
-            updateAssetsFlow.collectLatest {
+            reloadRequest.filter { it }.collect {
+                reloadRequest.value = false
                 isProcessing.value = true
                 updateAssets()
                 isProcessing.value = false
@@ -185,7 +188,7 @@ class AssetsViewModel(
 
     fun onFiltersUpdate(filters: AssetsFilters) {
         _state.update { it.copy(filters = filters) }
-        updateAssetsFlow.scopedEmit(Unit)
+        reloadRequest.value = true
     }
 
     fun onFitAction(fitting: Fitting, action: FitAction) {
@@ -199,7 +202,7 @@ class AssetsViewModel(
     fun onPinChange(locationId: Long, pinStatus: LocationPinStatus) {
         settings.assetLocationPins += locationId to pinStatus
         _state.update { it.copy(pins = it.pins + (locationId to pinStatus)) }
-        updateAssetsFlow.scopedEmit(Unit)
+        reloadRequest.value = true
     }
 
     private suspend fun updateAssets() {

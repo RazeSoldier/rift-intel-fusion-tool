@@ -672,7 +672,7 @@ class ChatMessageParserTest : FreeSpec({
         }
         val oneSmeb: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("KQK", listOf("Delve")) } returns kqk
-        every { mockSolarSystemsRepository.getRegion(0) } returns MapRegion(0, "Pure Blind", 0.0, 0.0, 0.0)
+        every { mockSolarSystemsRepository.getRegion(0) } returns MapRegion(0, "Pure Blind", 0.0, 0.0, 0.0, 0.0, 0.0)
         every { mockSolarSystemsRepository.getFuzzySystem("1-SMEB", listOf("Delve")) } returns oneSmeb
 
         val actual = target.parse("KQK  1-SMEB", listOf("Delve"))
@@ -690,7 +690,7 @@ class ChatMessageParserTest : FreeSpec({
         }
         val oneSmeb: MapSolarSystem = mockk()
         every { mockSolarSystemsRepository.getFuzzySystem("KQK", listOf("Delve")) } returns kqk
-        every { mockSolarSystemsRepository.getRegion(0) } returns MapRegion(0, "Delve", 0.0, 0.0, 0.0)
+        every { mockSolarSystemsRepository.getRegion(0) } returns MapRegion(0, "Delve", 0.0, 0.0, 0.0, 0.0, 0.0)
         every { mockSolarSystemsRepository.getFuzzySystem("1-SMEB", listOf("Delve")) } returns oneSmeb
 
         val actual = target.parse("KQK  1-SMEB", listOf("Delve"))

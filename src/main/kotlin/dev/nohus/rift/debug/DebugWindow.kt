@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftCheckboxWithLabel
 import dev.nohus.rift.compose.RiftProgressBar
@@ -61,6 +60,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.debug.DebugViewModel.DebugTab
 import dev.nohus.rift.debug.DebugViewModel.UiState
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_log
 import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor.BucketKey
@@ -383,12 +383,13 @@ private fun DebugWindowContent(
                                         RiftTooltipArea(
                                             text = "Bucket for this character",
                                         ) {
-                                            AsyncPlayerPortrait(
+                                            DynamicCharacterPortraitParallax(
                                                 characterId = bucketKey.character.id,
-                                                size = 32,
+                                                size = 32.dp,
+                                                enterTimestamp = null,
+                                                pointerInteractionStateHolder = null,
                                                 modifier = Modifier
-                                                    .border(1.dp, RiftTheme.colors.borderGreyLight)
-                                                    .size(32.dp),
+                                                    .border(1.dp, RiftTheme.colors.borderGreyLight),
                                             )
                                         }
                                     } else {

@@ -28,7 +28,6 @@ import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
 import dev.nohus.rift.network.esi.models.FactionWarfareSystem
 import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
-import dev.nohus.rift.network.esi.models.FreelanceJob
 import dev.nohus.rift.network.esi.models.FreelanceJobs
 import dev.nohus.rift.network.esi.models.FreelanceJobsId
 import dev.nohus.rift.network.esi.models.GetCharactersFreelanceJobsParticipation
@@ -61,7 +60,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path

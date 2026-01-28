@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.keywords_combat_probe
 import dev.nohus.rift.generated.resources.keywords_ess
@@ -56,6 +57,7 @@ import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.toURIOrNull
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import java.time.Instant
 
 @Composable
 fun SystemEntities(
@@ -218,7 +220,7 @@ fun SystemEntities(
             .sortedWith(compareBy({ it.details.allianceId }, { it.details.corporationId }))
             .forEach { character ->
                 SystemEntityInfoRow(rowHeight, isHorizontal) {
-                    CharacterDetails(character.details, rowHeight)
+                    CharacterDetails(character.details, rowHeight, isAnimated = true)
                 }
             }
     }
@@ -270,6 +272,7 @@ private fun CharactersPortraits(
 ) {
     Row {
         if (characters.size > 3) {
+            val enterTimestamp = remember { Instant.now() }
             InfiniteScrollingCarousel(
                 items = characters,
                 delay = 2_000,
@@ -279,11 +282,12 @@ private fun CharactersPortraits(
                     RiftTooltipArea(
                         text = character.name,
                     ) {
-                        AsyncPlayerPortrait(
+                        DynamicCharacterPortraitStandings(
                             characterId = character.characterId,
-                            size = 32,
-                            withAnimatedLoading = false,
-                            modifier = Modifier.size(rowHeight),
+                            size = rowHeight,
+                            standingLevel = character.standingLevel,
+                            enterTimestamp = enterTimestamp,
+                            isAnimated = true,
                         )
                     }
                 }
@@ -295,10 +299,12 @@ private fun CharactersPortraits(
                         RiftTooltipArea(
                             text = character.name,
                         ) {
-                            AsyncPlayerPortrait(
+                            val now = remember(character.characterId) { Instant.now() }
+                            DynamicCharacterPortraitStandings(
                                 characterId = character.characterId,
-                                size = 32,
-                                modifier = Modifier.size(rowHeight),
+                                size = rowHeight,
+                                standingLevel = character.standingLevel,
+                                isAnimated = true,
                             )
                         }
                     }

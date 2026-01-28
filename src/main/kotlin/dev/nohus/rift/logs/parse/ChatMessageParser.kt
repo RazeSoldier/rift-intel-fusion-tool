@@ -66,6 +66,7 @@ class ChatMessageParser(
         data class Kill(
             val name: String,
             val characterId: Int?,
+            val details: CharacterDetails? = null,
             val target: String,
         ) : TokenType
         data object Url : TokenType
@@ -320,7 +321,7 @@ class ChatMessageParser(
                 val target = t3.words.joinToString(" ").removePrefix("(").removeSuffix(")")
                 val words = threeTokens.flatMap { it.words }
                 val characterId = (characterNamesStatus[player] as? CharacterStatus.Exists)?.characterId
-                tokens.dropLast(3) + MultiTypeToken(words, types = listOf(Kill(player, characterId, target)))
+                tokens.dropLast(3) + MultiTypeToken(words, types = listOf(Kill(player, characterId, null, target)))
             } else {
                 tokens
             }

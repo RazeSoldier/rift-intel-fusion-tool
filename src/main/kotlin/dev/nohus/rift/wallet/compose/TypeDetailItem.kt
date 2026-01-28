@@ -47,7 +47,7 @@ fun TypeDetailItem(
     BorderedToken(rowHeight) {
         when (type) {
             is TypeDetail.Character -> {
-                CharacterDetails(type.character, rowHeight)
+                CharacterDetails(type.character, rowHeight, isAnimated = false)
             }
 
             is TypeDetail.Corporation -> {

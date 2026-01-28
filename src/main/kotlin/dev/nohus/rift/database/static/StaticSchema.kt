@@ -147,3 +147,8 @@ object TypeDogmas : Table() {
     val typeId = integer("typeId")
     val entityOverviewShipGroupId = integer("entityOverviewShipGroupId").nullable()
 }
+
+object Backdrops : Table() {
+    val name = varchar("name", 100)
+    val bytes = binary("values")
+}

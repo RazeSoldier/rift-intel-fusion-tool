@@ -8,14 +8,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.standings.getColor
+import java.time.Instant
 
 /**
  * Character with full interactive details
@@ -25,15 +28,19 @@ import dev.nohus.rift.standings.getColor
 fun RowScope.CharacterDetails(
     character: CharacterDetailsRepository.CharacterDetails,
     rowHeight: Dp,
+    isAnimated: Boolean,
 ) {
     ClickableCharacter(character.characterId) {
         RiftTooltipArea(
             text = character.name,
         ) {
-            AsyncPlayerPortrait(
+            val now = remember(character.characterId) { Instant.now() }
+            DynamicCharacterPortraitStandings(
                 characterId = character.characterId,
-                size = 32,
-                modifier = Modifier.size(rowHeight),
+                size = rowHeight,
+                standingLevel = character.standingLevel,
+                isAnimated = isAnimated,
+                enterTimestamp = now,
             )
         }
     }

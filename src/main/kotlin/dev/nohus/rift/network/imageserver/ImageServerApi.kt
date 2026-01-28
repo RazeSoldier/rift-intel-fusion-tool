@@ -23,8 +23,19 @@ class ImageServerApi(
         .build()
     private val service = retrofit.create(ImageServerService::class.java)
 
-    suspend fun getCharacterPortrait(originator: Originator, characterId: Int): Response<Void> {
-        return service.getCharacterPortrait(originator, characterId)
+    suspend fun headCharacterPortrait(originator: Originator, characterId: Int): Response<Void> {
+        return service.headCharacterPortrait(originator, characterId)
+    }
+
+    suspend fun getCharacterPortrait(originator: Originator, size: Int, characterId: Int): BufferedImage? {
+        val bytes = service.getCharacterPortrait(originator, characterId, size).body()?.bytes() ?: return null
+        return withContext(Dispatchers.IO) {
+            ImageIO.read(ByteArrayInputStream(bytes))
+        }
+    }
+
+    suspend fun getCharacterPortraitOpenCv(originator: Originator, size: Int, characterId: Int): ByteArray? {
+        return service.getCharacterPortrait(originator, characterId, size).body()?.bytes()
     }
 
     suspend fun getAllianceLogo(originator: Originator, allianceId: Int, size: Int): BufferedImage? {
