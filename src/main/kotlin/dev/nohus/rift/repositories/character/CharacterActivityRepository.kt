@@ -51,7 +51,7 @@ class CharacterActivityRepository(
 
     private suspend fun getPortraitEtag(originator: Originator, characterId: Int): String? {
         try {
-            val response = imageServerApi.getCharacterPortrait(originator, characterId)
+            val response = imageServerApi.headCharacterPortrait(originator, characterId)
             return response.takeIf { it.isSuccessful }?.headers()?.get("etag")
         } catch (e: IOException) {
             logger.error(e) { "Unable to get portrait etag" }

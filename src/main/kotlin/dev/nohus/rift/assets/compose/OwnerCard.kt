@@ -4,7 +4,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,36 +21,23 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.PointerInteractionStateHolder
-import dev.nohus.rift.compose.RiftImageButton
-import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.fadingRightEdge
 import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
-import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.checkmark_16px
-import dev.nohus.rift.generated.resources.editplanicon
-import dev.nohus.rift.utils.formatIsk
-import dev.nohus.rift.utils.formatIskReadable
 import dev.nohus.rift.utils.multiplyBrightness
 
 @Composable
@@ -61,8 +47,8 @@ fun OwnerCard(
     isSelected: Boolean,
     onClick: () -> Unit,
     text: String,
+    pointerInteractionStateHolder: PointerInteractionStateHolder = rememberPointerInteractionStateHolder(),
 ) {
-    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     OwnerCardBox(pointerInteractionStateHolder, isSelected, onClick) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),

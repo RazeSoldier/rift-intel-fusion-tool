@@ -22,6 +22,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.collections.map
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
 private val logger = KotlinLogging.logger {}
@@ -39,6 +41,7 @@ class ZkillboardObserver(
     private val queueId = UUID.randomUUID().toString()
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
     private var maxAge: Duration = Duration.ofMinutes(5)
+    private var isEnabled: Boolean = settings.isZkillboardMonitoringEnabled
     private var esiRedirectRegex = """https://esi\.evetech\.net/killmails/(\d+)/([\da-f]+)""".toRegex()
 
     suspend fun start() = coroutineScope {
@@ -47,10 +50,17 @@ class ZkillboardObserver(
                 maxAge = Duration.ofSeconds(it.toLong())
             }
         }
+        launch {
+            settings.updateFlow.map { it.isZkillboardMonitoringEnabled }.collect { isEnabled = it }
+        }
 
         launch {
             val clock = TimeSource.Monotonic
             while (true) {
+                if (!isEnabled) {
+                    delay(10.seconds)
+                    continue
+                }
                 try {
                     val startTime = clock.markNow()
                     val fromDate = dateFormatter.format(Instant.now() - maxAge)

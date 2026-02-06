@@ -27,11 +27,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import org.koin.core.annotation.Single
 import kotlin.time.Duration.Companion.minutes
 
@@ -67,7 +69,7 @@ class AssetsRepository(
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
-    private val reloadFlow = MutableSharedFlow<Unit>()
+    private val reloadRequest = MutableStateFlow(false)
     private val loadingMutex = Mutex()
     private var isRealtime = false
 
@@ -76,22 +78,27 @@ class AssetsRepository(
         launch {
             while (true) {
                 delay(1.minutes)
-                if (isRealtime) reloadFlow.emit(Unit)
+                if (isRealtime) {
+                    reloadRequest.value = false
+                    yield()
+                    reloadRequest.value = true
+                }
             }
         }
         launch {
             while (true) {
                 delay(15.minutes)
-                reloadFlow.emit(Unit)
+                reloadRequest.value = true
             }
         }
         launch {
             localCharactersRepository.characters.debounce(500).collect {
-                reloadFlow.emit(Unit)
+                reloadRequest.value = true
             }
         }
         launch {
-            reloadFlow.collectLatest {
+            reloadRequest.filter { it }.collect {
+                reloadRequest.value = false
                 load()
             }
         }
@@ -161,15 +168,12 @@ class AssetsRepository(
         val unresolveableIds: List<Long>,
     )
 
-    suspend fun reload() {
-        if (!loadingMutex.isLocked) reloadFlow.emit(Unit)
+    fun reload() {
+        if (!loadingMutex.isLocked) reloadRequest.value = true
     }
 
-    suspend fun setNeedsRealtimeUpdates(isRealtime: Boolean) {
+    fun setNeedsRealtimeUpdates(isRealtime: Boolean) {
         this.isRealtime = isRealtime
-        if (isRealtime) {
-            reloadFlow.emit(Unit)
-        }
     }
 
     private suspend fun load() = withContext(Dispatchers.Default) {

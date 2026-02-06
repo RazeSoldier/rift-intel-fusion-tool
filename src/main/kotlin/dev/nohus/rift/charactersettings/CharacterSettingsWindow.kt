@@ -33,7 +33,6 @@ import dev.nohus.rift.charactersettings.CharacterSettingsViewModel.CharacterItem
 import dev.nohus.rift.charactersettings.CharacterSettingsViewModel.CopyingState
 import dev.nohus.rift.charactersettings.CharacterSettingsViewModel.UiState
 import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RequirementIcon
@@ -50,6 +49,7 @@ import dev.nohus.rift.compose.getRelativeTime
 import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.copy_16px
 import dev.nohus.rift.generated.resources.editplanicon
@@ -328,13 +328,12 @@ private fun CharacterSettingsWindowContent(
                             }
                         }
                     }
-                    characters.sortedBy { it.characterId }.forEach { character ->
+                    characters.sortedBy { it.characterId }.forEachIndexed { index, character ->
                         item(key = character) {
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(Spacing.small),
                                 modifier = Modifier
                                     .background(RiftTheme.colors.windowBackgroundSecondary)
-                                    .padding(Spacing.medium)
+                                    .padding(horizontal = Spacing.medium, vertical = Spacing.verySmall)
                                     .fillMaxWidth(),
                             ) {
                                 val isEditingAccount = accountEditingCharacter == character.characterId
@@ -462,10 +461,11 @@ private fun CharacterRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AsyncPlayerPortrait(
+            DynamicCharacterPortraitParallax(
                 characterId = character.characterId,
-                size = 32,
-                modifier = Modifier.size(32.dp),
+                size = 48.dp,
+                enterTimestamp = null,
+                pointerInteractionStateHolder = null,
             )
 
             when (character.info) {

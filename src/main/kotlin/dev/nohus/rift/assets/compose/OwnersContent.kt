@@ -11,31 +11,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.assets.AssetsFilters
-import dev.nohus.rift.assets.AssetsRepository
-import dev.nohus.rift.assets.AssetsRepository.AssetBalance
 import dev.nohus.rift.assets.AssetsRepository.AssetOwner
 import dev.nohus.rift.assets.AssetsViewModel.LoadedData
 import dev.nohus.rift.assets.AssetsViewModel.UiState
 import dev.nohus.rift.assets.OwnerType
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.VerticalGrid
+import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.getPluralStringSync
 import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.utils.toggle
-import dev.nohus.rift.wallet.WalletType
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import java.time.Duration
+import java.time.Instant
 
 @Composable
 fun OwnersContent(
@@ -99,17 +100,19 @@ fun OwnersContent(
                     text = formatBalance(totalBalance),
                 )
 
+                val now = remember(data.owners) { Instant.now() }
                 data.owners.filterIsInstance<AssetOwner.Character>()
-                    .forEach { owner ->
+                    .forEachIndexed { index, owner ->
                         val isSelected = OwnerType.SpecificCharacter(owner.character.characterId) in filters ||
                             OwnerType.Character in filters
-
+                        val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
                         OwnerCard(
                             icon = {
-                                AsyncPlayerPortrait(
+                                DynamicCharacterPortraitParallax(
                                     characterId = owner.character.characterId,
-                                    size = 64,
-                                    modifier = Modifier.size(48.dp),
+                                    size = 48.dp,
+                                    enterTimestamp = now + (Duration.ofMillis(100L + index * 100)),
+                                    pointerInteractionStateHolder = pointerInteractionStateHolder,
                                 )
                             },
                             name = owner.character.info?.name ?: "",
@@ -121,6 +124,7 @@ fun OwnersContent(
                                 updateFilters(updated)
                             },
                             text = formatBalance(balances[owner]?.count),
+                            pointerInteractionStateHolder = pointerInteractionStateHolder,
                         )
                     }
             }

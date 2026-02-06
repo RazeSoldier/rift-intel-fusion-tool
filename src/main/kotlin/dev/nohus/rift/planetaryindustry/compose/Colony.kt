@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
@@ -54,6 +53,7 @@ import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.clock_16
 import dev.nohus.rift.generated.resources.fastforward
@@ -359,10 +359,11 @@ private fun ColonyOwner(
                 .clip(CircleShape)
                 .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
         ) {
-            AsyncPlayerPortrait(
+            DynamicCharacterPortraitParallax(
                 characterId = colony.characterId,
-                size = 32,
-                modifier = Modifier.size(32.dp),
+                size = 32.dp,
+                enterTimestamp = null,
+                pointerInteractionStateHolder = null,
             )
         }
         Text(

@@ -45,7 +45,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableSystem
@@ -60,11 +59,14 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
 import dev.nohus.rift.generated.resources.window_titlebar_close
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.painterResource
@@ -226,10 +228,11 @@ fun NotificationContent(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    AsyncPlayerPortrait(
+                                    DynamicCharacterPortraitStandings(
                                         characterId = message.senderCharacterId,
-                                        size = 32,
-                                        modifier = Modifier.size(32.dp),
+                                        size = 32.dp,
+                                        standingLevel = message.senderStanding ?: Standing.Neutral,
+                                        isAnimated = true,
                                     )
                                     Text(
                                         text = message.sender,
@@ -454,10 +457,11 @@ private fun Character(characterId: Int, subtext: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
-            AsyncPlayerPortrait(
+            DynamicCharacterPortraitParallax(
                 characterId = characterId,
-                size = 32,
-                modifier = Modifier.size(32.dp),
+                size = 32.dp,
+                enterTimestamp = null,
+                pointerInteractionStateHolder = null,
             )
             Column {
                 Text(

@@ -302,4 +302,12 @@ class Settings(
     var newVersionSeenTimestamp: Instant?
         get() = model.newVersionSeenTimestamp?.let { Instant.ofEpochMilli(it) }
         set(value) = update { copy(newVersionSeenTimestamp = value?.toEpochMilli()) }
+
+    var characterPortraits: CharacterPortraits
+        get() = model.characterPortraits
+        set(value) = update { copy(characterPortraits = value) }
+
+    var isZkillboardMonitoringEnabled: Boolean
+        get() = model.isZkillboardMonitoringEnabled
+        set(value) = update { copy(isZkillboardMonitoringEnabled = value) }
 }

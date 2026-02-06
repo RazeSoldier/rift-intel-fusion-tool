@@ -57,8 +57,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.compose.AsyncAllianceLogo
+import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ClickableAlliance
 import dev.nohus.rift.compose.ClickableCharacter
@@ -465,7 +465,7 @@ fun DetailsView(
                                                         verticalAlignment = Alignment.CenterVertically,
                                                         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                                     ) {
-                                                        AsyncPlayerPortrait(
+                                                        AsyncCharacterPortrait(
                                                             characterId = contributor.characterId,
                                                             size = 32,
                                                             modifier = Modifier
@@ -723,7 +723,7 @@ private fun CharacterStack(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                         ) {
-                            AsyncPlayerPortrait(
+                            AsyncCharacterPortrait(
                                 characterId = it.characterId,
                                 size = 32,
                                 modifier = Modifier
@@ -748,7 +748,7 @@ private fun CharacterStack(
             Layout(
                 content = {
                     characters.forEach { character ->
-                        AsyncPlayerPortrait(
+                        AsyncCharacterPortrait(
                             characterId = character.characterId,
                             size = 64,
                             modifier = Modifier

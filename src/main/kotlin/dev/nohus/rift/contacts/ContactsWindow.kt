@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ClickableAlliance
@@ -70,6 +69,7 @@ import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.modifyIfNotNull
+import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.contacts.ContactsRepository.Contact
@@ -80,6 +80,7 @@ import dev.nohus.rift.contacts.ContactsViewModel.Filter
 import dev.nohus.rift.contacts.ContactsViewModel.UiState
 import dev.nohus.rift.contacts.SearchRepository.SearchCategory
 import dev.nohus.rift.contacts.SearchRepository.SearchResult
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.contact_allcontacts
 import dev.nohus.rift.generated.resources.contact_alliance
@@ -842,21 +843,25 @@ private fun SearchResultRow(
     category: SearchCategory,
     item: SearchResult,
 ) {
+    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .hoverBackground()
+            .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
             .padding(vertical = Spacing.verySmall)
             .padding(start = Spacing.verySmall)
             .padding(end = Spacing.small),
     ) {
         when (category) {
-            SearchCategory.Agents -> AsyncPlayerPortrait(
-                characterId = item.id.toInt(),
-                size = 32,
-                modifier = Modifier.size(32.dp),
-            )
+            SearchCategory.Agents -> {
+                DynamicCharacterPortraitParallax(
+                    characterId = item.id.toInt(),
+                    size = 32.dp,
+                    enterTimestamp = null,
+                    pointerInteractionStateHolder = pointerInteractionStateHolder,
+                )
+            }
             SearchCategory.Alliance -> AsyncAllianceLogo(
                 allianceId = item.id.toInt(),
                 size = 32,
@@ -864,10 +869,11 @@ private fun SearchResultRow(
             )
             SearchCategory.Characters -> {
                 ClickableCharacter(item.id.toInt()) {
-                    AsyncPlayerPortrait(
+                    DynamicCharacterPortraitParallax(
                         characterId = item.id.toInt(),
-                        size = 32,
-                        modifier = Modifier.size(32.dp),
+                        size = 32.dp,
+                        enterTimestamp = null,
+                        pointerInteractionStateHolder = pointerInteractionStateHolder,
                     )
                 }
             }

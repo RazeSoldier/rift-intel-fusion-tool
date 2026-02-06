@@ -279,7 +279,7 @@ private fun AboutWindowContent(
                     )
 
                     Text(
-                        text = "© 2023–2025 Nohus",
+                        text = "© 2023–2026 Nohus",
                         style = RiftTheme.typography.bodySecondary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
@@ -342,14 +342,22 @@ private fun getUpdateDialogText(
     return when (operatingSystem) {
         Linux -> {
             buildAnnotatedString {
-                append(
-                    "If you installed the DEB package, you can update the app with your package manager as normal. " +
-                        "For example you can run ",
-                )
+                append("If you installed the ")
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append("DEB")
+                }
+                append(" package, you can update the app with your package manager as normal. For example you can run ")
                 withColor(RiftTheme.colors.textHighlighted) {
                     append("sudo apt update && sudo apt upgrade")
                 }
                 append(".")
+                appendLine()
+                appendLine()
+                append("If you downloaded the ")
+                withColor(RiftTheme.colors.textHighlighted) {
+                    append("AppImage")
+                }
+                append(", you can either use the AppImageUpdate tool, or just download the new version manually.")
                 appendLine()
                 appendLine()
                 append("If you downloaded the ")
@@ -414,12 +422,6 @@ private fun getCreditsText(): AnnotatedString {
             append("smultar")
         }
         append(" for designing the app icon.")
-        appendLine()
-        append("Thanks to ")
-        withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
-            append("Steve Ronuken")
-        }
-        append(" for the SDE conversions.")
         appendLine()
         append("Thanks to ")
         withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {

@@ -27,7 +27,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.LoadingSpinnerAmbient
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.VerticalGrid
@@ -36,6 +35,7 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.getStringSync
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.multiplyBrightness
 import dev.nohus.rift.utils.withColor
@@ -109,10 +109,11 @@ fun WalletLoadingProgress(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    AsyncPlayerPortrait(
+                                    DynamicCharacterPortraitParallax(
                                         characterId = character.characterId,
-                                        size = 64,
-                                        modifier = Modifier.size(48.dp),
+                                        size = 48.dp,
+                                        enterTimestamp = null,
+                                        pointerInteractionStateHolder = null,
                                     )
                                     Column(
                                         verticalArrangement = Arrangement.spacedBy(Spacing.small),

@@ -70,7 +70,7 @@ fun CorporationProjectProgressGauge(
                 characterId = characterId,
                 name = characterName ?: "",
                 hasPadding = false,
-                size = 50.dp,
+                size = 48.dp,
             )
         } else if (iconResource != null) {
             Icon(

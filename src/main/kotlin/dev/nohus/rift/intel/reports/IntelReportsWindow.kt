@@ -37,7 +37,6 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.intel.ParsedChannelChatMessage
-import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.intel.reports.IntelReportsViewModel.UiState
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
 import dev.nohus.rift.viewModel

@@ -345,7 +345,7 @@
     <string name="settings_window_bar_sovereignty">Sovereignty</string>
     <string name="settings_window_user_interface_section_title">User Interface</string>
     <string name="settings_window_eve_instanllation_section_title">EVE Installation</string>
-    <string name="settings_window_other_settings_section_title">Advanced Settings</string>
+    <string name="settings_window_other_settings_section_title">Other Settings</string>
     <string name="settings_window_remeber_open_window">Remember open window</string>
     <string name="settings_window_remeber_open_window_tooltip">Enable to remember open windows\nacross app restarts</string>
     <string name="settings_window_remeber_window_placement">Remember window placement</string>
@@ -359,7 +359,7 @@
     <string name="settings_window_smart_always_above">Smart always above</string>
     <string name="settings_window_smart_always_above_tooltip">Windows set to "always above" will\nonly be on top while an EVE client is focused.</string>
     <string name="settings_window_show_distance_on_systems">Show distance on systems</string>
-    <string name="settings_window_show_distance_on_systems_tooltip">Enable to show the number of jumps to\nthe closest character next to system names.\nOnly shows for up to 9 jumps away.</string>
+    <string name="settings_window_show_distance_on_systems_tooltip">Enable to show the number of jumps to\nthe closest character next to system names.</string>
     <string name="settings_window_use_jump_bridge">Use jump bridges for distance</string>
     <string name="settings_window_use_jump_bridge_tooltip">Enable to include jump bridges in system distances</string>
     <string name="settings_window_transparent_windows">Enable transparent windows</string>

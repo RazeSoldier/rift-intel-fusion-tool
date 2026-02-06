@@ -1,6 +1,5 @@
 package dev.nohus.rift.network.esi
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.models.Asset
@@ -30,7 +29,6 @@ import dev.nohus.rift.network.esi.models.CorporationsIdProjectsIdContributors
 import dev.nohus.rift.network.esi.models.FactionWarfareSystem
 import dev.nohus.rift.network.esi.models.FleetMember
 import dev.nohus.rift.network.esi.models.FleetsId
-import dev.nohus.rift.network.esi.models.FreelanceJob
 import dev.nohus.rift.network.esi.models.FreelanceJobs
 import dev.nohus.rift.network.esi.models.FreelanceJobsId
 import dev.nohus.rift.network.esi.models.GetCharactersFreelanceJobsParticipation
@@ -52,25 +50,16 @@ import dev.nohus.rift.network.esi.models.UniverseSystemKills
 import dev.nohus.rift.network.esi.models.WalletJournalEntry
 import dev.nohus.rift.network.esi.models.WalletTransaction
 import dev.nohus.rift.network.requests.Character
-import dev.nohus.rift.network.requests.Endpoint
-import dev.nohus.rift.network.requests.EndpointTag
 import dev.nohus.rift.network.requests.Originator
-import dev.nohus.rift.network.requests.RateLimit
-import dev.nohus.rift.network.requests.RateLimitGroup
 import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.network.requests.RequestExecutor
-import dev.nohus.rift.network.requests.Scope
-import dev.nohus.rift.sso.scopes.EsiScope
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
-import retrofit2.http.Tag
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.UUID
 
 @Single
