@@ -37,7 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ClickableLocation
 import dev.nohus.rift.compose.RiftSearchField
@@ -46,6 +45,7 @@ import dev.nohus.rift.compose.ScrollbarLazyVerticalGrid
 import dev.nohus.rift.compose.ToggleButtonType
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.repositories.StationsRepository
@@ -129,10 +129,11 @@ fun LoyaltyPointsContent(
                                 horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 modifier = Modifier.animateItem(),
                             ) {
-                                AsyncPlayerPortrait(
+                                DynamicCharacterPortraitParallax(
                                     characterId = characterId,
-                                    size = 64,
-                                    modifier = Modifier.size(48.dp),
+                                    size = 48.dp,
+                                    enterTimestamp = null,
+                                    pointerInteractionStateHolder = null,
                                 )
                                 Text(
                                     text = characterName,

@@ -338,7 +338,7 @@
     <string name="settings_window_bar_sovereignty">主权</string>
     <string name="settings_window_user_interface_section_title">用户界面</string>
     <string name="settings_window_eve_instanllation_section_title">EVE安装目录</string>
-    <string name="settings_window_other_settings_section_title">高级设置</string>
+    <string name="settings_window_other_settings_section_title">其它设置</string>
     <string name="settings_window_remeber_open_window">记住打开的窗口</string>
     <string name="settings_window_remeber_open_window_tooltip">启用此功能可在应用重启后\n记住打开的窗口</string>
     <string name="settings_window_remeber_window_placement">记住窗口位置</string>
@@ -352,7 +352,7 @@
     <string name="settings_window_smart_always_above">智能窗口始终在最上层</string>
     <string name="settings_window_smart_always_above_tooltip">当EVE客户端在前台时\n窗口将会设置成始终在最上层</string>
     <string name="settings_window_show_distance_on_systems">在星系上显示距离</string>
-    <string name="settings_window_show_distance_on_systems_tooltip">启用此功能可在星系名称旁显示\n离最近角色的跳数\n仅显示最多9跳</string>
+    <string name="settings_window_show_distance_on_systems_tooltip">启用此功能可在星系名称旁显示\n离最近角色的跳数</string>
     <string name="settings_window_use_jump_bridge">使用跳桥计算距离</string>
     <string name="settings_window_use_jump_bridge_tooltip">启用此功能将会包含跳桥在星系距离中</string>
     <string name="settings_window_transparent_windows">透明窗口</string>

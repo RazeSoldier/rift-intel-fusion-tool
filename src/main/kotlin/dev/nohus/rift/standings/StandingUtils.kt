@@ -42,6 +42,16 @@ val Standing.isFriendly: Boolean get() {
     }
 }
 
+val Standing.isHostile: Boolean get() {
+    return when (this) {
+        Standing.Terrible -> true
+        Standing.Bad -> true
+        Standing.Neutral -> false
+        Standing.Good -> false
+        Standing.Excellent -> false
+    }
+}
+
 object StandingUtils {
     fun getStandingLevel(standing: Float): Standing {
         return when {

@@ -63,8 +63,8 @@ fun WalletCard(
     onClick: () -> Unit,
     amount: Double,
     showCents: Boolean,
+    pointerInteractionStateHolder: PointerInteractionStateHolder = rememberPointerInteractionStateHolder(),
 ) {
-    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     WalletCardBox(pointerInteractionStateHolder, isSelected, onClick) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),

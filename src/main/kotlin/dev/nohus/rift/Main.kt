@@ -5,7 +5,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.LocalWindowExceptionHandlerFactory
 import androidx.compose.ui.window.application
-import dev.nohus.rift.compose.kamelConfig
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.crash.RiftExceptionHandlerFactory
 import dev.nohus.rift.crash.handleFatalException
@@ -39,7 +38,7 @@ fun main() {
 @Composable
 private fun ApplicationScope.riftApplication() {
     CompositionLocalProvider(
-        LocalKamelConfig provides kamelConfig,
+        LocalKamelConfig provides remember { koin.get() },
         LocalWindowExceptionHandlerFactory provides RiftExceptionHandlerFactory,
     ) {
         val viewModel: ApplicationViewModel = viewModel()

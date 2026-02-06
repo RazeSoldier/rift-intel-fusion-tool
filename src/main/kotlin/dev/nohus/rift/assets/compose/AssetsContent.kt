@@ -50,8 +50,8 @@ import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.assets.LocationFlags
 import dev.nohus.rift.assets.getTotalPrice
 import dev.nohus.rift.assets.getTotalVolume
+import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
@@ -360,9 +360,9 @@ private fun LocationHeader(
                     .fillMaxWidth()
                     .background(RiftTheme.colors.windowBackgroundSecondary)
                     .hoverBackground()
+                    .onClick { onClick() }
                     .padding(vertical = Spacing.small)
-                    .padding(start = depthOffset)
-                    .onClick { onClick() },
+                    .padding(start = depthOffset),
             ) {
                 ExpandChevron(isExpanded = isExpanded)
                 val text = buildAnnotatedString {
@@ -493,7 +493,7 @@ private fun AssetRow(
                             ) {
                                 when (asset.owner) {
                                     is AssetsRepository.AssetOwner.Character -> {
-                                        AsyncPlayerPortrait(
+                                        AsyncCharacterPortrait(
                                             characterId = asset.owner.character.characterId,
                                             size = 32,
                                             modifier = Modifier

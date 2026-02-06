@@ -7,6 +7,7 @@ import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
+import dev.nohus.rift.configurationpack.ConfigurationPackRepository.JumpBridgesReference
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.language_restart_dialog
@@ -19,6 +20,9 @@ import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.settings.persistence.CharacterPortraits
+import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength
+import dev.nohus.rift.settings.persistence.CharacterPortraitsStandingsTargets
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.IntelChannel
 import dev.nohus.rift.settings.persistence.IntelMap
@@ -94,12 +98,14 @@ class SettingsViewModel(
         val language: Locale,
         val isWindowTransparencyEnabled: Boolean,
         val windowTransparencyModifier: Float,
+        val characterPortraits: CharacterPortraits,
+        val isZkillboardMonitoringEnabled: Boolean,
         // Map
         val intelMap: IntelMap,
         val isUsingRiftAutopilotRoute: Boolean,
         val jumpBridgeNetwork: List<JumpBridgeConnection>,
         val jumpBridgeCopyState: JumpBridgeCopyState,
-        val jumpBridgeNetworkUrl: String?,
+        val jumpBridgesReference: JumpBridgesReference?,
         val jumpBridgeSearchState: JumpBridgeSearchState,
         val isJumpBridgeSearchDialogShown: Boolean,
         val sovereigntyUpgradesCopyState: SovereigntyUpgradesCopyState,
@@ -115,6 +121,7 @@ class SettingsViewModel(
         data object Intel : SettingsTab(1)
         data object Map : SettingsTab(2)
         data object Sovereignty : SettingsTab(3)
+        data object Misc : SettingsTab(4)
     }
 
     sealed interface JumpBridgeCopyState {
@@ -165,12 +172,14 @@ class SettingsViewModel(
             language = settings.language,
             isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
             windowTransparencyModifier = settings.windowTransparencyModifier,
+            characterPortraits = settings.characterPortraits,
+            isZkillboardMonitoringEnabled = settings.isZkillboardMonitoringEnabled,
             // Map
             intelMap = settings.intelMap,
             isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
             jumpBridgeNetwork = jumpBridgesRepository.getConnections(),
             jumpBridgeCopyState = JumpBridgeCopyState.NotCopied,
-            jumpBridgeNetworkUrl = configurationPackRepository.getJumpBridgeNetworkUrl(),
+            jumpBridgesReference = configurationPackRepository.getJumpBridges(),
             jumpBridgeSearchState = JumpBridgeSearchState.NotSearched,
             isJumpBridgeSearchDialogShown = false,
             sovereigntyUpgradesCopyState = SovereigntyUpgradesCopyState.NotCopied,
@@ -208,6 +217,8 @@ class SettingsViewModel(
                         language = settings.language,
                         isWindowTransparencyEnabled = settings.isWindowTransparencyEnabled,
                         windowTransparencyModifier = settings.windowTransparencyModifier,
+                        characterPortraits = settings.characterPortraits,
+                        isZkillboardMonitoringEnabled = settings.isZkillboardMonitoringEnabled,
                         // Map
                         intelMap = settings.intelMap,
                         isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
@@ -241,7 +252,7 @@ class SettingsViewModel(
             clipboard.state.filterNotNull().collect { text ->
                 if (_state.value.selectedTab == SettingsTab.Sovereignty) {
                     val network = jumpBridgesParser.parse(text)
-                    if (network != null) {
+                    if (network.isNotEmpty()) {
                         _state.update { it.copy(jumpBridgeCopyState = JumpBridgeCopyState.Copied(network)) }
                     } else {
                         _state.update { it.copy(jumpBridgeCopyState = JumpBridgeCopyState.NotCopied) }
@@ -281,7 +292,7 @@ class SettingsViewModel(
         settings.intelChannels = (settings.intelChannels + channels).sortedBy { it.name }
     }
 
-    fun onIntelChannelAdded(name: String, region: String) {
+    fun onIntelChannelAdded(name: String, region: String?) {
         val channel = IntelChannel(name, region)
         val channels = (settings.intelChannels + channel).sortedBy { it.name }
         settings.intelChannels = channels
@@ -353,6 +364,18 @@ class SettingsViewModel(
         }
     }
 
+    fun onCharacterPortraitsStandingsEffectStrengthChanged(strength: Float) {
+        settings.characterPortraits = settings.characterPortraits.copy(standingsEffectStrength = strength)
+    }
+
+    fun onCharacterPortraitsStandingsTargetsChanged(targets: CharacterPortraitsStandingsTargets) {
+        settings.characterPortraits = settings.characterPortraits.copy(standingsTargets = targets)
+    }
+
+    fun onCharacterPortraitsParallaxStrengthChanged(strength: CharacterPortraitsParallaxStrength) {
+        settings.characterPortraits = settings.characterPortraits.copy(parallaxStrength = strength)
+    }
+
     fun onShowSetupWizardOnNextStartChanged(enabled: Boolean) {
         settings.isShowSetupWizardOnNextStart = enabled
     }
@@ -385,6 +408,10 @@ class SettingsViewModel(
         if (pos != null) {
             settings.notificationPosition = pos
         }
+    }
+
+    fun onIsZkillboardMonitoringChanged(enabled: Boolean) {
+        settings.isZkillboardMonitoringEnabled = enabled
     }
 
     fun onIsUsingDarkTrayIconChanged(enabled: Boolean) {
@@ -577,6 +604,10 @@ class SettingsViewModel(
 
     fun onIsSovereigntyUpgradesHackImportingOfflineEnabledClick(enabled: Boolean) {
         settings.isSovereigntyUpgradesHackImportingOfflineEnabled = enabled
+    }
+
+    fun onClipboardTesterClick() {
+        windowManager.onWindowOpen(RiftWindow.ClipboardTest)
     }
 
     fun onCloseDialogMessage() {

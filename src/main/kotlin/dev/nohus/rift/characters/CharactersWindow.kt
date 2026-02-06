@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.execIfLocaleNotInZh
 import dev.nohus.rift.i18n.getStringSync
@@ -59,6 +61,8 @@ import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import java.time.Duration
+import java.time.Instant
 
 @Composable
 fun CharactersWindow(
@@ -185,13 +189,18 @@ private fun ColumnScope.CharactersList(
     onEnableCharacterClick: (characterId: Int) -> Unit,
     onDeleteCharacterClick: (characterId: Int) -> Unit,
 ) {
+    val now = remember(state.characters) { Instant.now() }
     ScrollbarLazyColumn(
-        modifier = Modifier.Companion.weight(1f),
+        modifier = Modifier.weight(1f),
     ) {
-        items(state.characters.filterNot { it.isHidden }, key = { it.characterId }) { character ->
+        itemsIndexed(
+            items = state.characters.filterNot { it.isHidden },
+            key = { _, it -> it.characterId },
+        ) { index, character ->
             Box(modifier = Modifier.animateItem()) {
                 CharacterRow(
                     character = character,
+                    enterTimestamp = now + (Duration.ofMillis(500L + index * 150)),
                     isOnline = character.characterId in state.onlineCharacters,
                     location = state.locations[character.characterId],
                     isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
@@ -319,6 +328,7 @@ private fun SsoButton(
 @Composable
 private fun CharacterRow(
     character: CharacterItem,
+    enterTimestamp: Instant,
     isOnline: Boolean,
     location: Location?,
     isChoosingDisabledCharacters: Boolean,
@@ -326,9 +336,10 @@ private fun CharacterRow(
     onDisableCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     Column(
         modifier = modifier
-            .hoverBackground()
+            .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
             .padding(Spacing.verySmall),
     ) {
         Row(
@@ -336,11 +347,7 @@ private fun CharacterRow(
             modifier = Modifier.fillMaxWidth(),
         ) {
             OnlineIndicatorBar(isOnline)
-            AsyncPlayerPortrait(
-                characterId = character.characterId,
-                size = 64,
-                modifier = Modifier.size(64.dp),
-            )
+            DynamicCharacterPortraitParallax(character.characterId, 64.dp, enterTimestamp, pointerInteractionStateHolder)
             when (character.info) {
                 null -> {
                     Text(
@@ -614,17 +621,19 @@ private fun HiddenCharacterRow(
     onDeleteCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .hoverBackground()
+            .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
             .padding(Spacing.verySmall),
     ) {
-        AsyncPlayerPortrait(
+        DynamicCharacterPortraitParallax(
             characterId = character.characterId,
-            size = 32,
-            modifier = Modifier.size(32.dp),
+            size = 32.dp,
+            enterTimestamp = null,
+            pointerInteractionStateHolder = pointerInteractionStateHolder,
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,

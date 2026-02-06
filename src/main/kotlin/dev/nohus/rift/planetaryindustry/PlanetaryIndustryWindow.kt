@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.LoadingSpinnerAmbient
@@ -64,6 +63,7 @@ import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.bars_sort_ascending_16px
 import dev.nohus.rift.generated.resources.checkmark_16px
@@ -100,6 +100,7 @@ import dev.nohus.rift.utils.plural
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import java.time.Duration
 import java.time.Instant
 
 @Composable
@@ -331,6 +332,7 @@ private fun MainColoniesContent(
 
                     RowsView -> {
                         val transition = rememberInfiniteTransition()
+                        val now = remember(items) { Instant.now() }
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(7),
                             state = lazyGridRowsState,
@@ -338,7 +340,7 @@ private fun MainColoniesContent(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                             verticalArrangement = Arrangement.spacedBy(Spacing.small),
                         ) {
-                            items.groupBy { it.colony.characterId }.forEach { (characterId, items) ->
+                            items.groupBy { it.colony.characterId }.entries.forEachIndexed { index, (characterId, items) ->
                                 item(key = characterId) {
                                     RiftTooltipArea(
                                         text = items.first().characterName ?: "Loading…",
@@ -350,12 +352,13 @@ private fun MainColoniesContent(
                                                 .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f))
                                                 .size(72.dp),
                                         ) {
-                                            AsyncPlayerPortrait(
+                                            DynamicCharacterPortraitParallax(
                                                 characterId = characterId,
-                                                size = 64,
+                                                size = 64.dp,
+                                                enterTimestamp = now + (Duration.ofMillis(100L + index * 100)),
+                                                pointerInteractionStateHolder = null,
                                                 modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .size(64.dp),
+                                                    .clip(CircleShape),
                                             )
                                         }
                                     }

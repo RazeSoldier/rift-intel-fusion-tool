@@ -45,6 +45,7 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.intel.ParsedChannelChatMessage
@@ -56,6 +57,7 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Link
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.StarGatesRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
@@ -510,10 +512,11 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
 private fun TokenWithCharacter(rowHeight: Dp, name: String, character: TokenType.Character) {
     BorderedToken(rowHeight) {
         ClickableCharacter(character.characterId) {
-            AsyncPlayerPortrait(
+            DynamicCharacterPortraitStandings(
                 characterId = character.characterId,
-                size = 32,
-                modifier = Modifier.size(rowHeight),
+                size = rowHeight,
+                standingLevel = character.details?.standingLevel ?: Standing.Neutral,
+                isAnimated = true,
             )
         }
         if (character.details != null) {
@@ -604,12 +607,15 @@ private fun TokenWithKill(rowHeight: Dp, token: TokenType.Kill) {
                     modifier = Modifier.size(rowHeight),
                 )
                 VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-                AsyncPlayerPortrait(
-                    characterId = token.characterId,
-                    size = 32,
-                    modifier = Modifier.size(rowHeight),
-                )
-                VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+                if (token.characterId != null) {
+                    DynamicCharacterPortraitStandings(
+                        characterId = token.characterId,
+                        size = rowHeight,
+                        standingLevel = token.details?.standingLevel ?: Standing.Neutral,
+                        isAnimated = true,
+                    )
+                    VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+                }
                 val type = repository.getType(token.target)
                 AsyncTypeIcon(
                     type = type,

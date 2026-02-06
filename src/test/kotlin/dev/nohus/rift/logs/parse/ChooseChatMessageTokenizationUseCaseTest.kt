@@ -442,8 +442,8 @@ class ChooseChatMessageTokenizationUseCaseTest : FreeSpec({
         val actual = target(tokenizations)
 
         actual shouldBe listOf(
-            "Kill: Nuodaxier (Ishtar)".token(Kill("Nuodaxier", characterId = 0, "Ishtar"), isLink = true),
-            "Kill: nuodaxier001 (Ishtar)".token(Kill("nuodaxier001", characterId = 0, "Ishtar")),
+            "Kill: Nuodaxier (Ishtar)".token(Kill("Nuodaxier", characterId = 0, null, "Ishtar"), isLink = true),
+            "Kill: nuodaxier001 (Ishtar)".token(Kill("nuodaxier001", characterId = 0, null, "Ishtar")),
             "Loki/Wolf".token(),
         )
     }

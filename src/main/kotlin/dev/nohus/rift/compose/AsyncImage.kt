@@ -41,15 +41,7 @@ fun AsyncImage(
     fallbackIcon: @Composable () -> Unit = { FallbackIcon() },
     withAnimatedLoading: Boolean = true,
 ) {
-    val userAgentInterceptor: UserAgentInterceptor = remember { koin.get() }
-    val requestStatisticsInterceptor: RequestStatisticsInterceptor = remember { koin.get() }
-    val painter = asyncPainterResource(url) {
-        requestStatisticsInterceptor.addExternalRequest(Originator.UiImage, Endpoint.ImageServiceAsset)
-        requestBuilder {
-            header(USER_AGENT_KEY, userAgentInterceptor.getUserAgent(Originator.UiImage))
-            cacheControl(CacheControl.MAX_AGE)
-        }
-    }
+    val painter = asyncPainterResource(url)
     KamelImage(
         resource = { painter },
         contentDescription = null,
@@ -126,7 +118,7 @@ fun AsyncTypeIcon(
  * Shows a portrait of an EVE Online character
  */
 @Composable
-fun AsyncPlayerPortrait(
+fun AsyncCharacterPortrait(
     characterId: Int?,
     size: Int,
     modifier: Modifier = Modifier,

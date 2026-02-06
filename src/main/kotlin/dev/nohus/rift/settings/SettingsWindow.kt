@@ -39,9 +39,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.FlagIcon
 import dev.nohus.rift.compose.LinkText
 import dev.nohus.rift.compose.MulticolorIconType
 import dev.nohus.rift.compose.PointerInteractionStateHolder
@@ -72,8 +74,11 @@ import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.displayName
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.notifications.NotificationEditWindow
@@ -84,9 +89,13 @@ import dev.nohus.rift.settings.SettingsViewModel.JumpBridgeSearchState
 import dev.nohus.rift.settings.SettingsViewModel.SettingsTab
 import dev.nohus.rift.settings.SettingsViewModel.SovereigntyUpgradesCopyState
 import dev.nohus.rift.settings.SettingsViewModel.UiState
+import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength
+import dev.nohus.rift.settings.persistence.CharacterPortraitsStandingsTargets
 import dev.nohus.rift.settings.persistence.ConfigurationPack
+import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.utils.OperatingSystem.MacOs
+import dev.nohus.rift.utils.formatDate
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.toURIOrNull
@@ -228,7 +237,7 @@ private fun SettingsWindowContent(
                             EveInstallationSection(state, viewModel)
                         }
                         SectionContainer(inputModel) {
-                            OtherSettingsSection(state, viewModel)
+                            CharacterPortraitsSection(state, viewModel)
                         }
                     }
                 }
@@ -257,6 +266,9 @@ private fun SettingsWindowContent(
                         }
                         SectionContainer(inputModel) {
                             AlertsSection(state, viewModel)
+                        }
+                        SectionContainer(inputModel) {
+                            KillmailMonitoringSection(state, viewModel)
                         }
                     }
                 }
@@ -313,6 +325,31 @@ private fun SettingsWindowContent(
                         }
                     }
                 }
+
+                // Misc
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                    modifier = Modifier
+                        .padding(Spacing.medium)
+                        .height(IntrinsicSize.Max),
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        SectionContainer(inputModel) {
+                            OtherSettingsSection(state, viewModel)
+                        }
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        SectionContainer(inputModel) {
+                            ClipboardSection(state, viewModel)
+                        }
+                    }
+                }
             },
         ) { measurables, constraints ->
             val placeables = measurables.map { measurable ->
@@ -338,6 +375,7 @@ private fun ToolbarRow(
             Tab(id = SettingsTab.Intel.id, title = getStringSync(Res.string.settings_window_bar_intel), isCloseable = false, payload = SettingsTab.Intel),
             Tab(id = SettingsTab.Map.id, title = getStringSync(Res.string.settings_window_bar_map), isCloseable = false, payload = SettingsTab.Map),
             Tab(id = SettingsTab.Sovereignty.id, title = getStringSync(Res.string.settings_window_bar_sovereignty), isCloseable = false, payload = SettingsTab.Sovereignty),
+            Tab(id = SettingsTab.Misc.id, title = "Misc", isCloseable = false, payload = SettingsTab.Misc),
         )
     }
     RiftTabBar(
@@ -451,6 +489,7 @@ private fun UserInterfaceSection(
         isChecked = state.isWindowTransparencyEnabled,
         onCheckedChange = viewModel::onIsWindowTransparencyChanged,
     )
+    Spacer(Modifier.height(Spacing.small))
     RiftDropdownWithLabel(
         label = stringResource(Res.string.settings_window_window_transparency),
         items = listOf(0f, 0.25f, 0.5f, 0.75f, 1f),
@@ -525,6 +564,27 @@ private fun AlertsSection(
 }
 
 @Composable
+private fun KillmailMonitoringSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("Killmail Monitoring", Modifier.padding(bottom = Spacing.medium))
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Text(
+            text = "RIFT watches killmails for valuable intel,\nfor example to show attackers on the map",
+            style = RiftTheme.typography.bodySecondary,
+        )
+        RiftCheckboxWithLabel(
+            label = "Monitor zKillboard.com",
+            tooltip = "RIFT will subscribe to zKillboard.com\nto receive new killmails live",
+            isChecked = state.isZkillboardMonitoringEnabled,
+            onCheckedChange = viewModel::onIsZkillboardMonitoringChanged,
+            modifier = Modifier.padding(bottom = Spacing.small),
+        )
+    }
+}
+
+@Composable
 private fun OtherSettingsSection(
     state: UiState,
     viewModel: SettingsViewModel,
@@ -545,6 +605,30 @@ private fun OtherSettingsSection(
         isChecked = state.isShowSetupWizardOnNextStartEnabled,
         onCheckedChange = viewModel::onShowSetupWizardOnNextStartChanged,
     )
+}
+
+@Composable
+private fun ClipboardSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("Clipboard", Modifier.padding(bottom = Spacing.medium))
+    Text(
+        text = "RIFT can import some data from your clipboard, like Jump Bridges and Sovereignty Upgrades",
+        style = RiftTheme.typography.bodySecondary,
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.padding(end = Spacing.medium).fillMaxWidth(),
+    ) {
+        Text("Troubleshoot import issues")
+        RiftButton(
+            text = "Clipboard tester",
+            type = ButtonType.Primary,
+            onClick = viewModel::onClipboardTesterClick,
+        )
+    }
 }
 
 @Composable
@@ -643,6 +727,92 @@ private fun EveInstallationSection(
 }
 
 @Composable
+private fun CharacterPortraitsSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("Character Portraits")
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+            modifier = Modifier.padding(top = Spacing.small),
+        ) {
+            listOf(91217127, 2123140346, 2119893075, 2118421377).forEach {
+                DynamicCharacterPortraitParallax(
+                    characterId = it,
+                    size = 48.dp,
+                    enterTimestamp = null,
+                    pointerInteractionStateHolder = null,
+                )
+            }
+        }
+        RiftDropdownWithLabel(
+            label = "Parallax effect:",
+            items = CharacterPortraitsParallaxStrength.entries,
+            selectedItem = state.characterPortraits.parallaxStrength,
+            onItemSelected = { viewModel.onCharacterPortraitsParallaxStrengthChanged(it) },
+            getItemName = {
+                when (it) {
+                    CharacterPortraitsParallaxStrength.None -> "Turned off"
+                    CharacterPortraitsParallaxStrength.Reduced -> "Reduced"
+                    CharacterPortraitsParallaxStrength.Normal -> "Normal"
+                }
+            },
+            tooltip = """
+                Shown for your characters and 
+                characters outside of intel contexts
+            """.trimIndent(),
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+        ) {
+            Standing.entries.forEach { standing ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                ) {
+                    FlagIcon(standing)
+                    DynamicCharacterPortraitStandings(
+                        characterId = 324677773,
+                        size = 32.dp,
+                        standingLevel = standing,
+                        isAnimated = true,
+                    )
+                }
+            }
+        }
+        RiftDropdownWithLabel(
+            label = "Standings background:",
+            items = CharacterPortraitsStandingsTargets.entries,
+            selectedItem = state.characterPortraits.standingsTargets,
+            onItemSelected = { viewModel.onCharacterPortraitsStandingsTargetsChanged(it) },
+            getItemName = {
+                when (it) {
+                    CharacterPortraitsStandingsTargets.All -> "For all"
+                    CharacterPortraitsStandingsTargets.OnlyFriendly -> "For friendly"
+                    CharacterPortraitsStandingsTargets.OnlyHostile -> "For hostile"
+                    CharacterPortraitsStandingsTargets.OnlyNonNeutral -> "For non-neutral"
+                    CharacterPortraitsStandingsTargets.None -> "Turned off"
+                }
+            },
+            tooltip = """
+                Shown for characters
+                in intel contexts
+            """.trimIndent(),
+        )
+        RiftSliderWithLabel(
+            label = "Standings background strength:",
+            width = 100.dp,
+            range = 30..100,
+            currentValue = (state.characterPortraits.standingsEffectStrength * 100).toInt().coerceIn(0..100),
+            onValueChange = { viewModel.onCharacterPortraitsStandingsEffectStrengthChanged(it / 100f) },
+            getValueName = { "$it%" },
+        )
+    }
+}
+
+@Composable
 private fun IntelChannelsSection(
     state: UiState,
     viewModel: SettingsViewModel,
@@ -655,7 +825,7 @@ private fun IntelChannelsSection(
     )
     ScrollbarColumn(
         modifier = Modifier
-            .height(170.dp)
+            .height(300.dp)
             .border(1.dp, RiftTheme.colors.borderGrey),
         scrollbarModifier = Modifier.padding(vertical = Spacing.small),
     ) {
@@ -671,7 +841,7 @@ private fun IntelChannelsSection(
                     val text = buildAnnotatedString {
                         append(channel.name)
                         withStyle(SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                            append(" – ${channel.region}")
+                            append(" – ${channel.region ?: "All regions"}")
                         }
                     }
                     Text(
@@ -736,12 +906,12 @@ private fun IntelChannelsSection(
             modifier = Modifier.weight(1f),
         )
         val regionPlaceholder = stringResource(Res.string.settings_window_choose_region)
-        var selectedRegion by remember { mutableStateOf(regionPlaceholder) }
+        var selectedRegion by remember { mutableStateOf<String?>(regionPlaceholder) }
         RiftDropdown(
-            items = state.regions,
+            items = listOf(null) + state.regions,
             selectedItem = selectedRegion,
             onItemSelected = { selectedRegion = it },
-            getItemName = { it },
+            getItemName = { it ?: "All regions" },
             maxItems = 5,
         )
 
@@ -927,7 +1097,7 @@ private fun JumpBridgeNetworkSection(
         val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
         ScrollbarLazyColumn(
             modifier = Modifier
-                .height(140.dp)
+                .height(250.dp)
                 .border(1.dp, RiftTheme.colors.borderGrey),
             scrollbarModifier = Modifier.padding(vertical = Spacing.small),
             contentPadding = PaddingValues(vertical = Spacing.verySmall),
@@ -992,39 +1162,52 @@ private fun JumpBridgeNetworkSection(
                                         .padding(top = Spacing.medium),
                                 ) {
                                     Text(stringResource(Res.string.settings_window_import_jump_bridges_tip1))
-                                    if (state.jumpBridgeNetworkUrl != null) {
-                                        Text(stringResource(Res.string.settings_window_import_jump_bridges_tip2))
-                                        LinkText(
-                                            text = stringResource(Res.string.settings_window_import_jump_bridges_list),
-                                            onClick = { state.jumpBridgeNetworkUrl.toURIOrNull()?.openBrowser() },
-                                        )
-                                    } else {
-                                        val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
-                                        RiftTooltipArea(
-                                            text = buildAnnotatedString {
-                                                appendLine(stringResource(Res.string.settings_window_import_jump_bridges_tip3))
-                                                appendLine()
-                                                withColor(RiftTheme.colors.textHighlighted) {
-                                                    appendLine("Jita -> Perimeter")
-                                                    appendLine("New Caldari -> Alikara")
-                                                    append("Hirtamon -> Ikuchi")
-                                                }
-                                            },
-                                        ) {
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                                modifier = Modifier
-                                                    .pointerInteraction(pointerInteractionStateHolder)
-                                                    .padding(vertical = Spacing.small),
+                                    when (state.jumpBridgesReference) {
+                                        is ConfigurationPackRepository.JumpBridgesReference.Url -> {
+                                            Text(stringResource(Res.string.settings_window_import_jump_bridges_tip2))
+                                            LinkText(
+                                                text = stringResource(Res.string.settings_window_import_jump_bridges_list),
+                                                onClick = { state.jumpBridgesReference.url.toURIOrNull()?.openBrowser() },
+                                            )
+                                        }
+                                        is ConfigurationPackRepository.JumpBridgesReference.Text -> {
+                                            Text(
+                                                text = "A list of jump bridges for ${state.jumpBridgesReference.packName} from ${formatDate(state.jumpBridgesReference.date)} is available",
+                                                textAlign = TextAlign.Center,
+                                            )
+                                            LinkText(
+                                                text = "Click to use it",
+                                                onClick = { Clipboard.copy(state.jumpBridgesReference.text) },
+                                            )
+                                        }
+                                        null -> {
+                                            val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
+                                            RiftTooltipArea(
+                                                text = buildAnnotatedString {
+                                                    appendLine(stringResource(Res.string.settings_window_import_jump_bridges_tip3))
+                                                    appendLine()
+                                                    withColor(RiftTheme.colors.textHighlighted) {
+                                                        appendLine("Jita -> Perimeter")
+                                                        appendLine("New Caldari -> Alikara")
+                                                        append("Hirtamon -> Ikuchi")
+                                                    }
+                                                },
                                             ) {
-                                                Text(
-                                                    text = stringResource(Res.string.settings_window_format_info),
-                                                    style = RiftTheme.typography.bodySecondary,
-                                                )
-                                                RiftMulticolorIcon(
-                                                    type = MulticolorIconType.Info,
-                                                    parentPointerInteractionStateHolder = pointerInteractionStateHolder,
-                                                )
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                                    modifier = Modifier
+                                                        .pointerInteraction(pointerInteractionStateHolder)
+                                                        .padding(vertical = Spacing.small),
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(Res.string.settings_window_format_info),
+                                                        style = RiftTheme.typography.bodySecondary,
+                                                    )
+                                                    RiftMulticolorIcon(
+                                                        type = MulticolorIconType.Info,
+                                                        parentPointerInteractionStateHolder = pointerInteractionStateHolder,
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -1183,7 +1366,7 @@ private fun SovereigntyUpgradesSection(
         val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
         ScrollbarLazyColumn(
             modifier = Modifier
-                .height(140.dp)
+                .height(250.dp)
                 .border(1.dp, RiftTheme.colors.borderGrey),
             scrollbarModifier = Modifier.padding(vertical = Spacing.small),
             contentPadding = PaddingValues(vertical = Spacing.verySmall),
