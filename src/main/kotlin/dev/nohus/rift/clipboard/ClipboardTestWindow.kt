@@ -39,11 +39,12 @@ import dev.nohus.rift.compose.fadingRightEdge
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_clipboard
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.settings.JumpBridgesParser
 import dev.nohus.rift.settings.SovereigntyUpgradesParser
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ClipboardTestWindow(
@@ -53,7 +54,7 @@ fun ClipboardTestWindow(
     val viewModel: ClipboardTestViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Clipboard Import Tester",
+        title = stringResource(Res.string.clipboard_test_window_title),
         icon = Res.drawable.window_clipboard,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -77,13 +78,13 @@ private fun ClipboardTestWindowContent(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
             RiftToggleButton(
-                text = "Jump Bridges",
+                text = stringResource(Res.string.clipboard_test_window_jump_bridge),
                 isSelected = state.type == ClipboardImportType.JumpBridges,
                 type = ToggleButtonType.Left,
                 onClick = { viewModel.onImportTypeChange(ClipboardImportType.JumpBridges) },
             )
             RiftToggleButton(
-                text = "Sovereignty Upgrades",
+                text = stringResource(Res.string.clipboard_test_window_sov_upgrade),
                 isSelected = state.type == ClipboardImportType.SovereigntyUpgrades,
                 type = ToggleButtonType.Right,
                 onClick = { viewModel.onImportTypeChange(ClipboardImportType.SovereigntyUpgrades) },
@@ -106,7 +107,7 @@ private fun ClipboardTestWindowContent(
                     SovereigntyUpgradesContent(state)
                 }
                 null -> {
-                    EmptyState("Choose what are you trying to import above")
+                    EmptyState(stringResource(Res.string.clipboard_test_window_empty_state))
                 }
             }
         }
@@ -117,18 +118,18 @@ private fun ClipboardTestWindowContent(
 private fun JumpBridgesContent(state: UiState) {
     when (val result = state.jumpBridgesResult) {
         JumpBridgesParser.ParsingResult.Empty, null -> {
-            EmptyState("Your clipboard is empty.\nCopy a list of jump bridges.")
+            EmptyState(stringResource(Res.string.clipboard_test_window_jump_bridge_empty))
         }
 
         JumpBridgesParser.ParsingResult.TooShort -> {
-            WarningState("Your clipboard only contains 1 line of text.\nCopy a list of jump bridges with at least 2 lines.")
+            WarningState(stringResource(Res.string.clipboard_test_window_jump_bridge_too_short))
         }
 
         is JumpBridgesParser.ParsingResult.ParsedNotEnough -> {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
             ) {
-                WarningState("Your clipboard doesn't contain enough jump bridge connections.\nCopy a list of jump bridges with at least 2 connections.")
+                WarningState(stringResource(Res.string.clipboard_test_window_jump_bridge_not_enough))
                 result.lines.forEach { line ->
                     JumpBridgeParsedLine(line)
                 }
@@ -139,7 +140,7 @@ private fun JumpBridgesContent(state: UiState) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
             ) {
-                SuccessState("You copied a valid list of ${result.connections.size} jump bridge connection.\nYou can import them in Settings.")
+                SuccessState(stringResource(Res.string.clipboard_test_window_jump_bridge_valid, result.connections.size))
                 result.lines.forEach { line ->
                     JumpBridgeParsedLine(line)
                 }
@@ -154,7 +155,7 @@ private fun JumpBridgeParsedLine(line: JumpBridgesParser.ParsedLine) {
         is JumpBridgesParser.ParsedLine.Connection -> {
             ParsedLine(
                 icon = MulticolorIconType.Check,
-                description = "This line is correct and contains a connection from ${line.connection.from.name} to ${line.connection.to.name}",
+                description = stringResource(Res.string.clipboard_test_window_jump_bridge_line_valid, line.connection.from.name, line.connection.to.name),
                 line = line.text,
             )
         }
@@ -162,7 +163,7 @@ private fun JumpBridgeParsedLine(line: JumpBridgesParser.ParsedLine) {
         is JumpBridgesParser.ParsedLine.NoSystems -> {
             ParsedLine(
                 icon = MulticolorIconType.Info,
-                description = "This line is ignored because it doesn't contain any system names",
+                description = stringResource(Res.string.clipboard_test_window_jump_bridge_line_no_system),
                 line = line.text,
             )
         }
@@ -170,7 +171,7 @@ private fun JumpBridgeParsedLine(line: JumpBridgesParser.ParsedLine) {
         is JumpBridgesParser.ParsedLine.OneSystem -> {
             ParsedLine(
                 icon = MulticolorIconType.Warning,
-                description = "This line is invalid because it contains only one system name: ${line.system.name}",
+                description = stringResource(Res.string.clipboard_test_window_jump_bridge_line_one_system, line.system.name),
                 line = line.text,
             )
         }
@@ -178,7 +179,7 @@ private fun JumpBridgeParsedLine(line: JumpBridgesParser.ParsedLine) {
         is JumpBridgesParser.ParsedLine.TooManySystems -> {
             ParsedLine(
                 icon = MulticolorIconType.Warning,
-                description = "This line is invalid because it contains more than 2 system names: ${line.systems.joinToString { it.name }}",
+                description = stringResource(Res.string.clipboard_test_window_jump_bridge_line_too_many_system, line.systems.joinToString { it.name }),
                 line = line.text,
             )
         }
@@ -189,13 +190,13 @@ private fun JumpBridgeParsedLine(line: JumpBridgesParser.ParsedLine) {
 private fun SovereigntyUpgradesContent(state: UiState) {
     when (val result = state.sovereigntyUpgradesResult) {
         SovereigntyUpgradesParser.ParsingResult.Empty, null -> {
-            EmptyState("Your clipboard is empty.\nCopy a list of sovereignty upgrades.")
+            EmptyState(stringResource(Res.string.clipboard_test_window_sov_upgrade_empty))
         }
         is SovereigntyUpgradesParser.ParsingResult.ParsedNotEnough -> {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
             ) {
-                WarningState("Your clipboard doesn't contain any sovereignty upgrades.")
+                WarningState(stringResource(Res.string.clipboard_test_window_sov_upgrade_no_enough))
                 result.lines.forEach { line ->
                     SovereigntyUpgradesParsedLine(line)
                 }
@@ -205,7 +206,7 @@ private fun SovereigntyUpgradesContent(state: UiState) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
             ) {
-                SuccessState("You copied a valid list of sovereignty upgrades for ${result.upgrades.size} systems.\nYou can import them in Settings.")
+                SuccessState(stringResource(Res.string.clipboard_test_window_sov_upgrade_valid, result.upgrades.size))
                 result.lines.forEach { line ->
                     SovereigntyUpgradesParsedLine(line)
                 }
@@ -220,21 +221,21 @@ private fun SovereigntyUpgradesParsedLine(line: SovereigntyUpgradesParser.Parsed
         is SovereigntyUpgradesParser.ParsedLine.SystemWithUpgrades -> {
             ParsedLine(
                 icon = MulticolorIconType.Check,
-                description = "This line is correct and contains upgrades for system: ${line.system.name}, upgrades: ${line.upgrades.joinToString { it.name }}",
+                description = stringResource(Res.string.clipboard_test_window_sov_upgrade_line_valid, line.system.name, line.upgrades.joinToString { it.name }),
                 line = line.text,
             )
         }
         is SovereigntyUpgradesParser.ParsedLine.NoSystem -> {
             ParsedLine(
                 icon = MulticolorIconType.Info,
-                description = "This line is ignored because it doesn't contain any system name",
+                description = stringResource(Res.string.clipboard_test_window_sov_upgrade_line_no_system),
                 line = line.text,
             )
         }
         is SovereigntyUpgradesParser.ParsedLine.NoUpgrades -> {
             ParsedLine(
                 icon = MulticolorIconType.Warning,
-                description = "This line is invalid because it only contains a system: ${line.system.name}, but no upgrade names",
+                description = stringResource(Res.string.clipboard_test_window_sov_upgrade_line_no_upgrade, line.system.name),
                 line = line.text,
             )
         }
