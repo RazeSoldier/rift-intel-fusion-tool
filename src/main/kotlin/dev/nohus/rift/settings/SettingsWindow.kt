@@ -568,15 +568,15 @@ private fun KillmailMonitoringSection(
     state: UiState,
     viewModel: SettingsViewModel,
 ) {
-    SectionTitle("Killmail Monitoring", Modifier.padding(bottom = Spacing.medium))
+    SectionTitle(stringResource(Res.string.settings_window_killmail_monitor_section_title), Modifier.padding(bottom = Spacing.medium))
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Text(
-            text = "RIFT watches killmails for valuable intel,\nfor example to show attackers on the map",
+            text = stringResource(Res.string.settings_window_killmail_monitor_description),
             style = RiftTheme.typography.bodySecondary,
         )
         RiftCheckboxWithLabel(
-            label = "Monitor zKillboard.com",
-            tooltip = "RIFT will subscribe to zKillboard.com\nto receive new killmails live",
+            label = stringResource(Res.string.settings_window_killmail_monitor_label),
+            tooltip = stringResource(Res.string.settings_window_killmail_monitor_tooltip),
             isChecked = state.isZkillboardMonitoringEnabled,
             onCheckedChange = viewModel::onIsZkillboardMonitoringChanged,
             modifier = Modifier.padding(bottom = Spacing.small),
@@ -612,9 +612,9 @@ private fun ClipboardSection(
     state: UiState,
     viewModel: SettingsViewModel,
 ) {
-    SectionTitle("Clipboard", Modifier.padding(bottom = Spacing.medium))
+    SectionTitle(stringResource(Res.string.settings_window_clipboard_section_title), Modifier.padding(bottom = Spacing.medium))
     Text(
-        text = "RIFT can import some data from your clipboard, like Jump Bridges and Sovereignty Upgrades",
+        text = stringResource(Res.string.settings_window_clipboard_section_description),
         style = RiftTheme.typography.bodySecondary,
     )
     Row(
@@ -622,9 +622,9 @@ private fun ClipboardSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.padding(end = Spacing.medium).fillMaxWidth(),
     ) {
-        Text("Troubleshoot import issues")
+        Text(stringResource(Res.string.settings_window_clipboard_troubleshoot))
         RiftButton(
-            text = "Clipboard tester",
+            text = stringResource(Res.string.settings_window_clipboard_troubleshoot_button),
             type = ButtonType.Primary,
             onClick = viewModel::onClipboardTesterClick,
         )
@@ -731,7 +731,7 @@ private fun CharacterPortraitsSection(
     state: UiState,
     viewModel: SettingsViewModel,
 ) {
-    SectionTitle("Character Portraits")
+    SectionTitle(stringResource(Res.string.settings_window_character_portrait_section_title))
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
@@ -747,21 +747,18 @@ private fun CharacterPortraitsSection(
             }
         }
         RiftDropdownWithLabel(
-            label = "Parallax effect:",
+            label = stringResource(Res.string.settings_window_character_parallax_effect_label),
             items = CharacterPortraitsParallaxStrength.entries,
             selectedItem = state.characterPortraits.parallaxStrength,
             onItemSelected = { viewModel.onCharacterPortraitsParallaxStrengthChanged(it) },
             getItemName = {
                 when (it) {
-                    CharacterPortraitsParallaxStrength.None -> "Turned off"
-                    CharacterPortraitsParallaxStrength.Reduced -> "Reduced"
-                    CharacterPortraitsParallaxStrength.Normal -> "Normal"
+                    CharacterPortraitsParallaxStrength.None -> getStringSync(Res.string.settings_window_character_parallax_effect_none)
+                    CharacterPortraitsParallaxStrength.Reduced -> getStringSync(Res.string.settings_window_character_parallax_effect_reduced)
+                    CharacterPortraitsParallaxStrength.Normal -> getStringSync(Res.string.settings_window_character_parallax_effect_normal)
                 }
             },
-            tooltip = """
-                Shown for your characters and 
-                characters outside of intel contexts
-            """.trimIndent(),
+            tooltip = getStringSync(Res.string.settings_window_character_parallax_effect_toltip)
         )
 
         Row(
@@ -783,26 +780,23 @@ private fun CharacterPortraitsSection(
             }
         }
         RiftDropdownWithLabel(
-            label = "Standings background:",
+            label = stringResource(Res.string.settings_window_character_standing_background_label),
             items = CharacterPortraitsStandingsTargets.entries,
             selectedItem = state.characterPortraits.standingsTargets,
             onItemSelected = { viewModel.onCharacterPortraitsStandingsTargetsChanged(it) },
             getItemName = {
                 when (it) {
-                    CharacterPortraitsStandingsTargets.All -> "For all"
-                    CharacterPortraitsStandingsTargets.OnlyFriendly -> "For friendly"
-                    CharacterPortraitsStandingsTargets.OnlyHostile -> "For hostile"
-                    CharacterPortraitsStandingsTargets.OnlyNonNeutral -> "For non-neutral"
-                    CharacterPortraitsStandingsTargets.None -> "Turned off"
+                    CharacterPortraitsStandingsTargets.All -> getStringSync(Res.string.settings_window_character_standing_background_all)
+                    CharacterPortraitsStandingsTargets.OnlyFriendly -> getStringSync(Res.string.settings_window_character_standing_background_only_friendly)
+                    CharacterPortraitsStandingsTargets.OnlyHostile -> getStringSync(Res.string.settings_window_character_standing_background_only_hostile)
+                    CharacterPortraitsStandingsTargets.OnlyNonNeutral -> getStringSync(Res.string.settings_window_character_standing_background_only_non_neutral)
+                    CharacterPortraitsStandingsTargets.None -> getStringSync(Res.string.settings_window_character_standing_background_only_none)
                 }
             },
-            tooltip = """
-                Shown for characters
-                in intel contexts
-            """.trimIndent(),
+            tooltip = getStringSync(Res.string.settings_window_character_standing_background_tooltip),
         )
         RiftSliderWithLabel(
-            label = "Standings background strength:",
+            label = getStringSync(Res.string.settings_window_character_standing_background_strength),
             width = 100.dp,
             range = 30..100,
             currentValue = (state.characterPortraits.standingsEffectStrength * 100).toInt().coerceIn(0..100),
