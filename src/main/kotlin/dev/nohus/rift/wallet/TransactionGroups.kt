@@ -183,7 +183,7 @@ sealed class TransactionGroup(
 }
 
 fun getReferenceTypeName(referenceType: String): String {
-    if (ApplicationLocale.current == Locale.CHINESE) {
+    if (ApplicationLocale == Locale.CHINESE) {
         val name = getReferenceTypeNameL10n(referenceType)
         if (name != null) {
             return name

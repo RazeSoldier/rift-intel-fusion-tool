@@ -326,7 +326,7 @@ private fun AnnotatedString.Builder.buildAnnotatedStringForCharacterDistance(
                 }
             }
         }
-        if (ApplicationLocale.current == Locale.ENGLISH) {
+        if (ApplicationLocale == Locale.ENGLISH) {
             optionGroups[0].apply {
                 distanceGroupConfig(this)
             }

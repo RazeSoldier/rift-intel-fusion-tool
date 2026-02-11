@@ -34,4 +34,13 @@ object ApplicationLocale {
     fun setLocale(locale: Locale) {
         appLocale = locale
     }
+
+    override fun hashCode(): Int {
+        return current.language.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Locale) return false
+        return current.language == other.language
+    }
 }
