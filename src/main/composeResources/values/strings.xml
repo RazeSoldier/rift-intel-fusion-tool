@@ -978,4 +978,75 @@
     <string name="type_detail_item_unit_price">%1$s at %2$d per unit</string>
     <string name="type_detail_item_corp_project">Corporation Project</string>
     <string name="type_detail_item_freelance_project">Freelance Project</string>
+    <!-- GetSolarSystemChipStateUseCase.kt -->
+    <string name="solar_system_chip_current_location">Current location</string>
+    <plurals name="solar_system_chip_jump_count">
+        <item quantity="one">%1$d jump</item>
+        <item quantity="other">%1$d jumps</item>
+    </plurals>
+    <string name="solar_system_chip_no_gate_route">No gate route</string>
+    <!-- ColonyIcon.kt -->
+    <string name="colony_icon_tooltip_extracting">Extracting</string>
+    <string name="colony_icon_tooltip_producing">Producing</string>
+    <string name="colony_icon_tooltip_not_setup">Not setup</string>
+    <string name="colony_icon_tooltip_need_attention">Needs attention</string>
+    <string name="colony_icon_tooltip_idle">Idle</string>
+    <string name="colony_icon_tooltip_product_storage">Product storage</string>
+    <string name="colony_icon_tooltip_planet_type">%1$s planet</string>
+    <!-- ProducedCommodity.kt -->
+    <plurals name="duration_unit">
+        <item quantity="one">%1$d unit every %2$s</item>
+        <item quantity="other">%1$d units every %2$s</item>
+    </plurals>
+    <string name="no_input_routes">No input routes</string>
+    <string name="not_routed">Not routed</string>
+    <string name="not_selected">Not selected</string>
+    <!-- PlanetaryIndustryWindow.kt -->
+    <string name="planetary_industry_window_title">Planetary Industry</string>
+    <string name="planetary_industry_window_could_not_load_colonies">Could not load your colonies</string>
+    <string name="planetary_industry_window_try_again">Try again</string>
+    <string name="planetary_industry_window_loading_colonies">Loading colonies…</string>
+    <string name="planetary_industry_window_no_colonies">No established planetary colonies.</string>
+    <plurals name="planetary_industry_window_planet_count">
+        <item quantity="one">%1$d planet</item>
+        <item quantity="other">%1$d planets</item>
+    </plurals>
+    <string name="planetary_industry_window_idle_count">, %1$d idle</string>
+    <plurals name="planetary_industry_window_warn_count">
+        <item quantity="one">, %1$d needs attention</item>
+        <item quantity="other">, %1$d need attention</item>
+    </plurals>
+    <string name="planetary_industry_window_details_view">Details view</string>
+    <string name="planetary_industry_window_list_view">List view</string>
+    <string name="planetary_industry_window_grid_view">Grid view</string>
+    <string name="planetary_industry_window_view_mode">View mode</string>
+    <string name="planetary_industry_window_sort_by_status">By status</string>
+    <string name="planetary_industry_window_sort_by_expiry_time">By expiry time</string>
+    <string name="planetary_industry_window_sort_by_character">By character account and age</string>
+    <string name="planetary_industry_window_sort_by_character_name">By character name</string>
+    <string name="planetary_industry_window_sort_by">Sort By</string>
+    <string name="planetary_industry_window_copy_google_sheets">Copy for Google Sheets</string>
+    <string name="planetary_industry_window_copy_execl">Copy for Excel</string>
+    <string name="planetary_industry_window_copy_execl_add_in">Copy for Excel with EVE Online add-in</string>
+    <string name="planetary_industry_window_copy_spreadsheet">Copy to spreadsheet</string>
+    <string name="planetary_industry_window_return">Return</string>
+    <string name="planetary_industry_window_details">Details</string>
+    <string name="planetary_industry_window_storage">Storage</string>
+    <string name="planetary_industry_window_storage_item">Stored Items</string>
+    <string name="planetary_industry_window_storage_none">None</string>
+    <plurals name="planetary_industry_window_unit">
+        <item quantity="one">%1$d unit</item>
+        <item quantity="other">%1$d units</item>
+    </plurals>
+    <string name="planetary_industry_window_power">Power: %1$s%</string>
+    <string name="planetary_industry_window_current_cycle">Current Cycle</string>
+    <string name="planetary_industry_window_idle_time">Idle for %1$s</string>
+    <string name="planetary_industry_window_program_not_active">Program not active</string>
+    <string name="planetary_industry_window_time_remaining">Time remaining</string>
+    <string name="planetary_industry_window_avg_per_hour">Avg. Per hour</string>
+    <string name="planetary_industry_window_current_cycle_output">Current Cycle Output</string>
+    <string name="planetary_industry_window_total_output">Total Output</string>
+    <string name="planetary_industry_window_in_production">In production</string>
+    <string name="planetary_industry_window_wait_resources">Waiting for resources</string>
+    <string name="planetary_industry_window_input">Input</string>
 </resources>
