@@ -133,7 +133,7 @@ object LocationFlags {
     )
 
     fun getName(flag: String): String? {
-        if (ApplicationLocale.current == Locale.CHINESE) {
+        if (ApplicationLocale == Locale.CHINESE) {
             return LocationFlagsCN.flags[flag]
         }
         return flags[flag]

@@ -99,7 +99,7 @@ object Commodities {
     )
 
     fun getTierName(commodity: Int): String {
-        if (ApplicationLocale.current == Locale.CHINESE) {
+        if (ApplicationLocale == Locale.CHINESE) {
             return when (commodity) {
                 in p0Ids -> "P0"
                 in p1Ids -> "P1"
