@@ -952,4 +952,70 @@
     <string name="type_detail_item_unit_price">每单位%2$d%1$s</string>
     <string name="type_detail_item_corp_project">军团项目</string>
     <string name="type_detail_item_freelance_project">自由职业项目</string>
+    <!-- GetSolarSystemChipStateUseCase.kt -->
+    <string name="solar_system_chip_current_location">当前位置</string>
+    <plurals name="solar_system_chip_jump_count">
+        <item quantity="other">%1$d跳</item>
+    </plurals>
+    <string name="solar_system_chip_no_gate_route">没有可用路径</string>
+    <!-- ColonyIcon.kt -->
+    <string name="colony_icon_tooltip_extracting">开采中</string>
+    <string name="colony_icon_tooltip_producing">生产中</string>
+    <string name="colony_icon_tooltip_not_setup">没有设置好</string>
+    <string name="colony_icon_tooltip_need_attention">需要注意</string>
+    <string name="colony_icon_tooltip_idle">空闲</string>
+    <string name="colony_icon_tooltip_product_storage">成品存储</string>
+    <string name="colony_icon_tooltip_planet_type">%1$s行星</string>
+    <!-- ProducedCommodity.kt -->
+    <plurals name="duration_unit">
+        <item quantity="other">每%2$s%1$d单位</item>
+    </plurals>
+    <string name="no_input_routes">没有输入路径</string>
+    <string name="not_routed">未路由</string>
+    <string name="not_selected">未选择</string>
+    <!-- PlanetaryIndustryWindow.kt -->
+    <string name="planetary_industry_window_title">行星工业</string>
+    <string name="planetary_industry_window_could_not_load_colonies">无法加载你的菜地</string>
+    <string name="planetary_industry_window_try_again">重试</string>
+    <string name="planetary_industry_window_loading_colonies">加载菜地…</string>
+    <string name="planetary_industry_window_no_colonies">没有已建立的菜地</string>
+    <plurals name="planetary_industry_window_planet_count">
+        <item quantity="other">%1$d个行星</item>
+    </plurals>
+    <string name="planetary_industry_window_idle_count">，%1$d个空闲</string>
+    <plurals name="planetary_industry_window_warn_count">
+        <item quantity="other">，%1$d个需要注意</item>
+    </plurals>
+    <string name="planetary_industry_window_details_view">详情视图</string>
+    <string name="planetary_industry_window_list_view">列表视图</string>
+    <string name="planetary_industry_window_grid_view">网格视图</string>
+    <string name="planetary_industry_window_view_mode">视图模式</string>
+    <string name="planetary_industry_window_sort_by_status">按状态</string>
+    <string name="planetary_industry_window_sort_by_expiry_time">按过期时间</string>
+    <string name="planetary_industry_window_sort_by_character">按角色账号和年龄</string>
+    <string name="planetary_industry_window_sort_by_character_name">按角色名</string>
+    <string name="planetary_industry_window_sort_by">排序</string>
+    <string name="planetary_industry_window_copy_google_sheets">复制为谷歌表格</string>
+    <string name="planetary_industry_window_copy_execl">复制为Excel</string>
+    <string name="planetary_industry_window_copy_execl_add_in">复制为Excel（使用EVE Online）</string>
+    <string name="planetary_industry_window_copy_spreadsheet">复制为表格</string>
+    <string name="planetary_industry_window_return">返回</string>
+    <string name="planetary_industry_window_details">详情</string>
+    <string name="planetary_industry_window_storage">仓库</string>
+    <string name="planetary_industry_window_storage_item">储存物品</string>
+    <string name="planetary_industry_window_storage_none">空</string>
+    <plurals name="planetary_industry_window_unit">
+        <item quantity="other">%1$d个单位</item>
+    </plurals>
+    <string name="planetary_industry_window_power">能量: %1$s%</string>
+    <string name="planetary_industry_window_current_cycle">当前循环</string>
+    <string name="planetary_industry_window_idle_time">已经空闲%1$s</string>
+    <string name="planetary_industry_window_program_not_active">程序未启动</string>
+    <string name="planetary_industry_window_time_remaining">剩余时间</string>
+    <string name="planetary_industry_window_avg_per_hour">平均每小时</string>
+    <string name="planetary_industry_window_current_cycle_output">当前循环输出</string>
+    <string name="planetary_industry_window_total_output">总输出</string>
+    <string name="planetary_industry_window_in_production">生产中</string>
+    <string name="planetary_industry_window_wait_resources">等待资源</string>
+    <string name="planetary_industry_window_input">输入</string>
 </resources>

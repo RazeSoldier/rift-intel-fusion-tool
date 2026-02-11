@@ -16,6 +16,8 @@ import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.planetaryindustry.models.Commodities
 import dev.nohus.rift.planetaryindustry.models.Pin
 import dev.nohus.rift.planetaryindustry.models.Route
@@ -23,7 +25,8 @@ import dev.nohus.rift.planetaryindustry.models.RoutedState
 import dev.nohus.rift.planetaryindustry.models.isRouted
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.utils.formatDurationCompact
-import dev.nohus.rift.utils.plural
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProducedCommodity(
@@ -31,7 +34,7 @@ fun ProducedCommodity(
     routes: List<Route>,
     type: Type?,
 ) {
-    val verb = if (pin is Pin.Extractor) "Extracting" else "Producing"
+    val verb = if (pin is Pin.Extractor) stringResource(Res.string.colony_icon_tooltip_extracting) else stringResource(Res.string.colony_icon_tooltip_producing)
     if (type != null) {
         val tooltip = buildAnnotatedString {
             withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
@@ -39,7 +42,7 @@ fun ProducedCommodity(
             }
             append(" ")
             withStyle(SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                append(Commodities.getTierName(type.name))
+                append(Commodities.getTierName(type.id))
             }
 
             if (pin is Pin.Factory && pin.schematic != null) {
@@ -47,7 +50,7 @@ fun ProducedCommodity(
                 withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
                     val quantity = pin.schematic.outputQuantity
                     val duration = formatDurationCompact(pin.schematic.cycleTime)
-                    append("$quantity unit${quantity.plural} every $duration")
+                    append(pluralStringResource(Res.plurals.duration_unit, quantity.toInt(), quantity, duration))
                 }
             }
         }
@@ -76,13 +79,13 @@ fun ProducedCommodity(
                         RoutedState.Routed -> {}
                         RoutedState.InputNotRouted -> {
                             Text(
-                                text = "No input routes",
+                                text = stringResource(Res.string.no_input_routes),
                                 style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.textRed, fontWeight = FontWeight.Bold),
                             )
                         }
                         RoutedState.OutputNotRouted -> {
                             Text(
-                                text = "Not routed",
+                                text = stringResource(Res.string.not_routed),
                                 style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.textRed, fontWeight = FontWeight.Bold),
                             )
                         }
@@ -100,7 +103,7 @@ fun ProducedCommodity(
                     style = RiftTheme.typography.bodyHighlighted,
                 )
                 Text(
-                    text = "Not selected",
+                    text = stringResource(Res.string.not_selected),
                     style = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.textRed, fontWeight = FontWeight.Bold),
                 )
             }
