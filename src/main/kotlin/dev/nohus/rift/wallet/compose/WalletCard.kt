@@ -47,11 +47,11 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.checkmark_16px
-import dev.nohus.rift.generated.resources.editplanicon
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.formatIskReadable
 import dev.nohus.rift.utils.multiplyBrightness
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WalletCard(
@@ -63,8 +63,8 @@ fun WalletCard(
     onClick: () -> Unit,
     amount: Double,
     showCents: Boolean,
+    pointerInteractionStateHolder: PointerInteractionStateHolder = rememberPointerInteractionStateHolder(),
 ) {
-    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     WalletCardBox(pointerInteractionStateHolder, isSelected, onClick) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -82,7 +82,7 @@ fun WalletCard(
                     if (isEditing && onNameChange != null) {
                         RiftTextField(
                             text = text,
-                            placeholder = "Division name",
+                            placeholder = stringResource(Res.string.wallet_window_division_name),
                             onTextChanged = {
                                 text = it.take(25)
                             },

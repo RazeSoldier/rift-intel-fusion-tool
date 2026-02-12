@@ -773,7 +773,7 @@ private fun intelReportedTemplateGroupBuilder(
 }
 
 private fun getIntelSystemText(location: IntelReportLocation.System): String {
-    return if (ApplicationLocale.current == Locale.CHINESE) {
+    return if (ApplicationLocale == Locale.CHINESE) {
         "在${location.systemName}${getRangePrefixText(location.jumpsRange)} "
     } else {
         "${getRangePrefixText(location.jumpsRange)} ${location.systemName}"
@@ -782,7 +782,7 @@ private fun getIntelSystemText(location: IntelReportLocation.System): String {
 
 private fun getIntelAnyUndockCharacterText(location: IntelReportLocation.AnyOwnedCharacter): String {
     val jumpsRange = location.jumpsRange
-    return if (ApplicationLocale.current == Locale.CHINESE) {
+    return if (ApplicationLocale == Locale.CHINESE) {
         if (jumpsRange.min == 0 && jumpsRange.max == 0) {
             "出现任何出站角色当前位置"
         } else {
@@ -800,7 +800,7 @@ private fun getIntelSpecificUndockCharacterText(
     val jumpsRange = location.jumpsRange
     val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name
         ?: location.characterId.toString()
-    return if (ApplicationLocale.current == Locale.CHINESE) {
+    return if (ApplicationLocale == Locale.CHINESE) {
         if (jumpsRange.min == 0 && jumpsRange.max == 0) {
             "出现在出站的${character}当前位置"
         } else {
@@ -818,7 +818,7 @@ private fun getIntelSpecificOnlineCharacterText(
     val jumpsRange = location.jumpsRange
     val character = characters.firstOrNull { it.characterId == location.characterId }?.info?.name
         ?: location.characterId.toString()
-    return if (ApplicationLocale.current == Locale.CHINESE) {
+    return if (ApplicationLocale == Locale.CHINESE) {
         if (jumpsRange.min == 0 && jumpsRange.max == 0) {
             "出现在${character}当前位置"
         } else {
@@ -831,7 +831,7 @@ private fun getIntelSpecificOnlineCharacterText(
 
 private fun getIntelAnyOnlineCharacterText(location: IntelReportLocation.AnyOwnedCharacter): String {
     val jumpsRange = location.jumpsRange
-    return if (ApplicationLocale.current == Locale.CHINESE) {
+    return if (ApplicationLocale == Locale.CHINESE) {
         if (jumpsRange.min == 0 && jumpsRange.max == 0) {
             "出现任何在线角色当前位置"
         } else {
@@ -844,7 +844,7 @@ private fun getIntelAnyOnlineCharacterText(location: IntelReportLocation.AnyOwne
 
 private fun getRangePrefixText(range: JumpRange): String {
     val (min, max) = range.min to range.max
-    return if (ApplicationLocale.current == Locale.CHINESE) {
+    return if (ApplicationLocale == Locale.CHINESE) {
         when {
             min == 0 && max == 0 -> ""
             min == 0 -> "${max}跳内"

@@ -14,11 +14,9 @@ import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.annotation.Single

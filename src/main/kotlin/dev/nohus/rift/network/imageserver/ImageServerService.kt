@@ -15,10 +15,18 @@ interface ImageServerService {
 
     @HEAD("characters/{characterId}/portrait")
     @EndpointTag(Endpoint.ImageServiceHeadCharacterPortrait::class)
-    suspend fun getCharacterPortrait(
+    suspend fun headCharacterPortrait(
         @Tag originator: Originator,
         @Path("characterId") characterId: Int,
     ): Response<Void>
+
+    @GET("characters/{characterId}/portrait")
+    @EndpointTag(Endpoint.ImageServiceHeadCharacterPortrait::class)
+    suspend fun getCharacterPortrait(
+        @Tag originator: Originator,
+        @Path("characterId") characterId: Int,
+        @Query("size") size: Int,
+    ): Response<ResponseBody>
 
     @GET("alliances/{allianceId}/logo")
     @EndpointTag(Endpoint.ImageServiceGetAllianceLogo::class)

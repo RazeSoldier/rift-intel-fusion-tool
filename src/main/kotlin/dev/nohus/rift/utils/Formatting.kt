@@ -1,5 +1,11 @@
 package dev.nohus.rift.utils
 
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.formatting_number_suffix_billion
+import dev.nohus.rift.generated.resources.formatting_number_suffix_million
+import dev.nohus.rift.generated.resources.formatting_number_suffix_thouand
+import dev.nohus.rift.generated.resources.formatting_number_suffix_trillion
+import dev.nohus.rift.i18n.getStringSync
 import org.apache.commons.math3.util.ArithmeticUtils.pow
 import java.text.NumberFormat
 import java.time.Duration
@@ -79,10 +85,10 @@ private fun formatNumberReadable(number: Double, significantDigits: Int = 3, isC
 
 private fun getNumberSuffix(logThousand: Int) = when (logThousand) {
     0 -> null
-    1 -> " thousand"
-    2 -> " million"
-    3 -> " billion"
-    else -> " trillion"
+    1 -> getStringSync(Res.string.formatting_number_suffix_thouand)
+    2 -> getStringSync(Res.string.formatting_number_suffix_million)
+    3 -> getStringSync(Res.string.formatting_number_suffix_billion)
+    else -> getStringSync(Res.string.formatting_number_suffix_trillion)
 }
 
 private fun getNumberSuffixCompact(logThousand: Int) = when (logThousand) {

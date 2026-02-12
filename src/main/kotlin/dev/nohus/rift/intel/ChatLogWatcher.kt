@@ -149,6 +149,14 @@ class ChatLogWatcher(
                         details = characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, token.type.characterId),
                     ),
                 )
+            } else if (token.type is ChatMessageParser.TokenType.Kill) {
+                token.type.characterId?.let { characterId ->
+                    token.copy(
+                        type = token.type.copy(
+                            details = characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, characterId),
+                        ),
+                    )
+                } ?: token
             } else {
                 token
             }
@@ -192,6 +200,6 @@ class ChatLogWatcher(
     }
 
     private fun getIntelRegions(message: ChannelChatMessage): List<String> {
-        return settings.intelChannels.filter { it.name == message.metadata.channelName }.map { it.region }
+        return settings.intelChannels.filter { it.name == message.metadata.channelName }.mapNotNull { it.region }
     }
 }

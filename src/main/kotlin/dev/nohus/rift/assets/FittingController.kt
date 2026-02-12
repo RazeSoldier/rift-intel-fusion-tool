@@ -1,7 +1,6 @@
 package dev.nohus.rift.assets
 
 import dev.nohus.rift.assets.AssetsViewModel.Asset
-import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.utils.toURIOrNull
 import org.koin.core.annotation.Single
 import java.io.BufferedWriter

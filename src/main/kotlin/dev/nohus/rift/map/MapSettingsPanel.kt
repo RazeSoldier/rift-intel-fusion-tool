@@ -47,8 +47,8 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.backicon
-import dev.nohus.rift.generated.resources.expand_more_16px
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.map.DistanceMapController.DistanceMapState
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
@@ -78,6 +78,8 @@ import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController.MapSovereignt
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesRepository
 import dev.nohus.rift.utils.plural
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 
 enum class PanelState {
@@ -182,7 +184,7 @@ fun MapSettingsPanel(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 ) {
                                     Text(
-                                        text = "System:",
+                                        text = stringResource(Res.string.map_window_scrollbar_system),
                                         style = RiftTheme.typography.headerPrimary,
                                     )
                                     SystemColorPills(
@@ -203,7 +205,7 @@ fun MapSettingsPanel(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 ) {
                                     Text(
-                                        text = "Background:",
+                                        text = stringResource(Res.string.map_window_scrollbar_background),
                                         style = RiftTheme.typography.headerPrimary,
                                     )
                                     SystemColorPills(
@@ -224,11 +226,11 @@ fun MapSettingsPanel(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 ) {
                                     Text(
-                                        text = "Indicators:",
+                                        text = stringResource(Res.string.map_window_scrollbar_indicators),
                                         style = RiftTheme.typography.headerPrimary,
                                     )
                                     val text = systemInfoTypes.indicators[settingsMapType].orEmpty().let {
-                                        if (it.isEmpty()) "None" else "${it.size} enabled"
+                                        if (it.isEmpty()) stringResource(Res.string.map_window_none) else stringResource(Res.string.map_window_enabled_count, it.size)
                                     }
                                     RiftPill(
                                         text = text,
@@ -242,11 +244,11 @@ fun MapSettingsPanel(
                                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                                 ) {
                                     Text(
-                                        text = "Info box:",
+                                        text = stringResource(Res.string.map_window_scrollbar_info_box),
                                         style = RiftTheme.typography.headerPrimary,
                                     )
                                     val text = systemInfoTypes.infoBox[settingsMapType].orEmpty().let {
-                                        if (it.isEmpty()) "None" else "${it.size} enabled"
+                                        if (it.isEmpty()) stringResource(Res.string.map_window_none) else stringResource(Res.string.map_window_enabled_count, it.size)
                                     }
                                     RiftPill(
                                         text = text,
@@ -281,7 +283,7 @@ fun MapSettingsPanel(
                             modifier = Modifier.padding(Spacing.medium),
                         ) {
                             SettingsPanelTitle(
-                                title = "System color",
+                                title = stringResource(Res.string.map_window_settings_panel_system_color),
                                 onBack = { panelState = Expanded },
                             )
                             SystemColorPills(
@@ -308,7 +310,7 @@ fun MapSettingsPanel(
                             modifier = Modifier.padding(Spacing.medium),
                         ) {
                             SettingsPanelTitle(
-                                title = "System background color",
+                                title = stringResource(Res.string.map_window_settings_panel_system_background_color),
                                 onBack = { panelState = Expanded },
                             )
                             SystemColorPills(
@@ -335,7 +337,7 @@ fun MapSettingsPanel(
                             modifier = Modifier.padding(Spacing.medium),
                         ) {
                             SettingsPanelTitle(
-                                title = "Indicators (always visible)",
+                                title = stringResource(Res.string.map_window_settings_panel_indicators),
                                 onBack = { panelState = Expanded },
                             )
                             SystemIndicatorsPills(
@@ -362,7 +364,7 @@ fun MapSettingsPanel(
                             modifier = Modifier.padding(Spacing.medium),
                         ) {
                             SettingsPanelTitle(
-                                title = "Info box details (visible on hover)",
+                                title = stringResource(Res.string.map_window_settings_panel_info_box),
                                 onBack = { panelState = Expanded },
                             )
                             SystemIndicatorsPills(
@@ -432,7 +434,7 @@ private fun JumpRangePanel(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         SettingsPanelTitle(
-            title = "Jump range",
+            title = stringResource(Res.string.map_window_jump_range),
             onBack = onBack,
         )
         Row(
@@ -462,14 +464,14 @@ private fun JumpRangePanel(
             }
 
             Text(
-                text = "From:",
+                text = stringResource(Res.string.from),
                 style = RiftTheme.typography.bodyPrimary,
                 modifier = Modifier.padding(end = Spacing.small),
             )
             RiftAutocompleteTextField(
                 text = targetText,
                 suggestions = suggestions.take(5),
-                placeholder = "System or character",
+                placeholder = stringResource(Res.string.map_window_jump_range_placeholder),
                 onTextChanged = {
                     targetText = it
                     onJumpRangeTargetUpdate(it)
@@ -481,22 +483,22 @@ private fun JumpRangePanel(
                 RequirementIcon(
                     isFulfilled = mapJumpRangeState.target != null,
                     fulfilledTooltip = when (mapJumpRangeState.target) {
-                        is MapJumpRangeController.MapJumpRangeTarget.Character -> "Valid character"
-                        is MapJumpRangeController.MapJumpRangeTarget.System -> "Valid system"
+                        is MapJumpRangeController.MapJumpRangeTarget.Character -> stringResource(Res.string.map_window_valid_character)
+                        is MapJumpRangeController.MapJumpRangeTarget.System -> stringResource(Res.string.map_window_valid_system)
                         null -> ""
                     },
-                    notFulfilledTooltip = "No such system or character",
+                    notFulfilledTooltip = stringResource(Res.string.map_window_no_found_system_or_character),
                 )
             }
         }
         val ranges = listOf(
-            "6ly – Supercarriers, Titans" to 6.0,
-            "7ly – Carriers, Dreadnoughts, Faxes" to 7.0,
-            "8ly – Black Ops" to 8.0,
-            "10ly – Jump Freighters, Rorquals" to 10.0,
+            stringResource(Res.string.map_window_supercap_range) to 6.0,
+            stringResource(Res.string.map_window_cap_range) to 7.0,
+            stringResource(Res.string.map_window_blop_range) to 8.0,
+            stringResource(Res.string.map_window_other_cap_range) to 10.0,
         )
         RiftDropdownWithLabel(
-            label = "Range:",
+            label = stringResource(Res.string.map_window_range_label),
             items = ranges,
             selectedItem = ranges.firstOrNull { it.second == mapJumpRangeState.distanceLy } ?: ranges.first(),
             onItemSelected = { onJumpRangeDistanceUpdate(it.second) },
@@ -517,7 +519,7 @@ private fun PlanetsPanel(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         SettingsPanelTitle(
-            title = "Planet types",
+            title = stringResource(Res.string.map_window_planet_types),
             onBack = onBack,
         )
         FlowRow(
@@ -557,7 +559,7 @@ private fun SovereigntyUpgradesPanel(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         SettingsPanelTitle(
-            title = "Sovereignty upgrade types",
+            title = stringResource(Res.string.map_window_sov_upgrade_types),
             onBack = onBack,
         )
         FlowRow(
@@ -609,7 +611,7 @@ private fun DistanceMapPanel(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         SettingsPanelTitle(
-            title = "Distance map",
+            title = stringResource(Res.string.map_window_distance_map),
             onBack = onBack,
         )
         Row(
@@ -639,14 +641,14 @@ private fun DistanceMapPanel(
             }
 
             Text(
-                text = "Centered on:",
+                text = stringResource(Res.string.map_window_centered_on),
                 style = RiftTheme.typography.bodyPrimary,
                 modifier = Modifier.padding(end = Spacing.small),
             )
             RiftAutocompleteTextField(
                 text = targetText,
                 suggestions = suggestions.take(5),
-                placeholder = "System or character",
+                placeholder = stringResource(Res.string.map_window_jump_range_placeholder),
                 onTextChanged = {
                     targetText = it
                     isEdited = true
@@ -659,19 +661,19 @@ private fun DistanceMapPanel(
                 RequirementIcon(
                     isFulfilled = state.isEditedCenterValid || !isEdited,
                     fulfilledTooltip = when {
-                        state.followingCharacterId != null -> "Valid character"
-                        else -> "Valid system"
+                        state.followingCharacterId != null -> stringResource(Res.string.map_window_valid_character)
+                        else -> stringResource(Res.string.map_window_valid_system)
                     },
-                    notFulfilledTooltip = "No such system or character",
+                    notFulfilledTooltip = stringResource(Res.string.map_window_no_found_system_or_character),
                 )
             }
         }
         val ranges = List(5) {
             val range = it + 1
-            "$range jump${range.plural}" to range
+            pluralStringResource(Res.plurals.map_window_jump_text, range, range) to range
         }
         RiftDropdownWithLabel(
-            label = "Range:",
+            label = stringResource(Res.string.map_window_range_label),
             items = ranges,
             selectedItem = ranges.firstOrNull { it.second == state.distance } ?: ranges.first(),
             onItemSelected = { onDistanceMapRangeUpdate(it.second) },
@@ -715,7 +717,7 @@ private fun AlternativeLayoutsPills(
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         Text(
-            text = "Alternative maps:",
+            text = stringResource(Res.string.map_window_alternative_map),
             style = RiftTheme.typography.headerPrimary,
         )
         alternativeLayouts.forEach { layout ->
@@ -745,7 +747,7 @@ private fun DistanceMapPills(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             Text(
-                text = "Centered on:",
+                text = stringResource(Res.string.map_window_centered_on),
                 style = RiftTheme.typography.headerPrimary,
             )
             if (state.followingCharacterId != null) {
@@ -765,11 +767,11 @@ private fun DistanceMapPills(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             Text(
-                text = "Range:",
+                text = stringResource(Res.string.map_window_range_label),
                 style = RiftTheme.typography.headerPrimary,
             )
             RiftPill(
-                text = "${state.distance} jump${state.distance.plural}",
+                text = pluralStringResource(Res.plurals.map_window_jump_text, state.distance, state.distance),
                 onClick = onDistanceMapRangeClick,
             )
         }
@@ -851,39 +853,39 @@ private fun SystemIndicatorsPills(
  */
 private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String, String> {
     return when (color) {
-        MapSystemInfoType.StarColor -> "Actual color" to "Colored with the\nactual color of the star"
-        MapSystemInfoType.Security -> "Security Status" to "Colored according to the\nsecurity status"
-        MapSystemInfoType.NullSecurity -> "Null-Sec Status" to "Colored according to the\nnegative security status"
-        MapSystemInfoType.IntelHostiles -> "Hostiles count" to "Colored according to the\nnumber of reported hostiles"
-        MapSystemInfoType.Jumps -> "Jumps" to "Colored according to the\nnumber of jumps in the last hour"
-        MapSystemInfoType.Kills -> "Kills" to "Colored according to the\nnumber of ship and pod kills in the last hour"
-        MapSystemInfoType.NpcKills -> "NPC Kills" to "Colored according to the\nnumber of NPCs killed in the last hour"
-        MapSystemInfoType.Assets -> "Assets" to "Colored according to the\nnumber of owned assets located here"
-        MapSystemInfoType.Incursions -> "Incursions" to "Colored according to the\nincursion status"
-        MapSystemInfoType.Stations -> "Stations" to "Colored according to the\nnumber of stations"
-        MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Colored according to the\nfaction warfare occupier"
-        MapSystemInfoType.Sovereignty -> "Sovereignty" to "Colored according to the\nsovereignty holder"
-        MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Colored according to the\ninstalled sovereignty upgrades"
-        MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Colored according to the\npresence of metaliminal storms"
-        MapSystemInfoType.JumpRange -> "Jump Range" to "Colored according to\njump range"
+        MapSystemInfoType.StarColor -> getStringSync(Res.string.map_window_actual_color) to getStringSync(Res.string.map_window_actual_color_tooltip)
+        MapSystemInfoType.Security -> getStringSync(Res.string.map_window_security_status) to getStringSync(Res.string.map_window_security_status_tooltip)
+        MapSystemInfoType.NullSecurity -> getStringSync(Res.string.map_window_null_sec_status) to getStringSync(Res.string.map_window_null_sec_status_tooltip)
+        MapSystemInfoType.IntelHostiles -> getStringSync(Res.string.map_window_hostiles_count) to getStringSync(Res.string.map_window_hostiles_count_tooltip)
+        MapSystemInfoType.Jumps -> getStringSync(Res.string.map_window_jumps) to getStringSync(Res.string.map_window_jumps_tooltip)
+        MapSystemInfoType.Kills -> getStringSync(Res.string.map_window_kills) to getStringSync(Res.string.map_window_kills_tooltip)
+        MapSystemInfoType.NpcKills -> getStringSync(Res.string.map_window_npc_kills) to getStringSync(Res.string.map_window_npc_kills_tooltip)
+        MapSystemInfoType.Assets -> getStringSync(Res.string.map_window_assets) to getStringSync(Res.string.map_window_assets_tooltip)
+        MapSystemInfoType.Incursions -> getStringSync(Res.string.map_window_incursions) to getStringSync(Res.string.map_window_incursions_tooltip)
+        MapSystemInfoType.Stations -> getStringSync(Res.string.map_window_stations) to getStringSync(Res.string.map_window_stations_tooltip)
+        MapSystemInfoType.FactionWarfare -> getStringSync(Res.string.map_window_faction_warfare) to getStringSync(Res.string.map_window_faction_warfare_tooltip)
+        MapSystemInfoType.Sovereignty -> getStringSync(Res.string.map_window_sovereignty) to getStringSync(Res.string.map_window_sovereignty_tooltip)
+        MapSystemInfoType.SovereigntyUpgrades -> getStringSync(Res.string.map_window_sov_upgrades) to getStringSync(Res.string.map_window_sov_upgrades_tooltip)
+        MapSystemInfoType.MetaliminalStorms -> getStringSync(Res.string.map_window_metaliminal_storms) to getStringSync(Res.string.map_window_metaliminal_storms_tooltip)
+        MapSystemInfoType.JumpRange -> getStringSync(Res.string.map_window_jump_range) to getStringSync(Res.string.map_window_jump_range_tooltip)
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for colors")
-        MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Colored when a\nJove Observatory is present"
-        MapSystemInfoType.Wormholes -> "Wormholes" to "Colored when a\nThera or Turnur wormhole is present"
-        MapSystemInfoType.Colonies -> "PI Colonies" to "Colored when you have a\nPI colony present"
-        MapSystemInfoType.Clones -> "Clones" to "Colored when you have\njump clones present"
-        MapSystemInfoType.Standings -> "Standings" to "Colored based on standings\ntowards the sovereignty holder.\nLow and high sec are always yellow and green."
-        MapSystemInfoType.RatsType -> "Rats" to "Colored according to the\nfaction of rats in the system"
-        MapSystemInfoType.AsteroidBelts -> "Asteroid Belts" to "Colored when\nasteroid belts are present"
-        MapSystemInfoType.IceFields -> "Ice Fields" to "Colored when\nice fields are present"
+        MapSystemInfoType.JoveObservatories -> getStringSync(Res.string.map_window_jove_observatories) to getStringSync(Res.string.map_window_jove_observatories_tooltip)
+        MapSystemInfoType.Wormholes -> getStringSync(Res.string.map_window_wormholes) to getStringSync(Res.string.map_window_wormholes_tooltip)
+        MapSystemInfoType.Colonies -> getStringSync(Res.string.map_window_pi) to getStringSync(Res.string.map_window_pi_tooltip)
+        MapSystemInfoType.Clones -> getStringSync(Res.string.map_window_clones) to getStringSync(Res.string.map_window_clones_tooltip)
+        MapSystemInfoType.Standings -> getStringSync(Res.string.map_window_standings) to getStringSync(Res.string.map_window_standings_tooltip)
+        MapSystemInfoType.RatsType -> getStringSync(Res.string.map_window_rat) to getStringSync(Res.string.map_window_rat_tooltip)
+        MapSystemInfoType.AsteroidBelts -> getStringSync(Res.string.map_window_asteroid_belts) to getStringSync(Res.string.map_window_asteroid_belts_tooltip)
+        MapSystemInfoType.IceFields -> getStringSync(Res.string.map_window_ice_fields) to getStringSync(Res.string.map_window_ice_fields_tooltip)
         MapSystemInfoType.Region -> throw IllegalArgumentException("Not used for colors")
         MapSystemInfoType.Constellation -> throw IllegalArgumentException("Not used for colors")
-        MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Colored according to the\nindustry cost index of Copying"
-        MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Colored according to the\nindustry cost index of Invention"
-        MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Colored according to the\nindustry cost index of Manufacturing"
-        MapSystemInfoType.IndustryIndexReaction -> "Reactions Index" to "Colored according to the\nindustry cost index of Reactions"
-        MapSystemInfoType.IndustryIndexMaterialEfficiency -> "Material Efficiency Index" to "Colored according to the\nindustry cost index of Researching Material Efficiency"
-        MapSystemInfoType.IndustryIndexTimeEfficiency -> "Time Efficiency Index" to "Colored according to the\nindustry cost index of Researching Time Efficiency"
-        null -> "None" to "No background color"
+        MapSystemInfoType.IndustryIndexCopying -> getStringSync(Res.string.map_window_copying_index) to getStringSync(Res.string.map_window_copying_index_tooltip)
+        MapSystemInfoType.IndustryIndexInvention -> getStringSync(Res.string.map_window_invention_index) to getStringSync(Res.string.map_window_invention_index_tooltip)
+        MapSystemInfoType.IndustryIndexManufacturing -> getStringSync(Res.string.map_window_manufacturing_index) to getStringSync(Res.string.map_window_manufacturing_index_tooltip)
+        MapSystemInfoType.IndustryIndexReaction -> getStringSync(Res.string.map_window_reactions_index) to getStringSync(Res.string.map_window_reactions_index_tooltip)
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> getStringSync(Res.string.map_window_material_efficeinency_index) to getStringSync(Res.string.map_window_material_efficeinency_index_tooltip)
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> getStringSync(Res.string.map_window_time_efficiency_index) to getStringSync(Res.string.map_window_time_efficiency_index_tooltip)
+        null -> getStringSync(Res.string.map_window_none) to getStringSync(Res.string.map_window_none_tooltip)
     }
 }
 
@@ -893,38 +895,38 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
 private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<String, String> {
     return when (color) {
         MapSystemInfoType.StarColor -> "" to ""
-        MapSystemInfoType.Security -> "Security status" to "Security status of the system"
+        MapSystemInfoType.Security -> getStringSync(Res.string.map_window_indicator_security) to getStringSync(Res.string.map_window_indicator_security_tooltip)
         MapSystemInfoType.NullSecurity -> "" to ""
         MapSystemInfoType.IntelHostiles -> "" to ""
-        MapSystemInfoType.Jumps -> "Jumps" to "Number of jumps in the last hour"
-        MapSystemInfoType.Kills -> "Kills" to "Number of ship and pod kills in the last hour"
-        MapSystemInfoType.NpcKills -> "NPC Kills" to "Number of NPCs killed in the last hour"
-        MapSystemInfoType.Assets -> "Assets" to "Number of owned assets located here"
-        MapSystemInfoType.Incursions -> "Incursions" to "Indicator for systems with an incursion"
-        MapSystemInfoType.Stations -> "Stations" to "Number of stations"
+        MapSystemInfoType.Jumps -> getStringSync(Res.string.map_window_indicator_jumps) to getStringSync(Res.string.map_window_indicator_jumps_tooltip)
+        MapSystemInfoType.Kills -> getStringSync(Res.string.map_window_indicator_kills) to getStringSync(Res.string.map_window_indicator_kills_tooltip)
+        MapSystemInfoType.NpcKills -> getStringSync(Res.string.map_window_indicator_npc_kills) to getStringSync(Res.string.map_window_indicator_npc_kills_tooltip)
+        MapSystemInfoType.Assets -> getStringSync(Res.string.map_window_indicator_assets) to getStringSync(Res.string.map_window_indicator_assets_tooltip)
+        MapSystemInfoType.Incursions -> getStringSync(Res.string.map_window_indicator_incursions) to getStringSync(Res.string.map_window_indicator_incursions_tooltip)
+        MapSystemInfoType.Stations -> getStringSync(Res.string.map_window_indicator_stations) to getStringSync(Res.string.map_window_indicator_stations_tooltip)
         MapSystemInfoType.FactionWarfare -> "" to ""
-        MapSystemInfoType.Sovereignty -> "Sovereignty" to "Sovereignty holder logo"
-        MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Indicators for installed sovereignty upgrades"
-        MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Indicator for systems with a storm"
-        MapSystemInfoType.JumpRange -> "Jump Range" to "Indicator for systems in jump range"
-        MapSystemInfoType.Planets -> "Planets" to "Indicators for planets"
-        MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Indicators for Jove Observatories"
-        MapSystemInfoType.Wormholes -> "Wormholes" to "Indicators for Thera and Turnur wormholes"
-        MapSystemInfoType.Colonies -> "PI Colonies" to "Indicators for PI colonies"
-        MapSystemInfoType.Clones -> "Clones" to "Indicators for jump clones"
-        MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
+        MapSystemInfoType.Sovereignty -> getStringSync(Res.string.map_window_indicator_sovereignty) to getStringSync(Res.string.map_window_indicator_sovereignty_tooltip)
+        MapSystemInfoType.SovereigntyUpgrades -> getStringSync(Res.string.map_window_indicator_sov_upgrades) to getStringSync(Res.string.map_window_indicator_sov_upgrades_tooltip)
+        MapSystemInfoType.MetaliminalStorms -> getStringSync(Res.string.map_window_indicator_metaliminal_storms) to getStringSync(Res.string.map_window_indicator_metaliminal_storms_tooltip)
+        MapSystemInfoType.JumpRange -> getStringSync(Res.string.map_window_indicator_jump_range) to getStringSync(Res.string.map_window_indicator_jump_range_tooltip)
+        MapSystemInfoType.Planets -> getStringSync(Res.string.map_window_indicator_planets) to getStringSync(Res.string.map_window_indicator_planets_tooltip)
+        MapSystemInfoType.JoveObservatories -> getStringSync(Res.string.map_window_indicator_jove_observatories) to getStringSync(Res.string.map_window_indicator_jove_observatories_tooltip)
+        MapSystemInfoType.Wormholes -> getStringSync(Res.string.map_window_indicator_wormholes) to getStringSync(Res.string.map_window_indicator_wormholes_tooltip)
+        MapSystemInfoType.Colonies -> getStringSync(Res.string.map_window_indicator_pi) to getStringSync(Res.string.map_window_indicator_pi_tooltip)
+        MapSystemInfoType.Clones -> getStringSync(Res.string.map_window_indicator_clones) to getStringSync(Res.string.map_window_indicator_clones_tooltip)
+        MapSystemInfoType.Standings -> getStringSync(Res.string.map_window_indicator_standings) to getStringSync(Res.string.map_window_indicator_standings_tooltip)
         MapSystemInfoType.RatsType -> "" to ""
-        MapSystemInfoType.AsteroidBelts -> "Asteroid Belts" to "Indicators for asteroid belts"
-        MapSystemInfoType.IceFields -> "Ice Fields" to "Indicators for ice fields"
-        MapSystemInfoType.Region -> "Region" to "Region name"
-        MapSystemInfoType.Constellation -> "Constellation" to "Constellation name"
-        MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
-        MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Industry cost index of Invention"
-        MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Industry cost index of Manufacturing"
-        MapSystemInfoType.IndustryIndexReaction -> "Reactions Index" to "Industry cost index of Reactions"
-        MapSystemInfoType.IndustryIndexMaterialEfficiency -> "Material Efficiency Index" to "Industry cost index of Researching Material Efficiency"
-        MapSystemInfoType.IndustryIndexTimeEfficiency -> "Time Efficiency Index" to "Industry cost index of Researching Time Efficiency"
-        null -> "None" to "No background color"
+        MapSystemInfoType.AsteroidBelts -> getStringSync(Res.string.map_window_indicator_asteroid_belts) to getStringSync(Res.string.map_window_indicator_asteroid_belts_tooltip)
+        MapSystemInfoType.IceFields -> getStringSync(Res.string.map_window_indicator_ice_fields) to getStringSync(Res.string.map_window_indicator_ice_fields_tooltip)
+        MapSystemInfoType.Region -> getStringSync(Res.string.map_window_indicator_region) to getStringSync(Res.string.map_window_indicator_region_tooltip)
+        MapSystemInfoType.Constellation -> getStringSync(Res.string.map_window_indicator_constellation) to getStringSync(Res.string.map_window_indicator_constellation_tooltip)
+        MapSystemInfoType.IndustryIndexCopying -> getStringSync(Res.string.map_window_indicator_copying_index) to getStringSync(Res.string.map_window_indicator_copying_index_tooltip)
+        MapSystemInfoType.IndustryIndexInvention -> getStringSync(Res.string.map_window_indicator_invention_index) to getStringSync(Res.string.map_window_indicator_invention_index_tooltip)
+        MapSystemInfoType.IndustryIndexManufacturing -> getStringSync(Res.string.map_window_indicator_manufacturing_index) to getStringSync(Res.string.map_window_indicator_manufacturing_index_tooltip)
+        MapSystemInfoType.IndustryIndexReaction -> getStringSync(Res.string.map_window_indicator_reactions_index) to getStringSync(Res.string.map_window_indicator_reactions_index_tooltip)
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> getStringSync(Res.string.map_window_indicator_material_efficeinency_index) to getStringSync(Res.string.map_window_indicator_material_efficeinency_index_tooltip)
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> getStringSync(Res.string.map_window_indicator_time_efficiency_index) to getStringSync(Res.string.map_window_indicator_time_efficiency_index_tooltip)
+        null -> getStringSync(Res.string.map_window_none) to getStringSync(Res.string.map_window_none_tooltip)
     }
 }
 
@@ -934,37 +936,37 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
 private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<String, String> {
     return when (color) {
         MapSystemInfoType.StarColor -> "" to ""
-        MapSystemInfoType.Security -> "Security status" to "Security status of the system"
+        MapSystemInfoType.Security -> getStringSync(Res.string.map_window_indicator_security) to getStringSync(Res.string.map_window_indicator_security_tooltip)
         MapSystemInfoType.NullSecurity -> "" to ""
         MapSystemInfoType.IntelHostiles -> "" to ""
-        MapSystemInfoType.Jumps -> "Jumps" to "Number of jumps in the last hour"
-        MapSystemInfoType.Kills -> "Kills" to "Number of ship and pod kills in the last hour"
-        MapSystemInfoType.NpcKills -> "NPC Kills" to "Number of NPCs killed in the last hour"
-        MapSystemInfoType.Assets -> "Assets" to "Number of owned assets located here"
-        MapSystemInfoType.Incursions -> "Incursions" to "Incursion status"
-        MapSystemInfoType.Stations -> "Stations" to "Number of stations"
-        MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Faction warfare details"
-        MapSystemInfoType.Sovereignty -> "Sovereignty" to "Sovereignty holder"
-        MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Installed sovereignty upgrades"
-        MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Metaliminal storm type"
-        MapSystemInfoType.JumpRange -> "Jump Range" to "Jump distance to system"
-        MapSystemInfoType.Planets -> "Planets" to "Planets information"
-        MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Jove Observatory presence information"
-        MapSystemInfoType.Wormholes -> "Wormholes" to "Thera and Turnur wormholes information"
-        MapSystemInfoType.Colonies -> "PI Colonies" to "PI colonies information"
-        MapSystemInfoType.Clones -> "Clones" to "Jump clones information"
-        MapSystemInfoType.Standings -> "Standings" to "Standings towards the sovereignty holder"
-        MapSystemInfoType.RatsType -> "Rats" to "Faction of rats in the system"
-        MapSystemInfoType.AsteroidBelts -> "Asteroid Belts" to "Asteroid belts presence information"
-        MapSystemInfoType.IceFields -> "Ice Fields" to "Ice fields presence information"
-        MapSystemInfoType.Region -> "Region" to "Region name"
-        MapSystemInfoType.Constellation -> "Constellation" to "Constellation name"
-        MapSystemInfoType.IndustryIndexCopying -> "Copying Index" to "Industry cost index of Copying"
-        MapSystemInfoType.IndustryIndexInvention -> "Invention Index" to "Industry cost index of Invention"
-        MapSystemInfoType.IndustryIndexManufacturing -> "Manufacturing Index" to "Industry cost index of Manufacturing"
-        MapSystemInfoType.IndustryIndexReaction -> "Reactions Index" to "Industry cost index of Reactions"
-        MapSystemInfoType.IndustryIndexMaterialEfficiency -> "Material Efficiency Index" to "Industry cost index of Researching Material Efficiency"
-        MapSystemInfoType.IndustryIndexTimeEfficiency -> "Time Efficiency Index" to "Industry cost index of Researching Time Efficiency"
-        null -> "None" to "No background color"
+        MapSystemInfoType.Jumps -> getStringSync(Res.string.map_window_indicator_jumps) to getStringSync(Res.string.map_window_indicator_jumps_tooltip)
+        MapSystemInfoType.Kills -> getStringSync(Res.string.map_window_indicator_kills) to getStringSync(Res.string.map_window_indicator_kills_tooltip)
+        MapSystemInfoType.NpcKills -> getStringSync(Res.string.map_window_indicator_npc_kills) to getStringSync(Res.string.map_window_indicator_npc_kills_tooltip)
+        MapSystemInfoType.Assets -> getStringSync(Res.string.map_window_assets) to getStringSync(Res.string.map_window_assets_tooltip)
+        MapSystemInfoType.Incursions -> getStringSync(Res.string.map_window_incursions) to getStringSync(Res.string.map_window_incursions_tooltip)
+        MapSystemInfoType.Stations -> getStringSync(Res.string.map_window_indicator_incursions) to getStringSync(Res.string.map_window_indicator_incursions_tooltip)
+        MapSystemInfoType.FactionWarfare -> getStringSync(Res.string.map_window_info_box_faction_warfare) to getStringSync(Res.string.map_window_info_box_faction_warfare_tooltip)
+        MapSystemInfoType.Sovereignty -> getStringSync(Res.string.map_window_info_box_sov) to getStringSync(Res.string.map_window_info_box_sov_tooltip)
+        MapSystemInfoType.SovereigntyUpgrades -> getStringSync(Res.string.map_window_info_box_sov_upgrades) to getStringSync(Res.string.map_window_info_box_sov_upgrades_tooltip)
+        MapSystemInfoType.MetaliminalStorms -> getStringSync(Res.string.map_window_info_box_metaliminal_storms) to getStringSync(Res.string.map_window_info_box_metaliminal_storms_tooltip)
+        MapSystemInfoType.JumpRange -> getStringSync(Res.string.map_window_info_box_jump_range) to getStringSync(Res.string.map_window_info_box_jump_range_tooltip)
+        MapSystemInfoType.Planets -> getStringSync(Res.string.map_window_info_box_planets) to getStringSync(Res.string.map_window_info_box_planets_tooltip)
+        MapSystemInfoType.JoveObservatories -> getStringSync(Res.string.map_window_info_box_jove_observatories) to getStringSync(Res.string.map_window_info_box_jove_observatories_tooltip)
+        MapSystemInfoType.Wormholes -> getStringSync(Res.string.map_window_info_box_wormholes) to getStringSync(Res.string.map_window_info_box_wormholes_tooltip)
+        MapSystemInfoType.Colonies -> getStringSync(Res.string.map_window_info_box_pi) to getStringSync(Res.string.map_window_info_box_pi_tooltip)
+        MapSystemInfoType.Clones -> getStringSync(Res.string.map_window_info_box_clones) to getStringSync(Res.string.map_window_info_box_clones_tooltip)
+        MapSystemInfoType.Standings -> getStringSync(Res.string.map_window_indicator_standings) to getStringSync(Res.string.map_window_indicator_standings_tooltip)
+        MapSystemInfoType.RatsType -> getStringSync(Res.string.map_window_info_box_rats) to getStringSync(Res.string.map_window_info_box_rats_tooltip)
+        MapSystemInfoType.AsteroidBelts -> getStringSync(Res.string.map_window_info_box_asteroid_belts) to getStringSync(Res.string.map_window_info_box_asteroid_belts_tooltip)
+        MapSystemInfoType.IceFields -> getStringSync(Res.string.map_window_info_box_ice_fields) to getStringSync(Res.string.map_window_info_box_ice_fields_tooltip)
+        MapSystemInfoType.Region -> getStringSync(Res.string.map_window_indicator_region) to getStringSync(Res.string.map_window_indicator_region_tooltip)
+        MapSystemInfoType.Constellation -> getStringSync(Res.string.map_window_indicator_constellation) to getStringSync(Res.string.map_window_indicator_constellation_tooltip)
+        MapSystemInfoType.IndustryIndexCopying -> getStringSync(Res.string.map_window_indicator_copying_index) to getStringSync(Res.string.map_window_indicator_copying_index_tooltip)
+        MapSystemInfoType.IndustryIndexInvention -> getStringSync(Res.string.map_window_indicator_invention_index) to getStringSync(Res.string.map_window_indicator_invention_index_tooltip)
+        MapSystemInfoType.IndustryIndexManufacturing -> getStringSync(Res.string.map_window_indicator_manufacturing_index) to getStringSync(Res.string.map_window_indicator_manufacturing_index_tooltip)
+        MapSystemInfoType.IndustryIndexReaction -> getStringSync(Res.string.map_window_indicator_reactions_index) to getStringSync(Res.string.map_window_indicator_reactions_index_tooltip)
+        MapSystemInfoType.IndustryIndexMaterialEfficiency -> getStringSync(Res.string.map_window_indicator_material_efficeinency_index) to getStringSync(Res.string.map_window_indicator_material_efficeinency_index_tooltip)
+        MapSystemInfoType.IndustryIndexTimeEfficiency -> getStringSync(Res.string.map_window_indicator_time_efficiency_index) to getStringSync(Res.string.map_window_indicator_time_efficiency_index_tooltip)
+        null -> getStringSync(Res.string.map_window_none) to getStringSync(Res.string.map_window_none_tooltip)
     }
 }

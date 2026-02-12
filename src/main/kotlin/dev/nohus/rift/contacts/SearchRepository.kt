@@ -1,5 +1,8 @@
 package dev.nohus.rift.contacts
 
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.UniverseStructuresId
@@ -28,17 +31,17 @@ class SearchRepository(
 ) {
 
     enum class SearchCategory(val displayName: String, val queryName: String) {
-        Agents("Agents", "agent"),
-        Alliance("Alliances", "alliance"),
-        Characters("Characters", "character"),
-        Constellation("Constellations", "constellation"),
-        Corporations("Corporations", "corporation"),
-        Factions("Factions", "faction"),
-        InventoryTypes("Items", "inventory_type"),
-        Regions("Regions", "region"),
-        SolarSystems("Solar Systems", "solar_system"),
-        Stations("Stations", "station"),
-        Structures("Structures", "structure"),
+        Agents(getStringSync(Res.string.contacts_window_agents), "agent"),
+        Alliance(getStringSync(Res.string.contacts_window_alliance), "alliance"),
+        Characters(getStringSync(Res.string.contacts_window_characters), "character"),
+        Constellation(getStringSync(Res.string.contacts_window_constellations), "constellation"),
+        Corporations(getStringSync(Res.string.contacts_window_corporations), "corporation"),
+        Factions(getStringSync(Res.string.contacts_window_factions), "faction"),
+        InventoryTypes(getStringSync(Res.string.contacts_window_items), "inventory_type"),
+        Regions(getStringSync(Res.string.contacts_window_regions), "region"),
+        SolarSystems(getStringSync(Res.string.contacts_window_solar_systems), "solar_system"),
+        Stations(getStringSync(Res.string.contacts_window_stations), "station"),
+        Structures(getStringSync(Res.string.contacts_window_structures), "structure"),
     }
 
     data class SearchResult(

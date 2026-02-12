@@ -1,16 +1,8 @@
 package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.careerpaths_enforcer_16px
-import dev.nohus.rift.generated.resources.careerpaths_explorer_16px
-import dev.nohus.rift.generated.resources.careerpaths_industrialist_16px
-import dev.nohus.rift.generated.resources.careerpaths_soldier_of_fortune_16px
-import dev.nohus.rift.generated.resources.corporation_management_16px
-import dev.nohus.rift.generated.resources.flag_16px
-import dev.nohus.rift.generated.resources.freelance_projects_16px
-import dev.nohus.rift.generated.resources.mining_16px
-import dev.nohus.rift.generated.resources.pinpoint_probe_formation_32px
-import dev.nohus.rift.generated.resources.sword_16px
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import org.jetbrains.compose.resources.DrawableResource
 
 sealed class OpportunityCategoryFilterType(val name: String) {
@@ -28,109 +20,109 @@ sealed class OpportunityCategoryFilter(
 ) {
     data object CorporationProjects : OpportunityCategoryFilter(
         order = 0,
-        name = "Corporation Projects",
+        name = getStringSync(Res.string.opportunities_window_corp_projects),
         type = OpportunityCategoryFilterType.Feature,
-        description = "Projects being run on behalf of your\ncorporation.",
+        description = getStringSync(Res.string.opportunities_window_corp_projects_description),
         icon = Res.drawable.corporation_management_16px,
     )
 
     data object FactionalWarfare : OpportunityCategoryFilter(
         order = 1,
-        name = "Factional Warfare",
+        name = getStringSync(Res.string.opportunities_window_factional_warfare),
         type = OpportunityCategoryFilterType.Feature,
-        description = "Factional Warfare sites where you can support\nthe war effort on behalf of a faction you are\nenlisted with.",
+        description = getStringSync(Res.string.opportunities_window_factional_warfare_description),
         icon = Res.drawable.flag_16px,
     )
 
     data object FreelanceJobs : OpportunityCategoryFilter(
         order = 2,
-        name = "Freelance Jobs",
+        name = getStringSync(Res.string.opportunities_window_freelance_jobs),
         type = OpportunityCategoryFilterType.Feature,
-        description = "Earn ISK, gain experience, and connect with\nothers through capsuleer-made jobs.",
+        description = getStringSync(Res.string.opportunities_window_freelance_jobs_description),
         icon = Res.drawable.freelance_projects_16px,
     )
 
     data object Enforcer : OpportunityCategoryFilter(
         order = 3,
-        name = "Enforcer",
+        name = getStringSync(Res.string.opportunities_window_enforecer),
         type = OpportunityCategoryFilterType.CareerPath,
-        description = "Opportunities for those focused on the\nEnforcer Career path or who are interested in\nCombat against non-capsuleers.",
+        description = getStringSync(Res.string.opportunities_window_enforecer_description),
         icon = Res.drawable.careerpaths_enforcer_16px,
     )
 
     data object Explorer : OpportunityCategoryFilter(
         order = 4,
-        name = "Explorer",
+        name = getStringSync(Res.string.opportunities_window_explorer),
         type = OpportunityCategoryFilterType.CareerPath,
-        description = "Opportunities for those focused on the\nExplorer Career path or who are interested in\nexploration, scanning, or hacking.",
+        description = getStringSync(Res.string.opportunities_window_explorer_description),
         icon = Res.drawable.careerpaths_explorer_16px,
     )
 
     data object Industrialist : OpportunityCategoryFilter(
         order = 5,
-        name = "Industrialist",
+        name = getStringSync(Res.string.opportunities_window_industrialist),
         type = OpportunityCategoryFilterType.CareerPath,
-        description = "Opportunities for those focused on the\nIndustrialist Career path or who are interested\nin resource gathering, manufacturing, or hauling.",
+        description = getStringSync(Res.string.opportunities_window_industrialist_description),
         icon = Res.drawable.careerpaths_industrialist_16px,
     )
 
     data object SoldierOfFortune : OpportunityCategoryFilter(
         order = 6,
-        name = "Soldier of Fortune",
+        name = getStringSync(Res.string.opportunities_window_soldier_of_fortune),
         type = OpportunityCategoryFilterType.CareerPath,
-        description = "Opportunities for those focused on the\nSoldier of Fortune Career path or who are interested\nin combat against other capsuleers.",
+        description = getStringSync(Res.string.opportunities_window_soldier_of_fortune_description),
         icon = Res.drawable.careerpaths_soldier_of_fortune_16px,
     )
 
     data object Combat : OpportunityCategoryFilter(
         order = 7,
-        name = "Combat",
+        name = getStringSync(Res.string.opportunities_window_combat),
         type = OpportunityCategoryFilterType.Activity,
-        description = "Engaging with hostile forces.",
+        description = getStringSync(Res.string.opportunities_window_combat_description),
         icon = Res.drawable.sword_16px,
     )
 
     data object CosmicSignatures : OpportunityCategoryFilter(
         order = 8,
-        name = "Cosmic Signatures",
+        name = getStringSync(Res.string.opportunities_window_cosmic_signatures),
         type = OpportunityCategoryFilterType.Activity,
-        description = "A site that needs to be located by probe\nscanning before you can travel to it.",
+        description = getStringSync(Res.string.opportunities_window_cosmic_signatures_description),
         icon = Res.drawable.pinpoint_probe_formation_32px,
     )
 
     data object Fleet : OpportunityCategoryFilter(
         order = 9,
-        name = "Fleet",
+        name = getStringSync(Res.string.opportunities_window_fleet),
         type = OpportunityCategoryFilterType.Activity,
-        description = "Form a fleet with other capsuleers to\ncooperate and complete objectives.",
+        description = getStringSync(Res.string.opportunities_window_fleet_description),
     )
 
     data object Hauling : OpportunityCategoryFilter(
         order = 10,
-        name = "Hauling",
+        name = getStringSync(Res.string.opportunities_window_hauling),
         type = OpportunityCategoryFilterType.Activity,
-        description = "Transporting items from location to location.",
+        description = getStringSync(Res.string.opportunities_window_hauling_description),
     )
 
     data object Logistics : OpportunityCategoryFilter(
         order = 11,
-        name = "Logistics",
+        name = getStringSync(Res.string.opportunities_window_logistics),
         type = OpportunityCategoryFilterType.Activity,
-        description = "Using remote modules to boost, repair, or\ntransfer energy to friendly targets.",
+        description = getStringSync(Res.string.opportunities_window_logistics_description),
     )
 
     data object Manufacturing : OpportunityCategoryFilter(
         order = 12,
-        name = "Manufacturing",
+        name = getStringSync(Res.string.opportunities_window_manufacturing),
         type = OpportunityCategoryFilterType.Activity,
-        description = "Using blueprints to produce items.",
+        description = getStringSync(Res.string.opportunities_window_manufacturing_description),
     )
 
     data object Mining : OpportunityCategoryFilter(
         order = 13,
-        name = "Mining",
+        name = getStringSync(Res.string.opportunities_window_mining),
         type = OpportunityCategoryFilterType.Activity,
-        description = "Harvesting ore from asteroids.",
+        description = getStringSync(Res.string.opportunities_window_mining_description),
         icon = Res.drawable.mining_16px,
     )
 }

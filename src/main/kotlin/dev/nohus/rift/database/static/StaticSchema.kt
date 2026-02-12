@@ -74,7 +74,7 @@ object Types : Table() {
     val typeName = varchar("typeName", 100)
     val volume = float("volume")
     val radius = float("radius").nullable()
-    val repackagedVolume = integer("repackagedVolume").nullable()
+    val repackagedVolume = float("repackagedVolume").nullable()
     val iconId = integer("iconID").nullable()
     override val primaryKey = PrimaryKey(typeId)
 }
@@ -146,4 +146,9 @@ object Celestials : Table() {
 object TypeDogmas : Table() {
     val typeId = integer("typeId")
     val entityOverviewShipGroupId = integer("entityOverviewShipGroupId").nullable()
+}
+
+object Backdrops : Table() {
+    val name = varchar("name", 100)
+    val bytes = binary("values")
 }

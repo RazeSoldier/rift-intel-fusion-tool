@@ -1,9 +1,15 @@
 package dev.nohus.rift.repositories
 
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.solar_system_chip_current_location
+import dev.nohus.rift.generated.resources.solar_system_chip_jump_count
+import dev.nohus.rift.generated.resources.solar_system_chip_no_gate_route
+import dev.nohus.rift.generated.resources.solar_system_chip_location_count
+import dev.nohus.rift.i18n.getPluralStringSync
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
-import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
 import org.koin.core.annotation.Single
 import kotlin.time.measureTimedValue
@@ -64,18 +70,18 @@ class GetSolarSystemChipStateUseCase(
         }
         val (closestSolarSystem, distance) = pair
         val hasTooltip = locations.size > 1 || locations.any { it !is SolarSystemChipLocation.SolarSystem }
-        val locationsText = if (hasTooltip) "${locations.size} Location${locations.size.plural}" else null
+        val locationsText = if (hasTooltip) getPluralStringSync(Res.plurals.solar_system_chip_location_count, locations.size, locations.size) else null
         val jumpsText = if (distance != null) {
             if (distance == 0) {
-                "Current System"
+                getStringSync(Res.string.solar_system_chip_current_location)
             } else {
-                "$distance jump${distance.plural}"
+                getPluralStringSync(Res.plurals.solar_system_chip_jump_count, distance, distance)
             }
         } else {
             if (characterLocationRepository.locations.value.isEmpty()) {
                 null
             } else {
-                "No gate route"
+                getStringSync(Res.string.solar_system_chip_no_gate_route)
             }
         }
 

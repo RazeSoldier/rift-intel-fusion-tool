@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
@@ -54,9 +53,9 @@ import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.clock_16
-import dev.nohus.rift.generated.resources.fastforward
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.SeekingColony
 import dev.nohus.rift.planetaryindustry.models.Colony
@@ -76,6 +75,7 @@ import dev.nohus.rift.utils.formatDurationCompact
 import dev.nohus.rift.utils.invertedPlural
 import dev.nohus.rift.utils.plural
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.time.Duration
 import java.time.Instant
 
@@ -113,7 +113,7 @@ fun ColonyTitle(
             Spacer(Modifier.weight(1f))
             ExpiresIn(item, isViewingFastForward, onViewFastForwardChange)
             RiftButton(
-                text = if (isExpanded) "Return" else "Details",
+                text = if (isExpanded) stringResource(Res.string.planetary_industry_window_return) else stringResource(Res.string.planetary_industry_window_details),
                 onClick = onDetailsClick,
             )
         }
@@ -359,10 +359,11 @@ private fun ColonyOwner(
                 .clip(CircleShape)
                 .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
         ) {
-            AsyncPlayerPortrait(
+            DynamicCharacterPortraitParallax(
                 characterId = colony.characterId,
-                size = 32,
-                modifier = Modifier.size(32.dp),
+                size = 32.dp,
+                enterTimestamp = null,
+                pointerInteractionStateHolder = null,
             )
         }
         Text(

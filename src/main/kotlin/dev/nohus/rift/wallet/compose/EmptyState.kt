@@ -8,7 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.wallet_window_all_transactions_filtered_out
+import dev.nohus.rift.generated.resources.wallet_window_no_transactions
 import dev.nohus.rift.wallet.WalletViewModel
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun EmptyState(state: WalletViewModel.UiState) {
@@ -16,7 +20,7 @@ fun EmptyState(state: WalletViewModel.UiState) {
         state.filters.walletTypes.isNotEmpty() ||
         state.filters.referenceTypes.isNotEmpty() ||
         state.filters.search != null
-    val text = if (isFiltering) "All transactions filtered out" else "No transactions"
+    val text = if (isFiltering) stringResource(Res.string.wallet_window_all_transactions_filtered_out) else stringResource(Res.string.wallet_window_no_transactions)
     Text(
         text = text,
         style = RiftTheme.typography.displaySecondary,

@@ -39,7 +39,8 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.deleteicon
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.utils.formatDateTime
 import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.toggle
@@ -52,6 +53,7 @@ import dev.nohus.rift.wallet.WalletJournalItem
 import dev.nohus.rift.wallet.WalletViewModel.UiState
 import dev.nohus.rift.wallet.WalletViewModel.WalletTab
 import dev.nohus.rift.wallet.getReferenceTypeName
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.absoluteValue
 
 @Composable
@@ -168,7 +170,7 @@ private fun JournalItem(
                 }
                 if (item.firstParty != null && item.secondParty != null) {
                     Text(
-                        text = "paid",
+                        text = stringResource(Res.string.wallet_window_paid),
                         style = RiftTheme.typography.bodySecondary,
                     )
                 }
@@ -212,7 +214,7 @@ private fun JournalItem(
         if (item.reasonTypeDetails.isEmpty() && !item.reason.isNullOrBlank()) {
             Text(
                 text = buildAnnotatedString {
-                    append("Reason: \"")
+                    append(stringResource(Res.string.wallet_window_reason))
                     withColor(RiftTheme.colors.textPrimary) {
                         append(item.reason)
                     }
@@ -230,7 +232,7 @@ private fun JournalItem(
             ) {
                 TypeDetailItem(item.taxReceiver)
                 Text(
-                    text = "received tax: ${formatIsk(item.tax, withCents = state.showCents)}",
+                    text = stringResource(Res.string.wallet_window_tax_received, formatIsk(item.tax, withCents = state.showCents)),
                     style = RiftTheme.typography.bodySecondary,
                 )
             }
@@ -285,7 +287,7 @@ private fun FiltersRow(
             val referenceTypesFilterItems = buildList<ContextMenuItem> {
                 add(
                     ContextMenuItem.CheckboxItem(
-                        text = "All types",
+                        text = stringResource(Res.string.wallet_window_all_type),
                         isSelected = state.filters.referenceTypes.isEmpty(),
                         onClick = { updateFilters { copy(referenceTypes = emptyList()) } },
                     ),
@@ -298,7 +300,7 @@ private fun FiltersRow(
                 }
                 if (marketTransactionTypes.isNotEmpty()) {
                     add(ContextMenuItem.DividerItem)
-                    add(ContextMenuItem.HeaderItem("Market Transactions"))
+                    add(ContextMenuItem.HeaderItem(stringResource(Res.string.wallet_window_market_transactions)))
                     marketTransactionTypes.forEach { type ->
                         add(
                             ContextMenuItem.CheckboxItem(
@@ -314,7 +316,7 @@ private fun FiltersRow(
                 }
                 if (otherTypes.isNotEmpty()) {
                     add(ContextMenuItem.DividerItem)
-                    add(ContextMenuItem.HeaderItem("Other Types"))
+                    add(ContextMenuItem.HeaderItem(stringResource(Res.string.wallet_window_other_types)))
                     otherTypes.forEach { type ->
                         add(
                             ContextMenuItem.CheckboxItem(
@@ -332,7 +334,7 @@ private fun FiltersRow(
             Box(contentAlignment = Alignment.BottomStart) {
                 var isShown by remember { mutableStateOf(false) }
                 RiftButton(
-                    text = "Types",
+                    text = stringResource(Res.string.wallet_window_type_filter),
                     onClick = { isShown = true },
                 )
                 if (isShown) {
@@ -353,9 +355,9 @@ private fun FiltersRow(
                 onItemSelected = { updateFilters { copy(direction = it) } },
                 getItemName = {
                     when (it) {
-                        null -> "All"
-                        TransferDirection.Income -> "Income"
-                        TransferDirection.Expense -> "Expenses"
+                        null -> getStringSync(Res.string.wallet_window_all)
+                        TransferDirection.Income -> getStringSync(Res.string.wallet_window_income)
+                        TransferDirection.Expense -> getStringSync(Res.string.wallet_window_expenses)
                     }
                 },
             )
@@ -376,12 +378,12 @@ private fun FiltersRow(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
             ) {
                 Text(
-                    text = "Showing only transactions involving:",
+                    text = stringResource(Res.string.wallet_window_only_show_transactions),
                     style = RiftTheme.typography.bodySecondary,
                 )
                 TypeDetailItem(state.filters.party)
                 RiftTooltipArea(
-                    text = "Remove filter",
+                    text = stringResource(Res.string.wallet_window_remove_filter),
                 ) {
                     RiftImageButton(
                         resource = Res.drawable.deleteicon,

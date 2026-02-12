@@ -67,7 +67,7 @@ private fun Route(
                 }
                 append(" ")
                 withStyle(SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                    append(Commodities.getTierName(route.type.name))
+                    append(Commodities.getTierName(route.type.id))
                 }
             },
         ) {

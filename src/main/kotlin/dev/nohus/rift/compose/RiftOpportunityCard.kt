@@ -1,10 +1,7 @@
 package dev.nohus.rift.compose
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateBounds
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -15,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -31,7 +27,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.CircleShape
@@ -45,10 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,11 +68,9 @@ import androidx.compose.ui.zIndex
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardCharacter
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardCorporation
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardProgressGauge
-import dev.nohus.rift.compose.animatedcontentfixed.animateContentSize
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
-import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.careerpaths_enforcer_16px
 import dev.nohus.rift.generated.resources.careerpaths_enforcer_flair
@@ -92,11 +82,8 @@ import dev.nohus.rift.generated.resources.careerpaths_sof_flair
 import dev.nohus.rift.generated.resources.careerpaths_soldier_of_fortune_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_flair
-import dev.nohus.rift.map.systemcolor.EntityColorRepository
 import dev.nohus.rift.network.esi.models.OpportunityState
-import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemChipState
-import dev.nohus.rift.utils.multiplyBrightness
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
@@ -298,7 +285,7 @@ fun RiftOpportunityCard(
                                     characterId = topRight.id,
                                     name = topRight.name,
                                     hasPadding = true,
-                                    size = 42.dp,
+                                    size = 48.dp,
                                 )
                                 is RiftOpportunityCardCorporation -> {
                                     RiftOpportunityCardSmallProgressGauge(topRight.progressGauge)

@@ -95,20 +95,8 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.allcontent
-import dev.nohus.rift.generated.resources.bars_sort_ascending_16px
-import dev.nohus.rift.generated.resources.contact_corporation
-import dev.nohus.rift.generated.resources.contribution_16px
-import dev.nohus.rift.generated.resources.corporation_project_state_checkmark_16px
-import dev.nohus.rift.generated.resources.corporation_project_state_close_16px
-import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
-import dev.nohus.rift.generated.resources.corporation_projects_banner
-import dev.nohus.rift.generated.resources.expand_less_16px
-import dev.nohus.rift.generated.resources.expand_more_16px
-import dev.nohus.rift.generated.resources.freelance_banner
-import dev.nohus.rift.generated.resources.isk
-import dev.nohus.rift.generated.resources.open_window_16px
-import dev.nohus.rift.generated.resources.window_opportunities
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.opportunities.OpportunitiesUtils.getOpportunityCategory
 import dev.nohus.rift.opportunities.OpportunitiesUtils.getOpportunityType
@@ -134,6 +122,7 @@ import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.time.Duration
 import java.time.Instant
 
@@ -145,7 +134,7 @@ fun OpportunitiesWindow(
     val viewModel: OpportunitiesViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Opportunities",
+        title = stringResource(Res.string.opportunities_window_title),
         icon = Res.drawable.window_opportunities,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -245,9 +234,9 @@ fun ToolbarRow(
     onParticipatingFilterChange: (Boolean) -> Unit,
 ) {
     val participatingText = if (state.lifecycleFilter == OpportunityLifecycleFilter.Active) {
-        "Active"
+        stringResource(Res.string.opportunities_window_active)
     } else {
-        "Participated"
+        stringResource(Res.string.opportunities_window_participated)
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -256,7 +245,7 @@ fun ToolbarRow(
             tabs = listOf(
                 Tab(
                     id = 0,
-                    title = "Opportunities",
+                    title = stringResource(Res.string.opportunities_window_title),
                     isCloseable = false,
                 ),
                 Tab(
@@ -799,7 +788,7 @@ private fun ProjectCard(
             RiftOpportunityCardButton(
                 resource = Res.drawable.open_window_16px,
                 isAlwaysVisible = false,
-                tooltip = "View In-Game",
+                tooltip = stringResource(Res.string.opportunities_window_view_in_game),
                 action = onViewInGameClick,
             ),
         )
@@ -834,13 +823,13 @@ private fun ProjectCard(
                         Text(
                             text = buildAnnotatedString {
                                 if (expiresIn.isPositive) {
-                                    append("Expires in ")
+                                    append(stringResource(Res.string.opportunities_window_expires_in))
                                     withColor(RiftTheme.colors.textPrimary) {
                                         append(formatDuration(expiresIn))
                                     }
                                 } else {
                                     withColor(EveColors.dangerRed) {
-                                        append("Expired")
+                                        append(getStringSync(Res.string.opportunities_window_expired))
                                     }
                                 }
                             },
@@ -992,7 +981,7 @@ private fun getProjectBottomText(
 @Composable
 private fun EmptyState() {
     Text(
-        text = "No Opportunities found",
+        text = stringResource(Res.string.opportunities_window_no_opportunities_found),
         style = RiftTheme.typography.headlineSecondary,
         textAlign = TextAlign.Center,
         modifier = Modifier

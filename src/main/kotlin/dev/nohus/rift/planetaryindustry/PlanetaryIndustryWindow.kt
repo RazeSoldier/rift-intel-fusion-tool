@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.LoadingSpinnerAmbient
@@ -64,18 +63,9 @@ import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.bars_sort_ascending_16px
-import dev.nohus.rift.generated.resources.checkmark_16px
-import dev.nohus.rift.generated.resources.copy_16px
-import dev.nohus.rift.generated.resources.details_view_16px
-import dev.nohus.rift.generated.resources.grid_view_16px
-import dev.nohus.rift.generated.resources.list_view_16px
-import dev.nohus.rift.generated.resources.menu_excel
-import dev.nohus.rift.generated.resources.menu_excel_addin
-import dev.nohus.rift.generated.resources.menu_googlesheets
-import dev.nohus.rift.generated.resources.pi_slotunlocked
-import dev.nohus.rift.generated.resources.window_planets
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.network.AsyncResource.Error
 import dev.nohus.rift.network.AsyncResource.Loading
 import dev.nohus.rift.network.AsyncResource.Ready
@@ -95,11 +85,12 @@ import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NeedsAttention
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NotSetup
 import dev.nohus.rift.settings.persistence.ColonySortingFilter
 import dev.nohus.rift.settings.persistence.ColonyView
-import dev.nohus.rift.utils.invertedPlural
-import dev.nohus.rift.utils.plural
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
+import java.time.Duration
 import java.time.Instant
 
 @Composable
@@ -110,7 +101,7 @@ fun PlanetaryIndustryWindow(
     val viewModel: PlanetaryIndustryViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Planetary Industry",
+        title = stringResource(Res.string.planetary_industry_window_title),
         icon = Res.drawable.window_planets,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -151,12 +142,12 @@ private fun PlanetaryIndustryWindowContent(
                 modifier = Modifier.fillMaxWidth().padding(Spacing.large),
             ) {
                 Text(
-                    text = "Could not load your colonies",
+                    text = stringResource(Res.string.planetary_industry_window_could_not_load_colonies),
                     style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                 )
                 RiftButton(
-                    text = "Try again",
+                    text = stringResource(Res.string.planetary_industry_window_try_again),
                     type = ButtonType.Primary,
                     onClick = onReloadClick,
                 )
@@ -171,7 +162,7 @@ private fun PlanetaryIndustryWindowContent(
             ) {
                 LoadingSpinnerAmbient()
                 Text(
-                    text = "Loading colonies…",
+                    text = stringResource(Res.string.planetary_industry_window_loading_colonies),
                     style = RiftTheme.typography.headerPrimary,
                     textAlign = TextAlign.Center,
                 )
@@ -331,6 +322,7 @@ private fun MainColoniesContent(
 
                     RowsView -> {
                         val transition = rememberInfiniteTransition()
+                        val now = remember(items) { Instant.now() }
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(7),
                             state = lazyGridRowsState,
@@ -338,7 +330,7 @@ private fun MainColoniesContent(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                             verticalArrangement = Arrangement.spacedBy(Spacing.small),
                         ) {
-                            items.groupBy { it.colony.characterId }.forEach { (characterId, items) ->
+                            items.groupBy { it.colony.characterId }.entries.forEachIndexed { index, (characterId, items) ->
                                 item(key = characterId) {
                                     RiftTooltipArea(
                                         text = items.first().characterName ?: "Loading…",
@@ -350,12 +342,13 @@ private fun MainColoniesContent(
                                                 .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f))
                                                 .size(72.dp),
                                         ) {
-                                            AsyncPlayerPortrait(
+                                            DynamicCharacterPortraitParallax(
                                                 characterId = characterId,
-                                                size = 64,
+                                                size = 64.dp,
+                                                enterTimestamp = now + (Duration.ofMillis(100L + index * 100)),
+                                                pointerInteractionStateHolder = null,
                                                 modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .size(64.dp),
+                                                    .clip(CircleShape),
                                             )
                                         }
                                     }
@@ -425,7 +418,7 @@ private fun getLayoutBoundsOverlayClip(sharedTransitionLayoutSize: Offset): Shar
 @Composable
 private fun EmptyState() {
     Text(
-        text = "No established planetary colonies.",
+        text = stringResource(Res.string.planetary_industry_window_no_colonies),
         style = RiftTheme.typography.headerPrimary,
         textAlign = TextAlign.Center,
         modifier = Modifier
@@ -517,17 +510,17 @@ private fun FiltersRow(
     ) {
         val viewItems = listOf<ContextMenuItem>(
             ContextMenuItem.TextItem(
-                text = "Details view",
+                text = stringResource(Res.string.planetary_industry_window_details_view),
                 iconResource = Res.drawable.list_view_16px,
                 onClick = { onViewChange(ColonyView.List) },
             ),
             ContextMenuItem.TextItem(
-                text = "List view",
+                text = stringResource(Res.string.planetary_industry_window_list_view),
                 iconResource = Res.drawable.details_view_16px,
                 onClick = { onViewChange(ColonyView.Rows) },
             ),
             ContextMenuItem.TextItem(
-                text = "Grid view",
+                text = stringResource(Res.string.planetary_industry_window_grid_view),
                 iconResource = Res.drawable.grid_view_16px,
                 onClick = { onViewChange(ColonyView.Grid) },
             ),
@@ -535,7 +528,7 @@ private fun FiltersRow(
         AnimatedContent(state.view) { view ->
             var isShown by remember { mutableStateOf(false) }
             RiftTooltipArea(
-                text = "View mode",
+                text = stringResource(Res.string.planetary_industry_window_view_mode),
             ) {
                 val resource = when (view) {
                     is DetailsView -> Res.drawable.details_view_16px
@@ -563,22 +556,22 @@ private fun FiltersRow(
 
         val sortingFilterItems = listOf<ContextMenuItem>(
             ContextMenuItem.TextItem(
-                text = "By status",
+                text = stringResource(Res.string.planetary_industry_window_sort_by_status),
                 iconResource = Res.drawable.checkmark_16px.takeIf { ColonySortingFilter.Status == state.sortingFilter },
                 onClick = { onSortingFilterChange(ColonySortingFilter.Status) },
             ),
             ContextMenuItem.TextItem(
-                text = "By expiry time",
+                text = stringResource(Res.string.planetary_industry_window_sort_by_expiry_time),
                 iconResource = Res.drawable.checkmark_16px.takeIf { ColonySortingFilter.ExpiryTime == state.sortingFilter },
                 onClick = { onSortingFilterChange(ColonySortingFilter.ExpiryTime) },
             ),
             ContextMenuItem.TextItem(
-                text = "By character account and age",
+                text = stringResource(Res.string.planetary_industry_window_sort_by_character),
                 iconResource = Res.drawable.checkmark_16px.takeIf { ColonySortingFilter.Character == state.sortingFilter },
                 onClick = { onSortingFilterChange(ColonySortingFilter.Character) },
             ),
             ContextMenuItem.TextItem(
-                text = "By character name",
+                text = stringResource(Res.string.planetary_industry_window_sort_by_character_name),
                 iconResource = Res.drawable.checkmark_16px.takeIf { ColonySortingFilter.CharacterAlphabetical == state.sortingFilter },
                 onClick = { onSortingFilterChange(ColonySortingFilter.CharacterAlphabetical) },
             ),
@@ -586,7 +579,7 @@ private fun FiltersRow(
         Box(contentAlignment = Alignment.BottomStart) {
             var isShown by remember { mutableStateOf(false) }
             RiftTooltipArea(
-                text = "Sort By",
+                text = stringResource(Res.string.planetary_industry_window_sort_by),
             ) {
                 RiftImageButton(
                     resource = Res.drawable.bars_sort_ascending_16px,
@@ -608,17 +601,17 @@ private fun FiltersRow(
 
         val copyItems = listOf<ContextMenuItem>(
             ContextMenuItem.TextItem(
-                text = "Copy for Google Sheets",
+                text = stringResource(Res.string.planetary_industry_window_copy_google_sheets),
                 iconResource = Res.drawable.menu_googlesheets,
                 onClick = { onCopyData(CopyType.GoogleSheets) },
             ),
             ContextMenuItem.TextItem(
-                text = "Copy for Excel",
+                text = stringResource(Res.string.planetary_industry_window_copy_execl),
                 iconResource = Res.drawable.menu_excel,
                 onClick = { onCopyData(CopyType.Excel) },
             ),
             ContextMenuItem.TextItem(
-                text = "Copy for Excel with EVE Online add-in",
+                text = stringResource(Res.string.planetary_industry_window_copy_execl_add_in),
                 iconResource = Res.drawable.menu_excel_addin,
                 onClick = { onCopyData(CopyType.ExcelWithAddin) },
             ),
@@ -626,7 +619,7 @@ private fun FiltersRow(
         Box(contentAlignment = Alignment.BottomStart) {
             var isShown by remember { mutableStateOf(false) }
             RiftTooltipArea(
-                text = "Copy to spreadsheet",
+                text = stringResource(Res.string.planetary_industry_window_copy_spreadsheet),
             ) {
                 RiftImageButton(
                     resource = Res.drawable.copy_16px,
@@ -653,12 +646,12 @@ private fun FiltersRow(
             val needsAttentionCount = items.count { it.colony.status is NotSetup || it.colony.status is NeedsAttention }
             if (colonyCount > 0) {
                 val text = buildString {
-                    append("$colonyCount planet${colonyCount.plural}")
+                    append(pluralStringResource(Res.plurals.planetary_industry_window_planet_count, colonyCount, colonyCount))
                     if (idleCount > 0) {
-                        append(", $idleCount idle")
+                        append(stringResource(Res.string.planetary_industry_window_idle_count, idleCount))
                     }
                     if (needsAttentionCount > 0) {
-                        append(", $needsAttentionCount need${needsAttentionCount.invertedPlural} attention")
+                        append(pluralStringResource(Res.plurals.planetary_industry_window_warn_count, needsAttentionCount, needsAttentionCount))
                     }
                 }
                 Text(

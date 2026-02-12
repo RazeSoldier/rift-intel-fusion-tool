@@ -5,7 +5,6 @@ import dev.nohus.rift.network.requests.RateLimit
 import dev.nohus.rift.network.requests.RateLimitGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

@@ -37,7 +37,7 @@ import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.pi_route
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.Commodities
 import dev.nohus.rift.planetaryindustry.models.Pin
@@ -51,8 +51,9 @@ import dev.nohus.rift.utils.formatDurationCompact
 import dev.nohus.rift.utils.formatDurationLong
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.formatNumberCompact
-import dev.nohus.rift.utils.plural
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.roundToInt
@@ -165,7 +166,7 @@ fun CommandCenter(
                 color = Color(0xFF00FFE3),
             )
             AnnotatedProgressBar(
-                title = String.format("Power: %.1f%%", powerPercent * 100),
+                title = stringResource(Res.string.planetary_industry_window_power, String.format("%.1f", powerPercent * 100)),
                 percentage = powerPercent,
                 description = "${usage.powerUsage}/${usage.powerSupply} MW",
                 color = Color(0xFFF3252F),
@@ -202,7 +203,7 @@ fun Extractor(
                     val cycleProgressDuration = Duration.ofSeconds(elapsedTime.toSeconds() % pin.cycleTime.toSeconds())
                     val totalCycleDuration = pin.cycleTime
                     AnnotatedProgressBar(
-                        title = "Current Cycle",
+                        title = stringResource(Res.string.planetary_industry_window_current_cycle),
                         duration = cycleProgressDuration,
                         totalDuration = totalCycleDuration,
                         color = RiftTheme.colors.textHighlighted,
@@ -213,13 +214,13 @@ fun Extractor(
                     val description = pin.lastRunTime?.let {
                         val totalWaitTime = Duration.between(it + pin.cycleTime, currentTime)
                         if (totalWaitTime > Duration.ZERO) {
-                            "Idle for ${formatDurationCompact(totalWaitTime)}"
+                            stringResource(Res.string.planetary_industry_window_idle_time, formatDurationCompact(totalWaitTime))
                         } else {
                             null
                         }
-                    } ?: "Idle"
+                    } ?: stringResource(Res.string.colony_icon_tooltip_idle)
                     AnnotatedProgressBar(
-                        title = "Program not active",
+                        title = stringResource(Res.string.planetary_industry_window_program_not_active),
                         percentage = 0f,
                         description = description,
                         color = RiftTheme.colors.textHighlighted,
@@ -231,7 +232,7 @@ fun Extractor(
 
                 if (pin.isActive) {
                     val timeToExpiry = Duration.between(currentTime, pin.expiryTime)
-                    TitledText("Time remaining", formatDurationLong(timeToExpiry))
+                    TitledText(stringResource(Res.string.planetary_industry_window_time_remaining), formatDurationLong(timeToExpiry))
                 }
             }
 
@@ -249,9 +250,9 @@ fun Extractor(
                 val averagePerHour = (totalMined / totalProgramDuration.toHours().toFloat()).roundToInt()
 
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.medium)) {
-                    TitledText("Avg. Per hour", "${formatNumber(averagePerHour)} units")
-                    TitledText("Current Cycle Output", currentCycleMined?.let { "${formatNumber(currentCycleMined)} units" } ?: "None")
-                    TitledText("Total Output", "${formatNumber(totalMined)} units")
+                    TitledText(stringResource(Res.string.planetary_industry_window_avg_per_hour), stringResource(Res.string.assets_window_units_count, formatNumber(averagePerHour)))
+                    TitledText(stringResource(Res.string.planetary_industry_window_current_cycle_output), currentCycleMined?.let { stringResource(Res.string.assets_window_units_count, formatNumber(currentCycleMined)) } ?: stringResource(Res.string.planetary_industry_window_storage_none))
+                    TitledText(stringResource(Res.string.planetary_industry_window_total_output), stringResource(Res.string.assets_window_units_count, formatNumber(totalMined)))
                 }
 
                 ExtractionBarGraph(
@@ -267,9 +268,9 @@ fun Extractor(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AnnotatedProgressBar(
-                    title = "Program not active",
+                    title = stringResource(Res.string.planetary_industry_window_program_not_active),
                     percentage = 0f,
-                    description = "Idle",
+                    description = stringResource(Res.string.colony_icon_tooltip_idle),
                     color = RiftTheme.colors.textHighlighted,
                     titleStyle = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.textRed, fontWeight = FontWeight.Bold),
                 )
@@ -297,7 +298,7 @@ fun Factory(
                 val cycleProgressDuration = Duration.between(pin.lastRunTime, currentTime)
                 val totalCycleDuration = pin.schematic.cycleTime
                 AnnotatedProgressBar(
-                    title = "In production",
+                    title = stringResource(Res.string.planetary_industry_window_in_production),
                     duration = cycleProgressDuration,
                     totalDuration = totalCycleDuration,
                     color = RiftTheme.colors.textHighlighted,
@@ -309,13 +310,13 @@ fun Factory(
                 val description = pin.lastCycleStartTime?.let {
                     val totalWaitTime = Duration.between(it + pin.schematic.cycleTime, currentTime)
                     if (totalWaitTime > Duration.ZERO) {
-                        "Idle for ${formatDurationCompact(totalWaitTime)}"
+                        stringResource(Res.string.planetary_industry_window_idle_time, formatDurationCompact(totalWaitTime))
                     } else {
                         null
                     }
-                } ?: "Idle"
+                } ?: stringResource(Res.string.colony_icon_tooltip_idle)
                 AnnotatedProgressBar(
-                    title = "Waiting for resources",
+                    title = stringResource(Res.string.planetary_industry_window_wait_resources),
                     percentage = 0f,
                     description = description,
                     color = RiftTheme.colors.textHighlighted,
@@ -326,7 +327,7 @@ fun Factory(
 
             Column {
                 Text(
-                    text = "Input",
+                    text = stringResource(Res.string.planetary_industry_window_input),
                     style = RiftTheme.typography.bodyHighlighted,
                 )
                 Row(
@@ -342,11 +343,12 @@ fun Factory(
                                 }
                                 append(" ")
                                 withStyle(SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                                    append(Commodities.getTierName(type.name))
+                                    append(Commodities.getTierName(type.id))
                                 }
                                 appendLine()
                                 withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                                    append("$stored/$quantity unit${quantity.plural}")
+                                    append("$stored/${pluralStringResource(Res.plurals.planetary_industry_window_unit,
+                                        quantity.toInt(), quantity)}")
                                 }
                             },
                         ) {
@@ -383,9 +385,9 @@ fun Factory(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnnotatedProgressBar(
-                title = "Program not active",
+                title = stringResource(Res.string.planetary_industry_window_program_not_active),
                 percentage = 0f,
-                description = "Idle",
+                description = stringResource(Res.string.colony_icon_tooltip_idle),
                 color = RiftTheme.colors.textHighlighted,
                 titleStyle = RiftTheme.typography.bodyPrimary.copy(color = RiftTheme.colors.textRed, fontWeight = FontWeight.Bold),
             )
@@ -408,7 +410,7 @@ fun Storage(
     ) {
         if (maxVolume != null) {
             AnnotatedProgressBar(
-                title = "Storage",
+                title = stringResource(Res.string.planetary_industry_window_storage),
                 percentage = capacityUsed / maxVolume,
                 description = String.format("%.0f/%.0f m3", capacityUsed, maxVolume),
                 color = RiftTheme.colors.progressBarProgress,
@@ -417,12 +419,12 @@ fun Storage(
 
         Column {
             Text(
-                text = "Stored Items",
+                text = stringResource(Res.string.planetary_industry_window_storage_item),
                 style = RiftTheme.typography.bodyHighlighted,
             )
             if (contents.isEmpty()) {
                 Text(
-                    text = "None",
+                    text = stringResource(Res.string.planetary_industry_window_storage_none),
                     style = RiftTheme.typography.bodySecondary,
                 )
             }
@@ -438,10 +440,10 @@ fun Storage(
                             }
                             append(" ")
                             withStyle(SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                                append(Commodities.getTierName(type.name))
+                                append(Commodities.getTierName(type.id))
                             }
                             appendLine()
-                            append("${formatNumber(quantity)} unit${quantity.plural}")
+                            append(pluralStringResource(Res.plurals.planetary_industry_window_unit, quantity.toInt(), formatNumber(quantity)))
                         },
                     ) {
                         Row(

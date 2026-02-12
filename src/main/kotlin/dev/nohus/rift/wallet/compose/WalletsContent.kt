@@ -24,14 +24,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.VerticalGrid
+import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_wallet
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.utils.toggle
 import dev.nohus.rift.wallet.WalletDivisionsRepository
 import dev.nohus.rift.wallet.WalletFilters
@@ -40,6 +41,8 @@ import dev.nohus.rift.wallet.WalletType
 import dev.nohus.rift.wallet.WalletViewModel.LoadedData
 import dev.nohus.rift.wallet.WalletViewModel.UiState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import java.time.Duration
 import java.time.Instant
 
 @Composable
@@ -50,7 +53,7 @@ fun WalletsContent(
 ) {
     Column {
         Text(
-            text = "Choose wallets to filter transactions and insights",
+            text = stringResource(Res.string.wallet_window_choose_wallets),
             style = RiftTheme.typography.bodySecondary,
             modifier = Modifier.padding(bottom = Spacing.medium),
         )
@@ -85,7 +88,7 @@ fun WalletsContent(
                             )
                         }
                     },
-                    name = "All character wallets",
+                    name = stringResource(Res.string.wallet_window_all_character_wallets),
                     isSelected = WalletType.Character in filters,
                     onClick = {
                         val updated = filters
@@ -97,20 +100,22 @@ fun WalletsContent(
                     showCents = state.showCents,
                 )
 
+                val now = remember(data.characters) { Instant.now() }
                 data.characters
                     .associateWith { characterBalances[it.id] ?: 0.0 }
                     .entries
                     .sortedByDescending { (_, balance) -> balance }
-                    .forEach { (character, balance) ->
+                    .forEachIndexed { index, (character, balance) ->
                         val isSelected = WalletType.SpecificCharacter(character.id) in filters ||
                             WalletType.Character in filters
-
+                        val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
                         WalletCard(
                             icon = {
-                                AsyncPlayerPortrait(
+                                DynamicCharacterPortraitParallax(
                                     characterId = character.id,
-                                    size = 64,
-                                    modifier = Modifier.size(48.dp),
+                                    size = 48.dp,
+                                    enterTimestamp = now + (Duration.ofMillis(100L + index * 100)),
+                                    pointerInteractionStateHolder = pointerInteractionStateHolder,
                                 )
                             },
                             name = character.name,
@@ -123,6 +128,7 @@ fun WalletsContent(
                             },
                             amount = balance,
                             showCents = state.showCents,
+                            pointerInteractionStateHolder = pointerInteractionStateHolder,
                         )
                     }
             }

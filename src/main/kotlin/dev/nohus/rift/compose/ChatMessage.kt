@@ -45,18 +45,9 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.keywords_clear
-import dev.nohus.rift.generated.resources.keywords_combat_probe
-import dev.nohus.rift.generated.resources.keywords_ess
-import dev.nohus.rift.generated.resources.keywords_gatecamp
-import dev.nohus.rift.generated.resources.keywords_interdiction_probe
-import dev.nohus.rift.generated.resources.keywords_killreport
-import dev.nohus.rift.generated.resources.keywords_no_visual
-import dev.nohus.rift.generated.resources.keywords_skyhook
-import dev.nohus.rift.generated.resources.keywords_spike
-import dev.nohus.rift.generated.resources.keywords_systems
-import dev.nohus.rift.generated.resources.keywords_wormhole
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.logs.parse.ChatMessageParser.KeywordType
@@ -66,10 +57,12 @@ import dev.nohus.rift.logs.parse.ChatMessageParser.TokenType.Link
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.StarGatesRepository
 import dev.nohus.rift.repositories.TypesRepository
+import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -142,7 +135,7 @@ private fun MessageMetadata(
     pointerState: PointerInteractionStateHolder,
 ) {
     RiftTooltipArea(
-        text = "Original message:\n${message.chatMessage.message}",
+        text = stringResource(Res.string.chat_message_original_message, message.chatMessage.message),
     ) {
         val background by pointerState.animateWindowBackgroundSecondaryHover()
         Row(
@@ -337,7 +330,7 @@ private fun TokenWithGate(
 ) {
     val starGatesRepository: StarGatesRepository = remember { koin.get() }
     val gate = starGatesRepository.getGate(isAnsiblex, fromSystem?.id, toSystem.id)
-    val gateText = if (isAnsiblex) "Ansiblex" else "Gate"
+    val gateText = if (isAnsiblex) stringResource(Res.string.system_entities_ansiblex) else stringResource(Res.string.system_entities_gate)
     val name = "${toSystem.name} $gateText"
     ClickableLocation(
         systemId = fromSystem?.id,
@@ -419,7 +412,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "No visual",
+                    text = stringResource(Res.string.system_entities_no_visual),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -430,7 +423,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Clear",
+                    text = stringResource(Res.string.chat_message_clear),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -441,7 +434,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Wormhole",
+                    text = stringResource(Res.string.system_entities_wormhole),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -452,7 +445,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Spike",
+                    text = stringResource(Res.string.system_entities_spike),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -463,7 +456,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "ESS",
+                    text = stringResource(Res.string.ESS),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -474,7 +467,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Skyhook",
+                    text = stringResource(Res.string.system_entities_skyhook),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -485,7 +478,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Gate Camp",
+                    text = stringResource(Res.string.system_entities_gate_camp),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -496,7 +489,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Combat Probes",
+                    text = stringResource(Res.string.system_entities_combat_probes),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -507,7 +500,7 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
                     modifier = Modifier.size(rowHeight),
                 )
                 Text(
-                    text = "Bubbles",
+                    text = stringResource(Res.string.system_entities_bubbles),
                     modifier = Modifier.padding(4.dp),
                 )
             }
@@ -519,10 +512,11 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
 private fun TokenWithCharacter(rowHeight: Dp, name: String, character: TokenType.Character) {
     BorderedToken(rowHeight) {
         ClickableCharacter(character.characterId) {
-            AsyncPlayerPortrait(
+            DynamicCharacterPortraitStandings(
                 characterId = character.characterId,
-                size = 32,
-                modifier = Modifier.size(rowHeight),
+                size = rowHeight,
+                standingLevel = character.details?.standingLevel ?: Standing.Neutral,
+                isAnimated = true,
             )
         }
         if (character.details != null) {
@@ -613,12 +607,15 @@ private fun TokenWithKill(rowHeight: Dp, token: TokenType.Kill) {
                     modifier = Modifier.size(rowHeight),
                 )
                 VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
-                AsyncPlayerPortrait(
-                    characterId = token.characterId,
-                    size = 32,
-                    modifier = Modifier.size(rowHeight),
-                )
-                VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+                if (token.characterId != null) {
+                    DynamicCharacterPortraitStandings(
+                        characterId = token.characterId,
+                        size = rowHeight,
+                        standingLevel = token.details?.standingLevel ?: Standing.Neutral,
+                        isAnimated = true,
+                    )
+                    VerticalDivider(color = RiftTheme.colors.borderGreyLight, modifier = Modifier.height(rowHeight))
+                }
                 val type = repository.getType(token.target)
                 AsyncTypeIcon(
                     type = type,

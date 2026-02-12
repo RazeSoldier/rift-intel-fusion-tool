@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.annotation.Single
+import java.util.Locale
 
 private val logger = KotlinLogging.logger {}
 
@@ -15,7 +16,7 @@ class StaticDatabase(
     sqliteInitializer: SqliteInitializer,
 ) {
     private val targetDatabase: Database = (
-        if (ApplicationLocale.current.language == "zh") {
+        if (ApplicationLocale == Locale.CHINESE) {
             logger.info { "Using Chinese static database" }
             Database.connect("jdbc:sqlite::resource:static-zh.db", "org.sqlite.JDBC")
         } else {

@@ -1,6 +1,5 @@
 package dev.nohus.rift.network.ntfy
 
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
@@ -13,6 +12,7 @@ import okhttp3.OkHttpClient
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 @Single
 class NtfyApi(

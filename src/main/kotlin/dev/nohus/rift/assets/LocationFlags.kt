@@ -1,5 +1,8 @@
 package dev.nohus.rift.assets
 
+import dev.nohus.rift.i18n.ApplicationLocale
+import java.util.Locale
+
 object LocationFlags {
 
     private val flags = mapOf(
@@ -130,6 +133,138 @@ object LocationFlags {
     )
 
     fun getName(flag: String): String? {
+        if (ApplicationLocale == Locale.CHINESE) {
+            return LocationFlagsCN.flags[flag]
+        }
         return flags[flag]
+    }
+
+    private object LocationFlagsCN {
+        val flags = mapOf(
+            "AssetSafety" to null, // Known from location
+            "AutoFit" to null, // Inside a container
+            "Bonus" to "Bonus",
+            "Booster" to "Booster",
+            "BoosterBay" to "Booster Hold",
+            "Capsule" to "太空舱",
+            "CapsuleerDeliveries" to "Capsuleer Deliveries",
+            "Cargo" to "货舱",
+            "CorpDeliveries" to "军团递送机库",
+            "CorpSAG1" to null, // Shown inside a corporation container
+            "CorpSAG2" to null,
+            "CorpSAG3" to null,
+            "CorpSAG4" to null,
+            "CorpSAG5" to null,
+            "CorpSAG6" to null,
+            "CorpSAG7" to null,
+            "CorporationGoalDeliveries" to null,
+            "CrateLoot" to "Crate Loot",
+            "CorpseBay" to "Corpse Hold",
+            "Deliveries" to "Deliveries",
+            "DroneBay" to "无人机舱",
+            "ExpeditionHold" to "Expedition Hold",
+            "FighterBay" to "舰载机舱",
+            "FighterTube0" to "舰载机发射管1",
+            "FighterTube1" to "舰载机发射管2",
+            "FighterTube2" to "舰载机发射管3",
+            "FighterTube3" to "舰载机发射管4",
+            "FighterTube4" to "舰载机发射管5",
+            "FleetHangar" to "舰队机库",
+            "FrigateEscapeBay" to "护卫舰逃生舱",
+            "Hangar" to null, // Inside a hangar
+            "HangarAll" to null,
+            "HiSlot0" to "高槽1",
+            "HiSlot1" to "高槽2",
+            "HiSlot2" to "高槽3",
+            "HiSlot3" to "高槽4",
+            "HiSlot4" to "高槽5",
+            "HiSlot5" to "高槽6",
+            "HiSlot6" to "高槽7",
+            "HiSlot7" to "高槽8",
+            "HiddenModifiers" to "Hidden Modifiers",
+            "Implant" to "植入体",
+            "Impounded" to "Impounded",
+            "InfrastructureHangar" to "Infrastructure Hangar",
+            "JunkyardReprocessed" to "Junkyard Reprocessed",
+            "JunkyardTrashed" to "Junkyard Trashed",
+            "LoSlot0" to "低槽1",
+            "LoSlot1" to "低槽2",
+            "LoSlot2" to "低槽3",
+            "LoSlot3" to "低槽4",
+            "LoSlot4" to "低槽5",
+            "LoSlot5" to "低槽6",
+            "LoSlot6" to "低槽7",
+            "LoSlot7" to "低槽8",
+            "Locked" to "Locked",
+            "MedSlot0" to "中槽1",
+            "MedSlot1" to "中槽2",
+            "MedSlot2" to "中槽3",
+            "MedSlot3" to "中槽4",
+            "MedSlot4" to "中槽5",
+            "MedSlot5" to "中槽6",
+            "MedSlot6" to "中槽7",
+            "MedSlot7" to "中槽8",
+            "MobileDepotHold" to "Mobile Depot Hold",
+            "MoonMaterialBay" to "Moon Materials Hold",
+            "OfficeFolder" to null,
+            "Pilot" to "Pilot",
+            "PlanetSurface" to "Planet Surface",
+            "QuafeBay" to "Quafe Hold",
+            "QuantumCoreRoom" to "Quantum Core Room",
+            "Reward" to "Reward",
+            "RigSlot0" to "改装件槽1",
+            "RigSlot1" to "改装件槽2",
+            "RigSlot2" to "改装件槽3",
+            "RigSlot3" to "改装件槽4",
+            "RigSlot4" to "改装件槽5",
+            "RigSlot5" to "改装件槽6",
+            "RigSlot6" to "改装件槽7",
+            "RigSlot7" to "改装件槽8",
+            "SecondaryStorage" to "Secondary Storage",
+            "ServiceSlot0" to "服务槽1",
+            "ServiceSlot1" to "服务槽2",
+            "ServiceSlot2" to "服务槽3",
+            "ServiceSlot3" to "服务槽4",
+            "ServiceSlot4" to "服务槽5",
+            "ServiceSlot5" to "服务槽6",
+            "ServiceSlot6" to "服务槽7",
+            "ServiceSlot7" to "服务槽8",
+            "ShipHangar" to "舰船机库",
+            "ShipOffline" to "Ship Offline",
+            "Skill" to "Skill",
+            "SkillInTraining" to "Skill In Training",
+            "SpecializedAmmoHold" to "Ammo Hold",
+            "SpecializedAsteroidHold" to "Asteroid Hold",
+            "SpecializedCommandCenterHold" to "Command Center Hold",
+            "SpecializedFuelBay" to "Fuel Hold",
+            "SpecializedGasHold" to "Gas Hold",
+            "SpecializedIceHold" to "Ice Hold",
+            "SpecializedIndustrialShipHold" to "Industrial Ship Hold",
+            "SpecializedLargeShipHold" to "Large Ship Hold",
+            "SpecializedMaterialBay" to "Material Hold",
+            "SpecializedMediumShipHold" to "Medium Ship Hold",
+            "SpecializedMineralHold" to "Mineral Hold",
+            "SpecializedOreHold" to "Ore Hold",
+            "SpecializedPlanetaryCommoditiesHold" to "Planetary Commodities Hold",
+            "SpecializedSalvageHold" to "Salvage Hold",
+            "SpecializedShipHold" to "Ship Hold",
+            "SpecializedSmallShipHold" to "Small Ship Hold",
+            "StructureActive" to "Structure Active",
+            "StructureFuel" to "Structure Fuel",
+            "StructureInactive" to "Structure Inactive",
+            "StructureOffline" to "Structure Offline",
+            "SubSystemBay" to "子系统舱",
+            "SubSystemSlot0" to "子系统1",
+            "SubSystemSlot1" to "子系统2",
+            "SubSystemSlot2" to "子系统3",
+            "SubSystemSlot3" to "子系统4",
+            "SubSystemSlot4" to "子系统5",
+            "SubSystemSlot5" to "子系统6",
+            "SubSystemSlot6" to "子系统7",
+            "SubSystemSlot7" to "子系统8",
+            "Unlocked" to null, // Inside an unlocked container
+            "Wallet" to "钱包",
+            "Wardrobe" to "Wardrobe",
+        )
     }
 }

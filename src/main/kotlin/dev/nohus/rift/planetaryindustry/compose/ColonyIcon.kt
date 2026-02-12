@@ -46,7 +46,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.assets.PlanetaryIndustryCommoditiesRepository
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.modifyIf
@@ -57,7 +56,15 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_extracting
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_idle
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_need_attention
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_not_setup
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_planet_type
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_producing
+import dev.nohus.rift.generated.resources.colony_icon_tooltip_product_storage
 import dev.nohus.rift.generated.resources.pi_disc_shadow
 import dev.nohus.rift.generated.resources.pi_ecu_top
 import dev.nohus.rift.generated.resources.pi_gauge_15px
@@ -86,6 +93,7 @@ import dev.nohus.rift.repositories.TypesRepository.Type
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 private val colonyIconSize = 72.dp
 private val colonyIconPlanetSize = 64.dp
@@ -145,10 +153,11 @@ fun ColonyPlanetSnippet(
                     .clip(CircleShape)
                     .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
             ) {
-                AsyncPlayerPortrait(
+                DynamicCharacterPortraitParallax(
                     characterId = colony.characterId,
-                    size = 32,
-                    modifier = Modifier.size(32.dp),
+                    size = 32.dp,
+                    enterTimestamp = null,
+                    pointerInteractionStateHolder = null,
                 )
             }
         }
@@ -216,11 +225,11 @@ private fun ColonyTooltip(
         modifier = Modifier.padding(Spacing.large),
     ) {
         when (colony.status) {
-            is Extracting -> Text("Extracting", fontWeight = FontWeight.Bold, color = RiftTheme.colors.textGreen)
-            is Producing -> Text("Producing", fontWeight = FontWeight.Bold, color = RiftTheme.colors.textGreen)
-            is NotSetup -> Text("Not setup", fontWeight = FontWeight.Bold, color = RiftTheme.colors.textRed)
-            is NeedsAttention -> Text("Needs attention", fontWeight = FontWeight.Bold, color = RiftTheme.colors.textRed)
-            is Idle -> Text("Idle", fontWeight = FontWeight.Bold)
+            is Extracting -> Text(stringResource(Res.string.colony_icon_tooltip_extracting), fontWeight = FontWeight.Bold, color = RiftTheme.colors.textGreen)
+            is Producing -> Text(stringResource(Res.string.colony_icon_tooltip_producing), fontWeight = FontWeight.Bold, color = RiftTheme.colors.textGreen)
+            is NotSetup -> Text(stringResource(Res.string.colony_icon_tooltip_not_setup), fontWeight = FontWeight.Bold, color = RiftTheme.colors.textRed)
+            is NeedsAttention -> Text(stringResource(Res.string.colony_icon_tooltip_need_attention), fontWeight = FontWeight.Bold, color = RiftTheme.colors.textRed)
+            is Idle -> Text(stringResource(Res.string.colony_icon_tooltip_idle), fontWeight = FontWeight.Bold)
         }
         val finalProducts = colony.overview.finalProducts
         if (finalProducts.isNotEmpty()) {
@@ -237,7 +246,7 @@ private fun ColonyTooltip(
                     modifier = Modifier.padding(start = Spacing.small),
                 ) {
                     Text(
-                        text = "Producing",
+                        text = stringResource(Res.string.colony_icon_tooltip_producing),
                         style = RiftTheme.typography.bodyPrimary,
                     )
                     Text(
@@ -248,7 +257,7 @@ private fun ColonyTooltip(
             }
 
             AnnotatedProgressBar(
-                title = "Product storage",
+                title = stringResource(Res.string.colony_icon_tooltip_product_storage),
                 percentage = colony.overview.finalProductsUsedCapacity.toFloat() / colony.overview.capacity,
                 secondaryPercentage = colony.overview.otherUsedCapacity.toFloat() / colony.overview.capacity,
                 description = String.format("%.0f/%.0f m3", colony.overview.finalProductsUsedCapacity, colony.overview.capacity.toFloat()),
@@ -262,7 +271,7 @@ private fun ColonyTooltip(
             style = RiftTheme.typography.bodyPrimary,
         )
         Text(
-            text = "${colony.type.name} planet",
+            text = stringResource(Res.string.colony_icon_tooltip_planet_type, colony.type.name),
             style = RiftTheme.typography.bodySecondary,
         )
     }

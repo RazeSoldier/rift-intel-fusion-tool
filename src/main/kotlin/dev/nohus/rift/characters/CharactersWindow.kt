@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.execIfLocaleNotInZh
 import dev.nohus.rift.i18n.getStringSync
@@ -59,6 +61,8 @@ import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import java.time.Duration
+import java.time.Instant
 
 @Composable
 fun CharactersWindow(
@@ -97,9 +101,9 @@ fun CharactersWindow(
                 onDismiss = viewModel::onCloseSso,
             )
         } else if (state.deletingCharacter != null) {
-            val name = state.deletingCharacter?.info?.name ?: "character ID ${state.deletingCharacter?.characterId}"
+            val name = state.deletingCharacter?.info?.name ?: stringResource(Res.string.character_window_character_id, state.deletingCharacter?.characterId ?: "")
             RiftDialog(
-                title = "Delete $name?",
+                title = stringResource(Res.string.character_window_trailing_delete_name, name),
                 icon = Res.drawable.window_delete_character,
                 parentState = windowState,
                 state = rememberWindowState(width = 380.dp, height = Dp.Unspecified),
@@ -117,21 +121,21 @@ private fun DeleteCharacterDialogContent(viewModel: CharactersViewModel) {
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         Text(
-            text = "The settings files for this character will be deleted from your installation of EVE Online, and RIFT's connection with ESI for this character will be removed.",
+            text = stringResource(Res.string.character_window_delete_character_dialog),
             style = RiftTheme.typography.bodyPrimary,
         )
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             RiftButton(
-                text = "Cancel",
+                text = stringResource(Res.string.cancel),
                 cornerCut = ButtonCornerCut.BottomLeft,
                 type = ButtonType.Secondary,
                 onClick = viewModel::onDeleteCharacterCancel,
                 modifier = Modifier.weight(1f),
             )
             RiftButton(
-                text = "Delete",
+                text = stringResource(Res.string.delete),
                 type = ButtonType.Negative,
                 onClick = viewModel::onDeleteCharacterConfirm,
                 modifier = Modifier.weight(1f),
@@ -168,7 +172,7 @@ private fun CharactersWindowContent(
         }
     } else {
         Text(
-            text = "No characters found.\n\nMake sure the game directory is selected in settings, and that you have logged in to at least one character on this computer before.",
+            text = stringResource(Res.string.character_window_no_character_found),
             style = RiftTheme.typography.headerPrimary,
             modifier = Modifier
                 .fillMaxSize()
@@ -185,13 +189,18 @@ private fun ColumnScope.CharactersList(
     onEnableCharacterClick: (characterId: Int) -> Unit,
     onDeleteCharacterClick: (characterId: Int) -> Unit,
 ) {
+    val now = remember(state.characters) { Instant.now() }
     ScrollbarLazyColumn(
-        modifier = Modifier.Companion.weight(1f),
+        modifier = Modifier.weight(1f),
     ) {
-        items(state.characters.filterNot { it.isHidden }, key = { it.characterId }) { character ->
+        itemsIndexed(
+            items = state.characters.filterNot { it.isHidden },
+            key = { _, it -> it.characterId },
+        ) { index, character ->
             Box(modifier = Modifier.animateItem()) {
                 CharacterRow(
                     character = character,
+                    enterTimestamp = now + (Duration.ofMillis(500L + index * 150)),
                     isOnline = character.characterId in state.onlineCharacters,
                     location = state.locations[character.characterId],
                     isChoosingDisabledCharacters = state.isChoosingDisabledCharacters,
@@ -203,7 +212,7 @@ private fun ColumnScope.CharactersList(
         item(key = "disabled characters") {
             Box(modifier = Modifier.animateItem()) {
                 RiftTooltipArea(
-                    text = "Disabled characters will not be used in RIFT.",
+                    text = stringResource(Res.string.character_window_disabled_character_tooltip),
                     modifier = Modifier.padding(vertical = Spacing.medium),
                 ) {
                     Row(
@@ -211,12 +220,12 @@ private fun ColumnScope.CharactersList(
                     ) {
                         if (state.characters.any { it.isHidden }) {
                             Text(
-                                text = "Disabled characters",
+                                text = stringResource(Res.string.character_window_disabled_character),
                                 style = RiftTheme.typography.headerPrimary,
                             )
                         } else {
                             Text(
-                                text = "No disabled characters",
+                                text = stringResource(Res.string.character_window_no_disabled_characters),
                                 style = RiftTheme.typography.headerPrimary,
                             )
                         }
@@ -261,12 +270,12 @@ private fun TopRow(
             ) {
                 if (isChoosingDisabledCharacters) {
                     Text(
-                        text = "Enable or disable characters you don't want to use.",
+                        text = stringResource(Res.string.character_window_enable_disable_character),
                         style = RiftTheme.typography.bodyPrimary,
                         modifier = Modifier.weight(1f),
                     )
                     RiftButton(
-                        text = "Done",
+                        text = stringResource(Res.string.character_window_done),
                         type = ButtonType.Primary,
                         onClick = onChooseDisabledClick,
                     )
@@ -319,6 +328,7 @@ private fun SsoButton(
 @Composable
 private fun CharacterRow(
     character: CharacterItem,
+    enterTimestamp: Instant,
     isOnline: Boolean,
     location: Location?,
     isChoosingDisabledCharacters: Boolean,
@@ -326,9 +336,10 @@ private fun CharacterRow(
     onDisableCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     Column(
         modifier = modifier
-            .hoverBackground()
+            .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
             .padding(Spacing.verySmall),
     ) {
         Row(
@@ -336,15 +347,11 @@ private fun CharacterRow(
             modifier = Modifier.fillMaxWidth(),
         ) {
             OnlineIndicatorBar(isOnline)
-            AsyncPlayerPortrait(
-                characterId = character.characterId,
-                size = 64,
-                modifier = Modifier.size(64.dp),
-            )
+            DynamicCharacterPortraitParallax(character.characterId, 64.dp, enterTimestamp, pointerInteractionStateHolder)
             when (character.info) {
                 null -> {
                     Text(
-                        text = "Could not load",
+                        text = stringResource(Res.string.character_window_could_not_load),
                         style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
                         modifier = Modifier
                             .padding(horizontal = Spacing.medium)
@@ -410,7 +417,7 @@ private fun CharacterRow(
             }
 
             AnimatedVisibility(isChoosingDisabledCharacters) {
-                RiftTooltipArea("Disable this character") {
+                RiftTooltipArea(stringResource(Res.string.character_window_disable_character)) {
                     RiftIconButton(
                         icon = Res.drawable.buttoniconminus,
                         onClick = { onDisableCharacterClick(character.characterId) },
@@ -509,7 +516,7 @@ fun AuthenticationStatusIcon(
                         modifier = Modifier.padding(Spacing.large),
                     ) {
                         Text(
-                            text = "Missing ESI scopes:",
+                            text = stringResource(Res.string.character_window_missing_esi_scopes),
                             style = RiftTheme.typography.bodyPrimary,
                         )
                         Text(
@@ -518,14 +525,14 @@ fun AuthenticationStatusIcon(
                             modifier = Modifier.padding(vertical = Spacing.small),
                         )
                         Text(
-                            text = "Some features won't work.",
+                            text = stringResource(Res.string.character_window_missing_esi_scopes_tooltip),
                             style = RiftTheme.typography.bodyPrimary,
                         )
                     }
                 }
                 AuthenticationStatus.Unauthenticated -> {
                     Text(
-                        text = "Not authenticated with ESI.\nClick the log in button above.",
+                        text = stringResource(Res.string.character_window_no_auth),
                         style = RiftTheme.typography.bodyPrimary,
                         modifier = Modifier.padding(Spacing.large),
                     )
@@ -587,7 +594,7 @@ private fun Clone(clone: Clone) {
             }
         } else {
             Text(
-                text = "No implants",
+                text = stringResource(Res.string.character_window_no_implants),
                 style = RiftTheme.typography.bodySecondary,
                 modifier = Modifier
                     .padding(start = Spacing.medium)
@@ -597,7 +604,7 @@ private fun Clone(clone: Clone) {
 
         if (clone.isActive) {
             Text(
-                text = "Active clone",
+                text = stringResource(Res.string.character_window_active_clone),
                 style = RiftTheme.typography.bodyPrimary.copy(fontWeight = FontWeight.Bold),
             )
         } else {
@@ -614,17 +621,19 @@ private fun HiddenCharacterRow(
     onDeleteCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .hoverBackground()
+            .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
             .padding(Spacing.verySmall),
     ) {
-        AsyncPlayerPortrait(
+        DynamicCharacterPortraitParallax(
             characterId = character.characterId,
-            size = 32,
-            modifier = Modifier.size(32.dp),
+            size = 32.dp,
+            enterTimestamp = null,
+            pointerInteractionStateHolder = pointerInteractionStateHolder,
         )
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -633,7 +642,7 @@ private fun HiddenCharacterRow(
             when (character.info) {
                 null -> {
                     Text(
-                        text = "Could not load",
+                        text = stringResource(Res.string.character_window_could_not_load),
                         style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
                         modifier = Modifier.padding(horizontal = Spacing.medium),
                     )
@@ -665,7 +674,7 @@ private fun HiddenCharacterRow(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.small),
             ) {
-                RiftTooltipArea("Delete this character") {
+                RiftTooltipArea(stringResource(Res.string.character_window_delete_character)) {
                     RiftIconButton(
                         icon = Res.drawable.delete,
                         type = ButtonType.Negative,
@@ -673,7 +682,7 @@ private fun HiddenCharacterRow(
                         onClick = { onDeleteCharacterClick(character.characterId) },
                     )
                 }
-                RiftTooltipArea("Enable this character") {
+                RiftTooltipArea(stringResource(Res.string.character_window_enable_character)) {
                     RiftIconButton(
                         icon = Res.drawable.buttoniconplus,
                         onClick = { onEnableCharacterClick(character.characterId) },

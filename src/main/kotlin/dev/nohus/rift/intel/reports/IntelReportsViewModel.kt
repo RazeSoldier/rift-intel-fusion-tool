@@ -4,7 +4,6 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.intel.ChatLogWatcher
 import dev.nohus.rift.intel.ParsedChannelChatMessage
-import dev.nohus.rift.intel.reports.IntelReportsSettings
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
 import dev.nohus.rift.logs.parse.ChatMessageParser

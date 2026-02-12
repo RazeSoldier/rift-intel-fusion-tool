@@ -2,109 +2,52 @@ package dev.nohus.rift.assets
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.onClick
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.assets.AssetsViewModel.Asset
-import dev.nohus.rift.assets.AssetsViewModel.AssetLocation
 import dev.nohus.rift.assets.AssetsViewModel.AssetsTab
 import dev.nohus.rift.assets.AssetsViewModel.FitAction
-import dev.nohus.rift.assets.AssetsViewModel.SortType
 import dev.nohus.rift.assets.AssetsViewModel.UiState
 import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.assets.compose.AssetsContent
 import dev.nohus.rift.assets.compose.OwnersContent
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
-import dev.nohus.rift.compose.AsyncPlayerPortrait
-import dev.nohus.rift.compose.AsyncTypeIcon
-import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
-import dev.nohus.rift.compose.ContextMenuItem
-import dev.nohus.rift.compose.ExpandChevron
-import dev.nohus.rift.compose.GetSystemContextMenuItems
 import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.LoadingSpinnerAmbient
 import dev.nohus.rift.compose.OnVisibilityChange
 import dev.nohus.rift.compose.RiftButton
-import dev.nohus.rift.compose.RiftContextMenuArea
-import dev.nohus.rift.compose.RiftDropdown
-import dev.nohus.rift.compose.RiftDropdownWithLabel
-import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftTabBar
-import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
-import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.Tab
-import dev.nohus.rift.compose.fadingRightEdge
-import dev.nohus.rift.compose.hoverBackground
-import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.menu_hide
-import dev.nohus.rift.generated.resources.menu_pinned
-import dev.nohus.rift.generated.resources.menu_unhide
-import dev.nohus.rift.generated.resources.menu_unpin
-import dev.nohus.rift.generated.resources.window_assets
-import dev.nohus.rift.map.SecurityColors
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.settings.persistence.LocationPinStatus
-import dev.nohus.rift.utils.formatIskCompact
-import dev.nohus.rift.utils.formatNumberCompact
-import dev.nohus.rift.utils.plural
-import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.viewModel
-import dev.nohus.rift.wallet.WalletFilters
-import dev.nohus.rift.wallet.WalletViewModel
-import dev.nohus.rift.wallet.WalletViewModel.WalletTab
-import dev.nohus.rift.wallet.compose.InsightsContent
-import dev.nohus.rift.wallet.compose.LoyaltyPointsContent
-import dev.nohus.rift.wallet.compose.OverviewContent
-import dev.nohus.rift.wallet.compose.TransactionsContent
-import dev.nohus.rift.wallet.compose.WalletsContent
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
-import org.jetbrains.compose.resources.painterResource
-import java.text.NumberFormat
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AssetsWindow(
@@ -114,7 +57,7 @@ fun AssetsWindow(
     val viewModel: AssetsViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "Assets",
+        title = stringResource(Res.string.assets_window_title),
         icon = Res.drawable.window_assets,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -150,8 +93,8 @@ private fun ToolbarRow(
         val tabs = remember {
             AssetsTab.entries.mapIndexed { index, tab ->
                 val title = when (tab) {
-                    AssetsTab.Owners -> "Owners"
-                    AssetsTab.Assets -> "Assets"
+                    AssetsTab.Owners -> getStringSync(Res.string.assets_window_tab_owners)
+                    AssetsTab.Assets -> getStringSync(Res.string.assets_window_tab_assets)
                 }
                 Tab(id = index, title = title, isCloseable = false)
             }
@@ -199,7 +142,7 @@ private fun AssetsWindowContent(
             ) {
                 LoadingSpinnerAmbient()
                 Text(
-                    text = "Loading assets…",
+                    text = stringResource(Res.string.assets_window_loading_assets),
                     style = RiftTheme.typography.headlinePrimary,
                 )
             }
@@ -212,12 +155,12 @@ private fun AssetsWindowContent(
                         modifier = Modifier.fillMaxWidth().padding(Spacing.large),
                     ) {
                         Text(
-                            text = "Could not load assets",
+                            text = stringResource(Res.string.assets_window_could_not_load_assets),
                             style = RiftTheme.typography.headerPrimary,
                             textAlign = TextAlign.Center,
                         )
                         RiftButton(
-                            text = "Try again",
+                            text = stringResource(Res.string.assets_window_try_again),
                             type = ButtonType.Primary,
                             onClick = onReloadClick,
                         )

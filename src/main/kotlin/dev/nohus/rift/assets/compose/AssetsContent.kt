@@ -50,8 +50,8 @@ import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.assets.LocationFlags
 import dev.nohus.rift.assets.getTotalPrice
 import dev.nohus.rift.assets.getTotalVolume
+import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
@@ -71,20 +71,17 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.corphangar
-import dev.nohus.rift.generated.resources.goaldeliveries
-import dev.nohus.rift.generated.resources.menu_hide
-import dev.nohus.rift.generated.resources.menu_pinned
-import dev.nohus.rift.generated.resources.menu_unhide
-import dev.nohus.rift.generated.resources.menu_unpin
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.settings.persistence.LocationPinStatus
 import dev.nohus.rift.utils.formatIskCompact
 import dev.nohus.rift.utils.formatNumberCompact
-import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import java.text.NumberFormat
 
 @Composable
@@ -101,16 +98,16 @@ fun AssetsContent(
             modifier = Modifier.padding(bottom = Spacing.medium),
         ) {
             RiftDropdownWithLabel(
-                label = "Sort By",
+                label = stringResource(Res.string.assets_window_sort_by),
                 items = SortType.entries,
                 selectedItem = state.filters.sort,
                 onItemSelected = { onFiltersUpdate(state.filters.copy(sort = it)) },
                 getItemName = {
                     when (it) {
-                        SortType.Distance -> "Distance"
-                        SortType.Name -> "Name"
-                        SortType.Count -> "Asset count"
-                        SortType.Price -> "Total price"
+                        SortType.Distance -> getStringSync(Res.string.assets_window_sort_by_distance)
+                        SortType.Name -> getStringSync(Res.string.assets_window_sort_by_name)
+                        SortType.Count -> getStringSync(Res.string.assets_window_sort_by_count)
+                        SortType.Price -> getStringSync(Res.string.assets_window_sort_by_price)
                     }
                 },
             )
@@ -136,10 +133,10 @@ fun AssetsContent(
                             .padding(vertical = Spacing.small),
                     ) {
                         val text = buildAnnotatedString {
-                            append("Total: ")
-                            append("${totals.locations} Location${totals.locations.plural}")
+                            append(stringResource(Res.string.assets_window_total))
+                            append(pluralStringResource(Res.plurals.assets_window_location_count, totals.locations, totals.locations))
                             append(" - ")
-                            append("${totals.items} Item${totals.items.plural}")
+                            append(pluralStringResource(Res.plurals.assets_window_item_count, totals.items, totals.items))
                             append(" - ")
                             append(formatIskCompact(totals.price))
                             append(" - ")
@@ -208,9 +205,9 @@ fun AssetsContent(
                         ) {
                             val isFiltering = state.filters.search != null || state.filters.ownerTypes.isNotEmpty()
                             val text = if (isFiltering) {
-                                "All assets filtered out"
+                                stringResource(Res.string.assets_window_all_assets_filtered)
                             } else {
-                                "No assets"
+                                stringResource(Res.string.assets_window_no_assets_on_bottom)
                             }
                             Text(
                                 text = text,
@@ -230,7 +227,7 @@ fun AssetsContent(
                             .padding(Spacing.medium),
                     ) {
                         if (data.filteredAssets.isNotEmpty()) {
-                            Text("Delayed up to 1 hour")
+                            Text(stringResource(Res.string.assets_window_delayed_tooltip))
                         }
                         AnimatedContent(
                             state.isLoading,
@@ -244,7 +241,7 @@ fun AssetsContent(
                                 )
                             } else {
                                 RiftButton(
-                                    text = "Reload",
+                                    text = stringResource(Res.string.assets_window_reload),
                                     type = ButtonType.Secondary,
                                     onClick = onReloadClick,
                                 )
@@ -318,7 +315,7 @@ private fun LocationHeader(
             if (pinStatus == LocationPinStatus.Pinned) {
                 add(
                     ContextMenuItem.TextItem(
-                        text = "Unpin in Assets",
+                        text = stringResource(Res.string.assets_window_unpin),
                         iconResource = Res.drawable.menu_unpin,
                         onClick = { onPinChange(LocationPinStatus.None) },
                     ),
@@ -326,7 +323,7 @@ private fun LocationHeader(
             } else if (pinStatus == LocationPinStatus.Hidden) {
                 add(
                     ContextMenuItem.TextItem(
-                        text = "Unhide in Assets",
+                        text = stringResource(Res.string.assets_window_unhide),
                         iconResource = Res.drawable.menu_unhide,
                         onClick = { onPinChange(LocationPinStatus.None) },
                     ),
@@ -334,14 +331,14 @@ private fun LocationHeader(
             } else {
                 add(
                     ContextMenuItem.TextItem(
-                        text = "Pin in Assets",
+                        text = stringResource(Res.string.assets_window_pin),
                         iconResource = Res.drawable.menu_pinned,
                         onClick = { onPinChange(LocationPinStatus.Pinned) },
                     ),
                 )
                 add(
                     ContextMenuItem.TextItem(
-                        text = "Hide in Assets",
+                        text = stringResource(Res.string.assets_window_hide),
                         iconResource = Res.drawable.menu_hide,
                         onClick = { onPinChange(LocationPinStatus.Hidden) },
                     ),
@@ -363,9 +360,9 @@ private fun LocationHeader(
                     .fillMaxWidth()
                     .background(RiftTheme.colors.windowBackgroundSecondary)
                     .hoverBackground()
+                    .onClick { onClick() }
                     .padding(vertical = Spacing.small)
-                    .padding(start = depthOffset)
-                    .onClick { onClick() },
+                    .padding(start = depthOffset),
             ) {
                 ExpandChevron(isExpanded = isExpanded)
                 val text = buildAnnotatedString {
@@ -377,7 +374,7 @@ private fun LocationHeader(
                     }
                     append(location.name)
                     append(" - ")
-                    append("${assets.size} Item${if (assets.size != 1) "s" else ""}")
+                    append(pluralStringResource(Res.plurals.assets_window_item_count, assets.size, assets.size))
                     append(" - ")
                     val totalPrice = assets.sumOf { it.getTotalPrice() }
                     append(formatIskCompact(totalPrice))
@@ -386,7 +383,7 @@ private fun LocationHeader(
                     append(formatNumberCompact(totalVolume) + " m3")
                     location.distance?.let {
                         append(" - ")
-                        append("Route: $it Jump${if (it != 1) "s" else ""}")
+                        append(pluralStringResource(Res.plurals.assets_window_route_distance, it, it))
                     }
                 }
                 Text(
@@ -489,14 +486,14 @@ private fun AssetRow(
                             val text = when (asset.owner) {
                                 is AssetsRepository.AssetOwner.Character -> asset.owner.character.info?.name
                                 is AssetsRepository.AssetOwner.Corporation -> asset.owner.corporationName
-                            } ?: "Unknown Owner"
+                            } ?: stringResource(Res.string.assets_window_unknown_owner)
                             RiftTooltipArea(
                                 text = text,
                                 modifier = Modifier.padding(end = Spacing.small),
                             ) {
                                 when (asset.owner) {
                                     is AssetsRepository.AssetOwner.Character -> {
-                                        AsyncPlayerPortrait(
+                                        AsyncCharacterPortrait(
                                             characterId = asset.owner.character.characterId,
                                             size = 32,
                                             modifier = Modifier
@@ -530,10 +527,10 @@ private fun AssetRow(
                         }
                         if (asset.quantity > 1) {
                             val formatted = NumberFormat.getIntegerInstance().format(asset.quantity)
-                            add("$formatted units")
+                            add(stringResource(Res.string.assets_window_units_count, formatted))
                         }
                         if (asset.children.isNotEmpty()) {
-                            add("${asset.children.size} item${if (asset.children.size != 1) "s" else ""}")
+                            add(pluralStringResource(Res.plurals.assets_window_item_count_lowercase, asset.children.size, asset.children.size))
                             val volume = asset.children.map { it.quantity * (it.type.volume) }.sum()
                             val formatted = NumberFormat.getNumberInstance().apply { maximumFractionDigits = 1 }.format(volume)
                             add("$formatted m3")
@@ -559,19 +556,19 @@ private fun AssetRow(
                             .padding(start = 24.dp),
                     ) {
                         RiftButton(
-                            text = "Copy fit",
+                            text = stringResource(Res.string.assets_window_copy_fit),
                             type = ButtonType.Secondary,
                             cornerCut = ButtonCornerCut.BottomLeft,
                             onClick = { onFitAction(asset.fitting, FitAction.Copy) },
                         )
                         RiftButton(
-                            text = "Copy fit & cargo",
+                            text = stringResource(Res.string.assets_window_copy_fit_and_cargo),
                             type = ButtonType.Secondary,
                             cornerCut = ButtonCornerCut.None,
                             onClick = { onFitAction(asset.fitting, FitAction.CopyWithCargo) },
                         )
                         RiftButton(
-                            text = "View fit",
+                            text = stringResource(Res.string.assets_window_view_fit),
                             cornerCut = ButtonCornerCut.BottomRight,
                             onClick = { onFitAction(asset.fitting, FitAction.Open) },
                         )

@@ -15,4 +15,8 @@
     <string name="alert_when_jabber_ping">当一个[来自$target的]舰队ping[，由$fc带队][，于$system集结][，$pap分][，建制包含$doctrine]时[$action][，$time内不重复提醒]</string>
     <string name="alert_when_jabber_message">当一个[包含$keywords的]Jabber消息[由$sender]发送在[$channel]时[$action][，$time内不重复提醒]</string>
     <string name="alert_when_no_channel_activity">当[$channel]在[$time]内没有消息时[$action][，$time内不重复提醒]</string>
+    <plurals name="system_distance">
+        <item quantity="other">距离 [$name] [$distance]跳</item>
+    </plurals>
+    <string name="wallet_description">[$prefix][$transactionNumber][$transaction]，来自[$walletNumber][$wallets][，匹配$typeNumber][$type]</string>
 </resources>

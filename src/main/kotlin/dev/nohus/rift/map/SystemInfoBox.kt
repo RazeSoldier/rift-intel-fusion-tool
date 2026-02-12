@@ -36,11 +36,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.AsyncAllianceLogo
+import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncPlayerPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.IntelTimer
@@ -55,6 +54,7 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
+import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.indicator_assets
 import dev.nohus.rift.generated.resources.indicator_asteroid_belt
@@ -189,10 +189,11 @@ fun SystemInfoBox(
                             onlineCharacters.singleOrNull()?.let { onlineCharacterLocation ->
                                 ClickableCharacter(onlineCharacterLocation.id) {
                                     SystemEntityInfoRow(32.dp, hasBorder = false) {
-                                        AsyncPlayerPortrait(
+                                        DynamicCharacterPortraitParallax(
                                             characterId = onlineCharacterLocation.id,
-                                            size = 32,
-                                            modifier = Modifier.size(32.dp),
+                                            size = 32.dp,
+                                            enterTimestamp = null,
+                                            pointerInteractionStateHolder = null,
                                         )
                                         Text(
                                             text = onlineCharacterLocation.name,
@@ -212,10 +213,11 @@ fun SystemInfoBox(
                                             text = onlineCharacterLocation.name,
                                         ) {
                                             ClickableCharacter(onlineCharacterLocation.id) {
-                                                AsyncPlayerPortrait(
+                                                DynamicCharacterPortraitParallax(
                                                     characterId = onlineCharacterLocation.id,
-                                                    size = 32,
-                                                    modifier = Modifier.size(32.dp),
+                                                    size = 32.dp,
+                                                    enterTimestamp = null,
+                                                    pointerInteractionStateHolder = null,
                                                 )
                                             }
                                         }
@@ -786,7 +788,7 @@ private fun ClonesIndicators(clones: Map<Int, Int>, withDetails: Boolean) {
                         .clip(CircleShape)
                         .background(RiftTheme.colors.windowBackgroundActive.copy(alpha = 0.3f)),
                 ) {
-                    AsyncPlayerPortrait(
+                    AsyncCharacterPortrait(
                         characterId = characterId,
                         size = 32,
                         modifier = Modifier.size(16.dp),
