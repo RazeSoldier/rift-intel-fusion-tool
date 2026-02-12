@@ -82,17 +82,7 @@ import dev.nohus.rift.contacts.SearchRepository.SearchCategory
 import dev.nohus.rift.contacts.SearchRepository.SearchResult
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.contact_allcontacts
-import dev.nohus.rift.generated.resources.contact_alliance
-import dev.nohus.rift.generated.resources.contact_blocked
-import dev.nohus.rift.generated.resources.contact_character
-import dev.nohus.rift.generated.resources.contact_corporation
-import dev.nohus.rift.generated.resources.contact_faction
-import dev.nohus.rift.generated.resources.contact_standings
-import dev.nohus.rift.generated.resources.contact_tag
-import dev.nohus.rift.generated.resources.contact_watched
-import dev.nohus.rift.generated.resources.window_contacts
-import dev.nohus.rift.generated.resources.window_titlebar_tune
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingUtils.formatStanding
@@ -102,6 +92,7 @@ import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ContactsWindow(
@@ -112,7 +103,7 @@ fun ContactsWindow(
     val state by viewModel.state.collectAsState()
 
     RiftWindow(
-        title = "Contacts",
+        title = stringResource(Res.string.contacts_window_title),
         icon = Res.drawable.window_contacts,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -238,12 +229,12 @@ fun ToolbarRow(
             tabs = listOf(
                 Tab(
                     id = ContactsTab.Contacts.ordinal,
-                    title = "Contacts",
+                    title = stringResource(Res.string.contacts_window_title),
                     isCloseable = false,
                 ),
                 Tab(
                     id = ContactsTab.Search.ordinal,
-                    title = "Search",
+                    title = stringResource(Res.string.contacts_window_search_tab),
                     isCloseable = false,
                 ),
             ),
@@ -330,7 +321,7 @@ private fun ContactFilters(
         ) {
             ContactFilterRow(
                 image = Res.drawable.contact_allcontacts,
-                text = "All Contacts [${state.contacts.size}]",
+                text = stringResource(Res.string.contacts_window_all_contacts_count, state.contacts.size),
                 currentFilter = state.filter,
                 filter = Filter.All,
                 onClick = onFilterClick,
@@ -339,41 +330,41 @@ private fun ContactFilters(
             Spacer(Modifier.height(Spacing.medium))
             ContactFilterRow(
                 image = Res.drawable.contact_standings,
-                text = "Standings",
+                text = stringResource(Res.string.contacts_window_standings),
                 currentFilter = state.filter,
                 filter = null,
             )
             ContactFilterRow(
                 imageContent = { FlagIcon(10f, Modifier.padding(Spacing.verySmall)) },
-                text = "Excellent Standing [${state.contacts.count { it.standingLevel == Standing.Excellent }}]",
+                text = stringResource(Res.string.contacts_window_excellent_standings, state.contacts.count { it.standingLevel == Standing.Excellent }),
                 currentFilter = state.filter,
                 filter = Filter.Standings(Standing.Excellent),
                 onClick = onFilterClick,
             )
             ContactFilterRow(
                 imageContent = { FlagIcon(5f, Modifier.padding(Spacing.verySmall)) },
-                text = "Good Standing [${state.contacts.count { it.standingLevel == Standing.Good }}]",
+                text = stringResource(Res.string.contacts_window_good_standings, state.contacts.count { it.standingLevel == Standing.Good }),
                 currentFilter = state.filter,
                 filter = Filter.Standings(Standing.Good),
                 onClick = onFilterClick,
             )
             ContactFilterRow(
                 imageContent = { FlagIcon(0f, Modifier.padding(Spacing.verySmall)) },
-                text = "Neutral Standing [${state.contacts.count { it.standingLevel == Standing.Neutral }}]",
+                text = stringResource(Res.string.contacts_window_neutral_standings, state.contacts.count { it.standingLevel == Standing.Neutral }),
                 currentFilter = state.filter,
                 filter = Filter.Standings(Standing.Neutral),
                 onClick = onFilterClick,
             )
             ContactFilterRow(
                 imageContent = { FlagIcon(-5f, Modifier.padding(Spacing.verySmall)) },
-                text = "Bad Standing [${state.contacts.count { it.standingLevel == Standing.Bad }}]",
+                text = stringResource(Res.string.contacts_window_bad_standings, state.contacts.count { it.standingLevel == Standing.Bad }),
                 currentFilter = state.filter,
                 filter = Filter.Standings(Standing.Bad),
                 onClick = onFilterClick,
             )
             ContactFilterRow(
                 imageContent = { FlagIcon(-10f, Modifier.padding(Spacing.verySmall)) },
-                text = "Terrible Standing [${state.contacts.count { it.standingLevel == Standing.Terrible }}]",
+                text = stringResource(Res.string.contacts_window_therrible_standings, state.contacts.count { it.standingLevel == Standing.Terrible }),
                 currentFilter = state.filter,
                 filter = Filter.Standings(Standing.Terrible),
                 onClick = onFilterClick,
@@ -382,7 +373,7 @@ private fun ContactFilters(
             Spacer(Modifier.height(Spacing.medium))
             ContactFilterRow(
                 image = Res.drawable.contact_tag,
-                text = "Labels",
+                text = stringResource(Res.string.contacts_window_labels),
                 currentFilter = state.filter,
                 filter = null,
             )
@@ -398,7 +389,7 @@ private fun ContactFilters(
                 )
                 if (owner.second.isNotEmpty()) {
                     ContactLabelRow(
-                        text = "No label",
+                        text = stringResource(Res.string.contacts_window_no_label),
                         count = ownerContacts.count { it.labels.isEmpty() },
                         currentFilter = state.filter,
                         filter = Filter.Unlabeled(owner.first),
@@ -711,12 +702,12 @@ private fun SearchTabContent(
                 items = buildList {
                     add(
                         ContextMenuItem.HeaderItem(
-                            text = "Search Type",
+                            text = stringResource(Res.string.contacts_window_search_type),
                         ),
                     )
                     add(
                         ContextMenuItem.RadioItem(
-                            text = "Any",
+                            text = stringResource(Res.string.contacts_window_search_type_any),
                             isSelected = state.searchCategories.size == SearchCategory.entries.size,
                             onClick = { onSearchCategoriesChange(SearchCategory.entries) },
                         ),

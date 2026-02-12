@@ -1159,4 +1159,29 @@
     <string name="opportunities_window_view_in_game">View In-Game</string>
     <string name="opportunities_window_expires_in">Expires in </string>
     <string name="opportunities_window_expired">Expired</string>
+    <!-- ContactsWindow.kt -->
+    <string name="contacts_window_title">Contacts</string>
+    <string name="contacts_window_search_tab">Search</string>
+    <string name="contacts_window_all_contacts_count">All Contacts [%1$d]</string>
+    <string name="contacts_window_standings">Standings</string>
+    <string name="contacts_window_excellent_standings">Excellent Standing [%1$d]</string>
+    <string name="contacts_window_good_standings">Good Standing [%1$d]</string>
+    <string name="contacts_window_neutral_standings">Neutral Standing [%1$d]</string>
+    <string name="contacts_window_bad_standings">Bad Standing [%1$d]</string>
+    <string name="contacts_window_therrible_standings">Terrible Standing [%1$d]</string>
+    <string name="contacts_window_labels">Labels</string>
+    <string name="contacts_window_no_label">No label</string>
+    <string name="contacts_window_search_type">Search Type</string>
+    <string name="contacts_window_search_type_any">Any</string>
+    <string name="contacts_window_agents">Agents</string>
+    <string name="contacts_window_alliance">Alliances</string>
+    <string name="contacts_window_characters">Characters</string>
+    <string name="contacts_window_constellations">Constellations</string>
+    <string name="contacts_window_corporations">Corporations</string>
+    <string name="contacts_window_factions">Factions</string>
+    <string name="contacts_window_items">Items</string>
+    <string name="contacts_window_regions">Regions</string>
+    <string name="contacts_window_solar_systems">Solar Systems</string>
+    <string name="contacts_window_stations">Stations</string>
+    <string name="contacts_window_structures">Structures</string>
 </resources>
