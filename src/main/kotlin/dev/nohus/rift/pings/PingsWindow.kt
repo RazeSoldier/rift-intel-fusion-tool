@@ -34,15 +34,13 @@ import dev.nohus.rift.compose.annotateLinks
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.copy_16px
-import dev.nohus.rift.generated.resources.fitting_16px
-import dev.nohus.rift.generated.resources.microphone
-import dev.nohus.rift.generated.resources.window_sovereignty
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.pings.PingsViewModel.UiState
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
+import org.jetbrains.compose.resources.stringResource
 import java.time.ZoneId
 
 @Composable
@@ -101,9 +99,9 @@ private fun PingsWindowContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val text = if (state.isJabberConnected) {
-                    "No pings received yet.\nClear skies."
+                    stringResource(Res.string.pings_window_no_ping)
                 } else {
-                    "You need to be connected to Jabber to receive pings."
+                    stringResource(Res.string.pings_window_need_connet_jabber)
                 }
                 Text(
                     text = text,
@@ -115,7 +113,7 @@ private fun PingsWindowContent(
                 )
                 if (!state.isJabberConnected) {
                     RiftButton(
-                        text = "Check Jabber",
+                        text = stringResource(Res.string.pings_window_check_jabber),
                         onClick = onOpenJabberClick,
                     )
                 }
@@ -148,7 +146,7 @@ private fun PlainTextPing(
     val buttons = mutableListOf<RiftOpportunityCardButton>()
     buttons += RiftOpportunityCardButton(
         resource = Res.drawable.copy_16px,
-        tooltip = "Copy ping",
+        tooltip = stringResource(Res.string.pings_window_copy_ping),
         action = { Clipboard.copy(ping.sourceText) },
     )
     RiftOpportunityCard(
@@ -203,27 +201,27 @@ private fun FleetPing(
     if (ping.doctrine?.link != null) {
         buttons += RiftOpportunityCardButton(
             resource = Res.drawable.fitting_16px,
-            tooltip = "Doctrine forum thread",
+            tooltip = stringResource(Res.string.pings_window_doctrine_forum_thread),
             action = { ping.doctrine.link.toURIOrNull()?.openBrowser() },
         )
     }
     buttons += RiftOpportunityCardButton(
         resource = Res.drawable.copy_16px,
-        tooltip = "Copy ping",
+        tooltip = stringResource(Res.string.pings_window_copy_ping),
         action = { Clipboard.copy(ping.sourceText) },
     )
     if (ping.comms is Comms.Mumble) {
         buttons += RiftOpportunityCardButton(
             resource = Res.drawable.microphone,
-            tooltip = "Join ${ping.comms.channel} on Mumble",
+            tooltip = stringResource(Res.string.pings_window_join_mumble, ping.comms.channel),
             action = { onMumbleClick(ping.comms.link) },
         )
     }
     val title = when (ping.papType) {
-        PapType.Peacetime -> "Peacetime PAP"
-        PapType.Strategic -> "Strategic PAP"
+        PapType.Peacetime -> stringResource(Res.string.pings_window_peace_pap)
+        PapType.Strategic -> stringResource(Res.string.pings_window_strat_pap)
         is PapType.Text -> "${ping.papType.text.replaceFirstChar { it.uppercase() }} PAP"
-        null -> "No PAP"
+        null -> stringResource(Res.string.pings_window_no_pap)
     }
     RiftOpportunityCard(
         category = ping.opportunityCategory,
@@ -247,7 +245,7 @@ private fun FleetPing(
         )
         if (ping.comms is Comms.Text) {
             Text(
-                text = "Comms:",
+                text = stringResource(Res.string.pings_window_comms),
                 style = RiftTheme.typography.bodySecondary,
                 modifier = Modifier.padding(top = Spacing.mediumLarge),
             )
@@ -259,7 +257,7 @@ private fun FleetPing(
         }
         if (ping.doctrine != null) {
             Text(
-                text = "Doctrine:",
+                text = stringResource(Res.string.pings_window_doctrine),
                 style = RiftTheme.typography.bodySecondary,
                 modifier = Modifier.padding(top = Spacing.mediumLarge),
             )

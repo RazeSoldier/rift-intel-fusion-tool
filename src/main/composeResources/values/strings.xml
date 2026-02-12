@@ -1184,4 +1184,16 @@
     <string name="contacts_window_solar_systems">Solar Systems</string>
     <string name="contacts_window_stations">Stations</string>
     <string name="contacts_window_structures">Structures</string>
+    <!-- PingsWindow.kt -->
+    <string name="pings_window_no_ping">No pings received yet.\nClear skies.</string>
+    <string name="pings_window_need_connet_jabber">You need to be connected to Jabber to receive pings.</string>
+    <string name="pings_window_check_jabber">Check Jabber</string>
+    <string name="pings_window_comms">Comms:</string>
+    <string name="pings_window_doctrine">Doctrine:</string>
+    <string name="pings_window_copy_ping">Copy ping</string>
+    <string name="pings_window_peace_pap">Peacetime PAP</string>
+    <string name="pings_window_strat_pap">Strategic PAP</string>
+    <string name="pings_window_no_pap">No PAP</string>
+    <string name="pings_window_doctrine_forum_thread">Doctrine forum thread</string>
+    <string name="pings_window_join_mumble">Join %1$s on Mumble</string>
 </resources>
