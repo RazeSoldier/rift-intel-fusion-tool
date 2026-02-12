@@ -1164,4 +1164,16 @@
     <string name="pings_window_no_pap">没有PAP</string>
     <string name="pings_window_doctrine_forum_thread">建制论坛帖子</string>
     <string name="pings_window_join_mumble">加入Mumble %1$s频道</string>
+    <!-- AboutWindow.kt -->
+    <string name="about_window_title">关于RIFT</string>
+    <string name="about_window_dev_version">开发版本</string>
+    <string name="about_window_portable_version">绿色版本</string>
+    <string name="about_window_developed_by_nohus">由Nohus开发</string>
+    <string name="about_window_join_discord">加入Discord！</string>
+    <string name="about_window_discord_invite_link">邀请链接</string>
+    <string name="about_window_legal_info">法律与信息</string>
+    <string name="about_window_debug">调试</string>
+    <string name="about_window_app_data">程序数据</string>
+    <string name="about_window_credits">鸣谢</string>
+    <string name="about_window_update_log">更新日志</string>
 </resources>
