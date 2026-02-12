@@ -1127,4 +1127,29 @@
     <string name="opportunities_window_view_in_game">游戏内查看</string>
     <string name="opportunities_window_expires_in">过期倒计时 </string>
     <string name="opportunities_window_expired">已到期</string>
+    <!-- ContactsWindow.kt -->
+    <string name="contacts_window_title">联系人</string>
+    <string name="contacts_window_search_tab">搜索</string>
+    <string name="contacts_window_all_contacts_count">所有联系对象 [%1$d]</string>
+    <string name="contacts_window_standings">声望</string>
+    <string name="contacts_window_excellent_standings">优异声望 [%1$d]</string>
+    <string name="contacts_window_good_standings">良好声望 [%1$d]</string>
+    <string name="contacts_window_neutral_standings">中立声望 [%1$d]</string>
+    <string name="contacts_window_bad_standings">不良声望 [%1$d]</string>
+    <string name="contacts_window_therrible_standings">糟糕声望 [%1$d]</string>
+    <string name="contacts_window_labels">标签</string>
+    <string name="contacts_window_no_label">无标签</string>
+    <string name="contacts_window_search_type">搜索类型</string>
+    <string name="contacts_window_search_type_any">任意</string>
+    <string name="contacts_window_agents">代理人</string>
+    <string name="contacts_window_alliance">联盟</string>
+    <string name="contacts_window_characters">角色</string>
+    <string name="contacts_window_constellations">星座</string>
+    <string name="contacts_window_corporations">军团</string>
+    <string name="contacts_window_factions">势力</string>
+    <string name="contacts_window_items">物品</string>
+    <string name="contacts_window_regions">星域</string>
+    <string name="contacts_window_solar_systems">星系</string>
+    <string name="contacts_window_stations">空间站</string>
+    <string name="contacts_window_structures">建筑</string>
 </resources>
