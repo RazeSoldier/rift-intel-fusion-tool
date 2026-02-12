@@ -1196,4 +1196,16 @@
     <string name="pings_window_no_pap">No PAP</string>
     <string name="pings_window_doctrine_forum_thread">Doctrine forum thread</string>
     <string name="pings_window_join_mumble">Join %1$s on Mumble</string>
+    <!-- AboutWindow.kt -->
+    <string name="about_window_title">About RIFT</string>
+    <string name="about_window_dev_version">Development version</string>
+    <string name="about_window_portable_version">Portable version</string>
+    <string name="about_window_developed_by_nohus">Developed by Nohus</string>
+    <string name="about_window_join_discord">Join the Discord!</string>
+    <string name="about_window_discord_invite_link">Invite link</string>
+    <string name="about_window_legal_info">Legal &amp; info</string>
+    <string name="about_window_debug">Debug</string>
+    <string name="about_window_app_data">App data</string>
+    <string name="about_window_credits">Credits</string>
+    <string name="about_window_update_log">What's new</string>
 </resources>

@@ -48,11 +48,7 @@ import dev.nohus.rift.compose.onMouseClick
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.partner_400
-import dev.nohus.rift.generated.resources.window_achievements
-import dev.nohus.rift.generated.resources.window_concord
-import dev.nohus.rift.generated.resources.window_info
-import dev.nohus.rift.generated.resources.window_rift_64
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.utils.OperatingSystem.Linux
@@ -64,6 +60,7 @@ import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AboutWindow(
@@ -73,7 +70,7 @@ fun AboutWindow(
     val viewModel: AboutViewModel = viewModel()
     val state by viewModel.state.collectAsState()
     RiftWindow(
-        title = "About RIFT",
+        title = stringResource(Res.string.about_window_title),
         icon = Res.drawable.window_rift_64,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -223,9 +220,9 @@ private fun AboutWindowContent(
                                 when (isUpdateAvailable.value) {
                                     NOT_PACKAGED -> {
                                         val text = if (state.version.endsWith("dev")) {
-                                            "Development version"
+                                            stringResource(Res.string.about_window_dev_version)
                                         } else {
-                                            "Portable version"
+                                            stringResource(Res.string.about_window_portable_version)
                                         }
                                         Text(
                                             text = text,
@@ -259,7 +256,7 @@ private fun AboutWindowContent(
                     }
 
                     Text(
-                        text = "Developed by Nohus",
+                        text = stringResource(Res.string.about_window_developed_by_nohus),
                         style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
@@ -269,12 +266,12 @@ private fun AboutWindowContent(
                     )
 
                     Text(
-                        text = "Join the Discord!",
+                        text = stringResource(Res.string.about_window_join_discord),
                         style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
                     LinkText(
-                        text = "Invite link",
+                        text = stringResource(Res.string.about_window_discord_invite_link),
                         onClick = { "https://discord.gg/FQPVs5hnaZ".toURIOrNull()?.openBrowser() },
                     )
 
@@ -284,7 +281,7 @@ private fun AboutWindowContent(
                         modifier = Modifier.padding(top = Spacing.medium),
                     )
                     LinkText(
-                        text = "Legal & info",
+                        text = stringResource(Res.string.about_window_legal_info),
                         onClick = onLegalClick,
                     )
                 }
@@ -305,7 +302,7 @@ private fun AboutWindowContent(
                 )
             }
             RiftButton(
-                text = "Debug",
+                text = stringResource(Res.string.about_window_debug),
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.None,
                 onClick = onDebugClick,
@@ -314,19 +311,19 @@ private fun AboutWindowContent(
                 },
             )
             RiftButton(
-                text = "App data",
+                text = stringResource(Res.string.about_window_app_data),
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.None,
                 onClick = onAppDataClick,
             )
             RiftButton(
-                text = "Credits",
+                text = stringResource(Res.string.about_window_credits),
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.None,
                 onClick = onCreditsClick,
             )
             RiftButton(
-                text = "What's new",
+                text = stringResource(Res.string.about_window_update_log),
                 type = ButtonType.Primary,
                 onClick = onWhatsNewClick,
             )
