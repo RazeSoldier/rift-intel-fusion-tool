@@ -46,14 +46,14 @@ import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.contact_tag
-import dev.nohus.rift.generated.resources.house_16px
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.opportunities.OpportunitiesViewModel
 import dev.nohus.rift.opportunities.OpportunitiesViewModel.OpportunityLifecycleFilter
 import dev.nohus.rift.opportunities.OpportunityCategoryFilter
 import dev.nohus.rift.opportunities.OpportunityCategoryFilterType
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SideNavigation(
@@ -83,14 +83,14 @@ fun SideNavigation(
                     modifier = Modifier.padding(end = 8.dp, top = 8.dp),
                 ) {
                     RiftToggleButton(
-                        text = "Current",
+                        text = stringResource(Res.string.opportunities_window_current),
                         isSelected = state.lifecycleFilter == OpportunityLifecycleFilter.Active,
                         type = ToggleButtonType.Left,
                         onClick = { onLifecycleFilterChange(OpportunityLifecycleFilter.Active) },
                         modifier = Modifier.weight(1f),
                     )
                     RiftToggleButton(
-                        text = "History",
+                        text = stringResource(Res.string.opportunities_window_history),
                         isSelected = state.lifecycleFilter == OpportunityLifecycleFilter.History,
                         type = ToggleButtonType.Right,
                         onClick = { onLifecycleFilterChange(OpportunityLifecycleFilter.History) },
@@ -103,11 +103,11 @@ fun SideNavigation(
             val primaryFilter = if (state.participatingFilter) null else state.primaryFilter
 
             item {
-                Header("Features")
+                Header(stringResource(Res.string.opportunities_window_features))
             }
             item {
                 Item(
-                    text = "All",
+                    text = stringResource(Res.string.opportunities_window_all),
                     count = state.categoryFilters.opportunityCount[null] ?: 0,
                     icon = Res.drawable.house_16px,
                     isSelected = primaryFilter == null,
@@ -121,7 +121,7 @@ fun SideNavigation(
             }
 
             item {
-                Header("Career Paths")
+                Header(stringResource(Res.string.opportunities_window_career_paths))
             }
             val careerPaths = allFilters.filter { it.type == OpportunityCategoryFilterType.CareerPath }
             items(careerPaths, key = { it }) {
@@ -129,7 +129,7 @@ fun SideNavigation(
             }
 
             item {
-                Header("Other Tags")
+                Header(stringResource(Res.string.opportunities_window_other_tags))
             }
             val activities = allFilters
                 .filter { it.type == OpportunityCategoryFilterType.Activity }
@@ -268,7 +268,7 @@ private fun LoadingFooter(
             .padding(Spacing.medium),
     ) {
         AnimatedVisibility(isLoading) {
-            RiftTooltipArea("Loading opportunities…") {
+            RiftTooltipArea(stringResource(Res.string.opportunities_window_loading_opportunities)) {
                 LoadingSpinner(
                     modifier = Modifier.size(36.dp),
                 )
