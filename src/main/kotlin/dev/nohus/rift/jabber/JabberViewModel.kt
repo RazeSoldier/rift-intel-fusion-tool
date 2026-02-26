@@ -1,6 +1,9 @@
 package dev.nohus.rift.jabber
 
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.jabber.JabberAccountRepository.JabberAccountResult
 import dev.nohus.rift.jabber.client.JabberClient
 import dev.nohus.rift.jabber.client.JabberClient.LoginResult
@@ -150,7 +153,7 @@ class JabberViewModel(
         if (jidLocalPart.isNotBlank() && password.isNotBlank()) {
             connect(jidLocalPart, password)
         } else {
-            _state.update { UiState.Login(errorMessage = "You need to enter a username and password") }
+            _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_blank_fields)) }
         }
     }
 
@@ -277,26 +280,26 @@ class JabberViewModel(
                 setLoggedInState(jabberClient.state.value)
             }
             LoginResult.IncorrectPassword -> {
-                _state.update { UiState.Login(errorMessage = "Couldn't connect because your password is incorrect") }
+                _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_failed_invalid_password)) }
                 jabberAccountRepository.clearAccount()
             }
             LoginResult.AuthenticationFailure -> {
-                _state.update { UiState.Login(errorMessage = "Couldn't connect due to an authentication failure") }
+                _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_failed_auth_failure)) }
             }
             LoginResult.ConnectionFailure -> {
-                _state.update { UiState.Login(errorMessage = "Couldn't connect to the server") }
+                _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_failed_connection_failure)) }
             }
             is LoginResult.Error -> {
                 val cause = result.cause
                 if (cause is SmackException) {
                     val detailsCause = cause.cause
                     if (detailsCause is CertificateException) {
-                        _state.update { UiState.Login(errorMessage = "Secure connection failed, because the Jabber server presented an invalid certificate. This typically happens when the certificate is expired or misconfigured.\n\nCheck forums or with your corp, as the server may be undergoing maintenance.") }
+                        _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_failed_certificate_exception)) }
                     } else {
-                        _state.update { UiState.Login(errorMessage = "Couldn't connect") }
+                        _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_failed_unknown)) }
                     }
                 } else {
-                    _state.update { UiState.Login(errorMessage = "Couldn't connect") }
+                    _state.update { UiState.Login(errorMessage = getStringSync(Res.string.jabber_window_login_failed_unknown)) }
                 }
             }
             LoginResult.NoAccount -> {

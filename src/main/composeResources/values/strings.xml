@@ -1243,4 +1243,33 @@
     <string name="region_cloud_ring">Cloud Ring</string>
     <string name="phoenix_coalition_pack_prompt_title">Would you like intel channels of the Phoenix Coalition to be configured automatically?</string>
     <string name="phoenix_coalition_pack_prompt_button">Add Phoenix Coalition channels</string>
+    <!-- JabberWindow.kt -->
+    <string name="jabber_window_using_pidgin_text">\nRIFT is a Jabber client with additional features specific for Goonswarm.\n\nYou can receive pings in a better way without having to run Pidgin.</string>
+    <string name="jabber_window_no_using_pidgin_text">\nRIFT is a Jabber client with additional features specific for Goonswarm.\n\nYou can receive pings in a better way without having to run a separate app.</string>
+    <string name="jabber_window_import_pidgin_account">Import Pidgin account</string>
+    <string name="jabber_window_login_manually">Login manually</string>
+    <string name="jabber_window_get_started_button">Get started</string>
+    <string name="jabber_window_jabber_username">Jabber username</string>
+    <string name="jabber_window_jabber_username_placeholder">Type your username</string>
+    <string name="jabber_window_jabber_password">Jabber password</string>
+    <string name="jabber_window_jabber_password_placeholder_saved">(unchanged)</string>
+    <string name="jabber_window_jabber_password_placeholder_new">Type your password</string>
+    <string name="jabber_window_forgot_jabber">Forgot username or password?</string>
+    <string name="jabber_window_connect">Connect</string>
+    <string name="jabber_window_login_blank_fields">You need to enter a username and password</string>
+    <string name="jabber_window_connecting">Connecting…</string>
+    <string name="jabber_window_login_failed_invalid_password">Couldn't connect because your password is incorrect</string>
+    <string name="jabber_window_login_failed_auth_failure">Couldn't connect due to an authentication failure</string>
+    <string name="jabber_window_login_failed_connection_failure">Couldn't connect to the server</string>
+    <string name="jabber_window_login_failed_certificate_exception">Secure connection failed, because the Jabber server presented an invalid certificate. This typically happens when the certificate is expired or misconfigured.\n\nCheck forums or with your corp, as the server may be undergoing maintenance.</string>
+    <string name="jabber_window_login_failed_unknown">Couldn't connect</string>
+    <string name="jabber_window_logout">Logout</string>
+    <string name="jabber_window_bigger_font">Bigger font size</string>
+    <string name="jabber_window_add_contact">Add contact</string>
+    <string name="jabber_window_add_contact_nickname">Choose nickname (optional)</string>
+    <string name="jabber_window_add_contact_nickname_placeholder">Nickname</string>
+    <string name="jabber_window_add_contact_group">Choose group (optional)</string>
+    <string name="jabber_window_add_contact_group_placeholder">Group</string>
+    <string name="jabber_window_add_chat_room">Add chat room</string>
+    <string name="jabber_window_add_chat_room_name">Room name</string>
 </resources>

@@ -60,9 +60,8 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.bee
-import dev.nohus.rift.generated.resources.logout
-import dev.nohus.rift.generated.resources.window_chatchannels
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.jabber.JabberAccountRepository.JabberAccountResult.JabberAccount
 import dev.nohus.rift.jabber.JabberViewModel.ContactListState
 import dev.nohus.rift.jabber.JabberViewModel.TabModel
@@ -76,6 +75,7 @@ import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.jivesoftware.smack.chat2.Chat
 import org.jivesoftware.smackx.muc.MultiUserChat
 import java.time.Instant
@@ -136,8 +136,8 @@ private fun getTuneContextMenuItems(
     }
     val isUsingBiggerFontSize = (state as? UiState.LoggedIn)?.isUsingBiggerFontSize
     return buildList {
-        if (canLogout) add(TextItem("Logout", Res.drawable.logout, onClick = viewModel::onLogoutClick))
-        if (isUsingBiggerFontSize != null) add(CheckboxItem("Bigger font size", isSelected = isUsingBiggerFontSize, onClick = viewModel::onBiggerFontSizeClick))
+        if (canLogout) add(TextItem(getStringSync(Res.string.jabber_window_logout), Res.drawable.logout, onClick = viewModel::onLogoutClick))
+        if (isUsingBiggerFontSize != null) add(CheckboxItem(getStringSync(Res.string.jabber_window_bigger_font), isSelected = isUsingBiggerFontSize, onClick = viewModel::onBiggerFontSizeClick))
     }.takeIf { it.isNotEmpty() }
 }
 
@@ -209,7 +209,7 @@ private fun ConnectingContent() {
         Column {
             LoadingSpinner()
             Text(
-                text = "Connecting…",
+                text = stringResource(Res.string.jabber_window_connecting),
                 style = RiftTheme.typography.headerPrimary,
                 modifier = Modifier
                     .padding(top = Spacing.large),
@@ -248,11 +248,9 @@ private fun NoAccountContent(
                 )
                 val isUsingPidgin = state.canImport
                 val text = if (isUsingPidgin) {
-                    "\nRIFT is a Jabber client with additional features specific for Goonswarm.\n\n" +
-                        "You can receive pings in a better way without having to run Pidgin."
+                    stringResource(Res.string.jabber_window_using_pidgin_text)
                 } else {
-                    "\nRIFT is a Jabber client with additional features specific for Goonswarm.\n\n" +
-                        "You can receive pings in a better way without having to run a separate app."
+                    stringResource(Res.string.jabber_window_no_using_pidgin_text)
                 }
                 Text(
                     text = text,
@@ -263,7 +261,7 @@ private fun NoAccountContent(
         }
         if (state.canImport) {
             RiftButton(
-                text = "Import Pidgin account",
+                text = stringResource(Res.string.jabber_window_import_pidgin_account),
                 cornerCut = ButtonCornerCut.Both,
                 onClick = onImportClick,
                 modifier = Modifier
@@ -271,7 +269,7 @@ private fun NoAccountContent(
                     .padding(top = Spacing.medium),
             )
             RiftButton(
-                text = "Login manually",
+                text = stringResource(Res.string.jabber_window_login_manually),
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.Both,
                 onClick = onLoginClick,
@@ -281,7 +279,7 @@ private fun NoAccountContent(
             )
         } else {
             RiftButton(
-                text = "Get started",
+                text = stringResource(Res.string.jabber_window_get_started_button),
                 cornerCut = ButtonCornerCut.Both,
                 onClick = onLoginClick,
                 modifier = Modifier
@@ -333,26 +331,26 @@ private fun LoginContent(
                     modifier = Modifier.padding(top = Spacing.medium),
                 ) {
                     Text(
-                        text = "Jabber username",
+                        text = stringResource(Res.string.jabber_window_jabber_username),
                         style = RiftTheme.typography.headerPrimary,
                     )
                     RiftTextField(
                         text = jidLocalPart,
-                        placeholder = "Type your username",
+                        placeholder = stringResource(Res.string.jabber_window_jabber_username_placeholder),
                         onTextChanged = { jidLocalPart = it },
                         modifier = Modifier
                             .width(200.dp)
                             .padding(top = Spacing.small),
                     )
                     Text(
-                        text = "Jabber password",
+                        text = stringResource(Res.string.jabber_window_jabber_password),
                         style = RiftTheme.typography.headerPrimary,
                         modifier = Modifier
                             .padding(top = Spacing.small),
                     )
                     RiftTextField(
                         text = password,
-                        placeholder = if (savedPassword != null) "(unchanged)" else "Type your password",
+                        placeholder = if (savedPassword != null) stringResource(Res.string.jabber_window_jabber_password_placeholder_saved) else stringResource(Res.string.jabber_window_jabber_password_placeholder_new),
                         isPassword = true,
                         onTextChanged = { password = it },
                         modifier = Modifier
@@ -360,7 +358,7 @@ private fun LoginContent(
                             .padding(top = Spacing.small),
                     )
                     LinkText(
-                        text = "Forgot username or password?",
+                        text = stringResource(Res.string.jabber_window_forgot_jabber),
                         onClick = { "https://goonfleet.com/esa/".toURIOrNull()?.openBrowser() },
                         modifier = Modifier.padding(top = Spacing.small),
                     )
@@ -368,7 +366,7 @@ private fun LoginContent(
             }
         }
         RiftButton(
-            text = "Connect",
+            text = stringResource(Res.string.jabber_window_connect),
             cornerCut = ButtonCornerCut.Both,
             onClick = {
                 val effectivePassword = password.takeIf { it.isNotEmpty() } ?: savedPassword ?: password
@@ -401,7 +399,7 @@ private fun LoggedInContent(
     onChatRoomMessageSend: (MultiUserChat, String) -> Unit,
 ) {
     Column {
-        val contactsTab = Tab(id = 0, "Contacts", false, payload = TabModel.Contacts)
+        val contactsTab = Tab(id = 0, stringResource(Res.string.contacts), false, payload = TabModel.Contacts)
         val chatRoomTabs = state.jabberState.openMultiUserChats.withIndex().associateWith { (index, chat) ->
             Tab(
                 id = index + 1,
@@ -473,13 +471,13 @@ private fun LoggedInContent(
                                     .padding(bottom = Spacing.medium),
                             ) {
                                 RiftButton(
-                                    text = "Add contact",
+                                    text = stringResource(Res.string.jabber_window_add_contact),
                                     cornerCut = ButtonCornerCut.BottomLeft,
                                     onClick = onAddContactClick,
                                     modifier = Modifier.weight(1f),
                                 )
                                 RiftButton(
-                                    text = "Add chat room",
+                                    text = stringResource(Res.string.jabber_window_add_chat_room),
                                     cornerCut = ButtonCornerCut.BottomRight,
                                     onClick = onAddChatRoomClick,
                                     modifier = Modifier.weight(1f),
@@ -544,7 +542,7 @@ private fun AddContact(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         Text(
-            text = "Add contact",
+            text = stringResource(Res.string.jabber_window_add_contact),
             style = RiftTheme.typography.headerPrimary,
         )
         var jidLocalPart by remember { mutableStateOf("") }
@@ -553,7 +551,7 @@ private fun AddContact(
         ) {
             RiftTextField(
                 text = jidLocalPart,
-                placeholder = "Jabber username",
+                placeholder = stringResource(Res.string.jabber_window_jabber_username),
                 onTextChanged = {
                     jidLocalPart = it
                 },
@@ -565,26 +563,26 @@ private fun AddContact(
             )
         }
         Text(
-            text = "Choose nickname (optional)",
+            text = stringResource(Res.string.jabber_window_add_contact_nickname),
             style = RiftTheme.typography.headerPrimary,
         )
         var name by remember { mutableStateOf("") }
         RiftTextField(
             text = name,
-            placeholder = "Nickname",
+            placeholder = stringResource(Res.string.jabber_window_add_contact_nickname_placeholder),
             onTextChanged = {
                 name = it
             },
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = "Choose group (optional)",
+            text = stringResource(Res.string.jabber_window_add_contact_group),
             style = RiftTheme.typography.headerPrimary,
         )
         var group by remember { mutableStateOf("") }
         RiftTextField(
             text = group,
-            placeholder = "Group",
+            placeholder = stringResource(Res.string.jabber_window_add_contact_group_placeholder),
             onTextChanged = {
                 group = it
             },
@@ -600,14 +598,14 @@ private fun AddContact(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
             RiftButton(
-                text = "Back",
+                text = stringResource(Res.string.back),
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.BottomLeft,
                 onClick = { onBackClick() },
                 modifier = Modifier.weight(1f),
             )
             RiftButton(
-                text = "Add contact",
+                text = stringResource(Res.string.jabber_window_add_contact),
                 cornerCut = ButtonCornerCut.BottomRight,
                 onClick = {
                     val name = name.takeIf { it.isNotBlank() } ?: jidLocalPart
@@ -630,7 +628,7 @@ private fun AddChatRoom(
         modifier = Modifier.padding(Spacing.medium),
     ) {
         Text(
-            text = "Add chat room",
+            text = stringResource(Res.string.jabber_window_add_chat_room),
             style = RiftTheme.typography.headerPrimary,
         )
         var jidLocalPart by remember { mutableStateOf("") }
@@ -639,7 +637,7 @@ private fun AddChatRoom(
         ) {
             RiftTextField(
                 text = jidLocalPart,
-                placeholder = "Room name",
+                placeholder = stringResource(Res.string.jabber_window_add_chat_room_name),
                 onTextChanged = {
                     jidLocalPart = it
                 },
@@ -660,14 +658,14 @@ private fun AddChatRoom(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
             RiftButton(
-                text = "Back",
+                text = stringResource(Res.string.back),
                 type = ButtonType.Secondary,
                 cornerCut = ButtonCornerCut.BottomLeft,
                 onClick = { onBackClick() },
                 modifier = Modifier.weight(1f),
             )
             RiftButton(
-                text = "Add chat room",
+                text = stringResource(Res.string.jabber_window_add_chat_room),
                 cornerCut = ButtonCornerCut.BottomRight,
                 onClick = { onAddChatRoomSubmitClick(jidLocalPart) },
                 modifier = Modifier.weight(1f),
