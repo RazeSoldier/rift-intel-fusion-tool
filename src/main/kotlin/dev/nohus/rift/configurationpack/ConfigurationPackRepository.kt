@@ -1,6 +1,9 @@
 package dev.nohus.rift.configurationpack
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.ConfigurationPack.Imperium
 import dev.nohus.rift.settings.persistence.ConfigurationPack.PhoenixCoalition
@@ -89,51 +92,51 @@ class ConfigurationPackRepository(
     fun getSuggestedIntelChannels(): SuggestedIntelChannels? {
         return when (settings.configurationPack) {
             Imperium -> SuggestedIntelChannels(
-                promptTitleText = "Would you like intel channels of the Imperium to be configured automatically?",
-                promptButtonText = "Add Imperium channels",
+                promptTitleText = getStringSync(Res.string.imperium_pack_prompot_title),
+                promptButtonText = getStringSync(Res.string.imperium_pack_prompot_button),
                 channels = listOf(
-                    IntelChannel("east.imperium", "Catch"),
-                    IntelChannel("east.imperium", "Immensea"),
-                    IntelChannel("east.imperium", "Impass"),
-                    IntelChannel("east.imperium", "Tenerifis"),
-                    IntelChannel("fareast.imperium", "Detorid"),
-                    IntelChannel("fareast.imperium", "Wicked Creek"),
-                    IntelChannel("fareast.imperium", "Insmother"),
-                    IntelChannel("fareast.imperium", "Cache"),
-                    IntelChannel("fareast.imperium", "Scalding Pass"),
-                    IntelChannel("west.imperium", "Delve"),
-                    IntelChannel("west.imperium", "Querious"),
-                    IntelChannel("west.imperium", "Period Basis"),
-                    IntelChannel("southeast.imperium", "Esoteria"),
-                    IntelChannel("southeast.imperium", "Feythabolis"),
-                    IntelChannel("southeast.imperium", "Paragon Soul"),
-                    IntelChannel("aridia.imperium", "Aridia"),
-                    IntelChannel("curse.imperium", "Curse"),
-                    IntelChannel("ftn.imperium", "Fountain"),
-                    IntelChannel("khanid.imperium", "Khanid"),
-                    IntelChannel("triangle.imperium", "Pochven"),
+                    IntelChannel("east.imperium", getStringSync(Res.string.region_catch)),
+                    IntelChannel("east.imperium", getStringSync(Res.string.region_immensea)),
+                    IntelChannel("east.imperium", getStringSync(Res.string.region_impass)),
+                    IntelChannel("east.imperium", getStringSync(Res.string.region_tenerifis)),
+                    IntelChannel("fareast.imperium", getStringSync(Res.string.region_detorid)),
+                    IntelChannel("fareast.imperium", getStringSync(Res.string.region_wicked_creek)),
+                    IntelChannel("fareast.imperium", getStringSync(Res.string.region_insmother)),
+                    IntelChannel("fareast.imperium", getStringSync(Res.string.region_cache)),
+                    IntelChannel("fareast.imperium", getStringSync(Res.string.region_scalding_pass)),
+                    IntelChannel("west.imperium", getStringSync(Res.string.region_delve)),
+                    IntelChannel("west.imperium", getStringSync(Res.string.region_querious)),
+                    IntelChannel("west.imperium", getStringSync(Res.string.region_period_basis)),
+                    IntelChannel("southeast.imperium", getStringSync(Res.string.region_esoteria)),
+                    IntelChannel("southeast.imperium", getStringSync(Res.string.region_feythabolis)),
+                    IntelChannel("southeast.imperium", getStringSync(Res.string.region_paragon_soul)),
+                    IntelChannel("aridia.imperium", getStringSync(Res.string.region_aridia)),
+                    IntelChannel("curse.imperium", getStringSync(Res.string.region_curse)),
+                    IntelChannel("ftn.imperium", getStringSync(Res.string.region_fountain)),
+                    IntelChannel("khanid.imperium", getStringSync(Res.string.region_khanid)),
+                    IntelChannel("triangle.imperium", getStringSync(Res.string.region_pochven)),
                 ),
             )
 
             TheInitiative -> SuggestedIntelChannels(
-                promptTitleText = "Would you like intel channels of The Initiative. to be configured automatically?",
-                promptButtonText = "Add Init channels",
+                promptTitleText = getStringSync(Res.string.the_initiative_pack_prompt_title),
+                promptButtonText = getStringSync(Res.string.the_initiative_pack_prompt_button),
                 channels = listOf(
-                    IntelChannel("I. Ftn Intel", "Fountain"),
-                    IntelChannel("I. OR Intel", "Outer Ring"),
-                    IntelChannel("I. Aridia Intel", "Aridia"),
-                    IntelChannel("I. Curse Intel", "Curse"),
-                    IntelChannel("I. Poch Intel", "Pochven"),
-                    IntelChannel("I. C Ring Intel", "Cloud Ring"),
+                    IntelChannel("I. Ftn Intel", getStringSync(Res.string.region_fountain)),
+                    IntelChannel("I. OR Intel", getStringSync(Res.string.region_outer_ring)),
+                    IntelChannel("I. Aridia Intel", getStringSync(Res.string.region_aridia)),
+                    IntelChannel("I. Curse Intel", getStringSync(Res.string.region_curse)),
+                    IntelChannel("I. Poch Intel", getStringSync(Res.string.region_pochven)),
+                    IntelChannel("I. C Ring Intel", getStringSync(Res.string.region_cloud_ring)),
                 ),
             )
 
             PhoenixCoalition -> SuggestedIntelChannels(
-                promptTitleText = "Would you like intel channels of the Phoenix Coalition to be configured automatically?",
-                promptButtonText = "Add Phoenix Coalition channels",
+                promptTitleText = getStringSync(Res.string.phoenix_coalition_pack_prompt_title),
+                promptButtonText = getStringSync(Res.string.phoenix_coalition_pack_prompt_button),
                 channels = listOf(
-                    IntelChannel("Phoenix_Intel", "Delve"),
-                    IntelChannel("Phoenix_Intel", "Querious"),
+                    IntelChannel("Phoenix_Intel", getStringSync(Res.string.region_delve)),
+                    IntelChannel("Phoenix_Intel", getStringSync(Res.string.region_querious)),
                 ),
             )
 

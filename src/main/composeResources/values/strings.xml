@@ -507,6 +507,12 @@
     <string name="clipboard_test_window_sov_upgrade_line_valid">This line is correct and contains upgrades for system: %1$s, upgrades: %2$s</string>
     <string name="clipboard_test_window_sov_upgrade_line_no_system">This line is ignored because it doesn't contain any system name</string>
     <string name="clipboard_test_window_sov_upgrade_line_no_upgrade">This line is invalid because it only contains a system: %1$s, but no upgrade names</string>
+    <string name="settings_restart_required_dialog_title">Restart required</string>
+    <string name="settings_dark_tray_icon_changed">New tray icon will take effect after you restart the application.</string>
+    <string name="settings_transparency_window_enabled">Window transparency will be enabled after you restart the application. This feature requires a modern GPU.</string>
+    <string name="settings_transparency_window_disbled">Window transparency will be disabled after you restart the application.</string>
+    <string name="settings_ui_scale_changed">Changing the UI scale will take effect after you restart the application.</string>
+    <string name="settings_config_pack_changed">Some elements of a configuration pack will only take effect after you restart the application.</string>
     <!-- RiftFileChooserButton.kt -->
     <string name="file_chooser_button_select">Select</string>
     <!-- SettingsViewModel.kt -->
@@ -1208,4 +1214,33 @@
     <string name="about_window_app_data">App data</string>
     <string name="about_window_credits">Credits</string>
     <string name="about_window_update_log">What's new</string>
+    <!-- ConfigurationPackRepository.kt -->
+    <string name="imperium_pack_prompot_title">Would you like intel channels of the Imperium to be configured automatically?</string>
+    <string name="imperium_pack_prompot_button">Add Imperium channels</string>
+    <string name="region_catch">Catch</string>
+    <string name="region_immensea">Immensea</string>
+    <string name="region_impass">Impass</string>
+    <string name="region_tenerifis">Tenerifis</string>
+    <string name="region_detorid">Detorid</string>
+    <string name="region_wicked_creek">Wicked Creek</string>
+    <string name="region_insmother">Insmother</string>
+    <string name="region_cache">Cache</string>
+    <string name="region_scalding_pass">Scalding Pass</string>
+    <string name="region_delve">Delve</string>
+    <string name="region_querious">Querious</string>
+    <string name="region_period_basis">Period Basis</string>
+    <string name="region_esoteria">Esoteria</string>
+    <string name="region_feythabolis">Feythabolis</string>
+    <string name="region_paragon_soul">Paragon Soul</string>
+    <string name="region_aridia">Aridia</string>
+    <string name="region_curse">Curse</string>
+    <string name="region_fountain">Fountain</string>
+    <string name="region_khanid">Khanid</string>
+    <string name="region_pochven">Pochven</string>
+    <string name="the_initiative_pack_prompt_title">Would you like intel channels of The Initiative. to be configured automatically?</string>
+    <string name="the_initiative_pack_prompt_button">Add Init channels</string>
+    <string name="region_outer_ring">Outer Ring</string>
+    <string name="region_cloud_ring">Cloud Ring</string>
+    <string name="phoenix_coalition_pack_prompt_title">Would you like intel channels of the Phoenix Coalition to be configured automatically?</string>
+    <string name="phoenix_coalition_pack_prompt_button">Add Phoenix Coalition channels</string>
 </resources>

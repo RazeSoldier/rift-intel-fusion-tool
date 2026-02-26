@@ -10,7 +10,7 @@ import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.JumpBridgesReference
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.language_restart_dialog
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
@@ -416,7 +416,7 @@ class SettingsViewModel(
 
     fun onIsUsingDarkTrayIconChanged(enabled: Boolean) {
         if (settings.isUsingDarkTrayIcon != enabled) {
-            showRestartRequiredDialog("New tray icon will take effect after you restart the application.")
+            showRestartRequiredDialog(getStringSync(Res.string.settings_dark_tray_icon_changed))
             settings.isUsingDarkTrayIcon = enabled
         }
     }
@@ -432,9 +432,9 @@ class SettingsViewModel(
     fun onIsWindowTransparencyChanged(enabled: Boolean) {
         if (settings.isWindowTransparencyEnabled != enabled) {
             if (enabled) {
-                showRestartRequiredDialog("Window transparency will be enabled after you restart the application. This feature requires a modern GPU.")
+                showRestartRequiredDialog(getStringSync(Res.string.settings_transparency_window_enabled))
             } else {
-                showRestartRequiredDialog("Window transparency will be disabled after you restart the application.")
+                showRestartRequiredDialog(getStringSync(Res.string.settings_transparency_window_disbled))
             }
             settings.isWindowTransparencyEnabled = enabled
         }
@@ -445,7 +445,7 @@ class SettingsViewModel(
     }
 
     fun onUiScaleChanged(uiScale: Float) {
-        showRestartRequiredDialog("Changing the UI scale will take effect after you restart the application.")
+        showRestartRequiredDialog(getStringSync(Res.string.settings_ui_scale_changed))
         settings.uiScale = uiScale
     }
 
@@ -460,7 +460,7 @@ class SettingsViewModel(
 
     fun onConfigurationPackChange(configurationPack: ConfigurationPack?) {
         if (settings.configurationPack != configurationPack) {
-            showRestartRequiredDialog("Some elements of a configuration pack will only take effect after you restart the application.")
+            showRestartRequiredDialog(getStringSync(Res.string.settings_config_pack_changed))
             configurationPackRepository.set(configurationPack)
         }
     }
@@ -617,7 +617,7 @@ class SettingsViewModel(
     private fun showRestartRequiredDialog(message: String) {
         viewModelScope.launch {
             delay(Duration.ofMillis(300))
-            val dialogMessage = DialogMessage("Restart required", message, MessageDialogType.Info)
+            val dialogMessage = DialogMessage(getStringSync(Res.string.settings_restart_required_dialog_title), message, MessageDialogType.Info)
             _state.update { it.copy(dialogMessage = dialogMessage) }
         }
     }

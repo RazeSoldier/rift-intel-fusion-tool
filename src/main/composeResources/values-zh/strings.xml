@@ -500,6 +500,12 @@
     <string name="clipboard_test_window_sov_upgrade_line_valid">本行正确，包含星系：%1$s，升级：%2$s</string>
     <string name="clipboard_test_window_sov_upgrade_line_no_system">由于此行不包含任何星系名，因此忽略。</string>
     <string name="clipboard_test_window_sov_upgrade_line_no_upgrade">本行非法，因为只包含了一个星系名：%1$s，没有升级名</string>
+    <string name="settings_restart_required_dialog_title">需要重启</string>
+    <string name="settings_dark_tray_icon_changed">新的托盘图标将在你重启应用程序后生效。</string>
+    <string name="settings_transparency_window_enabled">启用窗口透明功能需要重启应用程序。此功能需要较新的GPU。</string>
+    <string name="settings_transparency_window_disbled">禁用窗口透明功能需要重启应用程序。</string>
+    <string name="settings_ui_scale_changed">更改用户界面缩放比例后，需要重启应用程序才能生效。</string>
+    <string name="settings_config_pack_changed">配置包中的某些元素只有在你重启应用程序后才会生效。</string>
     <!-- RiftFileChooserButton.kt -->
     <string name="file_chooser_button_select">选择</string>
     <!-- SettingsViewModel.kt -->
@@ -1176,4 +1182,33 @@
     <string name="about_window_app_data">程序数据</string>
     <string name="about_window_credits">鸣谢</string>
     <string name="about_window_update_log">更新日志</string>
+    <!-- ConfigurationPackRepository.kt -->
+    <string name="imperium_pack_prompot_title">你是否希望使用帝国的预警频道配置？</string>
+    <string name="imperium_pack_prompot_button">添加帝国预警频道</string>
+    <string name="region_catch">卡彻</string>
+    <string name="region_immensea">伊梅瑟亚</string>
+    <string name="region_impass">绝径</string>
+    <string name="region_tenerifis">特里菲斯</string>
+    <string name="region_detorid">底特里德</string>
+    <string name="region_wicked_creek">邪恶湾流</string>
+    <string name="region_insmother">因斯姆尔</string>
+    <string name="region_cache">地窖</string>
+    <string name="region_scalding_pass">灼热之径</string>
+    <string name="region_delve">绝地</string>
+    <string name="region_querious">逑瑞斯</string>
+    <string name="region_period_basis">贝斯</string>
+    <string name="region_esoteria">埃索特亚</string>
+    <string name="region_feythabolis">非塔波利斯</string>
+    <string name="region_paragon_soul">摄魂之域</string>
+    <string name="region_aridia">艾里迪亚</string>
+    <string name="region_curse">柯尔斯</string>
+    <string name="region_fountain">源泉</string>
+    <string name="region_khanid">卡尼迪</string>
+    <string name="region_pochven">波赫文</string>
+    <string name="the_initiative_pack_prompt_title">你是否希望使用Init的预警频道配置？</string>
+    <string name="the_initiative_pack_prompt_button">添加Init预警频道</string>
+    <string name="region_outer_ring">外环</string>
+    <string name="region_cloud_ring">云环</string>
+    <string name="phoenix_coalition_pack_prompt_title">你是否希望使用凤凰联盟群的预警频道配置？</string>
+    <string name="phoenix_coalition_pack_prompt_button">添加凤凰联盟群预警频道</string>
 </resources>
