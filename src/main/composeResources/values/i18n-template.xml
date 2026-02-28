@@ -20,4 +20,8 @@
         <item quantity="other">[$distance] jumps from [$name]</item>
     </plurals>
     <string name="wallet_description">[$prefix] [$transactionNumber] [$transaction] from [$walletNumber] [$wallets][ matching $typeNumber][ $type]</string>
+    <string name="jabber_announcement">Announcement[ from $sender]</string>
+    <string name="jabber_message">[$target] message[ from $sender]</string>
+    <string name="fleet_ping_all">Fleet[ $fleetName] under [$fc]</string>
+    <string name="fleet_ping_target">[$target fleet][ $fleetName] under [$fc]</string>
 </resources>

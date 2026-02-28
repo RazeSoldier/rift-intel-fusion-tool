@@ -35,6 +35,8 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.AnnotatedStringTemplate
+import dev.nohus.rift.i18n.optionGroups
 import dev.nohus.rift.pings.PingsViewModel.UiState
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
@@ -128,20 +130,38 @@ private fun PlainTextPing(
     ping: PingUiModel.PlainText,
 ) {
     val type = buildAnnotatedString {
+        val groupBuilders: List<AnnotatedStringTemplate.GroupBuilder>
+        val primary = RiftTheme.colors.textPrimary
+
+        @Composable
+        fun senderGroupConfigure(builder: AnnotatedStringTemplate.GroupBuilder) {
+            builder.predicate = { ping.sender != null }
+            builder.placeholders["sender"] = { ping.sender }
+            builder.block = {
+                withStyle(SpanStyle(color = primary)) {
+                    append(it)
+                }
+            }
+        }
+
         if (ping.target == null || ping.target == "all") {
-            append("Announcement")
+            groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.jabber_announcement))
+            senderGroupConfigure(groupBuilders.optionGroups()[0])
         } else {
-            withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                append(ping.target.replaceFirstChar { it.uppercase() })
+            groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.jabber_message))
+            groupBuilders[0].also {
+                it.predicate = { true }
+                it.block = {
+                    withStyle(SpanStyle(color = primary)) {
+                        append(ping.target.replaceFirstChar { it.uppercase() })
+                    }
+                }
             }
-            append(" message")
+            senderGroupConfigure(groupBuilders.optionGroups()[1])
         }
-        if (ping.sender != null) {
-            append(" from ")
-            withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                append(ping.sender)
-            }
-        }
+        val builder = AnnotatedStringTemplate.Builder(this)
+        groupBuilders.map { it.build() }.forEach { builder.addGroup(it) }
+        builder.build().expand()
     }
     val buttons = mutableListOf<RiftOpportunityCardButton>()
     buttons += RiftOpportunityCardButton(
@@ -178,24 +198,43 @@ private fun FleetPing(
     onMumbleClick: (url: String) -> Unit,
 ) {
     val type = buildAnnotatedString {
+        val groupBuilders: List<AnnotatedStringTemplate.GroupBuilder>
+        val primary = SpanStyle(color = RiftTheme.colors.textPrimary)
         if (ping.target == null || ping.target == "all") {
-            append("Fleet")
+            groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.fleet_ping_all))
         } else {
-            withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                append(ping.target.replaceFirstChar { it.uppercase() })
+            groupBuilders = AnnotatedStringTemplate.parseGroup(stringResource(Res.string.fleet_ping_target))
+            groupBuilders[0].also {
+                it.predicate = { true }
+                it.placeholders["target"] = { ping.target.replaceFirstChar { it.uppercase() } }
+                it.block = {
+                    withStyle(primary) {
+                        append(it)
+                    }
+                }
             }
-            append(" fleet")
         }
-        if (ping.fleet != null) {
-            append(" ")
-            withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-                append(ping.fleet)
+        val groupsSize = groupBuilders.optionGroups().size
+        groupBuilders.optionGroups()[groupsSize - 2].also {
+            it.predicate = { ping.fleet != null }
+            it.placeholders["fleetName"] = { ping.fleet }
+            it.block = {
+                withStyle(primary) {
+                    append(it)
+                }
             }
         }
-        append(" under ")
-        withStyle(SpanStyle(color = RiftTheme.colors.textPrimary)) {
-            append(ping.fleetCommander.name)
+        groupBuilders.optionGroups()[groupsSize - 1].also {
+            it.predicate = { true }
+            it.block = {
+                withStyle(primary) {
+                    append(ping.fleetCommander.name)
+                }
+            }
         }
+        val builder = AnnotatedStringTemplate.Builder(this)
+        groupBuilders.map { it.build() }.forEach { builder.addGroup(it) }
+        builder.build().expand()
     }
     val buttons = mutableListOf<RiftOpportunityCardButton>()
     if (ping.doctrine?.link != null) {

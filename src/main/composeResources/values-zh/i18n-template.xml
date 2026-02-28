@@ -19,4 +19,8 @@
         <item quantity="other">距离 [$name] [$distance]跳</item>
     </plurals>
     <string name="wallet_description">[$prefix][$transactionNumber][$transaction]，来自[$walletNumber][$wallets][，匹配$typeNumber][$type]</string>
+    <string name="jabber_announcement">[来自$sender的]公告</string>
+    <string name="jabber_message">[$target] [来自$sender的]消息</string>
+    <string name="fleet_ping_all">舰队[ $fleetName]在[$fc]下</string>
+    <string name="fleet_ping_target">[$target舰队][ $fleetName]在[$fc]下</string>
 </resources>
