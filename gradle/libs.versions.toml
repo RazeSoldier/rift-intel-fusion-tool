@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.3.0"
 compose = "1.10.0"
-compose-hot-reload = "1.1.0-alpha04"
+compose-hot-reload = "1.1.0-alpha05"
 spotless = "7.2.1"
 buildconfig = "5.3.5"
 

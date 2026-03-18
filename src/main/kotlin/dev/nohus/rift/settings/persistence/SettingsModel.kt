@@ -82,6 +82,7 @@ data class SettingsModel(
     val isSmartAlwaysAbove: Boolean = false,
     val mapMarkers: List<MapMarker> = emptyList(),
     val assetLocationPins: Map<Long, LocationPinStatus> = emptyMap(),
+    val assetLocationCustomNames: Map<Long, String> = emptyMap(),
     val isJukeboxRevealed: Boolean = false,
     val sovereigntyUpgrades: Map<String, List<Int>> = emptyMap(),
     val isSovereigntyUpgradesHackImportingEnabled: Boolean = true,

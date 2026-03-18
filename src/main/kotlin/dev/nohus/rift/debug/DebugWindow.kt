@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +67,8 @@ import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_log
 import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor.BucketKey
+import dev.nohus.rift.network.requests.CacheStatistics.CacheStatus
+import dev.nohus.rift.network.requests.Endpoint
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.withColor
@@ -115,6 +120,7 @@ private fun ToolbarRow(
                     DebugTab.Logs -> "Logs"
                     DebugTab.Network -> "Network Statistics"
                     DebugTab.RateLimits -> "Rate Limits"
+                    DebugTab.Cache -> "Cache Statistics"
                 }
                 Tab(id = index, title = title, isCloseable = false)
             }
@@ -470,8 +476,165 @@ private fun DebugWindowContent(
                     }
                 }
             }
+            DebugTab.Cache -> {
+                Column(
+                    modifier = Modifier.padding(top = Spacing.medium),
+                ) {
+                    Text(
+                        text = "Cache outcomes per endpoint",
+                        style = RiftTheme.typography.headerPrimary,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
+                    Spacer(Modifier.height(Spacing.medium))
+                    CacheLegend(name = "Local Hit", text = "Request used a locally cached response without accessing the network")
+                    CacheLegend(name = "304 Hit", text = "Request used a locally cached response after the server confirmed from cache it was not modified")
+                    CacheLegend(name = "304 Miss", text = "Request used a locally cached response after the server confirmed it was not modified")
+                    CacheLegend(name = "Hit", text = "Request received a cached response from the server")
+                    CacheLegend(name = "Miss", text = "Request received a fresh response from the server")
+                    CacheLegend(name = "Expired", text = "Request received a fresh response from the server, because the server cache has expired")
+                    CacheLegend(name = "Dynamic", text = "Request received a fresh response from the server, because the response could not be cached")
+                    CacheLegend(name = "Revalidated", text = "Request received a cached response from the server, after the server rechecked it's validity")
+                    Spacer(Modifier.height(Spacing.medium))
+
+                    data class CacheOutcomes(
+                        val endpoint: Endpoint,
+                        val outcomes: Map<CacheStatus, Map<Int?, Int>>,
+                    )
+                    Spacer(Modifier.height(Spacing.medium))
+                    val grouped = state.cacheRequests.entries
+                        .groupBy { it.key.endpoint }
+                        .map { (endpoint, entries) ->
+                            val outcomes = entries.groupBy { it.key.cacheStatus }.map { (cacheStatus, entries) ->
+                                val responseStatusToCount = entries.associate {
+                                    val responseStatus = it.key.responseStatus
+                                    val count = it.value
+                                    responseStatus to count
+                                }
+                                cacheStatus to responseStatusToCount
+                            }.toMap()
+                            CacheOutcomes(
+                                endpoint = endpoint,
+                                outcomes = outcomes,
+                            )
+                        }
+                        .sortedByDescending { it.outcomes.entries.sumOf { it.value.entries.sumOf { it.value } } }
+                    ScrollbarLazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                    ) {
+                        items(grouped, key = { it.endpoint }) { item ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                                modifier = Modifier
+                                    .height(IntrinsicSize.Max)
+                                    .animateItem(),
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.CenterStart,
+                                    modifier = Modifier
+                                        .border(1.dp, RiftTheme.colors.borderGrey)
+                                        .padding(Spacing.medium)
+                                        .fillMaxHeight()
+                                        .width(200.dp),
+                                ) {
+                                    Text(
+                                        text = "${item.endpoint}",
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+                                }
+
+                                CacheStatus.entries.forEach { cacheStatus ->
+                                    val countByStatus = item.outcomes[cacheStatus] ?: emptyMap()
+                                    val name = when (cacheStatus) {
+                                        CacheStatus.LocalCacheHit -> "Local Hit"
+                                        CacheStatus.EsiCacheHitNotModified -> "304 Hit"
+                                        CacheStatus.EsiCacheMissNotModified -> "304 Miss"
+                                        CacheStatus.EsiCacheHit -> "Hit"
+                                        CacheStatus.EsiCacheMiss -> "Miss"
+                                        CacheStatus.EsiDynamic -> "Dynamic"
+                                        CacheStatus.EsiRevalidated -> "Revalidate"
+                                        CacheStatus.EsiExpired -> "Expired"
+                                        CacheStatus.EsiNull -> "Unknown"
+                                        CacheStatus.Unknown -> "Other"
+                                    }
+                                    val isAlwaysShown = cacheStatus in listOf(CacheStatus.LocalCacheHit, CacheStatus.EsiCacheHitNotModified, CacheStatus.EsiCacheMissNotModified, CacheStatus.EsiCacheHit, CacheStatus.EsiCacheMiss)
+                                    CacheCounter(name, countByStatus, isAlwaysShown)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun CacheCounter(name: String, countByStatus: Map<Int?, Int>, isAlwaysShown: Boolean) {
+    val totalCount = countByStatus.values.sum()
+    if (totalCount == 0 && !isAlwaysShown) return
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .alpha(if (totalCount > 0) 1f else 0.3f)
+            .border(1.dp, RiftTheme.colors.borderPrimaryDark)
+            .background(RiftTheme.colors.backgroundPrimaryDark)
+            .padding(Spacing.medium)
+            .widthIn(min = 80.dp),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            if (countByStatus.size > 1) {
+                countByStatus.forEach { (status, count) ->
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
+                        Text(
+                            text = formatNumber(count),
+                            style = RiftTheme.typography.headlinePrimary.copy(fontWeight = FontWeight.Bold),
+                        )
+                        Text(
+                            text = "${status ?: "None"}",
+                            style = RiftTheme.typography.detailSecondary,
+                        )
+                    }
+                }
+            } else if (countByStatus.size == 1) {
+                countByStatus.entries.single().let { (status, count) ->
+                    Text(
+                        text = formatNumber(count),
+                        style = RiftTheme.typography.headlinePrimary.copy(fontWeight = FontWeight.Bold),
+                    )
+                }
+            } else {
+                Text(
+                    text = "0",
+                    style = RiftTheme.typography.headlinePrimary.copy(fontWeight = FontWeight.Bold),
+                )
+            }
+        }
+        Text(
+            text = name,
+            style = RiftTheme.typography.bodySecondary,
+        )
+    }
+}
+
+@Composable
+private fun CacheLegend(name: String, text: String) {
+    Text(
+        text = buildAnnotatedString {
+            withColor(RiftTheme.colors.textPrimary) {
+                append(name)
+            }
+            append(" – ")
+            withColor(RiftTheme.colors.textSecondary) {
+                append(text)
+            }
+        },
+        style = RiftTheme.typography.bodySecondary,
+    )
 }
 
 private val Boolean.connected: String get() = if (this) "connected" else "disconnected"

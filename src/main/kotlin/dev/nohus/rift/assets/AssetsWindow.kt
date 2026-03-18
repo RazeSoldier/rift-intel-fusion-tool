@@ -30,6 +30,7 @@ import dev.nohus.rift.assets.AssetsViewModel.UiState
 import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.assets.compose.AssetsContent
 import dev.nohus.rift.assets.compose.OwnersContent
+import dev.nohus.rift.assets.compose.RenameLocationDialog
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.LoadingSpinnerAmbient
@@ -73,9 +74,20 @@ fun AssetsWindow(
             onFiltersUpdate = viewModel::onFiltersUpdate,
             onFitAction = viewModel::onFitAction,
             onPinChange = viewModel::onPinChange,
+            onRenameClick = viewModel::onRenameClick,
             onReloadClick = viewModel::onReloadClick,
         )
         OnVisibilityChange(viewModel::onVisibilityChange)
+
+        val renameDialog = state.renameLocationDialog
+        if (renameDialog != null) {
+            RenameLocationDialog(
+                location = renameDialog.location,
+                parentWindowState = windowState,
+                onDismiss = viewModel::onRenameClose,
+                onConfirmClick = viewModel::onRenameConfirm,
+            )
+        }
     }
 }
 
@@ -120,6 +132,7 @@ private fun AssetsWindowContent(
     onFiltersUpdate: (AssetsFilters) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,
     onPinChange: (Long, LocationPinStatus) -> Unit,
+    onRenameClick: (locationId: Long) -> Unit,
     onReloadClick: () -> Unit,
 ) {
     Column {
@@ -178,6 +191,7 @@ private fun AssetsWindowContent(
                                     onFiltersUpdate = onFiltersUpdate,
                                     onFitAction = onFitAction,
                                     onPinChange = onPinChange,
+                                    onRenameClick = onRenameClick,
                                     onReloadClick = onReloadClick,
                                 )
                             }

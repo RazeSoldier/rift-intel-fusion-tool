@@ -139,7 +139,7 @@ private fun JumpBridgesContent(state: UiState) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
             ) {
-                SuccessState("You copied a valid list of ${result.connections.size} jump bridge connection.\nYou can import them in Settings.")
+                SuccessState("You copied a valid list of ${result.connections.size} jump bridge connections.\nYou can import them in Settings.")
                 result.lines.forEach { line ->
                     JumpBridgeParsedLine(line)
                 }

@@ -7,6 +7,7 @@ import dev.nohus.rift.jabber.client.JabberClient
 import dev.nohus.rift.logging.LoggingRepository
 import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor
 import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor.BucketKey
+import dev.nohus.rift.network.requests.CacheStatistics
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.OperatingSystem
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 import java.time.ZoneId
+import dev.nohus.rift.network.requests.CacheStatistics.BucketKey as CacheBucketKey
 
 @Factory
 class DebugViewModel(
@@ -27,6 +29,7 @@ class DebugViewModel(
     operatingSystem: OperatingSystem,
     private val requestStatisticsInterceptor: RequestStatisticsInterceptor,
     private val esiRateLimitInterceptor: EsiRateLimitInterceptor,
+    private val cacheStatistics: CacheStatistics,
 ) : ViewModel() {
 
     data class UiState(
@@ -43,12 +46,15 @@ class DebugViewModel(
         // Rate limits
         val rateLimitBuckets: Map<BucketKey, EsiRateLimitInterceptor.Bucket> = emptyMap(),
         val spentTokens: Map<BucketKey, List<EsiRateLimitInterceptor.SpentTokens>> = emptyMap(),
+        // Cache
+        val cacheRequests: Map<CacheBucketKey, Int> = emptyMap(),
     )
 
     enum class DebugTab {
         Logs,
         Network,
         RateLimits,
+        Cache,
     }
 
     private val _state = MutableStateFlow(
@@ -78,6 +84,11 @@ class DebugViewModel(
                 val (buckets, spendTokens) = esiRateLimitInterceptor.getBuckets()
                 _state.update { it.copy(rateLimitBuckets = buckets, spentTokens = spendTokens) }
                 delay(333)
+            }
+        }
+        viewModelScope.launch {
+            cacheStatistics.requests.collectLatest { requests ->
+                _state.update { it.copy(cacheRequests = requests) }
             }
         }
         viewModelScope.launch {
