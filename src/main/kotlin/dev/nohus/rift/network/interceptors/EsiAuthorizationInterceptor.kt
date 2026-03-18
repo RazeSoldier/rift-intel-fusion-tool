@@ -1,22 +1,32 @@
 package dev.nohus.rift.network.interceptors
 
+import dev.nohus.rift.network.esi.EsiErrorResponse
 import dev.nohus.rift.network.requests.Character
 import dev.nohus.rift.network.requests.Scope
+import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.authentication.NoAuthenticationException
 import dev.nohus.rift.sso.authentication.SsoAuthenticator
 import dev.nohus.rift.sso.authentication.SsoException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Invocation
+
+private val logger = KotlinLogging.logger {}
 
 @Single
 class EsiAuthorizationInterceptor(
     private val ssoAuthenticator: SsoAuthenticator,
+    private val eveSsoRepository: EveSsoRepository,
+    @Named("network") private val json: Json,
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response = runBlocking {
@@ -42,7 +52,23 @@ class EsiAuthorizationInterceptor(
             request
         }
 
-        chain.proceed(newRequest)
+        val response = chain.proceed(newRequest)
+        if (character != null && !response.isSuccessful) {
+            val body = response.peekBody(Long.MAX_VALUE).string()
+            try {
+                val errorResponse: EsiErrorResponse = json.decodeFromString(body)
+                if ("Token is not valid" in errorResponse.error) {
+                    logger.error { "Character ${character.id} has an invalid token, removing" }
+                    eveSsoRepository.removeAuthentication(character.id)
+                } else if ("Character has been deleted" in errorResponse.error) {
+                    logger.error { "Character ${character.id} has been deleted from the game, removing" }
+                    eveSsoRepository.removeAuthentication(character.id)
+                }
+            } catch (_: SerializationException) {
+                // Authentication errors come as EsiErrorResponse, so this error is not relevant
+            }
+        }
+        response
     }
 
     private fun createSyntheticFailure(request: Request, exception: NoAuthenticationException): Response {

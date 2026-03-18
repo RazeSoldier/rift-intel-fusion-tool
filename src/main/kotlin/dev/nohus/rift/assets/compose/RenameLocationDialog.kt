@@ -1,4 +1,4 @@
-package dev.nohus.rift.alerts.creategroup
+package dev.nohus.rift.assets.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,40 +11,41 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.alerts.creategroup.CreateGroupInputModel
+import dev.nohus.rift.assets.AssetsViewModel.AssetLocation
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftTextField
+import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_loudspeaker_icon
+import dev.nohus.rift.generated.resources.window_assets
+import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager
 
 @Composable
-fun WindowScope.CreateGroupDialog(
-    inputModel: CreateGroupInputModel,
+fun WindowScope.RenameLocationDialog(
+    location: AssetLocation,
     parentWindowState: WindowManager.RiftWindowState,
     onDismiss: () -> Unit,
     onConfirmClick: (name: String) -> Unit,
 ) {
-    val title = when (inputModel) {
-        CreateGroupInputModel.New -> "Create group"
-        is CreateGroupInputModel.Rename -> "Rename group"
-    }
     RiftDialog(
-        title = title,
-        icon = Res.drawable.window_loudspeaker_icon,
+        title = "Name location",
+        icon = Res.drawable.window_assets,
         parentState = parentWindowState,
-        state = rememberWindowState(width = 300.dp, height = Dp.Unspecified),
+        state = rememberWindowState(width = 400.dp, height = Dp.Unspecified),
         onCloseClick = onDismiss,
     ) {
-        CreateGroupDialogContent(
-            inputModel = inputModel,
+        RenameLocationDialogContent(
+            location = location,
             onCancelClick = onDismiss,
             onConfirmClick = onConfirmClick,
         )
@@ -52,25 +53,39 @@ fun WindowScope.CreateGroupDialog(
 }
 
 @Composable
-private fun CreateGroupDialogContent(
-    inputModel: CreateGroupInputModel,
+private fun RenameLocationDialogContent(
+    location: AssetLocation,
     onCancelClick: () -> Unit,
     onConfirmClick: (name: String) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        if (inputModel is CreateGroupInputModel.New) {
+        if (location.isNameAuthoritative) {
             Text(
-                text = "Groups allow you to organize your alerts.",
+                text = location.name,
+                style = RiftTheme.typography.bodyHighlighted,
             )
         }
-        val initialText = (inputModel as? CreateGroupInputModel.Rename)?.name ?: ""
+
+        val description = buildAnnotatedString {
+            if (location.isNameAuthoritative) {
+                append("You can give this location a custom name below:")
+            } else {
+                append("ESI does not provide any info about this location, but you can give it a name below:")
+            }
+        }
+        Text(
+            text = description,
+            style = RiftTheme.typography.bodyPrimary,
+        )
+        val initialText = location.customName ?: ""
         var text by remember { mutableStateOf(initialText) }
+        val placeholder = if (location.isNameAuthoritative) "Custom name" else location.name
         RiftTextField(
             text = text,
-            placeholder = "Group name",
-            onTextChanged = { text = it.take(24) },
+            placeholder = placeholder,
+            onTextChanged = { text = it.take(64) },
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -84,12 +99,8 @@ private fun CreateGroupDialogContent(
                 onClick = onCancelClick,
                 modifier = Modifier.weight(1f),
             )
-            val label = when (inputModel) {
-                CreateGroupInputModel.New -> "Create"
-                is CreateGroupInputModel.Rename -> "Rename"
-            }
             RiftButton(
-                text = label,
+                text = "Rename",
                 onClick = { onConfirmClick(text) },
                 modifier = Modifier.weight(1f),
             )

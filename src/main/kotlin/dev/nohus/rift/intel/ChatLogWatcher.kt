@@ -98,31 +98,29 @@ class ChatLogWatcher(
 
                     if (isMessageRelevantForIntel(channelChatMessage)) {
                         val regions = getIntelRegions(channelChatMessage)
-                        if (regions.isNotEmpty()) {
-                            try {
-                                val parsings = chatMessageParser.parse(channelChatMessage.chatMessage.message, regions)
-                                if (parsings.isNotEmpty()) {
-                                    val bestParsing = fillCharacterDetails(chooseChatMessageTokenizationUseCase(parsings))
-                                    val understanding = understandMessageUseCase(bestParsing)
-                                    val parsed = ParsedChannelChatMessage(
-                                        chatMessage = channelChatMessage.chatMessage,
-                                        channelRegions = regions,
-                                        metadata = channelChatMessage.metadata,
-                                        parsed = bestParsing,
-                                        understanding = understanding,
-                                    )
+                        try {
+                            val parsings = chatMessageParser.parse(channelChatMessage.chatMessage.message, regions)
+                            if (parsings.isNotEmpty()) {
+                                val bestParsing = fillCharacterDetails(chooseChatMessageTokenizationUseCase(parsings))
+                                val understanding = understandMessageUseCase(bestParsing)
+                                val parsed = ParsedChannelChatMessage(
+                                    chatMessage = channelChatMessage.chatMessage,
+                                    channelRegions = regions,
+                                    metadata = channelChatMessage.metadata,
+                                    parsed = bestParsing,
+                                    understanding = understanding,
+                                )
 
-                                    val context = getMessageContext(parsed)
-                                    intelStateController.submitMessage(parsed, context, isFresh)
-                                    _channelChatMessages.update { previous ->
-                                        (previous + parsed).sortedBy { it.chatMessage.timestamp }
-                                    }
+                                val context = getMessageContext(parsed)
+                                intelStateController.submitMessage(parsed, context, isFresh)
+                                _channelChatMessages.update { previous ->
+                                    (previous + parsed).sortedBy { it.chatMessage.timestamp }
                                 }
-                            } catch (e: CancellationException) {
-                                throw e
-                            } catch (e: Exception) {
-                                Sentry.captureException(IOException("Could not parse: \"${channelChatMessage.chatMessage.message}\", regions: \"$regions\"", e))
                             }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Sentry.captureException(IOException("Could not parse: \"${channelChatMessage.chatMessage.message}\", regions: \"$regions\"", e))
                         }
                     }
 

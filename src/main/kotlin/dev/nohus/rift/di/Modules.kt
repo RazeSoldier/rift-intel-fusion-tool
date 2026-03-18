@@ -2,6 +2,7 @@ package dev.nohus.rift.di
 
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
+import dev.nohus.rift.network.esi.EsiCache
 import dev.nohus.rift.network.interceptors.CacheOverrideInterceptor
 import dev.nohus.rift.network.interceptors.EsiAuthorizationInterceptor
 import dev.nohus.rift.network.interceptors.EsiCompatibilityInterceptor
@@ -10,6 +11,8 @@ import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor
 import dev.nohus.rift.network.interceptors.LoggingInterceptor
 import dev.nohus.rift.network.interceptors.RedirectAsSuccessInterceptor
 import dev.nohus.rift.network.interceptors.UserAgentInterceptor
+import dev.nohus.rift.network.requests.CacheStatisticsLocalInterceptor
+import dev.nohus.rift.network.requests.CacheStatisticsNetworkInterceptor
 import dev.nohus.rift.network.requests.Endpoint
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.requests.OriginatorRateLimitInterceptor
@@ -113,18 +116,18 @@ val factoryModule = module {
             .build()
     }
     single<OkHttpClient>(qualifier = named("esi")) {
-        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("esi-cache")
-        val size = 100L * 1024 * 1024 // 100MB
         val dispatcher = Dispatcher().apply {
             maxRequests = 64
             maxRequestsPerHost = 64
         }
         OkHttpClient.Builder()
-            .cache(Cache(directory.toFile(), size))
+            .cache(get<EsiCache>().cache)
             .dispatcher(dispatcher)
             .addInterceptor(get<UserAgentInterceptor>())
             .addInterceptor(get<EsiCompatibilityInterceptor>())
             .addInterceptor(get<EsiAuthorizationInterceptor>())
+            .addInterceptor(get<CacheStatisticsLocalInterceptor>())
+            .addNetworkInterceptor(get<CacheStatisticsNetworkInterceptor>())
             .addNetworkInterceptor(get<EsiErrorLimitInterceptor>())
             .addNetworkInterceptor(get<EsiRateLimitInterceptor>())
             .addNetworkInterceptor(get<OriginatorRateLimitInterceptor>())
@@ -143,6 +146,16 @@ val factoryModule = module {
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()
     }
+    single<OkHttpClient>(qualifier = named("zkillr2z2")) {
+        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("zkill-cache")
+        val size = 50L * 1024 * 1024 // 50MB
+        OkHttpClient.Builder()
+            .cache(Cache(directory.toFile(), size))
+            .addInterceptor(get<UserAgentInterceptor>())
+            .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
+            .addNetworkInterceptor(get<LoggingInterceptor>())
+            .build()
+    }
     single<Json>(qualifier = named("network")) {
         Json {
             ignoreUnknownKeys = true
@@ -154,7 +167,7 @@ val factoryModule = module {
             prettyPrint = true
         }
     }
-    single<RequestExecutor> { RequestExecutorImpl(get(), get(named("network"))) }
+    factory<RequestExecutor> { RequestExecutorImpl(get(named("network"))) }
     single<User32> { Native.load("user32", User32::class.java) }
     single<Analytics> { Analytics() }
     single<KamelConfig> { getKamelConfig(get(), get()) }
@@ -171,10 +184,6 @@ private fun getKamelConfig(
     }
     return KamelConfig {
         takeFrom(KamelConfig.Core)
-        resourcesFetcher()
-        imageBitmapDecoder()
-        animatedImageDecoder()
-        imageBitmapCacheSize = 1000
         httpUrlFetcher {
             httpCache(100 * 1024 * 1024)
             defaultRequest {
@@ -189,5 +198,9 @@ private fun getKamelConfig(
             }
             install(logStatisticsPlugin)
         }
+        resourcesFetcher()
+        imageBitmapDecoder()
+        animatedImageDecoder()
+        imageBitmapCacheSize = 1000
     }
 }

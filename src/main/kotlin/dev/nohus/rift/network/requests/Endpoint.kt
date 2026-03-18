@@ -83,6 +83,8 @@ sealed class Endpoint(
     data object EveScoutRescue : Endpoint()
     data object Zkillboard : Endpoint()
     data object ZkillboardListen : Endpoint(isCounted = true)
+    data object ZkillboardR2Z2Sequence : Endpoint()
+    data object ZkillboardR2Z2Killmail : Endpoint(isCounted = false)
     data object Pushover : Endpoint()
     data object Ntfy : Endpoint()
     data object PostHog : Endpoint()

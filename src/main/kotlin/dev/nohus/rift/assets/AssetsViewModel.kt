@@ -16,6 +16,7 @@ import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.PricesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.LocationPinStatus
 import dev.nohus.rift.settings.persistence.Settings
@@ -26,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -50,6 +50,7 @@ class AssetsViewModel(
     private val fittingController: FittingController,
     private val pricesRepository: PricesRepository,
     private val settings: Settings,
+    private val typesRepository: TypesRepository,
 ) : ViewModel() {
 
     data class AssetLocation(
@@ -57,6 +58,8 @@ class AssetsViewModel(
         val locationTypeId: Int?,
         val security: Double?,
         val name: String,
+        val isNameAuthoritative: Boolean,
+        val customName: String?,
         val systemId: Int?,
         val distance: Int?,
     )
@@ -94,6 +97,11 @@ class AssetsViewModel(
         val pins: Map<Long, LocationPinStatus> = emptyMap(),
         val isLoading: Boolean = false,
         val tab: AssetsTab = AssetsTab.Owners,
+        val renameLocationDialog: RenameLocationDialog? = null,
+    )
+
+    data class RenameLocationDialog(
+        val location: AssetLocation,
     )
 
     data class LoadedData(
@@ -186,6 +194,26 @@ class AssetsViewModel(
     fun onPinChange(locationId: Long, pinStatus: LocationPinStatus) {
         settings.assetLocationPins += locationId to pinStatus
         _state.update { it.copy(pins = it.pins + (locationId to pinStatus)) }
+    }
+
+    fun onRenameClick(locationId: Long) {
+        val location = _state.value.loadedData?.success?.filteredAssets
+            ?.firstOrNull { it.first.locationId == locationId }?.first ?: return
+        _state.update { it.copy(renameLocationDialog = RenameLocationDialog(location)) }
+    }
+
+    fun onRenameConfirm(name: String?) {
+        val location = _state.value.renameLocationDialog?.location ?: return
+        if (!name.isNullOrBlank()) {
+            settings.assetLocationCustomNames += (location.locationId to name)
+        } else {
+            settings.assetLocationCustomNames -= location.locationId
+        }
+        _state.update { it.copy(renameLocationDialog = null) }
+    }
+
+    fun onRenameClose() {
+        _state.update { it.copy(renameLocationDialog = null) }
     }
 
     private suspend fun updateAssets(
@@ -303,7 +331,23 @@ class AssetsViewModel(
     }
 
     private fun processCorporationOffices(assets: List<Asset>, divisionNames: Map<Int, Map<Int, String>>): List<Asset> {
-        return assets.flatMap { rootAsset ->
+        val (deliveries, nonDeliveries) = assets.partition { it.locationFlag == "CapsuleerDeliveries" }
+
+        val processedDeliveries = deliveries.groupBy { it.owner }.entries.withIndex().map { (index, entry) ->
+            val owner = entry.key
+            val assets = entry.value
+            Asset(
+                owner = owner,
+                type = typesRepository.getTypeOrPlaceholder(IdRanges.corporationOffice),
+                name = "Capsuleer Deliveries",
+                quantity = 1,
+                itemId = 10_000_000_000_000 + index,
+                locationFlag = "CapsuleerDeliveries",
+                children = assets,
+            )
+        }
+
+        val processedOffices = nonDeliveries.flatMap { rootAsset ->
             if (rootAsset.type.id == IdRanges.corporationOffice) {
                 rootAsset.children
                     .groupBy { it.locationFlag }
@@ -311,7 +355,7 @@ class AssetsViewModel(
                     .mapIndexed { index, (locationFlag, assets) ->
                         val corporationId = (rootAsset.owner as? AssetOwner.Corporation)?.corporationId
                         val divisionNames = divisionNames[corporationId] ?: emptyMap()
-                        val name = when (locationFlag) {
+                        var name = when (locationFlag) {
                             "CorpSAG1" -> divisionNames[1] ?: "Corporation Hangar 1"
                             "CorpSAG2" -> divisionNames[2] ?: "Corporation Hangar 2"
                             "CorpSAG3" -> divisionNames[3] ?: "Corporation Hangar 3"
@@ -322,9 +366,12 @@ class AssetsViewModel(
                             "CorporationGoalDeliveries" -> "Projects"
                             else -> locationFlag
                         }
+                        if (rootAsset.locationFlag == "Impounded") {
+                            name += " (Impounded)"
+                        }
                         rootAsset.copy(
                             name = name,
-                            itemId = rootAsset.itemId + 10_000_000_000_000 + index,
+                            itemId = rootAsset.itemId + 20_000_000_000_000 + index,
                             locationFlag = locationFlag,
                             children = assets,
                         )
@@ -334,6 +381,8 @@ class AssetsViewModel(
                 listOf(rootAsset)
             }
         }
+
+        return processedDeliveries + processedOffices
     }
 
     private fun getAssetsByLocation(
@@ -368,29 +417,84 @@ class AssetsViewModel(
         } else {
             null
         }
+        val customName = settings.assetLocationCustomNames[location.locationId]
         return when (location) {
             is AssetsRepository.AssetLocation.Station -> {
-                AssetLocation(location.locationId, location.typeId, system?.security, location.name, systemId, distance)
+                AssetLocation(
+                    locationId = location.locationId,
+                    locationTypeId = location.typeId,
+                    security = system?.security,
+                    name = location.name,
+                    isNameAuthoritative = true,
+                    customName = customName,
+                    systemId = systemId,
+                    distance = distance,
+                )
             }
 
             is AssetsRepository.AssetLocation.Structure -> {
-                AssetLocation(location.locationId, location.typeId, system?.security, location.name, systemId, distance)
+                AssetLocation(
+                    locationId = location.locationId,
+                    locationTypeId = location.typeId,
+                    security = system?.security,
+                    name = location.name,
+                    isNameAuthoritative = true,
+                    customName = customName,
+                    systemId = systemId,
+                    distance = distance,
+                )
             }
 
             is AssetsRepository.AssetLocation.System -> {
-                AssetLocation(location.locationId, null, system?.security, "${system?.name}", systemId, distance)
+                AssetLocation(
+                    locationId = location.locationId,
+                    locationTypeId = null,
+                    security = system?.security,
+                    name = "${system?.name}",
+                    isNameAuthoritative = true,
+                    customName = customName,
+                    systemId = systemId,
+                    distance = distance,
+                )
             }
 
             is AssetsRepository.AssetLocation.AssetSafety -> {
-                AssetLocation(location.locationId, null, null, "Asset Safety", null, null)
+                AssetLocation(
+                    locationId = location.locationId,
+                    locationTypeId = null,
+                    security = null,
+                    name = "Asset Safety",
+                    isNameAuthoritative = true,
+                    customName = customName,
+                    systemId = null,
+                    distance = null,
+                )
             }
 
             is AssetsRepository.AssetLocation.Unknown -> {
-                AssetLocation(location.locationId, null, null, "Unknown", null, null)
+                AssetLocation(
+                    locationId = location.locationId,
+                    locationTypeId = null,
+                    security = null,
+                    name = "Unknown",
+                    isNameAuthoritative = false,
+                    customName = customName,
+                    systemId = null,
+                    distance = null,
+                )
             }
 
             is AssetsRepository.AssetLocation.CustomsOffice -> {
-                AssetLocation(location.locationId, null, null, "Customs Office / Skyhook", null, null)
+                AssetLocation(
+                    locationId = location.locationId,
+                    locationTypeId = null,
+                    security = null,
+                    name = "Customs Office / Skyhook",
+                    isNameAuthoritative = false,
+                    customName = customName,
+                    systemId = null,
+                    distance = null,
+                )
             }
         }
     }
