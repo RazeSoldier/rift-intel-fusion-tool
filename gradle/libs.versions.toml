@@ -24,6 +24,7 @@ haze = "0.7.2"
 conveyor-control = "1.1"
 androidx-collection = "1.4.3"
 jbr-api = "1.4.0"
+cache4k = "0.14.0"
 joal = "2.5.0"
 gluegen = "2.5.0"
 jlayer = "1.0.1"
@@ -47,7 +48,7 @@ ktor = "3.1.1"
 sentry-bom = "7.8.0"
 posthog = "1.1.1"
 kotest = "5.8.1"
-mockk = "1.13.10"
+mockk = "1.14.9"
 ktlint = "1.7.1"
 proguard = "7.8.2"
 
@@ -96,6 +97,7 @@ haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 conveyor-control = { module = "dev.hydraulic.conveyor:conveyor-control", version.ref = "conveyor-control" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidx-collection" }
 jbr-api = { module = "com.jetbrains:jbr-api", version.ref = "jbr-api" }
+cache4k  = { module = "io.github.reactivecircus.cache4k:cache4k", version.ref = "cache4k" }
 
 joal-main = { module = "org.jogamp.joal:joal-main", version.ref = "joal" }
 gluegen-rtmain = { module = "org.jogamp.gluegen:gluegen-rt-main", version.ref = "gluegen" }

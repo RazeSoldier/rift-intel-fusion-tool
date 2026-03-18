@@ -794,6 +794,13 @@ object WhatsNew {
                 - Improved handling of corp assets in the Assets feature, including visibility of Impounded assets and a new Capsuleer Deliveries folder
                 """.trimIndent(),
             )
+            add(
+                "5.18.0" description """
+                - Everywhere standings are shown, RIFT now shows corp members and alliance members with their own star icons and colors, same as in-game
+                - The new Exordium region is now visible on the Map
+                - Several performance improvements
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

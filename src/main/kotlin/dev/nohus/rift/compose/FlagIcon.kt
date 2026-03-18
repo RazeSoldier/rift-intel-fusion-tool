@@ -13,6 +13,8 @@ import dev.nohus.rift.generated.resources.flag_background
 import dev.nohus.rift.generated.resources.flag_negative
 import dev.nohus.rift.generated.resources.flag_neutral
 import dev.nohus.rift.generated.resources.flag_positive
+import dev.nohus.rift.generated.resources.flag_self
+import dev.nohus.rift.generated.resources.flag_star
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingUtils
 import dev.nohus.rift.standings.getFlagColor
@@ -32,6 +34,9 @@ fun FlagIcon(standing: Standing, modifier: Modifier = Modifier) {
         Standing.Neutral -> "Pilot has No Standing"
         Standing.Good -> "Pilot has Good Standing"
         Standing.Excellent -> "Pilot has Excellent Standing"
+        Standing.Self -> "Pilot is you"
+        Standing.Corporation -> "Pilot is in your Capsuleer corporation"
+        Standing.Alliance -> "Pilot is in your alliance"
     }
     RiftTooltipArea(tooltip, modifier) {
         Box(
@@ -48,6 +53,8 @@ fun FlagIcon(standing: Standing, modifier: Modifier = Modifier) {
                 Standing.Terrible, Standing.Bad -> Res.drawable.flag_negative
                 Standing.Neutral -> Res.drawable.flag_neutral
                 Standing.Good, Standing.Excellent -> Res.drawable.flag_positive
+                Standing.Self -> Res.drawable.flag_self
+                Standing.Corporation, Standing.Alliance -> Res.drawable.flag_star
             }
             Image(
                 painter = painterResource(icon),

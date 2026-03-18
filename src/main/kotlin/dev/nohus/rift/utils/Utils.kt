@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
+import io.github.reactivecircus.cache4k.Cache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -102,4 +103,10 @@ inline fun <T> Iterable<T>.sumOfDouble(selector: (T) -> Double): Double {
         sum += selector(element)
     }
     return sum
+}
+
+operator fun <K : Any, V : Any> Cache<K, V>.plusAssign(map: Map<K, V>) {
+    map.forEach { (key, value) ->
+        put(key, value)
+    }
 }

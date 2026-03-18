@@ -2,14 +2,14 @@ package dev.nohus.rift.di
 
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
-import dev.nohus.rift.network.esi.EsiCache
 import dev.nohus.rift.network.interceptors.CacheOverrideInterceptor
+import dev.nohus.rift.network.interceptors.EsiAppHeadersInterceptor
 import dev.nohus.rift.network.interceptors.EsiAuthorizationInterceptor
 import dev.nohus.rift.network.interceptors.EsiCompatibilityInterceptor
 import dev.nohus.rift.network.interceptors.EsiErrorLimitInterceptor
 import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor
 import dev.nohus.rift.network.interceptors.LoggingInterceptor
-import dev.nohus.rift.network.interceptors.RedirectAsSuccessInterceptor
+import dev.nohus.rift.network.interceptors.RequestIdInterceptor
 import dev.nohus.rift.network.interceptors.UserAgentInterceptor
 import dev.nohus.rift.network.requests.CacheStatisticsLocalInterceptor
 import dev.nohus.rift.network.requests.CacheStatisticsNetworkInterceptor
@@ -64,7 +64,6 @@ import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import java.time.Duration
 
 @Module
 @ComponentScan("dev.nohus.rift")
@@ -120,28 +119,22 @@ val factoryModule = module {
             maxRequests = 64
             maxRequestsPerHost = 64
         }
+        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("esi-cache")
+        val size = 100L * 1024 * 1024 // 100MB
         OkHttpClient.Builder()
-            .cache(get<EsiCache>().cache)
+            .cache(Cache(directory.toFile(), size))
             .dispatcher(dispatcher)
-            .addInterceptor(get<UserAgentInterceptor>())
-            .addInterceptor(get<EsiCompatibilityInterceptor>())
-            .addInterceptor(get<EsiAuthorizationInterceptor>())
+            .addInterceptor(get<RequestIdInterceptor>())
             .addInterceptor(get<CacheStatisticsLocalInterceptor>())
+            .addInterceptor(get<EsiCompatibilityInterceptor>())
+            .addNetworkInterceptor(get<EsiAuthorizationInterceptor>())
             .addNetworkInterceptor(get<CacheStatisticsNetworkInterceptor>())
             .addNetworkInterceptor(get<EsiErrorLimitInterceptor>())
             .addNetworkInterceptor(get<EsiRateLimitInterceptor>())
             .addNetworkInterceptor(get<OriginatorRateLimitInterceptor>())
             .addNetworkInterceptor(get<CacheOverrideInterceptor>())
-            .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
-            .addNetworkInterceptor(get<LoggingInterceptor>())
-            .build()
-    }
-    single<OkHttpClient>(qualifier = named("zkillredisq")) {
-        OkHttpClient.Builder()
-            .followRedirects(false)
-            .readTimeout(Duration.ofSeconds(15))
-            .addInterceptor(get<UserAgentInterceptor>())
-            .addInterceptor(get<RedirectAsSuccessInterceptor>())
+            .addNetworkInterceptor(get<UserAgentInterceptor>())
+            .addNetworkInterceptor(get<EsiAppHeadersInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()
@@ -187,7 +180,7 @@ private fun getKamelConfig(
         httpUrlFetcher {
             httpCache(100 * 1024 * 1024)
             defaultRequest {
-                header(HttpHeaders.UserAgent, userAgentInterceptor.getUserAgent(Originator.UiImage))
+                header(HttpHeaders.UserAgent, userAgentInterceptor.userAgentValue)
                 header(HttpHeaders.CacheControl, CacheControl.MAX_AGE)
             }
             install(HttpRequestRetry) {

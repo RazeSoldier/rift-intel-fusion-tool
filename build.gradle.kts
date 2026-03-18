@@ -21,6 +21,7 @@ version = riftVersion
 buildConfig {
     val environment = (properties["rift.environment"] as? String) ?: "dev"
     buildConfigField("String", "environment", "\"$environment\"")
+    buildConfigField("Boolean", "isDevEnvironment", "${environment == "dev"}")
     buildConfigField("String", "version", "\"${properties["rift.version"]}\"")
     buildConfigField("long", "buildTimestamp", "${Instant.now().toEpochMilli()}")
     buildConfigField("String", "buildUuid", "\"${properties["rift.buildUuid"]}\"")
@@ -82,6 +83,7 @@ dependencies {
     implementation(libs.conveyor.control)
     implementation(libs.androidx.collection)
     implementation(libs.jbr.api)
+    implementation(libs.cache4k)
 
     // OpenAL Audio
     implementation(libs.joal.main)

@@ -6,4 +6,8 @@ enum class Standing {
     Neutral,
     Good,
     Excellent,
+
+    Self,
+    Corporation,
+    Alliance,
 }

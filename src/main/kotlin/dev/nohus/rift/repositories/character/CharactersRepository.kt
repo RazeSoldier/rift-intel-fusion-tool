@@ -17,6 +17,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.koin.core.annotation.Single
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import dev.nohus.rift.database.local.CharacterStatus as DbCharacterStatus
 
 private val logger = KotlinLogging.logger {}
@@ -124,5 +125,6 @@ class CharactersRepository(
         private val inactiveRecheckDuration = 1.days.inWholeMilliseconds
         private val dormantRecheckDuration = 7.days.inWholeMilliseconds
         private val doesNotExistRecheckDuration = 7.days.inWholeMilliseconds
+        val expiryDuration = 30.days.inWholeMilliseconds
     }
 }

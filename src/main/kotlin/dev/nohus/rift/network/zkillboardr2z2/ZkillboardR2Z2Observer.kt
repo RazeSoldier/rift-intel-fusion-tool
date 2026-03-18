@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import retrofit2.HttpException
@@ -24,8 +23,10 @@ import java.time.Duration
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
-private val POLL_REQUEST_DELAY = Duration.ofSeconds(1).toMillis()
-private val FAILED_REQUEST_DELAY = Duration.ofSeconds(5).toMillis()
+private val PAST_POLL_REQUEST_DELAY = Duration.ofMillis(500).toMillis()
+private val POLL_REQUEST_DELAY = Duration.ofSeconds(6).toMillis()
+private val POLL_SUCCESS_DELAY = Duration.ofMillis(100).toMillis()
+private val FAILED_REQUEST_DELAY = Duration.ofSeconds(10).toMillis()
 private val MAX_WAIT_BEFORE_SEQUENCE_RECHECK = Duration.ofSeconds(30)
 
 @Single
@@ -40,7 +41,7 @@ class ZkillboardR2Z2Observer(
     suspend fun start() = coroutineScope {
         launch {
             settings.updateFlow.map { it.intelExpireSeconds }.collect {
-                maxAge = Duration.ofSeconds(it.toLong())
+                maxAge = Duration.ofSeconds(it.toLong()).coerceAtMost(Duration.ofMinutes(15))
             }
         }
         launch {
@@ -54,9 +55,14 @@ class ZkillboardR2Z2Observer(
             val pastKillmailsFlow = observePastKillmails(latestKillmailId)
             val killmailsFlow = observeKillmails(latestKillmailId + 1)
 
-            merge(pastKillmailsFlow, killmailsFlow).collect { killmail ->
-                launch {
-                    killmailProcessor.submit(killmail)
+            launch {
+                pastKillmailsFlow.collect {
+                    killmailProcessor.submit(it)
+                }
+            }
+            launch {
+                killmailsFlow.collect {
+                    killmailProcessor.submit(it)
                 }
             }
         }
@@ -80,23 +86,23 @@ class ZkillboardR2Z2Observer(
 
     private fun observePastKillmails(fromId: Long): Flow<Killmail> = channelFlow {
         var currentId = fromId
-        val fromDate = Instant.now().minus(maxAge)
         var fetchedKillmailsCount = 0
         var failureCount = 0
         while (true) {
             val killmail = getKillmail(currentId) as? KillmailReply.Success
+            delay(PAST_POLL_REQUEST_DELAY)
             killmail?.also { send(it.killmail) }
             fetchedKillmailsCount++
             currentId--
             val date = killmail?.timestamp
             if (date == null) {
                 failureCount++
-                if (failureCount > 3) {
-                    logger.error { "Could not fetch 3 past killmails in a row, cancelling. Fetched $fetchedKillmailsCount past killmails." }
+                if (failureCount > 5) {
+                    logger.error { "Could not fetch 5 past killmails in a row, cancelling. Fetched $fetchedKillmailsCount past killmails." }
                     break
                 }
-            } else if (date < fromDate) {
-                logger.debug { "All $fetchedKillmailsCount past killmails were fetched up to intel expiry date" }
+            } else if (date < Instant.now().minus(maxAge)) {
+                logger.debug { "All $fetchedKillmailsCount past killmails were fetched up to intel expiry date." }
                 break
             }
         }
@@ -111,6 +117,7 @@ class ZkillboardR2Z2Observer(
                     emit(reply.killmail)
                     currentId++
                     lastSuccess = Instant.now()
+                    delay(POLL_SUCCESS_DELAY)
                 }
                 KillmailReply.NotFound -> {
                     val timeSinceLastSuccess = Duration.between(lastSuccess, Instant.now())
@@ -165,6 +172,8 @@ class ZkillboardR2Z2Observer(
             attackers = killmail.attackers.map { attacker ->
                 Attacker(
                     characterId = attacker.characterId?.toInt(),
+                    corporationId = attacker.corporationId?.toInt(),
+                    allianceId = attacker.allianceId?.toInt(),
                     shipTypeId = attacker.shipTypeId?.toInt(),
                 )
             },

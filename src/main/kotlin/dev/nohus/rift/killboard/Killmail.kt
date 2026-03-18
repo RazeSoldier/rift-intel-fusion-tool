@@ -22,5 +22,7 @@ data class Victim(
 
 data class Attacker(
     val characterId: Int?,
+    val corporationId: Int?,
+    val allianceId: Int?,
     val shipTypeId: Int?,
 )

@@ -71,7 +71,7 @@ object Types : Table() {
     val typeId = integer("typeId")
     val groupId = integer("groupId")
     val categoryId = integer("categoryId")
-    val typeName = varchar("typeName", 100)
+    val typeName = varchar("typeName", 150)
     val volume = float("volume")
     val radius = float("radius").nullable()
     val repackagedVolume = float("repackagedVolume").nullable()

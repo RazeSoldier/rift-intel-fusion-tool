@@ -57,8 +57,8 @@ import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.ContextMenuItem
+import dev.nohus.rift.compose.EntityInteractionProvider
 import dev.nohus.rift.compose.ExpandChevron
-import dev.nohus.rift.compose.GetSystemContextMenuItems
 import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftButton
@@ -74,6 +74,7 @@ import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.corphangar
 import dev.nohus.rift.generated.resources.editplanicon
@@ -357,13 +358,19 @@ private fun LocationHeader(
                 )
             }
         }
-        RiftContextMenuArea(
-            items = GetSystemContextMenuItems(
+        val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+        val locationContextMenuItems = if (location.systemId != null) {
+            interactionProvider.getLocation(
                 systemId = location.systemId,
                 locationId = location.locationId,
                 locationTypeId = location.locationTypeId,
                 locationName = location.name,
-            ) + contextMenuItems,
+            ).contextMenuItems
+        } else {
+            emptyList()
+        }
+        RiftContextMenuArea(
+            items = locationContextMenuItems + contextMenuItems,
             modifier = Modifier.pointerHoverIcon(PointerIcon(Cursors.pointerInteractive)),
         ) {
             val depthOffset = 16.dp * depth

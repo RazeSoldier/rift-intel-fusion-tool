@@ -29,7 +29,7 @@ class MatchChatLogFilenameUseCase {
             val name = match.groups["name"]!!.value
             val date = match.groups["date"]!!.value
             val time = match.groups["time"]!!.value
-            val characterId = match.groups["characterid"]?.value ?: run {
+            val characterId = match.groups["characterid"]?.value?.toIntOrNull() ?: run {
                 // Old log files do not contain the character ID
                 logger.error { "Chat log filename \"${file.name}\" could not be parsed: no character ID" }
                 return null

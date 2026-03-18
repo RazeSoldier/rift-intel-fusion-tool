@@ -208,6 +208,9 @@ class ContactsViewModel(
                     Standing.Neutral -> 0f
                     Standing.Good -> 5f
                     Standing.Excellent -> 10f
+                    Standing.Self -> 0f // Unused here
+                    Standing.Corporation -> 0f // Unused here
+                    Standing.Alliance -> 0f // Unused here
                 },
                 isWatched = request.isWatched,
                 entity = request.entity,

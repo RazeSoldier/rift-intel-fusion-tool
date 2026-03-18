@@ -19,23 +19,44 @@ import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 
 @Composable
-fun FormattedText.toAnnotatedString(): AnnotatedString {
+fun FormattedText.toLinkedAnnotatedString(hoveredLink: Link? = null): LinkedAnnotatedString {
     return when (this) {
-        is FormattedText.Plain -> AnnotatedString(text)
-        is FormattedText.Formatted -> toAnnotatedString()
-        is FormattedText.Compound -> buildAnnotatedString {
-            texts.forEach { append(it.toAnnotatedString()) }
+        is FormattedText.Plain -> LinkedAnnotatedString(AnnotatedString(text), emptyList())
+        is FormattedText.Formatted -> toLinkedAnnotatedString(hoveredLink)
+        is FormattedText.Compound -> {
+            val links = mutableListOf<Pair<SpanIndices, Link>>()
+            val annotatedString = buildAnnotatedString {
+                texts.forEach {
+                    val linkedAnnotatedString = it.toLinkedAnnotatedString(hoveredLink)
+                    links += linkedAnnotatedString.links.map { (indices, link) ->
+                        SpanIndices(indices.start + length, indices.end + length) to link
+                    }
+                    append(linkedAnnotatedString.text)
+                }
+            }
+            LinkedAnnotatedString(annotatedString, links)
+        }
+    }
+}
+
+fun FormattedText.toPlainString(): String {
+    return when (this) {
+        is FormattedText.Plain -> text
+        is FormattedText.Formatted -> text.toPlainString()
+        is FormattedText.Compound -> texts.joinToString("") {
+            it.toPlainString()
         }
     }
 }
 
 @Composable
-private fun FormattedText.Formatted.toAnnotatedString(): AnnotatedString {
-    val text = text.toAnnotatedString()
-    return buildAnnotatedString {
-        append(text)
+private fun FormattedText.Formatted.toLinkedAnnotatedString(hoveredLink: Link? = null): LinkedAnnotatedString {
+    val text = text.toLinkedAnnotatedString()
+    val links = text.links.toMutableList()
+    val annotatedString = buildAnnotatedString {
+        append(text.text)
         spans.forEach { span ->
-            val indices = span.target.getIndices(text)
+            val indices = span.target.getIndices(text.text)
             when (span) {
                 is Span.Color -> {
                     val color = when (span.color) {
@@ -69,43 +90,107 @@ private fun FormattedText.Formatted.toAnnotatedString(): AnnotatedString {
                     }
                 }
 
-                is Span.Url -> {
-                    val linkStyle = SpanStyle(color = RiftTheme.colors.textLink, fontWeight = FontWeight.Bold)
-                    val annotation = Url(
-                        url = span.url,
-                        styles = TextLinkStyles(
-                            style = linkStyle,
-                            hoveredStyle = linkStyle.copy(textDecoration = TextDecoration.Underline),
-                        ),
-                        linkInteractionListener = {
-                            span.url.toURIOrNull()?.openBrowser()
-                        },
-                    )
-                    addLink(annotation, indices.start, indices.end)
-                }
-
-                is Span.InGameLink -> {
-                    val linkStyle = SpanStyle(color = RiftTheme.colors.textLink, fontWeight = FontWeight.Bold)
-                    val gameUiController: GameUiController = remember { koin.get() }
-                    val text = text.text.substring(indices.start, indices.end)
-                    val annotation = Clickable(
-                        tag = span.url,
-                        styles = TextLinkStyles(
-                            style = linkStyle,
-                            hoveredStyle = linkStyle.copy(textDecoration = TextDecoration.Underline),
-                        ),
-                        linkInteractionListener = {
-                            gameUiController.pushUrl(span.url, text)
-                        },
-                    )
-                    addLink(annotation, indices.start, indices.end)
+                is Span.CustomLink -> {
+                    links += indices to span.link
+                    if (span.link == hoveredLink) {
+                        when (span.link.style) {
+                            LinkStyle.HoverUnderline -> addStyle(
+                                style = SpanStyle(
+                                    textDecoration = TextDecoration.Underline,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.Default -> addStyle(
+                                style = SpanStyle(
+                                    textDecoration = TextDecoration.Underline,
+                                    color = RiftTheme.colors.textLinkHovered,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.External -> addStyle(
+                                style = SpanStyle(
+                                    textDecoration = TextDecoration.Underline,
+                                    color = RiftTheme.colors.textExternalLinkHovered,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.Help -> addStyle(
+                                style = SpanStyle(
+                                    textDecoration = TextDecoration.Underline,
+                                    color = RiftTheme.colors.textHelpLinkHovered,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.Invite -> addStyle(
+                                style = SpanStyle(
+                                    textDecoration = TextDecoration.Underline,
+                                    color = RiftTheme.colors.textInviteLinkHovered,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                        }
+                    } else {
+                        when (span.link.style) {
+                            LinkStyle.HoverUnderline -> {}
+                            LinkStyle.Default -> addStyle(
+                                style = SpanStyle(
+                                    color = RiftTheme.colors.textLink,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.External -> addStyle(
+                                style = SpanStyle(
+                                    color = RiftTheme.colors.textExternalLink,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.Help -> addStyle(
+                                style = SpanStyle(
+                                    color = RiftTheme.colors.textHelpLink,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                            LinkStyle.Invite -> addStyle(
+                                style = SpanStyle(
+                                    color = RiftTheme.colors.textInviteLink,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                start = indices.start,
+                                end = indices.end,
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+    return LinkedAnnotatedString(
+        text = annotatedString,
+        links = links,
+    )
 }
 
-private data class SpanIndices(
+data class LinkedAnnotatedString(
+    val text: AnnotatedString,
+    val links: List<Pair<SpanIndices, Link>>,
+)
+
+data class SpanIndices(
     val start: Int,
     val end: Int,
 )
@@ -119,7 +204,7 @@ private fun SpanTarget.getIndices(text: AnnotatedString): SpanIndices {
             SpanIndices(start, start + this.text.length)
         }
         is SpanTarget.Formatted -> {
-            val string = this.text.toAnnotatedString().text
+            val string = this.text.toLinkedAnnotatedString().text.text
             val start = text.indexOf(string)
             SpanIndices(start, start + string.length)
         }

@@ -87,8 +87,8 @@ import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.produceCorporationColors
 import dev.nohus.rift.compose.sharedTransitionElement
-import dev.nohus.rift.compose.text.eveFormattedText
-import dev.nohus.rift.compose.text.toAnnotatedString
+import dev.nohus.rift.compose.text.LinkedText
+import dev.nohus.rift.compose.text.toPlainString
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
@@ -598,10 +598,10 @@ fun DetailsView(
                 }
             }
             Spacer(Modifier.height(Spacing.veryLarge))
-            if (opportunity.details.description.isNotEmpty()) {
+            if (opportunity.details.description.toPlainString().isNotEmpty()) {
                 TitledSection(title = "Description") {
-                    Text(
-                        text = eveFormattedText(opportunity.details.description).toAnnotatedString(),
+                    LinkedText(
+                        text = opportunity.details.description,
                         style = RiftTheme.typography.bodyPrimary,
                     )
                 }

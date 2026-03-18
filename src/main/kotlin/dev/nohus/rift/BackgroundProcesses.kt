@@ -20,8 +20,6 @@ import dev.nohus.rift.logging.analytics.Analytics
 import dev.nohus.rift.loglite.LogLiteParser
 import dev.nohus.rift.loglite.LogLiteServer
 import dev.nohus.rift.map.MapJumpRangeController
-import dev.nohus.rift.network.zkillboardqueue.ZkillboardObserver
-import dev.nohus.rift.network.zkillboardr2z2.ZkillboardR2Z2Api
 import dev.nohus.rift.network.zkillboardr2z2.ZkillboardR2Z2Observer
 import dev.nohus.rift.opportunities.CorporationProjectsRepository
 import dev.nohus.rift.opportunities.FreelanceJobsRepository
@@ -53,7 +51,6 @@ class BackgroundProcesses(
     private val resetSparkleUpdateCheckUseCase: ResetSparkleUpdateCheckUseCase,
     private val startJabberUseCase: StartJabberUseCase,
     private val pingsRepository: PingsRepository,
-    private val zkillboardObserver: ZkillboardObserver,
     private val zkillboardR2Z2Observer: ZkillboardR2Z2Observer,
     private val soundPlayer: SoundPlayer,
     private val clipboard: Clipboard,
@@ -119,7 +116,7 @@ class BackgroundProcesses(
                 startJabberUseCase()
             }
             launch {
-                zkillboardObserver.start()
+                zkillboardR2Z2Observer.start()
             }
             launch {
                 soundPlayer.start()

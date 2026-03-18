@@ -1,6 +1,7 @@
 package dev.nohus.rift
 
 import dev.nohus.rift.configurationpack.ShouldShowConfigurationPackReminderUseCase
+import dev.nohus.rift.database.local.CleanupLocalDatabaseUseCase
 import dev.nohus.rift.logs.RotateLogsUseCase
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.singleinstance.SingleInstanceController
@@ -35,6 +36,7 @@ class ApplicationViewModel(
     private val shouldShowConfigurationPackReminderUseCase: ShouldShowConfigurationPackReminderUseCase,
     private val getStartupWarnings: GetStartupWarningsUseCase,
     private val cleanupTempFilesUseCase: CleanupTempFilesUseCase,
+    private val cleanupLocalDatabaseUseCase: CleanupLocalDatabaseUseCase,
     private val rotateLogsUseCase: RotateLogsUseCase,
     private val whatsNewController: WhatsNewController,
     private val operatingSystem: OperatingSystem,
@@ -65,12 +67,6 @@ class ApplicationViewModel(
         _state.update { it.copy(isAnotherInstanceDialogShown = isAnotherInstanceRunning) }
         if (!isAnotherInstanceRunning) {
             initializeApplication()
-        } else {
-            viewModelScope.launch {
-                state.map { it.isAnotherInstanceDialogShown }.filter { !it }.collect {
-                    initializeApplication()
-                }
-            }
         }
     }
 
@@ -78,6 +74,7 @@ class ApplicationViewModel(
         logger.info { "Initializing RIFT ${BuildConfig.version} on $operatingSystem" }
         viewModelScope.launch {
             cleanupTempFilesUseCase()
+            cleanupLocalDatabaseUseCase()
         }
         detectDirectoriesUseCase()
         rotateLogsUseCase()
@@ -131,11 +128,6 @@ class ApplicationViewModel(
         } else {
             _state.update { it.copy(isApplicationRunning = false) }
         }
-    }
-
-    fun onSingleInstanceRunAnywayClick() {
-        logger.info { "Starting additional instance anyway" }
-        _state.update { it.copy(isAnotherInstanceDialogShown = false) }
     }
 
     fun onQuit() {

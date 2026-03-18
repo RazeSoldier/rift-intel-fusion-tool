@@ -1,6 +1,7 @@
 package dev.nohus.rift.intel
 
 import dev.nohus.rift.alerts.AlertsTriggerController
+import dev.nohus.rift.chat.ChatsController
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.UnderstandMessageUseCase
 import dev.nohus.rift.location.LocalSystemChangeController
@@ -45,6 +46,7 @@ class ChatLogWatcher(
     private val alertsTriggerController: AlertsTriggerController,
     private val understandMessageUseCase: UnderstandMessageUseCase,
     private val characterDetailsRepository: CharacterDetailsRepository,
+    private val chatsController: ChatsController,
 ) {
 
     private val _channelChatMessages = MutableStateFlow<List<ParsedChannelChatMessage>>(emptyList())
@@ -94,6 +96,7 @@ class ChatLogWatcher(
                     val isFresh = age < Duration.ofMinutes(2)
                     if (isFresh) {
                         alertsTriggerController.onNewChatMessage(channelChatMessage)
+                        chatsController.onNewChatMessage(channelChatMessage)
                     }
 
                     if (isMessageRelevantForIntel(channelChatMessage)) {

@@ -201,14 +201,14 @@ private fun CharactersWindowContent(
     onEnableCharacterClick: (characterId: Int) -> Unit,
     onDeleteCharacterClick: (characterId: Int) -> Unit,
 ) {
-    if (state.characters.isNotEmpty()) {
-        Column {
-            TopRow(
-                state = state,
-                onSsoClick = onSsoClick,
-                onCopySettingsClick = onCopySettingsClick,
-                onChooseDisabledClick = onChooseDisabledClick,
-            )
+    Column {
+        TopRow(
+            state = state,
+            onSsoClick = onSsoClick,
+            onCopySettingsClick = onCopySettingsClick,
+            onChooseDisabledClick = onChooseDisabledClick,
+        )
+        if (state.characters.isNotEmpty()) {
             CharactersList(
                 state = state,
                 onDisableCharacterClick = onDisableCharacterClick,
@@ -216,15 +216,15 @@ private fun CharactersWindowContent(
                 onEnableCharacterClick = onEnableCharacterClick,
                 onDeleteCharacterClick = onDeleteCharacterClick,
             )
+        } else {
+            Text(
+                text = "No characters found.\n\nMake sure the game directory is selected in settings, and that you have logged in to at least one character on this computer before.",
+                style = RiftTheme.typography.headerPrimary,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.medium),
+            )
         }
-    } else {
-        Text(
-            text = "No characters found.\n\nMake sure the game directory is selected in settings, and that you have logged in to at least one character on this computer before.",
-            style = RiftTheme.typography.headerPrimary,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Spacing.medium),
-        )
     }
 }
 
@@ -328,13 +328,15 @@ private fun TopRow(
                     )
                 } else {
                     SsoButton(onClick = onSsoClick)
-                    RiftTooltipArea(
-                        text = "Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.",
-                    ) {
-                        RiftButton(
-                            text = "Copy settings",
-                            onClick = onCopySettingsClick,
-                        )
+                    if (state.characters.isNotEmpty()) {
+                        RiftTooltipArea(
+                            text = "Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.",
+                        ) {
+                            RiftButton(
+                                text = "Copy settings",
+                                onClick = onCopySettingsClick,
+                            )
+                        }
                     }
                 }
             }

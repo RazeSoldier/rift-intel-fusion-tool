@@ -26,7 +26,6 @@ import dev.nohus.rift.repositories.character.CharacterStatus
 import dev.nohus.rift.repositories.character.CharactersRepository
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
-import java.util.LinkedHashSet
 
 @Single
 class ChatMessageParser(
@@ -129,7 +128,7 @@ class ChatMessageParser(
     )
 
     companion object {
-        private const val MAX_TOKEN_WORDS = 3
+        private const val MAX_TOKEN_WORDS = 5
         private const val MAX_INCOMPLETE_TOKENIZATIONS = 1000
         private val SHIP_COUNT_NEXT_REGEX = """[1-9]x|[1-9]\*""".toRegex()
         private val SHIP_COUNT_PREV_REGEX = """x[1-9]""".toRegex()
@@ -140,9 +139,13 @@ class ChatMessageParser(
         private val keywords = mapOf(
             "nv" to KeywordType.NoVisual,
             "clr" to KeywordType.Clear,
+            "сlr" to KeywordType.Clear, // cyrillic c
             "clr du" to KeywordType.Clear,
+            "сlr du" to KeywordType.Clear, // cyrillic c
             "clear" to KeywordType.Clear,
+            "сlear" to KeywordType.Clear, // cyrillic c
             "clear du" to KeywordType.Clear,
+            "сlear du" to KeywordType.Clear, // cyrillic c
             "wh" to KeywordType.Wormhole,
             "wormhole" to KeywordType.Wormhole,
             "k162" to KeywordType.Wormhole,
@@ -216,17 +219,7 @@ class ChatMessageParser(
         message: String,
         regionsHint: List<String>,
     ): Set<List<Token>> = coroutineScope {
-        var replaced = message
-            .replace("* ", "  ") // Links sometimes end with *. Replace with a space, so they get detected as links.
-            .replace("*)", ")") // Links sometimes end with *. Remove when in parentheses.
-            .replace(", ", " ") // Remove commas
-            .replace(" ,", " ")
-            .replace(",", " ")
-            .replace("с", "c") // Replace cyrillic c with latin c
-        if (replaced.endsWith("*") && !replaced.matches(""" [0-9]*""".toRegex())) replaced = replaced.dropLast(1) + " "
-        if (replaced.startsWith(" ")) replaced = replaced.dropWhile { it == ' ' }
-        val collapsed = collapseMultipleSpaces(replaced)
-        val words = collapsed.split(" ")
+        val words = message.split(" ")
         val completeParsings = mutableListOf<List<MultiTypeToken>>()
         val incompleteParsings = LinkedHashSet<Parsing>()
         incompleteParsings += Parsing(tokens = emptyList(), remainingWords = words)
@@ -243,10 +236,15 @@ class ChatMessageParser(
             val parsing = incompleteParsings.first()
             incompleteParsings.remove(parsing)
 
-            // A token cannot start with a space, the previous token is a link
-            if (parsing.remainingWords.first().isBlank() && parsing.tokens.isNotEmpty()) {
-                val lastToken = parsing.tokens.last()
-                val newTokens = parsing.tokens.dropLast(1) + lastToken.copy(types = lastToken.types.filterNot { it is Link } + Link)
+            if (parsing.remainingWords.first().isBlank()) {
+                val newTokens = if (parsing.tokens.isNotEmpty()) {
+                    // A token cannot start with a space, the previous token is a link
+                    val lastToken = parsing.tokens.last()
+                    parsing.tokens.dropLast(1) + lastToken.copy(types = lastToken.types.filterNot { it is Link } + Link) + MultiTypeToken(listOf(""), types = listOf())
+                } else {
+                    // This is a space at the beginning of the message
+                    listOf(MultiTypeToken(listOf(""), types = listOf()))
+                }
 
                 val remainingWords = parsing.remainingWords.drop(1)
                 if (remainingWords.isEmpty()) {
@@ -301,14 +299,6 @@ class ChatMessageParser(
             .filter(characterNameValidator::isValid)
             .distinct()
             .toList()
-    }
-
-    private fun collapseMultipleSpaces(message: String): String {
-        var squashedMessage = message
-        while ("   " in squashedMessage) {
-            squashedMessage = squashedMessage.replace("   ", "  ")
-        }
-        return squashedMessage
     }
 
     private fun findKillMail(tokens: List<MultiTypeToken>, characterNamesStatus: Map<String, CharacterStatus>): List<MultiTypeToken> {
@@ -609,38 +599,41 @@ class ChatMessageParser(
         characterNamesStatus: Map<String, CharacterStatus>,
         regionsHint: List<String>,
     ): List<TokenType> {
-        val text = words.joinToString(" ")
+        val text = words.joinToString(" ").removeSuffix("*") // Links sometimes end with *
+        val cleanedText = text.replace(Regex("[(),.]"), "")
+
         return buildList {
+            if (words.last().endsWith("*")) add(Link)
+
             if (words.singleOrNull()?.matches(URL_REGEX) == true) {
                 add(Url)
+                return@buildList
+            }
+
+            val keywordType = keywords[cleanedText.lowercase()]
+            if (keywordType != null) {
+                add(Keyword(type = keywordType))
                 return@buildList
             }
 
             val system = solarSystemsRepository.getFuzzySystem(text, regionsHint)
             if (system != null) add(System(system))
 
-            val shipText = text
-                .replace("(", "").replace(")", "").replace(".", "")
-            var ship = shipTypesRepository.getFuzzyShip(shipText)
+            var ship = shipTypesRepository.getFuzzyShip(cleanedText)
             if (ship != null) {
                 add(Ship(ship, isPlural = false))
             } else if (text.last() == 's') {
-                ship = shipTypesRepository.getFuzzyShip(text.dropLast(1))
-                if (ship != null) add(Ship(ship, isPlural = true))
+                ship = shipTypesRepository.getFuzzyShip(cleanedText.dropLast(1))
+                if (ship != null) {
+                    add(Ship(ship, isPlural = true))
+                }
             }
 
-            if (ship == null) { // Ship names are assumed to be ships
-                val status = characterNamesStatus[text]
-                if (status is CharacterStatus.Exists) add(Character(status.characterId))
-            }
-
-            val keywordText = words.joinToString(" ")
-                .replace("(", "").replace(")", "").replace(".", "")
-                .lowercase()
-            val keywordType = keywords[keywordText]
-            if (keywordType != null) {
-                clear()
-                add(Keyword(type = keywordType))
+            if (ship == null) {
+                // Ship names are assumed to be ships, only check characters if not a ship
+                (characterNamesStatus[text] as? CharacterStatus.Exists)?.let {
+                    add(Character(it.characterId))
+                }
             }
         }
     }

@@ -28,9 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import dev.nohus.rift.compose.theme.RiftTheme
 
 @Composable
 fun ScrollbarColumn(
@@ -87,6 +89,8 @@ fun ScrollbarLazyColumn(
     listState: LazyListState = rememberLazyListState(),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    scrollbarBackground: Color = RiftTheme.colors.windowBackground,
     modifier: Modifier = Modifier,
     scrollbarModifier: Modifier = Modifier,
     content: LazyListScope.() -> Unit,
@@ -100,6 +104,7 @@ fun ScrollbarLazyColumn(
             state = listState,
             verticalArrangement = verticalArrangement,
             contentPadding = contentPadding,
+            reverseLayout = reverseLayout,
             modifier = Modifier
                 .weight(1f)
                 .onSizeChanged {
@@ -111,6 +116,8 @@ fun ScrollbarLazyColumn(
         )
         RiftVerticalScrollbar(
             listState = listState,
+            reverseLayout = reverseLayout,
+            background = scrollbarBackground,
             modifier = scrollbarModifier.height(scrollbarHeight),
         )
     }

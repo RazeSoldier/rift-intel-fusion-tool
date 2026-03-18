@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.onClick
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,6 +64,7 @@ import dev.nohus.rift.compose.RiftRadioButtonWithLabel
 import dev.nohus.rift.compose.RiftSliderWithLabel
 import dev.nohus.rift.compose.RiftSolarSystemChip
 import dev.nohus.rift.compose.RiftTabBar
+import dev.nohus.rift.compose.RiftTable
 import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
@@ -69,6 +72,8 @@ import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.SectionTitle
 import dev.nohus.rift.compose.Tab
+import dev.nohus.rift.compose.TableCell
+import dev.nohus.rift.compose.TableRow
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.pointerInteraction
@@ -341,6 +346,9 @@ private fun SettingsWindowContent(
                         SectionContainer(inputModel) {
                             OtherSettingsSection(state, viewModel)
                         }
+                        SectionContainer(inputModel) {
+                            StorageSection(state, viewModel)
+                        }
                     }
                     Column(
                         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -606,6 +614,120 @@ private fun OtherSettingsSection(
 }
 
 @Composable
+private fun StorageSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("Storage", Modifier.padding(bottom = Spacing.medium))
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
+                    text = "RIFT data directory",
+                    style = RiftTheme.typography.bodyPrimary,
+                )
+                Text(
+                    text = state.storageStats?.dataDirectory?.toString() ?: "…",
+                    style = RiftTheme.typography.detailSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.StartEllipsis,
+                )
+            }
+            RiftButton(
+                text = "Open app data",
+                type = ButtonType.Primary,
+                onClick = viewModel::onOpenAppData,
+            )
+        }
+        UsedSpace("All data:", state.storageStats?.dataSize)
+
+        Divider(color = RiftTheme.colors.divider, modifier = Modifier.padding(vertical = Spacing.small))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
+                    text = "RIFT cache directory",
+                    style = RiftTheme.typography.bodyPrimary,
+                )
+                Text(
+                    text = state.storageStats?.cacheDirectory?.toString() ?: "…",
+                    style = RiftTheme.typography.detailSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.StartEllipsis,
+                )
+            }
+            RiftButton(
+                text = "Open app cache",
+                type = ButtonType.Primary,
+                onClick = viewModel::onOpenAppCache,
+            )
+        }
+        UsedSpace("ESI cache:", state.storageStats?.esiCacheSize)
+        UsedSpace("Killmail cache:", state.storageStats?.zkillCacheSize)
+        UsedSpace("HTTP cache:", state.storageStats?.httpCacheSize)
+        UsedSpace("Portraits cache:", state.storageStats?.portraitsSize, state.storageStats?.portraitsCount?.let { "$it characters," })
+        UsedSpace("Other cache:", state.storageStats?.otherCacheSize)
+    }
+}
+
+@Composable
+private fun UsedSpace(text: String, bytes: Long?, secondaryText: String? = null) {
+    Row {
+        Text(
+            text = text,
+            style = RiftTheme.typography.bodyPrimary,
+            modifier = Modifier.weight(1f),
+        )
+        if (secondaryText != null) {
+            Text(
+                text = secondaryText,
+                style = RiftTheme.typography.bodyPrimary,
+                modifier = Modifier.padding(end = Spacing.small),
+            )
+        }
+        if (bytes != null) {
+            Text(
+                text = buildAnnotatedString {
+                    append(formatBytes(bytes))
+                    withColor(RiftTheme.colors.textSecondary) {
+                        append(" used")
+                    }
+                },
+                style = RiftTheme.typography.bodyPrimary,
+            )
+        } else {
+            Text(
+                text = "Calculating…",
+                style = RiftTheme.typography.bodySecondary,
+            )
+        }
+    }
+}
+
+private fun formatBytes(bytes: Long): String {
+    return when {
+        bytes < 1024 -> "$bytes B"
+        bytes < 1024 * 1024 -> String.format("%.2f KB", bytes / 1024f)
+        bytes < 1024 * 1024 * 1024 -> String.format("%.2f MB", bytes / (1024f * 1024))
+        else -> String.format("%.2f GB", bytes / (1024f * 1024 * 1024))
+    }
+}
+
+@Composable
 private fun ClipboardSection(
     state: UiState,
     viewModel: SettingsViewModel,
@@ -618,7 +740,7 @@ private fun ClipboardSection(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.padding(end = Spacing.medium).fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Text("Troubleshoot import issues")
         RiftButton(

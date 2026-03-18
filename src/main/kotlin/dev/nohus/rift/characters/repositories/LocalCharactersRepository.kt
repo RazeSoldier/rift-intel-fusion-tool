@@ -5,6 +5,7 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.combine
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.repositories.character.CharacterAffiliationRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -30,6 +31,7 @@ class LocalCharactersRepository(
     private val settings: Settings,
     private val getEveCharactersSettingsUseCase: GetEveCharactersSettingsUseCase,
     private val esiApi: EsiApi,
+    private val characterAffiliationRepository: CharacterAffiliationRepository,
 ) {
 
     data class LocalCharacter(
@@ -46,6 +48,7 @@ class LocalCharactersRepository(
 
     data class CharacterInfo(
         val name: String,
+        val characterId: Int,
         val corporationRoles: List<String>,
         val corporationId: Int,
         val corporationName: String,
@@ -145,9 +148,7 @@ class LocalCharactersRepository(
 
     private suspend fun loadEsiCharacters(characters: List<LocalCharacter>) = coroutineScope {
         val characterIds = characters.map { it.characterId }
-        val affiliations = esiApi.getCharactersAffiliation(Originator.LocalCharacters, characterIds).map {
-            it.associateBy { it.characterId }
-        }.success ?: emptyMap()
+        val affiliations = characterAffiliationRepository.getCharacterAffiliations(Originator.LocalCharacters, characterIds)
 
         for (localCharacter in characters) {
             launch {
@@ -171,6 +172,7 @@ class LocalCharactersRepository(
                     val alliance = allianceDeferred?.await()
                     CharacterInfo(
                         name = details.name,
+                        characterId = localCharacter.characterId,
                         corporationRoles = roles,
                         corporationId = corporationId,
                         corporationName = corporation.success?.name ?: "?",

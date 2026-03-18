@@ -220,7 +220,9 @@ private fun Message(
                     is TokenType.Movement -> TokenWithMovement(settings.rowHeight, tokens, type)
                 }
             } else {
-                TokenWithPlainText(settings.rowHeight, text)
+                if (text.isNotBlank()) {
+                    TokenWithPlainText(settings.rowHeight, text.trim())
+                }
             }
         }
     }

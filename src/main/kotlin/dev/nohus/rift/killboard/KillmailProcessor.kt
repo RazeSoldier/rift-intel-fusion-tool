@@ -3,6 +3,7 @@ package dev.nohus.rift.killboard
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.network.esi.models.CharactersAffiliation
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -62,28 +63,29 @@ class KillmailProcessor(
 
         val system = solarSystemsRepository.getSystem(message.solarSystemId) ?: return@coroutineScope
 
-        val deferredVictim = message.victim.characterId
-            ?.let { async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it) } }
+        val deferredVictim = message.victim.characterId?.let {
+            async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it, message.victim.affiliation) }
+        }
 
         // Corporation and alliance are only loaded if there is no character, otherwise they are included with the character
-        val deferredVictimCorporation = if (message.victim.characterId == null) {
-            message.victim.corporationId?.let {
-                async { characterDetailsRepository.getCorporationName(Originator.Killmails, it).success }
-            }
+        val deferredVictimCorporation = if (message.victim.characterId == null && message.victim.corporationId != null) {
+            async { characterDetailsRepository.getCorporationName(Originator.Killmails, message.victim.corporationId).success }
         } else {
             null
         }
-        val deferredVictimAlliance = if (message.victim.characterId == null) {
-            message.victim.allianceId?.let {
-                async { characterDetailsRepository.getAllianceName(Originator.Killmails, it).success }
-            }
+        val deferredVictimAlliance = if (message.victim.characterId == null && message.victim.allianceId != null) {
+            async { characterDetailsRepository.getAllianceName(Originator.Killmails, message.victim.allianceId).success }
         } else {
             null
         }
 
-        val deferredAttackers = message.attackers
-            .mapNotNull { it.characterId }
-            .map { async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it) } }
+        val deferredAttackers = message.attackers.mapNotNull {
+            if (it.characterId != null) {
+                async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it.characterId, it.affiliation) }
+            } else {
+                null
+            }
+        }
 
         val victim = deferredVictim?.await()?.let {
             SystemEntity.Character(it.name, it.characterId, it)
@@ -166,5 +168,17 @@ class KillmailProcessor(
         } else {
             SystemEntity.Celestial(closestCelestial.celestial, distanceKm)
         }
+    }
+
+    private val Victim.affiliation get() = if (characterId != null && corporationId != null) {
+        CharactersAffiliation(characterId, corporationId, allianceId)
+    } else {
+        null
+    }
+
+    private val Attacker.affiliation get() = if (characterId != null && corporationId != null) {
+        CharactersAffiliation(characterId, corporationId, allianceId)
+    } else {
+        null
     }
 }

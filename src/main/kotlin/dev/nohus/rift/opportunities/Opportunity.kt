@@ -1,6 +1,7 @@
 package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
+import dev.nohus.rift.compose.text.FormattedText
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.Archetype
 import dev.nohus.rift.network.esi.models.ConflictType
@@ -91,7 +92,7 @@ data class OpportunityDetails(
     val submissionMultiplier: Double?,
     val career: OpportunityCareer,
     val created: Instant,
-    val description: String,
+    val description: FormattedText,
     val expires: Instant?,
     val finished: Instant?,
 )
