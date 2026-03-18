@@ -160,7 +160,7 @@ private fun DebugWindowContent(
                         modifier = Modifier.padding(bottom = Spacing.medium),
                     )
 
-                    var minLevel by remember { mutableStateOf(Level.ALL) }
+                    var minLevel by remember { mutableStateOf(Level.INFO) }
                     var isAutoScrolling by remember { mutableStateOf(true) }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

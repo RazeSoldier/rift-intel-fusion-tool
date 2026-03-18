@@ -30,7 +30,7 @@ class ChatLogFileParser {
         }
     }
 
-    fun parseHeader(characterId: String, file: Path): ChatLogFileMetadata? {
+    fun parseHeader(characterId: Int, file: Path): ChatLogFileMetadata? {
         val metadata = mutableMapOf<String, String>()
         val systemMessages = mutableListOf<ChatMessage>()
 
@@ -74,7 +74,7 @@ class ChatLogFileParser {
             channelId = metadata["Channel ID"] ?: return null,
             channelName = metadata["Channel Name"] ?: return null,
             listener = metadata["Listener"] ?: return null,
-            characterId = characterId.toIntOrNull() ?: return null,
+            characterId = characterId,
             sessionStarted = metadata["Session started"] ?: return null,
             groupName = metadata["GroupName"],
             motd = metadata["MOTD"],

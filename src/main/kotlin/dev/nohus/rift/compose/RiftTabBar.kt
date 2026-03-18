@@ -94,7 +94,8 @@ fun RiftTabBar(
             val tabsIntrinsicWidth = intrinsicSizePlaceableTabs.sumOf { it.width }
 
             val height = intrinsicSizePlaceableTabs.maxOf { it.height }
-            layout(constraints.maxWidth, height) {
+            val maxWidth = intrinsicSizePlaceableTabs.sumOf { it.width }.coerceAtMost(constraints.maxWidth)
+            layout(maxWidth, height) {
                 if (tabsIntrinsicWidth <= constraints.maxWidth) { // All tabs fit at natural size
                     var x = 0
                     intrinsicSizePlaceableTabs.forEach { placeable ->
@@ -119,9 +120,19 @@ fun RiftTabBar(
                             )
                         }
                     }.map { it.measure(constraints) }
+
+                    // May need to start at a further along tab in order for the selected tab to always be visible
+                    var firstTabIndex = 0
+                    while (true) {
+                        val tabsWidthToFitSelectedTab = overflowPlaceableTabs.drop(firstTabIndex).take(selectedTab - firstTabIndex + 1).sumOf { it.width }
+                        if (tabsWidthToFitSelectedTab <= widthForTabs) break
+                        firstTabIndex++
+                        if (firstTabIndex >= tabs.lastIndex) break
+                    }
+
                     var x = 0
                     var placedTabs = 0
-                    for (placeable in overflowPlaceableTabs) {
+                    for (placeable in overflowPlaceableTabs.drop(firstTabIndex)) {
                         if (x + placeable.width <= widthForTabs) {
                             placeable.placeRelative(x, 0)
                             x += placeable.width
@@ -132,7 +143,8 @@ fun RiftTabBar(
                     }
                     val overflowDropdownPlaceable = subcompose("overflowDropdown") {
                         TabOverflowDropdown(
-                            tabs = tabs.drop(placedTabs),
+                            tabs = tabs,
+                            selectedTab = selectedTab,
                             onTabSelected = onTabSelected,
                         )
                     }.map { it.measure(constraints) }
@@ -157,13 +169,14 @@ fun RiftTabBar(
 @Composable
 private fun TabOverflowDropdown(
     tabs: List<Tab>,
+    selectedTab: Int,
     onTabSelected: (Int) -> Unit,
 ) {
     val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
     val transition = updateTransition(pointerInteractionStateHolder.current)
     RiftContextMenuArea(
-        items = tabs.map { tab ->
-            ContextMenuItem.TextItem(tab.title, onClick = { onTabSelected(tab.id) })
+        items = tabs.mapIndexed { index, tab ->
+            ContextMenuItem.TextItem(tab.title, isHighlighted = index == selectedTab, onClick = { onTabSelected(tab.id) })
         },
         acceptsLeftClick = true,
         modifier = Modifier
@@ -171,7 +184,7 @@ private fun TabOverflowDropdown(
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .pointerInteraction(pointerInteractionStateHolder)
                 .pointerHoverIcon(PointerIcon(Cursors.pointerDropdown))
                 .size(22.dp)

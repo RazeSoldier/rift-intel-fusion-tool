@@ -85,7 +85,7 @@ interface EsiService {
         @Body names: List<String>,
     ): UniverseIdsResponse
 
-    @POST("/universe/names/")
+    @POST("/universe/names")
     @EndpointTag(Endpoint.PostUniverseNames::class)
     @RateLimit(RateLimitGroup.StaticData::class)
     suspend fun postUniverseNames(
@@ -125,7 +125,7 @@ interface EsiService {
         @Path("id") allianceId: Int,
     ): AlliancesIdAlliance
 
-    @GET("/alliances/{id}/contacts/")
+    @GET("/alliances/{id}/contacts")
     @EndpointTag(Endpoint.GetAlliancesIdContacts::class)
     @RateLimit(RateLimitGroup.AllianceSocial::class)
     @Scope(EsiScope.Alliances.ReadContacts::class)
@@ -135,7 +135,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<Contact>
 
-    @GET("/corporations/{id}/contacts/")
+    @GET("/corporations/{id}/contacts")
     @EndpointTag(Endpoint.GetCorporationsIdContacts::class)
     @RateLimit(RateLimitGroup.CorpSocial::class)
     @Scope(EsiScope.Corporations.ReadContacts::class)
@@ -145,7 +145,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<Contact>
 
-    @GET("/characters/{id}/contacts/")
+    @GET("/characters/{id}/contacts")
     @EndpointTag(Endpoint.GetCharactersIdContacts::class)
     @RateLimit(RateLimitGroup.CharSocial::class)
     @Scope(EsiScope.Characters.ReadContacts::class)
@@ -155,7 +155,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<Contact>
 
-    @GET("/alliances/{id}/contacts/labels/")
+    @GET("/alliances/{id}/contacts/labels")
     @EndpointTag(Endpoint.GetAlliancesIdContactsLabels::class)
     @RateLimit(RateLimitGroup.AllianceSocial::class)
     @Scope(EsiScope.Alliances.ReadContacts::class)
@@ -165,7 +165,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<ContactsLabel>
 
-    @GET("/corporations/{id}/contacts/labels/")
+    @GET("/corporations/{id}/contacts/labels")
     @EndpointTag(Endpoint.GetCorporationsIdContactsLabels::class)
     @RateLimit(RateLimitGroup.CorpSocial::class)
     @Scope(EsiScope.Corporations.ReadContacts::class)
@@ -175,7 +175,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<ContactsLabel>
 
-    @GET("/characters/{id}/contacts/labels/")
+    @GET("/characters/{id}/contacts/labels")
     @EndpointTag(Endpoint.GetCharactersIdContactsLabels::class)
     @RateLimit(RateLimitGroup.CharSocial::class)
     @Scope(EsiScope.Characters.ReadContacts::class)
@@ -185,7 +185,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<ContactsLabel>
 
-    @DELETE("/characters/{id}/contacts/")
+    @DELETE("/characters/{id}/contacts")
     @EndpointTag(Endpoint.DeleteCharactersIdContacts::class)
     @RateLimit(RateLimitGroup.CharSocial::class)
     @Scope(EsiScope.Characters.WriteContacts::class)
@@ -196,7 +196,7 @@ interface EsiService {
         @Tag character: Character,
     )
 
-    @POST("/characters/{id}/contacts/")
+    @POST("/characters/{id}/contacts")
     @EndpointTag(Endpoint.PostCharactersIdContacts::class)
     @RateLimit(RateLimitGroup.CharSocial::class)
     @Scope(EsiScope.Characters.WriteContacts::class)
@@ -210,7 +210,7 @@ interface EsiService {
         @Body contactIds: List<Int>,
     ): List<Int>
 
-    @PUT("/characters/{id}/contacts/")
+    @PUT("/characters/{id}/contacts")
     @EndpointTag(Endpoint.PutCharactersIdContacts::class)
     @RateLimit(RateLimitGroup.CharSocial::class)
     @Scope(EsiScope.Characters.WriteContacts::class)
@@ -224,7 +224,7 @@ interface EsiService {
         @Body contactIds: List<Int>,
     ): Response<Unit>
 
-    @GET("/characters/{id}/online/")
+    @GET("/characters/{id}/online")
     @EndpointTag(Endpoint.GetCharacterIdOnline::class)
     @RateLimit(RateLimitGroup.CharLocation::class)
     @Scope(EsiScope.Locations.ReadOnline::class)
@@ -234,7 +234,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharacterIdOnline
 
-    @GET("/characters/{id}/ship/")
+    @GET("/characters/{id}/ship")
     @EndpointTag(Endpoint.GetCharacterIdShip::class)
     @RateLimit(RateLimitGroup.CharLocation::class)
     @Scope(EsiScope.Locations.ReadShipType::class)
@@ -244,7 +244,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharacterIdShip
 
-    @GET("/characters/{id}/location/")
+    @GET("/characters/{id}/location")
     @EndpointTag(Endpoint.GetCharacterIdLocation::class)
     @RateLimit(RateLimitGroup.CharLocation::class)
     @Scope(EsiScope.Locations.ReadLocation::class)
@@ -254,7 +254,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharacterIdLocation
 
-    @GET("/characters/{id}/wallet/")
+    @GET("/characters/{id}/wallet")
     @EndpointTag(Endpoint.GetCharacterIdWallet::class)
     @RateLimit(RateLimitGroup.CharWallet::class)
     @Scope(EsiScope.Wallet.ReadCharacterWallet::class)
@@ -264,7 +264,7 @@ interface EsiService {
         @Tag character: Character,
     ): Double
 
-    @GET("/characters/{id}/wallet/journal/")
+    @GET("/characters/{id}/wallet/journal")
     @EndpointTag(Endpoint.GetCharactersIdWalletJournal::class)
     @RateLimit(RateLimitGroup.CharWallet::class)
     @Scope(EsiScope.Wallet.ReadCharacterWallet::class)
@@ -275,7 +275,7 @@ interface EsiService {
         @Tag character: Character,
     ): Response<List<WalletJournalEntry>>
 
-    @GET("/characters/{id}/wallet/transactions/")
+    @GET("/characters/{id}/wallet/transactions")
     @EndpointTag(Endpoint.GetCharactersIdWalletTransactions::class)
     @RateLimit(RateLimitGroup.CharWallet::class)
     @Scope(EsiScope.Wallet.ReadCharacterWallet::class)
@@ -330,7 +330,7 @@ interface EsiService {
         @Tag character: Character,
     ): CorporationDivisions
 
-    @GET("/characters/{id}/search/")
+    @GET("/characters/{id}/search")
     @EndpointTag(Endpoint.GetCharactersIdSearch::class)
     @RateLimit(RateLimitGroup.CharDetail::class)
     @Scope(EsiScope.Search.SearchStructures::class)
@@ -343,7 +343,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharactersIdSearch
 
-    @GET("/characters/{id}/clones/")
+    @GET("/characters/{id}/clones")
     @EndpointTag(Endpoint.GetCharactersIdClones::class)
     @RateLimit(RateLimitGroup.CharLocation::class)
     @Scope(EsiScope.Clones.ReadClones::class)
@@ -353,7 +353,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharactersIdClones
 
-    @GET("/characters/{id}/implants/")
+    @GET("/characters/{id}/implants")
     @EndpointTag(Endpoint.GetCharactersIdImplants::class)
     @RateLimit(RateLimitGroup.CharDetail::class)
     @Scope(EsiScope.Clones.ReadImplants::class)
@@ -373,7 +373,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<LoyaltyPoints>
 
-    @GET("/universe/stations/{id}/")
+    @GET("/universe/stations/{id}")
     @EndpointTag(Endpoint.GetUniverseStationsId::class)
     @RateLimit(RateLimitGroup.StaticData::class)
     suspend fun getUniverseStationsId(
@@ -381,7 +381,7 @@ interface EsiService {
         @Path("id") stationId: Int,
     ): UniverseStationsId
 
-    @GET("/universe/structures/{id}/")
+    @GET("/universe/structures/{id}")
     @EndpointTag(Endpoint.GetUniverseStructuresId::class)
     @RateLimit(RateLimitGroup.StaticData::class)
     @Scope(EsiScope.Universe.ReadStructures::class)
@@ -391,42 +391,42 @@ interface EsiService {
         @Tag character: Character,
     ): UniverseStructuresId
 
-    @GET("/universe/system_jumps/")
+    @GET("/universe/system_jumps")
     @EndpointTag(Endpoint.GetUniverseSystemJumps::class)
     @RateLimit(RateLimitGroup.StaticData::class)
     suspend fun getUniverseSystemJumps(
         @Tag originator: Originator,
     ): List<UniverseSystemJumps>
 
-    @GET("/universe/system_kills/")
+    @GET("/universe/system_kills")
     @EndpointTag(Endpoint.GetUniverseSystemKills::class)
     @RateLimit(RateLimitGroup.StaticData::class)
     suspend fun getUniverseSystemKills(
         @Tag originator: Originator,
     ): List<UniverseSystemKills>
 
-    @GET("/incursions/")
+    @GET("/incursions")
     @EndpointTag(Endpoint.GetIncursions::class)
     @RateLimit(RateLimitGroup.Incursion::class)
     suspend fun getIncursions(
         @Tag originator: Originator,
     ): List<Incursion>
 
-    @GET("/fw/systems/")
+    @GET("/fw/systems")
     @EndpointTag(Endpoint.GetFactionWarfareSystems::class)
     @RateLimit(RateLimitGroup.FactionalWarfare::class)
     suspend fun getFactionWarfareSystems(
         @Tag originator: Originator,
     ): List<FactionWarfareSystem>
 
-    @GET("/sovereignty/map/")
+    @GET("/sovereignty/map")
     @EndpointTag(Endpoint.GetSovereigntyMap::class)
     @RateLimit(RateLimitGroup.Sovereignty::class)
     suspend fun getSovereigntyMap(
         @Tag originator: Originator,
     ): List<SovereigntySystem>
 
-    @POST("/ui/autopilot/waypoint/")
+    @POST("/ui/autopilot/waypoint")
     @EndpointTag(Endpoint.PostUiAutopilotWaypoint::class)
     @RateLimit(RateLimitGroup.Ui::class)
     @Scope(EsiScope.Ui.WriteWaypoint::class)
@@ -438,7 +438,7 @@ interface EsiService {
         @Tag character: Character,
     ): Response<Unit>
 
-    @GET("/characters/{id}/assets/")
+    @GET("/characters/{id}/assets")
     @EndpointTag(Endpoint.GetCharactersIdAssets::class)
     @RateLimit(RateLimitGroup.CharAsset::class)
     @Scope(EsiScope.Assets.ReadAssets::class)
@@ -449,7 +449,7 @@ interface EsiService {
         @Tag character: Character,
     ): Response<List<Asset>>
 
-    @POST("/characters/{id}/assets/names/")
+    @POST("/characters/{id}/assets/names")
     @EndpointTag(Endpoint.GetCharactersIdAssetsNames::class)
     @RateLimit(RateLimitGroup.CharAsset::class)
     @Scope(EsiScope.Assets.ReadAssets::class)
@@ -460,7 +460,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<AssetName>
 
-    @POST("/characters/{id}/assets/locations/")
+    @POST("/characters/{id}/assets/locations")
     @EndpointTag(Endpoint.GetCharactersIdAssetsLocations::class)
     @RateLimit(RateLimitGroup.CharAsset::class)
     @Scope(EsiScope.Assets.ReadAssets::class)
@@ -471,7 +471,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<AssetLocation>
 
-    @GET("/corporations/{id}/assets/")
+    @GET("/corporations/{id}/assets")
     @EndpointTag(Endpoint.GetCorporationsIdAssets::class)
     @RateLimit(RateLimitGroup.CorpAsset::class)
     @Scope(EsiScope.Assets.ReadAssets::class)
@@ -482,7 +482,7 @@ interface EsiService {
         @Tag character: Character,
     ): Response<List<Asset>>
 
-    @POST("/corporations/{id}/assets/names/")
+    @POST("/corporations/{id}/assets/names")
     @EndpointTag(Endpoint.GetCorporationsIdAssetsNames::class)
     @RateLimit(RateLimitGroup.CorpAsset::class)
     @Scope(EsiScope.Assets.ReadAssets::class)
@@ -493,7 +493,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<AssetName>
 
-    @POST("/corporations/{id}/assets/locations/")
+    @POST("/corporations/{id}/assets/locations")
     @EndpointTag(Endpoint.GetCorporationsIdAssetsLocations::class)
     @RateLimit(RateLimitGroup.CorpAsset::class)
     @Scope(EsiScope.Assets.ReadAssets::class)
@@ -504,14 +504,14 @@ interface EsiService {
         @Tag character: Character,
     ): List<AssetLocation>
 
-    @GET("/markets/prices/")
+    @GET("/markets/prices")
     @EndpointTag(Endpoint.GetMarketsPrices::class)
     @RateLimit(RateLimitGroup.Market::class)
     suspend fun getMarketsPrices(
         @Tag originator: Originator,
     ): List<MarketsPrice>
 
-    @GET("/characters/{id}/fleet/")
+    @GET("/characters/{id}/fleet")
     @EndpointTag(Endpoint.GetCharactersIdFleet::class)
     @RateLimit(RateLimitGroup.Fleet::class)
     @Scope(EsiScope.Fleets.ReadFleet::class)
@@ -521,7 +521,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharactersIdFleet
 
-    @GET("/fleets/{id}/")
+    @GET("/fleets/{id}")
     @EndpointTag(Endpoint.GetFleetsId::class)
     @RateLimit(RateLimitGroup.Fleet::class)
     @Scope(EsiScope.Fleets.ReadFleet::class)
@@ -531,7 +531,7 @@ interface EsiService {
         @Tag character: Character,
     ): FleetsId
 
-    @GET("/fleets/{id}/members/")
+    @GET("/fleets/{id}/members")
     @EndpointTag(Endpoint.GetFleetsIdMembers::class)
     @RateLimit(RateLimitGroup.Fleet::class)
     @Scope(EsiScope.Fleets.ReadFleet::class)
@@ -541,7 +541,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<FleetMember>
 
-    @GET("/characters/{id}/planets/")
+    @GET("/characters/{id}/planets")
     @EndpointTag(Endpoint.GetCharactersIdPlanets::class)
     @RateLimit(RateLimitGroup.CharIndustry::class)
     @Scope(EsiScope.Planets.ManagePlanets::class)
@@ -551,7 +551,7 @@ interface EsiService {
         @Tag character: Character,
     ): List<CharactersIdPlanet>
 
-    @GET("/characters/{character_id}/planets/{planet_id}/")
+    @GET("/characters/{character_id}/planets/{planet_id}")
     @EndpointTag(Endpoint.GetCharactersIdPlanetsId::class)
     @RateLimit(RateLimitGroup.CharIndustry::class)
     @Scope(EsiScope.Planets.ManagePlanets::class)
@@ -562,7 +562,7 @@ interface EsiService {
         @Tag character: Character,
     ): CharactersIdPlanetsId
 
-    @GET("/industry/systems/")
+    @GET("/industry/systems")
     @EndpointTag(Endpoint.GetIndustrySystems::class)
     @RateLimit(RateLimitGroup.Industry::class)
     suspend fun getIndustrySystems(

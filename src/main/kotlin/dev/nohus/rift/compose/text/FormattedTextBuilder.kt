@@ -32,6 +32,11 @@ class FormattedTextBuilder {
         texts += FormattedText.Formatted(text, listOf(Span.Weight(SpanTarget.Full, fontWeight)))
     }
 
+    fun withLink(link: Link, block: FormattedTextBuilder.() -> Unit) {
+        val text = FormattedTextBuilder().apply(block).build()
+        texts += FormattedText.Formatted(text, listOf(Span.CustomLink(SpanTarget.Full, link)))
+    }
+
     fun build(): FormattedText {
         if (texts.isEmpty()) return FormattedText.Plain("")
         return texts.reduce { acc, text -> acc + text }

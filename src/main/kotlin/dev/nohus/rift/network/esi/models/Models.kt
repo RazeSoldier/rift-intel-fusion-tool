@@ -1,7 +1,7 @@
 package dev.nohus.rift.network.esi.models
 
+import dev.nohus.rift.network.IsoDateTimeSerializer
 import dev.nohus.rift.network.esi.pagination.OffsetId
-import dev.nohus.rift.network.zkillboardqueue.IsoDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant

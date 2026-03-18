@@ -65,7 +65,7 @@ import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.nohus.rift.EventEffect
-import dev.nohus.rift.compose.GetSystemContextMenuItems
+import dev.nohus.rift.compose.EntityInteractionProvider
 import dev.nohus.rift.compose.KeyName
 import dev.nohus.rift.compose.RiftContextMenuPopup
 import dev.nohus.rift.compose.RiftImageButton
@@ -394,7 +394,7 @@ private fun Map(
     val zoomRange = remember(state.mapType) {
         when (state.mapType) {
             ClusterRegionsMap -> 1.0..2.0
-            is ClusterSystemsMap -> 0.2..8.0
+            is ClusterSystemsMap -> 0.2..20.0
             is RegionMap -> 0.12..2.0
             is DistanceMap -> 0.2..2.0
         }
@@ -959,9 +959,10 @@ private fun SystemContextMenu(
     state.mapState.contextMenuSystem?.let { systemId ->
         val position = state.layout[systemId]?.position ?: return
         val coordinates = getCanvasCoordinates(position.x, position.y, animatedCenter, mapScale, canvasSize)
+        val interactionProvider: EntityInteractionProvider = remember { koin.get() }
         key(systemId) {
             RiftContextMenuPopup(
-                items = GetSystemContextMenuItems(systemId, mapType = state.mapType),
+                items = interactionProvider.getLocation(systemId, mapType = state.mapType).contextMenuItems,
                 offset = IntOffset(coordinates.x.toInt(), coordinates.y.toInt()),
                 onDismissRequest = onDismissRequest,
             )

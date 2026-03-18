@@ -1,5 +1,6 @@
 package dev.nohus.rift.pings
 
+import dev.nohus.rift.network.InstantSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant

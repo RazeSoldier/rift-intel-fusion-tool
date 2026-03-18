@@ -253,12 +253,13 @@ private fun StandingLevelSelector(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier,
     ) {
-        Standing.entries.forEach { standing ->
+        listOf(Standing.Terrible, Standing.Bad, Standing.Neutral, Standing.Good, Standing.Excellent).forEach { standing ->
             val color = standing.getFlagColor()
             val icon = when (standing) {
                 Standing.Terrible, Standing.Bad -> Res.drawable.flag_negative
                 Standing.Neutral -> Res.drawable.flag_neutral
                 Standing.Good, Standing.Excellent -> Res.drawable.flag_positive
+                Standing.Self, Standing.Corporation, Standing.Alliance -> error("Not used in selector")
             }
             StandingBox(
                 color = color,
@@ -278,6 +279,7 @@ private fun Standing.getName(): String {
         Standing.Neutral -> "Neutral Standing"
         Standing.Good -> "Good Standing"
         Standing.Excellent -> "Excellent Standing"
+        Standing.Self, Standing.Corporation, Standing.Alliance -> error("Not used in selector")
     }
 }
 

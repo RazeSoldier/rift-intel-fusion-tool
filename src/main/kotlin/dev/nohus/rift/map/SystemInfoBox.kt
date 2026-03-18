@@ -747,6 +747,7 @@ private fun StandingsIndicator(security: Double, systemStatus: SolarSystemStatus
             Standing.Neutral -> "Neutral standing" to standing.getSystemColor()
             Standing.Good -> "Good standing" to standing.getSystemColor()
             Standing.Excellent -> "Excellent standing" to standing.getSystemColor()
+            Standing.Self, Standing.Corporation, Standing.Alliance -> "Excellent standing" to standing.getSystemColor()
         }
     }
 

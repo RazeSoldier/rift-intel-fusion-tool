@@ -1,7 +1,8 @@
 package dev.nohus.rift.network.zkillboardr2z2
 
-import dev.nohus.rift.network.zkillboardqueue.IsoDateTimeSerializer
-import dev.nohus.rift.pings.InstantSerializer
+import dev.nohus.rift.network.InstantSecondsSerializer
+import dev.nohus.rift.network.InstantSerializer
+import dev.nohus.rift.network.IsoDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
@@ -17,7 +18,7 @@ data class R2Z2Killmail(
     @SerialName("esi")
     val esi: EsiKillmail,
     @SerialName("uploaded_at")
-    @Serializable(with = InstantSerializer::class)
+    @Serializable(with = InstantSecondsSerializer::class)
     val uploadedAt: Instant,
     @SerialName("sequence_id")
     val sequenceId: Long,

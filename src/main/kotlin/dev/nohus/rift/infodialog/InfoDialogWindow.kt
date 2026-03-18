@@ -20,7 +20,7 @@ import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ImprovedWindowDraggableArea
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftWindow
-import dev.nohus.rift.compose.text.toAnnotatedString
+import dev.nohus.rift.compose.text.LinkedText
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
@@ -86,8 +86,8 @@ private fun InfoDialogContent(
                 style = RiftTheme.typography.displayHighlighted,
             )
         }
-        Text(
-            text = state.text.toAnnotatedString(),
+        LinkedText(
+            text = state.text,
             style = RiftTheme.typography.bodyPrimary,
         )
         Spacer(Modifier.height(Spacing.medium))
