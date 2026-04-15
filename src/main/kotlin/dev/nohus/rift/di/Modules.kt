@@ -3,13 +3,16 @@ package dev.nohus.rift.di
 import com.sun.jna.Native
 import dev.nohus.rift.logging.analytics.Analytics
 import dev.nohus.rift.network.interceptors.CacheOverrideInterceptor
+import dev.nohus.rift.network.interceptors.EsiAppHeadersInterceptor
 import dev.nohus.rift.network.interceptors.EsiAuthorizationInterceptor
 import dev.nohus.rift.network.interceptors.EsiCompatibilityInterceptor
 import dev.nohus.rift.network.interceptors.EsiErrorLimitInterceptor
 import dev.nohus.rift.network.interceptors.EsiRateLimitInterceptor
 import dev.nohus.rift.network.interceptors.LoggingInterceptor
-import dev.nohus.rift.network.interceptors.RedirectAsSuccessInterceptor
+import dev.nohus.rift.network.interceptors.RequestIdInterceptor
 import dev.nohus.rift.network.interceptors.UserAgentInterceptor
+import dev.nohus.rift.network.requests.CacheStatisticsLocalInterceptor
+import dev.nohus.rift.network.requests.CacheStatisticsNetworkInterceptor
 import dev.nohus.rift.network.requests.Endpoint
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.requests.OriginatorRateLimitInterceptor
@@ -61,7 +64,6 @@ import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import java.time.Duration
 
 @Module
 @ComponentScan("dev.nohus.rift")
@@ -113,32 +115,36 @@ val factoryModule = module {
             .build()
     }
     single<OkHttpClient>(qualifier = named("esi")) {
-        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("esi-cache")
-        val size = 100L * 1024 * 1024 // 100MB
         val dispatcher = Dispatcher().apply {
             maxRequests = 64
             maxRequestsPerHost = 64
         }
+        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("esi-cache")
+        val size = 100L * 1024 * 1024 // 100MB
         OkHttpClient.Builder()
             .cache(Cache(directory.toFile(), size))
             .dispatcher(dispatcher)
-            .addInterceptor(get<UserAgentInterceptor>())
+            .addInterceptor(get<RequestIdInterceptor>())
+            .addInterceptor(get<CacheStatisticsLocalInterceptor>())
             .addInterceptor(get<EsiCompatibilityInterceptor>())
-            .addInterceptor(get<EsiAuthorizationInterceptor>())
+            .addNetworkInterceptor(get<EsiAuthorizationInterceptor>())
+            .addNetworkInterceptor(get<CacheStatisticsNetworkInterceptor>())
             .addNetworkInterceptor(get<EsiErrorLimitInterceptor>())
             .addNetworkInterceptor(get<EsiRateLimitInterceptor>())
             .addNetworkInterceptor(get<OriginatorRateLimitInterceptor>())
             .addNetworkInterceptor(get<CacheOverrideInterceptor>())
+            .addNetworkInterceptor(get<UserAgentInterceptor>())
+            .addNetworkInterceptor(get<EsiAppHeadersInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()
     }
-    single<OkHttpClient>(qualifier = named("zkillredisq")) {
+    single<OkHttpClient>(qualifier = named("zkillr2z2")) {
+        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("zkill-cache")
+        val size = 50L * 1024 * 1024 // 50MB
         OkHttpClient.Builder()
-            .followRedirects(false)
-            .readTimeout(Duration.ofSeconds(15))
+            .cache(Cache(directory.toFile(), size))
             .addInterceptor(get<UserAgentInterceptor>())
-            .addInterceptor(get<RedirectAsSuccessInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()
@@ -154,7 +160,7 @@ val factoryModule = module {
             prettyPrint = true
         }
     }
-    single<RequestExecutor> { RequestExecutorImpl(get(), get(named("network"))) }
+    factory<RequestExecutor> { RequestExecutorImpl(get(named("network"))) }
     single<User32> { Native.load("user32", User32::class.java) }
     single<Analytics> { Analytics() }
     single<KamelConfig> { getKamelConfig(get(), get()) }
@@ -171,14 +177,10 @@ private fun getKamelConfig(
     }
     return KamelConfig {
         takeFrom(KamelConfig.Core)
-        resourcesFetcher()
-        imageBitmapDecoder()
-        animatedImageDecoder()
-        imageBitmapCacheSize = 1000
         httpUrlFetcher {
             httpCache(100 * 1024 * 1024)
             defaultRequest {
-                header(HttpHeaders.UserAgent, userAgentInterceptor.getUserAgent(Originator.UiImage))
+                header(HttpHeaders.UserAgent, userAgentInterceptor.userAgentValue)
                 header(HttpHeaders.CacheControl, CacheControl.MAX_AGE)
             }
             install(HttpRequestRetry) {
@@ -189,5 +191,9 @@ private fun getKamelConfig(
             }
             install(logStatisticsPlugin)
         }
+        resourcesFetcher()
+        imageBitmapDecoder()
+        animatedImageDecoder()
+        imageBitmapCacheSize = 1000
     }
 }

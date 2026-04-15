@@ -50,7 +50,6 @@ private fun ApplicationScope.riftApplication() {
         RiftTheme {
             if (state.isAnotherInstanceDialogShown) {
                 SingleInstanceWrapper(
-                    onRunAnywayClick = viewModel::onSingleInstanceRunAnywayClick,
                     onCloseRequest = viewModel::onQuit,
                 )
             } else {

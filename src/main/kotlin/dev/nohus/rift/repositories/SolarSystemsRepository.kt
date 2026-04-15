@@ -154,7 +154,7 @@ class SolarSystemsRepository(
 
     fun getSystems(knownSpace: Boolean = true): List<MapSolarSystem> {
         return if (knownSpace) {
-            mapSolarSystems.filter { it.regionId <= 10001000 } // K-space
+            mapSolarSystems.filter { it.regionId <= 10001004 } // K-space
         } else {
             mapSolarSystems
         }
@@ -274,7 +274,7 @@ class SolarSystemsRepository(
     fun getSystems() = mapSolarSystems
 
     fun isKnownSpace(systemId: Int): Boolean {
-        return getSystem(systemId)?.regionId?.let { it in 10000001..10001000 } == true
+        return getSystem(systemId)?.regionId?.let { it in 10000001..10001004 } == true
     }
 
     fun isWormholeSpace(systemId: Int): Boolean {

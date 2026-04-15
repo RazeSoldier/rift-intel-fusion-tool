@@ -129,7 +129,7 @@ fun RiftExceptionWindow(
                 modifier = Modifier.align(Alignment.End),
             ) {
                 @Suppress("KotlinConstantConditions")
-                if (BuildConfig.environment == "dev") {
+                if (BuildConfig.isDevEnvironment) {
                     val detailsButtonText = if (areDetailsVisible) "Hide details" else "Show details"
                     RiftButton(
                         text = detailsButtonText,

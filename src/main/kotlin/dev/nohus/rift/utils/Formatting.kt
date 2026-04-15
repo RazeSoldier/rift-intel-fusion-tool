@@ -156,6 +156,11 @@ fun formatDate(date: LocalDate): String {
     return dateFormatter.format(date)
 }
 
+fun formatTime(instant: Instant, timezone: ZoneId): String {
+    val time = ZonedDateTime.ofInstant(instant, timezone)
+    return dateFormatterWithTime.format(time)
+}
+
 fun formatDuration(duration: Duration): String {
     return buildString {
         duration.toDays().takeIf { it > 0 }?.let { append("${it}d ") }

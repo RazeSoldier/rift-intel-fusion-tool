@@ -743,7 +743,9 @@ class WalletRepository(
                         ContextIdType.Station -> stationIds += entry.contextId
                         ContextIdType.MarketTransaction -> {} // We already have transactions, no need to fetch anything
                         ContextIdType.Character -> characterIds += entry.contextId
-                        ContextIdType.Corporation -> corporationIds += entry.contextId
+                        ContextIdType.Corporation -> if (entry.contextId != 1L) {
+                            corporationIds += entry.contextId
+                        }
                         ContextIdType.Alliance -> allianceIds += entry.contextId
                         ContextIdType.EveSystem -> uncategorizedIds += entry.contextId
                         ContextIdType.IndustryJob -> {} // Not supported

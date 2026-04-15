@@ -1,6 +1,7 @@
 package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
+import dev.nohus.rift.compose.text.ParseEveFormattedTextUseCase
 import dev.nohus.rift.network.esi.models.Archetype
 import dev.nohus.rift.network.esi.models.ConflictType
 import dev.nohus.rift.network.esi.models.CorporationProject
@@ -23,7 +24,9 @@ import org.koin.core.annotation.Single
 private val logger = KotlinLogging.logger {}
 
 @Single
-class OpportunitiesMapper {
+class OpportunitiesMapper(
+    val parseEveFormattedTextUseCase: ParseEveFormattedTextUseCase,
+) {
 
     fun toModel(
         debugDetails: String,
@@ -61,7 +64,7 @@ class OpportunitiesMapper {
                 submissionMultiplier = it.contributionSettings?.submissionMultiplier,
                 career = it.details.career,
                 created = it.details.created,
-                description = it.details.description,
+                description = parseEveFormattedTextUseCase(it.details.description),
                 expires = it.details.expires,
                 finished = it.details.finished,
             )
@@ -117,7 +120,7 @@ class OpportunitiesMapper {
                 submissionMultiplier = it.contributionSettings?.submissionMultiplier,
                 career = it.details.career,
                 created = it.details.created,
-                description = it.details.description,
+                description = parseEveFormattedTextUseCase(it.details.description),
                 expires = it.details.expires,
                 finished = it.details.finished,
             )

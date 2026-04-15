@@ -154,14 +154,14 @@ private fun CharactersWindowContent(
     onEnableCharacterClick: (characterId: Int) -> Unit,
     onDeleteCharacterClick: (characterId: Int) -> Unit,
 ) {
-    if (state.characters.isNotEmpty()) {
-        Column {
-            TopRow(
-                state = state,
-                onSsoClick = onSsoClick,
-                onCopySettingsClick = onCopySettingsClick,
-                onChooseDisabledClick = onChooseDisabledClick,
-            )
+    Column {
+        TopRow(
+            state = state,
+            onSsoClick = onSsoClick,
+            onCopySettingsClick = onCopySettingsClick,
+            onChooseDisabledClick = onChooseDisabledClick,
+        )
+        if (state.characters.isNotEmpty()) {
             CharactersList(
                 state = state,
                 onDisableCharacterClick = onDisableCharacterClick,
@@ -169,15 +169,15 @@ private fun CharactersWindowContent(
                 onEnableCharacterClick = onEnableCharacterClick,
                 onDeleteCharacterClick = onDeleteCharacterClick,
             )
+        } else {
+            Text(
+                text = stringResource(Res.string.character_window_no_character_found),
+                style = RiftTheme.typography.headerPrimary,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.medium),
+            )
         }
-    } else {
-        Text(
-            text = stringResource(Res.string.character_window_no_character_found),
-            style = RiftTheme.typography.headerPrimary,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Spacing.medium),
-        )
     }
 }
 
@@ -281,13 +281,15 @@ private fun TopRow(
                     )
                 } else {
                     SsoButton(onClick = onSsoClick)
-                    RiftTooltipArea(
-                        text = stringResource(Res.string.character_window_copy_settings_tooltip),
-                    ) {
-                        RiftButton(
-                            text = stringResource(Res.string.character_window_copy_settings),
-                            onClick = onCopySettingsClick,
-                        )
+                    if (state.characters.isNotEmpty()) {
+                        RiftTooltipArea(
+                            text = stringResource(Res.string.character_window_copy_settings_tooltip),
+                        ) {
+                            RiftButton(
+                                text = stringResource(Res.string.character_window_copy_settings),
+                                onClick = onCopySettingsClick,
+                            )
+                        }
                     }
                 }
             }

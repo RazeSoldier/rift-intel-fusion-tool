@@ -81,7 +81,6 @@ fun AboutWindow(
             onUpdateClick = viewModel::onUpdateClick,
             onLogLiteClick = viewModel::onLogLiteClick,
             onDebugClick = viewModel::onDebugClick,
-            onAppDataClick = viewModel::onAppDataClick,
             onLegalClick = viewModel::onLegalClick,
             onCreditsClick = viewModel::onCreditsClick,
             onWhatsNewClick = viewModel::onWhatsNewClick,
@@ -159,7 +158,6 @@ private fun AboutWindowContent(
     onUpdateClick: () -> Unit,
     onLogLiteClick: () -> Unit,
     onDebugClick: () -> Unit,
-    onAppDataClick: () -> Unit,
     onLegalClick: () -> Unit,
     onCreditsClick: () -> Unit,
     onWhatsNewClick: () -> Unit,
@@ -309,12 +307,6 @@ private fun AboutWindowContent(
                 modifier = Modifier.onMouseClick(MouseButton.Right) {
                     isLogLiteVisible = true
                 },
-            )
-            RiftButton(
-                text = stringResource(Res.string.about_window_app_data),
-                type = ButtonType.Secondary,
-                cornerCut = ButtonCornerCut.None,
-                onClick = onAppDataClick,
             )
             RiftButton(
                 text = stringResource(Res.string.about_window_credits),

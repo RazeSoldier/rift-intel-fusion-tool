@@ -49,7 +49,6 @@ class ConfigurationPackRepository(
                 99013363, // Dracarys Wing
                 99009163, // Dracarys.
                 99012042, // Fanatic Legion.
-                150097440, // Get Off My Lawn
                 99003995, // Invidia Gloriae Comes
                 99011239, // Ligma Grindset
                 99013568, // S0B Citizens Alliance
@@ -57,10 +56,8 @@ class ConfigurationPackRepository(
                 99009331, // Scumlords
                 99011162, // Shadow Ultimatum
                 99011223, // Sigma Grindset
-                99010140, // Stribog Clade
                 131511956, // Tactical Narcotics Team
                 99010877, // Out of the Blue.
-                99010931, // WE FORM BL0B
             )
 
             TheInitiative -> listOf(
@@ -135,8 +132,9 @@ class ConfigurationPackRepository(
                 promptTitleText = getStringSync(Res.string.phoenix_coalition_pack_prompt_title),
                 promptButtonText = getStringSync(Res.string.phoenix_coalition_pack_prompt_button),
                 channels = listOf(
-                    IntelChannel("Phoenix_Intel", getStringSync(Res.string.region_delve)),
-                    IntelChannel("Phoenix_Intel", getStringSync(Res.string.region_querious)),
+                    IntelChannel("wc.Venal+Br+Te", getStringSync(Res.string.region_venal)),
+                    IntelChannel("wc.Venal+Br+Te", getStringSync(Res.string.region_branch)),
+                    IntelChannel("wc.Venal+Br+Te", getStringSync(Res.string.region_tenal)),
                 ),
             )
 
@@ -169,15 +167,75 @@ class ConfigurationPackRepository(
             PhoenixCoalition -> JumpBridgesReference.Text(
                 packName = "Phoenix Coalition",
                 text = """
-                W-KQPI -> F2OY-X
-                E3OI-U -> 4O-239
-                D-3GIQ -> RF-K9W
-                K-6K16 -> 5V-BJI
-                QY6-RK -> 6Z-CKS
-                F-TE1T -> CX8-6K
-                AJI-MA -> A-BO4V
+                VI2K-J -> H-NOU5
+                H-NOU5 -> VI2K-J
+                MA-VDX -> BKG-Q2
+                MC6O-F -> E-D0VZ
+                E-D0VZ -> MC6O-F
+                6-AOLS -> ZH3-BS
+                P3EN-E -> 4GYV-Q
+                4GYV-Q -> P3EN-E
+                MA-XAP -> 2DWM-2
+                2DWM-2 -> MA-XAP
+                0R-F2F -> WBR5-R
+                WBR5-R -> 0R-F2F
+                E9KD-N -> P-2TTL
+                DAYP-G -> 3HX-DL
+                3HX-DL -> DAYP-G
+                YMJG-4 -> C2X-M5
+                C2X-M5 -> YMJG-4
+                1W-0KS -> FMBR-8
+                FMBR-8 -> 1W-0KS
+                BWI1-9 -> ZJ-QOO
+                15W-GC -> UMI-KK
+                UMI-KK -> 15W-GC
+                S-EVIQ -> S-B7IT
+                S-B7IT -> S-EVIQ
+                V0DF-2 -> YLS8-J
+                3T7-M8 -> E3UY-6
+                IFJ-EL -> FA-DMO
+                FA-DMO -> IFJ-EL
+                ZXA-V6 -> EOY-BG
+                FH-TTC -> VORM-W
+                7-K5EL -> 4-HWWF
+                4-HWWF -> 7-K5EL
+                N2IS-B -> A4L-A2
+                A4L-A2 -> N2IS-B
+                IPAY-2 -> 0J3L-V
+                0J3L-V -> IPAY-2
+                DL1C-E -> GIH-ZG
+                GIH-ZG -> DL1C-E
+                T-ZWA1 -> 8TPX-N
+                8TPX-N -> T-ZWA1
+                B8O-KJ -> C-4ZOS
+                C-4ZOS -> B8O-KJ
+                0M-103 -> I1-BE8
+                WW-OVQ -> POQP-K
+                POQP-K -> WW-OVQ
+                IMK-K1 -> PM-DWE
+                PM-DWE -> IMK-K1
+                W-4FA9 -> 8-4GQM
+                8-4GQM -> W-4FA9
+                G-LOIT -> IR-DYY
+                AP9-LV -> Q-EHMJ
+                Q-EHMJ -> AP9-LV
+                H-EY0P -> P-E9GN
+                MSHD-4 -> Q-CAB2
+                Q-CAB2 -> MSHD-4
+                5T-KM3 -> A3-RQ3
+                A3-RQ3 -> 5T-KM3
+                WH-2EZ -> EOA-ZC
+                FIO1-8 -> Y-C3EQ
+                GW7P-8 -> NV-3KA
+                NV-3KA -> GW7P-8
+                47L-J4 -> 05R-7A
+                05R-7A -> 47L-J4
+                M-MD31 -> H-5GUI
+                H-5GUI -> M-MD31
+                Y-1918 -> RO90-H
+                RO90-H -> Y-1918
                 """.trimIndent(),
-                date = LocalDate.of(2026, 1, 28),
+                date = LocalDate.of(2026, 2, 21),
             )
 
             null -> null

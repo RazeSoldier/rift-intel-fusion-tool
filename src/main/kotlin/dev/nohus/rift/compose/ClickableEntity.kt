@@ -4,62 +4,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.onClick
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import dev.nohus.rift.clipboard.Clipboard
+import dev.nohus.rift.compose.EntityInteractionProvider.Interaction
 import dev.nohus.rift.compose.theme.Cursors
-import dev.nohus.rift.contacts.ContactsExternalControl
-import dev.nohus.rift.contacts.ContactsRepository
-import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.di.koin
-import dev.nohus.rift.game.AutopilotController
-import dev.nohus.rift.game.GameUiController
-import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.*
-import dev.nohus.rift.map.MapExternalControl
-import dev.nohus.rift.map.MapViewModel.MapType
-import dev.nohus.rift.map.markers.MapMarkersInputModel
-import dev.nohus.rift.repositories.ExternalServiceRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
-import dev.nohus.rift.settings.persistence.Settings
-import dev.nohus.rift.windowing.WindowManager
-import dev.nohus.rift.windowing.WindowManager.RiftWindow
-import org.jetbrains.compose.resources.stringResource
-
-@Composable
-fun ClickableLocation(
-    systemId: Int?,
-    locationId: Long?,
-    locationTypeId: Int?,
-    locationName: String?,
-    content: @Composable () -> Unit,
-) {
-    if (systemId == null) {
-        content()
-        return
-    }
-    val repository: SolarSystemsRepository = remember { koin.get() }
-    val isKnownSpace = repository.isKnownSpace(systemId)
-    RiftContextMenuArea(
-        items = GetSystemContextMenuItems(systemId, locationId, locationTypeId, locationName),
-    ) {
-        val mapExternalControl: MapExternalControl = remember { koin.get() }
-        ClickableEntity(
-            onClick = {
-                if (isKnownSpace) {
-                    mapExternalControl.showSystemOnMap(systemId)
-                }
-            },
-            content = content,
-        )
-    }
-}
 
 @Composable
 fun ClickableSystem(
@@ -79,153 +32,24 @@ fun ClickableSystem(
     systemId: Int?,
     content: @Composable () -> Unit,
 ) {
+    ClickableLocation(systemId, null, null, null, content)
+}
+
+@Composable
+fun ClickableLocation(
+    systemId: Int?,
+    locationId: Long?,
+    locationTypeId: Int?,
+    locationName: String?,
+    content: @Composable () -> Unit,
+) {
     if (systemId == null) {
         content()
         return
     }
-    val repository: SolarSystemsRepository = remember { koin.get() }
-    val isKnownSpace = repository.isKnownSpace(systemId)
-    RiftContextMenuArea(
-        items = GetSystemContextMenuItems(systemId),
-    ) {
-        val mapExternalControl: MapExternalControl = remember { koin.get() }
-        ClickableEntity(
-            onClick = {
-                if (isKnownSpace) {
-                    mapExternalControl.showSystemOnMap(systemId)
-                }
-            },
-            content = content,
-        )
-    }
-}
-
-@Composable
-fun GetSystemContextMenuItems(
-    systemId: Int?,
-    locationId: Long? = null,
-    locationTypeId: Int? = null,
-    locationName: String? = null,
-    mapType: MapType? = null,
-): List<ContextMenuItem> {
-    if (systemId == null) return emptyList()
-
-    val autopilotController: AutopilotController = remember { koin.get() }
-    val mapExternalControl: MapExternalControl = remember { koin.get() }
-    val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
-    val gameUiController: GameUiController = remember { koin.get() }
-    val windowManager: WindowManager = remember { koin.get() }
-    val settings: Settings = remember { koin.get() }
-    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
-    val system = solarSystemsRepository.getSystem(systemId) ?: return emptyList()
-    val isKnownSpace = solarSystemsRepository.isKnownSpace(systemId)
-    val isWormholeSpace = !isKnownSpace && solarSystemsRepository.isWormholeSpace(systemId)
-    var isSettingAutopilotToAll by remember { mutableStateOf(settings.isSettingAutopilotToAll) }
-    return buildList {
-        add(
-            ContextMenuItem.TextItem(
-                text = stringResource(Res.string.clickable_entity_show_info),
-                iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                onClick = {
-                    if (locationId != null && locationTypeId != null) {
-                        gameUiController.pushLocation(locationId, locationTypeId, locationName ?: "Location")
-                    } else {
-                        gameUiController.pushSystem(system)
-                    }
-                },
-            ),
-        )
-        add(ContextMenuItem.DividerItem)
-        add(
-            ContextMenuItem.TextItem(
-                text = stringResource(Res.string.clickable_entity_set_destination),
-                iconResource = Res.drawable.menu_set_destination,
-                onClick = {
-                    autopilotController.setDestination(locationId ?: systemId.toLong(), systemId)
-                },
-            ),
-        )
-        add(
-            ContextMenuItem.TextItem(
-                text = stringResource(Res.string.clickable_entity_add_waypoint),
-                onClick = {
-                    autopilotController.addWaypoint(locationId ?: systemId.toLong(), systemId)
-                },
-            ),
-        )
-        add(
-            ContextMenuItem.TextItem(
-                text = stringResource(Res.string.clickable_entity_clear_autopilot),
-                onClick = {
-                    autopilotController.clearRoute()
-                },
-            ),
-        )
-        add(
-            ContextMenuItem.CheckboxItem(
-                text = stringResource(Res.string.clickable_entity_all_characters),
-                isSelected = isSettingAutopilotToAll,
-                onClick = {
-                    isSettingAutopilotToAll = !isSettingAutopilotToAll
-                    settings.isSettingAutopilotToAll = isSettingAutopilotToAll
-                },
-            ),
-        )
-        add(ContextMenuItem.DividerItem)
-        add(
-            ContextMenuItem.TextItem(
-                text = stringResource(Res.string.clickable_entity_copy_name),
-                onClick = {
-                    Clipboard.copy(system.name)
-                },
-            ),
-        )
-        add(
-            ContextMenuItem.TextItem(
-                text = stringResource(Res.string.clickable_entity_add_marker),
-                iconResource = Res.drawable.map_marker_place_bookmark,
-                onClick = {
-                    val inputModel = MapMarkersInputModel.AddToSystem(systemId)
-                    windowManager.onWindowOpen(RiftWindow.MapMarkers, inputModel)
-                },
-            ),
-        )
-        if (isKnownSpace) {
-            if (mapType == null) {
-                add(
-                    ContextMenuItem.TextItem(
-                        text = stringResource(Res.string.clickable_entity_show_on_map),
-                        onClick = {
-                            mapExternalControl.showSystemOnMap(systemId)
-                        },
-                    ),
-                )
-            } else {
-                if (mapType !is MapType.ClusterSystemsMap) {
-                    add(
-                        ContextMenuItem.TextItem(
-                            text = stringResource(Res.string.clickable_entity_show_in_new_eden),
-                            onClick = {
-                                mapExternalControl.showSystemOnNewEdenMap(systemId)
-                            },
-                        ),
-                    )
-                }
-                if (mapType !is MapType.RegionMap) {
-                    add(
-                        ContextMenuItem.TextItem(
-                            text = stringResource(Res.string.clickable_entity_show_in_region),
-                            onClick = {
-                                mapExternalControl.showSystemOnRegionMap(systemId)
-                            },
-                        ),
-                    )
-                }
-            }
-        }
-        add(ContextMenuItem.DividerItem)
-        addAll(externalServiceRepository.getSystemMenuItems(system.name, systemId, isWormholeSpace))
-    }
+    val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+    val interaction = interactionProvider.getLocation(systemId, locationId, locationTypeId, locationName)
+    ClickableEntity(interaction, content)
 }
 
 @Composable
@@ -237,30 +61,9 @@ fun ClickableCharacter(
         content()
         return
     }
-    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
-    val gameUiController: GameUiController = remember { koin.get() }
-    RiftContextMenuArea(
-        buildList {
-            add(
-                ContextMenuItem.TextItem(
-                    text = stringResource(Res.string.clickable_entity_show_info),
-                    iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                    onClick = { gameUiController.openInfoWindow(characterId) },
-                ),
-            )
-            add(ContextMenuItem.DividerItem)
-            addAll(externalServiceRepository.getCharacterMenuItems(characterId))
-            add(ContextMenuItem.DividerItem)
-            add(getContactMenuItem(characterId, EntityType.Character))
-        },
-    ) {
-        ClickableEntity(
-            onClick = {
-                externalServiceRepository.openCharacterPreferredService(characterId)
-            },
-            content = content,
-        )
-    }
+    val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+    val interaction = interactionProvider.getCharacter(characterId)
+    ClickableEntity(interaction, content)
 }
 
 @Composable
@@ -272,30 +75,9 @@ fun ClickableCorporation(
         content()
         return
     }
-    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
-    val gameUiController: GameUiController = remember { koin.get() }
-    RiftContextMenuArea(
-        buildList {
-            add(
-                ContextMenuItem.TextItem(
-                    text = stringResource(Res.string.clickable_entity_show_info),
-                    iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                    onClick = { gameUiController.openInfoWindow(corporationId) },
-                ),
-            )
-            add(ContextMenuItem.DividerItem)
-            addAll(externalServiceRepository.getCorporationMenuItems(corporationId))
-            add(ContextMenuItem.DividerItem)
-            add(getContactMenuItem(corporationId, EntityType.Corporation))
-        },
-    ) {
-        ClickableEntity(
-            onClick = {
-                externalServiceRepository.openCorporationPreferredService(corporationId)
-            },
-            content = content,
-        )
-    }
+    val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+    val interaction = interactionProvider.getCorporation(corporationId)
+    ClickableEntity(interaction, content)
 }
 
 @Composable
@@ -307,44 +89,9 @@ fun ClickableAlliance(
         content()
         return
     }
-    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
-    val gameUiController: GameUiController = remember { koin.get() }
-    RiftContextMenuArea(
-        buildList {
-            add(
-                ContextMenuItem.TextItem(
-                    text = stringResource(Res.string.clickable_entity_show_info),
-                    iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                    onClick = { gameUiController.openInfoWindow(allianceId) },
-                ),
-            )
-            add(ContextMenuItem.DividerItem)
-            addAll(externalServiceRepository.getAllianceMenuItems(allianceId))
-            add(ContextMenuItem.DividerItem)
-            add(getContactMenuItem(allianceId, EntityType.Alliance))
-        },
-    ) {
-        ClickableEntity(
-            onClick = {
-                externalServiceRepository.openAlliancePreferredService(allianceId)
-            },
-            content = content,
-        )
-    }
-}
-
-@Composable
-private fun getContactMenuItem(id: Int, type: EntityType): ContextMenuItem {
-    val contactsRepository: ContactsRepository = remember { koin.get() }
-    val contactsExternalControl: ContactsExternalControl = remember { koin.get() }
-    val onEditContact = {
-        contactsExternalControl.editContact(id, type)
-    }
-    return if (contactsRepository.isCharacterContact(id)) {
-        ContextMenuItem.TextItem(stringResource(Res.string.clickable_entity_edit_contact), null, onClick = onEditContact)
-    } else {
-        ContextMenuItem.TextItem(stringResource(Res.string.clickable_entity_add_contact), Res.drawable.menu_add, onClick = onEditContact)
-    }
+    val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+    val interaction = interactionProvider.getAlliance(allianceId)
+    ClickableEntity(interaction, content)
 }
 
 @Composable
@@ -352,28 +99,9 @@ fun ClickableShip(
     type: Type,
     content: @Composable () -> Unit,
 ) {
-    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
-    val gameUiController: GameUiController = remember { koin.get() }
-    RiftContextMenuArea(
-        buildList {
-            add(
-                ContextMenuItem.TextItem(
-                    text = stringResource(Res.string.clickable_entity_show_info),
-                    iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                    onClick = { gameUiController.pushType(type, "ship") },
-                ),
-            )
-            add(ContextMenuItem.DividerItem)
-            addAll(externalServiceRepository.getShipMenuItems(type))
-        },
-    ) {
-        ClickableEntity(
-            onClick = {
-                externalServiceRepository.openShipPreferredService(type)
-            },
-            content = content,
-        )
-    }
+    val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+    val interaction = interactionProvider.getShip(type)
+    ClickableEntity(interaction, content)
 }
 
 @Composable
@@ -381,25 +109,21 @@ fun ClickableType(
     type: Type,
     content: @Composable () -> Unit,
 ) {
-    val externalServiceRepository: ExternalServiceRepository = remember { koin.get() }
-    val gameUiController: GameUiController = remember { koin.get() }
+    val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+    val interaction = interactionProvider.getType(type)
+    ClickableEntity(interaction, content)
+}
+
+@Composable
+private fun ClickableEntity(
+    interaction: Interaction,
+    content: @Composable () -> Unit,
+) {
     RiftContextMenuArea(
-        buildList {
-            add(
-                ContextMenuItem.TextItem(
-                    text = stringResource(Res.string.clickable_entity_show_info),
-                    iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                    onClick = { gameUiController.pushType(type, "type") },
-                ),
-            )
-            add(ContextMenuItem.DividerItem)
-            addAll(externalServiceRepository.getTypeMenuItems(type))
-        },
+        items = interaction.contextMenuItems,
     ) {
         ClickableEntity(
-            onClick = {
-                externalServiceRepository.openTypePreferredService(type)
-            },
+            onClick = interaction.onClick,
             content = content,
         )
     }

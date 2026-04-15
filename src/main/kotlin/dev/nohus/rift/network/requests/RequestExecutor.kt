@@ -36,12 +36,15 @@ interface RequestExecutor {
     suspend fun <R : Any> executeWithHeaders(
         request: suspend () -> Response<R>,
     ): Result<Reply<R>>
+
+    fun setHttpErrorHandler(handler: (e: HttpException) -> Failure?)
 }
 
-class RequestExecutorImpl(
-    private val eveSsoRepository: EveSsoRepository,
+open class RequestExecutorImpl(
     private val json: Json,
 ) : RequestExecutor {
+
+    private var httpErrorHandler: ((e: HttpException) -> Failure?) = ::handleHttpError
 
     override suspend fun <R : Any> execute(
         request: suspend () -> R,
@@ -77,59 +80,57 @@ class RequestExecutorImpl(
         }
     }
 
-    private fun handleError(e: Exception, characterId: Int? = null): Failure {
-        if (e is SsoException) {
-            logger.error { "Could not execute request due to SSO failure: $e" }
-        } else if (e is HttpException) {
-            if (e.code() == 401) {
-                logger.error { "Unauthorized: ${e.message}" }
-            } else {
-                val body = e.response()?.errorBody()?.string()
-                if (!body.isNullOrBlank()) {
-                    try {
-                        val errorResponse: EsiErrorResponse = json.decodeFromString(body)
-                        if ("token is not valid" in errorResponse.error) {
-                            if (characterId != null) {
-                                logger.error { "Character $characterId has an invalid token, removing" }
-                                eveSsoRepository.removeAuthentication(characterId)
-                            }
-                        } else if ("Character has been deleted" in errorResponse.error) {
-                            if (characterId != null) {
-                                logger.error { "Character $characterId has been deleted from the game, removing" }
-                                eveSsoRepository.removeAuthentication(characterId)
-                            }
-                        } else if ("Forbidden" == errorResponse.error) {
-                            logger.debug { "Forbidden API response" }
-                        } else if ("unroutable" == errorResponse.error) {
-                            logger.error { "ESI request could not be routed to Tranquility, the game is probably down" }
-                        } else if ("Timeout contacting tranquility" == errorResponse.error) {
-                            logger.error { "ESI request timed out contacting Tranquility, the game is probably down" }
-                        } else if (e.code() == 404) {
-                            // Valid response
-                        } else {
-                            val text = buildString {
-                                append(errorResponse.error)
-                                if (errorResponse.ssoStatus != null) {
-                                    append(" (SSO status: ${errorResponse.ssoStatus})")
-                                }
-                            }
-                            logger.error { "ESI error response: $text" }
-                        }
-                        return Failure(EsiErrorException(errorResponse, e.code()))
-                    } catch (_: SerializationException) {
-                        logger.error { "API HTTP error: ${e.code()} (with unknown body) \"$body\"" }
-                    }
-                } else {
-                    logger.error { "API HTTP error: ${e.code()}" }
-                }
-            }
-        } else if (e is IOException) {
-            logger.error { "Could not execute request: $e" }
-        } else if (e is SerializationException) {
-            logger.error(e) { "Unexpected API response" }
-        } else {
-            logger.error(e) { "Unknown API Error" }
+    override fun setHttpErrorHandler(handler: (e: HttpException) -> Failure?) {
+        httpErrorHandler = handler
+    }
+
+    private fun handleError(e: Exception): Failure {
+        when (e) {
+            is SsoException -> logger.error { "Could not execute request due to SSO failure: $e" }
+            is HttpException -> httpErrorHandler(e)?.let { return it }
+            is IOException -> logger.error { "Could not execute request: $e" }
+            is SerializationException -> logger.error(e) { "Unexpected API response" }
+            else -> logger.error(e) { "Unknown API Error" }
         }
         return Failure(e)
+    }
+
+    /**
+     * With ESI in mind, can be overridden for other APIs
+     */
+    private fun handleHttpError(e: HttpException): Failure? {
+        if (e.code() == 401) {
+            logger.error { "Unauthorized: ${e.message}" }
+        } else {
+            val body = e.response()?.errorBody()?.string()
+            if (!body.isNullOrBlank()) {
+                try {
+                    val errorResponse: EsiErrorResponse = json.decodeFromString(body)
+                    if ("Forbidden" == errorResponse.error) {
+                        logger.debug { "Forbidden API response" }
+                    } else if ("unroutable" == errorResponse.error) {
+                        logger.error { "ESI request could not be routed to Tranquility, the game is probably down" }
+                    } else if ("Timeout contacting tranquility" == errorResponse.error) {
+                        logger.error { "ESI request timed out contacting Tranquility, the game is probably down" }
+                    } else if (e.code() == 404) {
+                        // Valid response
+                    } else {
+                        val text = buildString {
+                            append(errorResponse.error)
+                            if (errorResponse.ssoStatus != null) {
+                                append(" (SSO status: ${errorResponse.ssoStatus})")
+                            }
+                        }
+                        logger.error { "ESI error response (${e.code()}): $text" }
+                    }
+                    return Failure(EsiErrorException(errorResponse, e.code()))
+                } catch (_: SerializationException) {
+                    logger.error { "API HTTP error: ${e.code()} (with unknown body) \"$body\"" }
+                }
+            } else {
+                logger.error { "API HTTP error: ${e.code()}" }
+            }
+        }
+        return null
     }
 }

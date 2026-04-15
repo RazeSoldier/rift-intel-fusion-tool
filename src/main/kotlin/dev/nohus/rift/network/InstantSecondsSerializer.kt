@@ -1,4 +1,4 @@
-package dev.nohus.rift.network.zkillboardqueue
+package dev.nohus.rift.network
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -7,18 +7,16 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.Instant
-import java.time.format.DateTimeFormatter
 
-object IsoDateTimeSerializer : KSerializer<Instant> {
+object InstantSecondsSerializer : KSerializer<Instant> {
 
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
-    private val dateFormatter = DateTimeFormatter.ISO_DATE_TIME
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("InstantSeconds", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Instant) {
-        encoder.encodeString(dateFormatter.format(value))
+        encoder.encodeLong(value.toEpochMilli() / 1000)
     }
 
     override fun deserialize(decoder: Decoder): Instant {
-        return Instant.from(dateFormatter.parse(decoder.decodeString()))
+        return Instant.ofEpochMilli(decoder.decodeLong() * 1000)
     }
 }

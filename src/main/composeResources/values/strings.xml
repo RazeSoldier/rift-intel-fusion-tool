@@ -496,7 +496,7 @@
     <string name="clipboard_test_window_jump_bridge_empty">Your clipboard is empty.\nCopy a list of jump bridges.</string>
     <string name="clipboard_test_window_jump_bridge_too_short">Your clipboard only contains 1 line of text.\nCopy a list of jump bridges with at least 2 lines.</string>
     <string name="clipboard_test_window_jump_bridge_not_enough">Your clipboard doesn't contain enough jump bridge connections.\nCopy a list of jump bridges with at least 2 connections.</string>
-    <string name="clipboard_test_window_jump_bridge_valid">You copied a valid list of %1$d jump bridge connection.\nYou can import them in Settings.</string>
+    <string name="clipboard_test_window_jump_bridge_valid">You copied a valid list of %1$d jump bridge connections.\nYou can import them in Settings.</string>
     <string name="clipboard_test_window_jump_bridge_line_valid">This line is correct and contains a connection from %1$d to %2$d</string>
     <string name="clipboard_test_window_jump_bridge_line_no_system">This line is ignored because it doesn't contain any system names</string>
     <string name="clipboard_test_window_jump_bridge_line_one_system">This line is invalid because it contains only one system name: %1$s</string>
@@ -513,6 +513,19 @@
     <string name="settings_transparency_window_disbled">Window transparency will be disabled after you restart the application.</string>
     <string name="settings_ui_scale_changed">Changing the UI scale will take effect after you restart the application.</string>
     <string name="settings_config_pack_changed">Some elements of a configuration pack will only take effect after you restart the application.</string>
+    <string name="settings_window_storage_section_title">Storage</string>
+    <string name="settings_window_rift_data_directory">RIFT data directory</string>
+    <string name="settings_window_open_data_directory">Open app data</string>
+    <string name="settings_window_all_data">All data:</string>
+    <string name="settings_window_rift_cache_directory">RIFT cache directory</string>
+    <string name="settings_window_open_cache_directory">Open app cache</string>
+    <string name="settings_window_esi_cache">ESI cache:</string>
+    <string name="settings_window_km_cache">Killmail cache:</string>
+    <string name="settings_window_http_cache">HTTP cache:</string>
+    <string name="settings_window_portraits_cache">Portraits cache:</string>
+    <string name="settings_window_other_cache">Other cache:</string>
+    <string name="settings_window_cache_used"> used</string>
+    <string name="settings_window_calculating_cache">Calculating...</string>
     <!-- RiftFileChooserButton.kt -->
     <string name="file_chooser_button_select">Select</string>
     <!-- SettingsViewModel.kt -->
@@ -785,7 +798,7 @@
     <string name="system_entities_gate">Gate</string>
     <string name="system_entities_wormhole">Wormhole</string>
     <string name="system_entities_no_visual">No visual</string>
-    <!-- ClickableEntity.kt -->
+    <!-- EntityInteractionProvider.kt -->
     <string name="clickable_entity_show_info">Show Info</string>
     <string name="clickable_entity_set_destination">Set Destination</string>
     <string name="clickable_entity_add_waypoint">Add Waypoint</string>
@@ -1211,7 +1224,6 @@
     <string name="about_window_discord_invite_link">Invite link</string>
     <string name="about_window_legal_info">Legal &amp; info</string>
     <string name="about_window_debug">Debug</string>
-    <string name="about_window_app_data">App data</string>
     <string name="about_window_credits">Credits</string>
     <string name="about_window_update_log">What's new</string>
     <!-- ConfigurationPackRepository.kt -->
@@ -1241,6 +1253,9 @@
     <string name="the_initiative_pack_prompt_button">Add Init channels</string>
     <string name="region_outer_ring">Outer Ring</string>
     <string name="region_cloud_ring">Cloud Ring</string>
+    <string name="region_venal">Venal</string>
+    <string name="region_branch">Branch</string>
+    <string name="region_tenal">Tenal</string>
     <string name="phoenix_coalition_pack_prompt_title">Would you like intel channels of the Phoenix Coalition to be configured automatically?</string>
     <string name="phoenix_coalition_pack_prompt_button">Add Phoenix Coalition channels</string>
     <!-- JabberWindow.kt -->

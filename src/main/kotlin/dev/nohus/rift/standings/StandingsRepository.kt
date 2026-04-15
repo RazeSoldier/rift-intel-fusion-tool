@@ -28,6 +28,7 @@ class StandingsRepository(
         val corporation: Map<Int, Float> = emptyMap(),
         val character: Map<Int, Float> = emptyMap(),
         val friendlyAlliances: Set<Int> = emptySet(),
+        val selfCharacters: Set<Int> = emptySet(),
         val memberCorporations: Set<Int> = emptySet(),
         val memberAlliances: Set<Int> = emptySet(),
     )
@@ -49,13 +50,19 @@ class StandingsRepository(
     }
 
     fun getStandingLevel(allianceId: Int?, corporationId: Int?, characterId: Int?): Standing {
-        val standing = getStanding(allianceId, corporationId, characterId)
-        return if (standing != null) {
-            getStandingLevel(standing)
-        } else if (allianceId in standings.memberAlliances || corporationId in standings.memberCorporations) {
-            Standing.Excellent
+        return if (characterId in standings.selfCharacters) {
+            Standing.Self
+        } else if (corporationId in standings.memberCorporations) {
+            Standing.Corporation
+        } else if (allianceId in standings.memberAlliances) {
+            Standing.Alliance
         } else {
-            Standing.Neutral
+            val standing = getStanding(allianceId, corporationId, characterId)
+            if (standing != null) {
+                getStandingLevel(standing)
+            } else {
+                Standing.Neutral
+            }
         }
     }
 
@@ -104,6 +111,7 @@ class StandingsRepository(
             }
         }
 
+        val selfCharacters = characterDetails.map { it.characterId }.toSet()
         val memberCorporations = characterDetails.mapNotNull { it.corporationId.takeUnless { IdRanges.isNpcCorporation(it) } }.toSet()
         val memberAlliances = characterDetails.mapNotNull { it.allianceId }.toSet()
 
@@ -112,6 +120,7 @@ class StandingsRepository(
             corporationStandings,
             characterStandings,
             friendlyAlliances + memberAlliances,
+            selfCharacters,
             memberCorporations,
             memberAlliances,
         )

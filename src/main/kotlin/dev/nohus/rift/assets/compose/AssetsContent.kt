@@ -2,28 +2,11 @@ package dev.nohus.rift.assets.compose
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.onClick
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,38 +21,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.assets.AssetsFilters
-import dev.nohus.rift.assets.AssetsRepository
-import dev.nohus.rift.assets.AssetsViewModel.Asset
-import dev.nohus.rift.assets.AssetsViewModel.AssetLocation
-import dev.nohus.rift.assets.AssetsViewModel.FitAction
-import dev.nohus.rift.assets.AssetsViewModel.LoadedData
-import dev.nohus.rift.assets.AssetsViewModel.SortType
-import dev.nohus.rift.assets.AssetsViewModel.UiState
+import dev.nohus.rift.assets.*
+import dev.nohus.rift.assets.AssetsViewModel.*
 import dev.nohus.rift.assets.FittingController.Fitting
-import dev.nohus.rift.assets.LocationFlags
-import dev.nohus.rift.assets.getTotalPrice
-import dev.nohus.rift.assets.getTotalVolume
-import dev.nohus.rift.compose.AsyncCharacterPortrait
-import dev.nohus.rift.compose.AsyncCorporationLogo
-import dev.nohus.rift.compose.AsyncTypeIcon
-import dev.nohus.rift.compose.ButtonCornerCut
-import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.*
 import dev.nohus.rift.compose.ContextMenuItem
-import dev.nohus.rift.compose.ExpandChevron
-import dev.nohus.rift.compose.GetSystemContextMenuItems
-import dev.nohus.rift.compose.LoadingSpinner
-import dev.nohus.rift.compose.RiftButton
-import dev.nohus.rift.compose.RiftContextMenuArea
-import dev.nohus.rift.compose.RiftDropdownWithLabel
-import dev.nohus.rift.compose.RiftSearchField
-import dev.nohus.rift.compose.RiftTooltipArea
-import dev.nohus.rift.compose.ScrollbarLazyColumn
-import dev.nohus.rift.compose.fadingRightEdge
-import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.i18n.getStringSync
@@ -79,6 +39,7 @@ import dev.nohus.rift.settings.persistence.LocationPinStatus
 import dev.nohus.rift.utils.formatIskCompact
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.roundSecurity
+import dev.nohus.rift.utils.withColor
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -91,6 +52,7 @@ fun AssetsContent(
     onFiltersUpdate: (AssetsFilters) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,
     onPinChange: (Long, LocationPinStatus) -> Unit,
+    onRenameClick: (locationId: Long) -> Unit,
     onReloadClick: () -> Unit,
 ) {
     Column {
@@ -157,7 +119,7 @@ fun AssetsContent(
             data.filteredAssets.forEach { (location, assets) ->
                 val pinStatus = state.pins[location.locationId] ?: LocationPinStatus.None
                 if (previousPinStatus != pinStatus && pinStatus == LocationPinStatus.Hidden) {
-                    item(key = "hidden-location") {
+                    item(key = "hidden-location-${location.locationId}") {
                         HiddenLocationsHeader(
                             isExpanded = isHiddenExpanded,
                             hiddenCount = data.filteredAssets.count { state.pins[it.first.locationId] == LocationPinStatus.Hidden },
@@ -186,6 +148,7 @@ fun AssetsContent(
                             },
                             onFitAction = onFitAction,
                             onPinChange = { onPinChange(location.locationId, it) },
+                            onRenameClick = onRenameClick,
                             modifier = Modifier.animateItem(),
                         )
                     }
@@ -305,6 +268,7 @@ private fun LocationHeader(
     onItemClick: (itemId: Long) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,
     onPinChange: (LocationPinStatus) -> Unit,
+    onRenameClick: (locationId: Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -345,23 +309,31 @@ private fun LocationHeader(
                 )
             }
         }
-        RiftContextMenuArea(
-            items = GetSystemContextMenuItems(
+        val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+        val locationContextMenuItems = if (location.systemId != null) {
+            interactionProvider.getLocation(
                 systemId = location.systemId,
                 locationId = location.locationId,
                 locationTypeId = location.locationTypeId,
                 locationName = location.name,
-            ) + contextMenuItems,
+            ).contextMenuItems
+        } else {
+            emptyList()
+        }
+        RiftContextMenuArea(
+            items = locationContextMenuItems + contextMenuItems,
             modifier = Modifier.pointerHoverIcon(PointerIcon(Cursors.pointerInteractive)),
         ) {
             val depthOffset = 16.dp * depth
+            val pointerState = remember { PointerInteractionStateHolder() }
             Row(
                 modifier = Modifier
+                    .pointerInteraction(pointerState)
                     .fillMaxWidth()
                     .background(RiftTheme.colors.windowBackgroundSecondary)
-                    .hoverBackground()
+                    .hoverBackground(pointerInteractionStateHolder = pointerState)
                     .onClick { onClick() }
-                    .padding(vertical = Spacing.small)
+                    .padding(vertical = Spacing.verySmall)
                     .padding(start = depthOffset),
             ) {
                 ExpandChevron(isExpanded = isExpanded)
@@ -372,7 +344,16 @@ private fun LocationHeader(
                         }
                         append(" ")
                     }
-                    append(location.name)
+                    if (location.isNameAuthoritative) {
+                        append(location.name)
+                        if (location.customName != null) {
+                            withColor(RiftTheme.colors.textSpecialHighlighted) {
+                                append(" (${location.customName})")
+                            }
+                        }
+                    } else {
+                        append(location.customName ?: location.name)
+                    }
                     append(" - ")
                     append(pluralStringResource(Res.plurals.assets_window_item_count, assets.size, assets.size))
                     append(" - ")
@@ -397,14 +378,79 @@ private fun LocationHeader(
                         .clipToBounds()
                         .fadingRightEdge(),
                 )
-                if (pinStatus == LocationPinStatus.Pinned) {
-                    Image(
-                        painter = painterResource(Res.drawable.menu_pinned),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .alpha(0.75f)
-                            .size(16.dp),
-                    )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .height(20.dp)
+                        .padding(end = Spacing.small),
+                ) {
+                    if (pointerState.isHovered) {
+                        RiftTooltipArea(
+                            text = "Rename location",
+                        ) {
+                            RiftImageButton(
+                                resource = Res.drawable.editplanicon,
+                                size = 20.dp,
+                                onClick = { onRenameClick(location.locationId) },
+                            )
+                        }
+                        when (pinStatus) {
+                            LocationPinStatus.Pinned -> {
+                                RiftTooltipArea(
+                                    text = "Unpin",
+                                ) {
+                                    RiftImageButton(
+                                        resource = Res.drawable.menu_unpin,
+                                        size = 16.dp,
+                                        onClick = { onPinChange(LocationPinStatus.None) },
+                                    )
+                                }
+                            }
+                            LocationPinStatus.Hidden -> {
+                                RiftTooltipArea(
+                                    text = "Unhide",
+                                ) {
+                                    RiftImageButton(
+                                        resource = Res.drawable.menu_hide,
+                                        size = 16.dp,
+                                        onClick = { onPinChange(LocationPinStatus.None) },
+                                    )
+                                }
+                            }
+                            LocationPinStatus.None -> {
+                                RiftTooltipArea(
+                                    text = "Hide",
+                                ) {
+                                    RiftImageButton(
+                                        resource = Res.drawable.menu_unhide,
+                                        size = 16.dp,
+                                        onClick = { onPinChange(LocationPinStatus.Hidden) },
+                                    )
+                                }
+                                RiftTooltipArea(
+                                    text = "Pin",
+                                ) {
+                                    RiftImageButton(
+                                        resource = Res.drawable.menu_pinned,
+                                        size = 16.dp,
+                                        onClick = { onPinChange(LocationPinStatus.Pinned) },
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        if (pinStatus == LocationPinStatus.Pinned) {
+                            Image(
+                                painter = painterResource(Res.drawable.menu_pinned),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .alpha(0.75f)
+                                    .size(16.dp),
+                            )
+                        }
+                    }
                 }
             }
         }

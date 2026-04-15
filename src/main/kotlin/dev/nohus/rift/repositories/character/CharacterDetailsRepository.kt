@@ -19,6 +19,7 @@ class CharacterDetailsRepository(
     private val esiApi: EsiApi,
     private val standingsRepository: StandingsRepository,
     private val contactsRepository: ContactsRepository,
+    private val characterAffiliationRepository: CharacterAffiliationRepository,
 ) {
 
     data class CharacterDetails(
@@ -63,12 +64,7 @@ class CharacterDetailsRepository(
     // TODO: Check if batch version can be applied anywhere else
     suspend fun getCharacterDetails(originator: Originator, characterIds: List<Int>): Map<Int, CharacterDetails?> = coroutineScope {
         val distinct = characterIds.distinct()
-        val affiliations = distinct.chunked(1000).map { chunk ->
-            async {
-                esiApi.getCharactersAffiliation(originator, chunk).success ?: emptyList()
-            }
-        }.awaitAll().flatten().associateBy { it.characterId }
-
+        val affiliations = characterAffiliationRepository.getCharacterAffiliations(originator, distinct)
         distinct.map {
             async {
                 it to getCharacterDetails(originator, it, affiliations[it])
@@ -79,7 +75,7 @@ class CharacterDetailsRepository(
     suspend fun getCharacterDetails(originator: Originator, characterId: Int, affiliation: CharactersAffiliation? = null): CharacterDetails? = coroutineScope {
         val characterDeferred = async { esiApi.getCharactersId(originator, characterId).success }
         val affiliationDeferred = async {
-            affiliation ?: esiApi.getCharactersAffiliation(originator, listOf(characterId)).success?.firstOrNull()
+            affiliation ?: characterAffiliationRepository.getCharacterAffiliation(originator, characterId)
         }
         val character = characterDeferred.await() ?: return@coroutineScope null
         val affiliation = affiliationDeferred.await()

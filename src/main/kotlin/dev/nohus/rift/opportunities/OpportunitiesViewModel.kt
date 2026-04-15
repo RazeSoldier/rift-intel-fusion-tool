@@ -2,6 +2,7 @@ package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
+import dev.nohus.rift.compose.text.toPlainString
 import dev.nohus.rift.game.GameUiController
 import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.repositories.IdRanges
@@ -336,7 +337,7 @@ class OpportunitiesViewModel(
             .filter {
                 state.value.search?.let { search ->
                     val hasMatchingName = it.name.contains(search, ignoreCase = true)
-                    val hasMatchingDescription = it.details.description.contains(search, ignoreCase = true)
+                    val hasMatchingDescription = it.details.description.toPlainString().contains(search, ignoreCase = true)
                     val hasMatchingDebugContent = if (search.startsWith(DEBUG_SEARCH_PREFIX)) {
                         it.details.debugDetails.contains(search.removePrefix(DEBUG_SEARCH_PREFIX))
                     } else {

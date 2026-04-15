@@ -93,10 +93,6 @@ class AboutViewModel(
         windowManager.onWindowOpen(RiftWindow.Debug)
     }
 
-    fun onAppDataClick() {
-        appDirectories.getAppDataDirectory().openFileManager()
-    }
-
     fun onLegalClick() {
         _state.update { it.copy(isLegalDialogShown = true) }
     }

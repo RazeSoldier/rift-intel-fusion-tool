@@ -65,6 +65,12 @@ class LogbackAppender : AppenderBase<ILoggingEvent>() {
     }
 
     override fun append(event: ILoggingEvent) {
+        val levelsByLogger = mapOf(
+            "Exposed" to listOf(Level.WARN, Level.ERROR),
+        )
+        val allowedLevels = levelsByLogger[event.loggerName] ?: listOf(Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR)
+        if (event.level !in allowedLevels) return
+
         val formatted = encoder?.encode(event)?.let { String(it) } ?: event.message
         val breadcrumb = Breadcrumb().apply {
             category = event.loggerName

@@ -20,6 +20,7 @@ import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.settings.GetStorageStatsUseCase.StorageStats
 import dev.nohus.rift.settings.persistence.CharacterPortraits
 import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength
 import dev.nohus.rift.settings.persistence.CharacterPortraitsStandingsTargets
@@ -29,6 +30,7 @@ import dev.nohus.rift.settings.persistence.IntelMap
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesRepository
 import dev.nohus.rift.utils.Pos
+import dev.nohus.rift.utils.openFileManager
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -67,6 +69,7 @@ class SettingsViewModel(
     private val jumpBridgesRepository: JumpBridgesRepository,
     private val sovereigntyUpgradesParser: SovereigntyUpgradesParser,
     private val sovereigntyUpgradesRepository: SovereigntyUpgradesRepository,
+    private val getStorageStatsUseCase: GetStorageStatsUseCase,
 ) : ViewModel() {
 
     data class UiState(
@@ -100,6 +103,7 @@ class SettingsViewModel(
         val windowTransparencyModifier: Float,
         val characterPortraits: CharacterPortraits,
         val isZkillboardMonitoringEnabled: Boolean,
+        val storageStats: StorageStats? = null,
         // Map
         val intelMap: IntelMap,
         val isUsingRiftAutopilotRoute: Boolean,
@@ -271,6 +275,14 @@ class SettingsViewModel(
 
     fun onTabSelected(tab: SettingsTab) {
         _state.update { it.copy(selectedTab = tab) }
+
+        if (tab == SettingsTab.Misc) {
+            viewModelScope.launch {
+                getStorageStatsUseCase().collect { storageStats ->
+                    _state.update { it.copy(storageStats = storageStats) }
+                }
+            }
+        }
     }
 
     private fun updateIntelChannelAutocomplete(logsDirectory: Path?) {
@@ -608,6 +620,14 @@ class SettingsViewModel(
 
     fun onClipboardTesterClick() {
         windowManager.onWindowOpen(RiftWindow.ClipboardTest)
+    }
+
+    fun onOpenAppData() {
+        _state.value.storageStats?.dataDirectory?.openFileManager()
+    }
+
+    fun onOpenAppCache() {
+        _state.value.storageStats?.cacheDirectory?.openFileManager()
     }
 
     fun onCloseDialogMessage() {

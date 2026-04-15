@@ -1,6 +1,8 @@
 package dev.nohus.rift.compose.text
 
 import androidx.compose.ui.text.font.FontWeight
+import dev.nohus.rift.compose.ContextMenuItem
+import java.util.UUID
 
 sealed interface FormattedText {
     data class Plain(
@@ -24,8 +26,22 @@ sealed class Span(open val target: SpanTarget) {
     data class Italics(override val target: SpanTarget) : Span(target)
     data class Underline(override val target: SpanTarget) : Span(target)
     data class Size(override val target: SpanTarget, val size: Int) : Span(target)
-    data class Url(override val target: SpanTarget, val url: String) : Span(target)
-    data class InGameLink(override val target: SpanTarget, val url: String) : Span(target)
+    data class CustomLink(override val target: SpanTarget, val link: Link) : Span(target)
+}
+
+data class Link(
+    val id: UUID = UUID.randomUUID(),
+    val style: LinkStyle,
+    val onClick: (() -> Unit)? = null,
+    val contextMenuItems: List<ContextMenuItem>? = null,
+)
+
+enum class LinkStyle {
+    HoverUnderline, // Normal text style, with only underline on hover
+    Default, // Standard orange EVE link
+    External, // External yellow EVE link
+    Help, // Help blue EVE link
+    Invite, // Invite light blue EVE link
 }
 
 sealed interface SpanTarget {

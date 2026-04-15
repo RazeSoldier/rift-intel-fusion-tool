@@ -787,6 +787,20 @@ object WhatsNew {
                 - Added a Clipboard Import Tester in Settings, to troubleshoot importing jump bridges and sovereignty upgrades, and see if the format is correct, or why it isn't
                 """.trimIndent(),
             )
+            add(
+                "5.17.0" description """
+                - You can now set custom asset location names, to easily note which station is which
+                - This also works for locations where ESI does not provide a name - like Skyhooks - allowing you to name them and be able to figure out which is which
+                - Improved handling of corp assets in the Assets feature, including visibility of Impounded assets and a new Capsuleer Deliveries folder
+                """.trimIndent(),
+            )
+            add(
+                "5.18.0" description """
+                - Everywhere standings are shown, RIFT now shows corp members and alliance members with their own star icons and colors, same as in-game
+                - The new Exordium region is now visible on the Map
+                - Several performance improvements
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

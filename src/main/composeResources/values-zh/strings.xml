@@ -506,6 +506,19 @@
     <string name="settings_transparency_window_disbled">禁用窗口透明功能需要重启应用程序。</string>
     <string name="settings_ui_scale_changed">更改用户界面缩放比例后，需要重启应用程序才能生效。</string>
     <string name="settings_config_pack_changed">配置包中的某些元素只有在你重启应用程序后才会生效。</string>
+    <string name="settings_window_storage_section_title">存储</string>
+    <string name="settings_window_rift_data_directory">RIFT数据目录</string>
+    <string name="settings_window_open_data_directory">打开数据目录</string>
+    <string name="settings_window_all_data">所有数据:</string>
+    <string name="settings_window_rift_cache_directory">RIFT缓存目录</string>
+    <string name="settings_window_open_cache_directory">打开缓存目录</string>
+    <string name="settings_window_esi_cache">ESI缓存:</string>
+    <string name="settings_window_km_cache">击杀邮件缓存:</string>
+    <string name="settings_window_http_cache">HTTP缓存:</string>
+    <string name="settings_window_portraits_cache">头像缓存:</string>
+    <string name="settings_window_other_cache">其他缓存:</string>
+    <string name="settings_window_cache_used">已使用</string>
+    <string name="settings_window_calculating_cache">正在计算...</string>
     <!-- RiftFileChooserButton.kt -->
     <string name="file_chooser_button_select">选择</string>
     <!-- SettingsViewModel.kt -->
@@ -775,7 +788,7 @@
     <string name="system_entities_gate">星门</string>
     <string name="system_entities_wormhole">虫洞</string>
     <string name="system_entities_no_visual">不可见</string>
-    <!-- ClickableEntity.kt -->
+    <!-- EntityInteractionProvider.kt -->
     <string name="clickable_entity_show_info">显示信息</string>
     <string name="clickable_entity_set_destination">设置终点</string>
     <string name="clickable_entity_add_waypoint">添加航点</string>
@@ -1179,7 +1192,6 @@
     <string name="about_window_discord_invite_link">邀请链接</string>
     <string name="about_window_legal_info">法律与信息</string>
     <string name="about_window_debug">调试</string>
-    <string name="about_window_app_data">程序数据</string>
     <string name="about_window_credits">鸣谢</string>
     <string name="about_window_update_log">更新日志</string>
     <!-- ConfigurationPackRepository.kt -->
@@ -1209,6 +1221,9 @@
     <string name="the_initiative_pack_prompt_button">添加Init预警频道</string>
     <string name="region_outer_ring">外环</string>
     <string name="region_cloud_ring">云环</string>
+    <string name="region_venal">维纳尔</string>
+    <string name="region_branch">血脉</string>
+    <string name="region_tenal">特纳</string>
     <string name="phoenix_coalition_pack_prompt_title">你是否希望使用凤凰联盟群的预警频道配置？</string>
     <string name="phoenix_coalition_pack_prompt_button">添加凤凰联盟群预警频道</string>
     <!-- JabberWindow.kt -->

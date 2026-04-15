@@ -134,32 +134,32 @@ class AssetsRepository(
         data class Corporation(val corporationId: Int, val corporationName: String, override val character: LocalCharacter) : AssetOwner(character)
     }
 
-    sealed interface AssetLocation {
+    sealed class AssetLocation(open val locationId: Long) {
         data class Station(
-            val locationId: Long,
+            override val locationId: Long,
             val typeId: Int,
             val name: String,
             val systemId: Int,
-        ) : AssetLocation
+        ) : AssetLocation(locationId)
         data class Structure(
-            val locationId: Long,
+            override val locationId: Long,
             val typeId: Int?,
             val name: String,
             val systemId: Int,
-        ) : AssetLocation
+        ) : AssetLocation(locationId)
         data class System(
-            val locationId: Long,
+            override val locationId: Long,
             val systemId: Int,
-        ) : AssetLocation
+        ) : AssetLocation(locationId)
         data class AssetSafety(
-            val locationId: Long,
-        ) : AssetLocation
+            override val locationId: Long,
+        ) : AssetLocation(locationId)
         data class CustomsOffice(
-            val locationId: Long,
-        ) : AssetLocation
+            override val locationId: Long,
+        ) : AssetLocation(locationId)
         data class Unknown(
-            val locationId: Long,
-        ) : AssetLocation
+            override val locationId: Long,
+        ) : AssetLocation(locationId)
     }
 
     data class ResolvedAssetLocations(

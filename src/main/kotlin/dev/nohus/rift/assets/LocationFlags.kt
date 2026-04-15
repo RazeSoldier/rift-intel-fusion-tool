@@ -12,7 +12,7 @@ object LocationFlags {
         "Booster" to "Booster",
         "BoosterBay" to "Booster Hold",
         "Capsule" to "Capsule",
-        "CapsuleerDeliveries" to "Capsuleer Deliveries",
+        "CapsuleerDeliveries" to null, // Shown inside a corporation container
         "Cargo" to "Cargo",
         "CorpDeliveries" to "Corporation Deliveries",
         "CorpSAG1" to null, // Shown inside a corporation container
