@@ -124,6 +124,7 @@ fun AlertsWindow(
             CreateGroupDialog(
                 inputModel = isCreateGroupDialogOpen,
                 parentWindowState = windowState,
+                description = "Groups allow you to organize your alerts.",
                 onDismiss = viewModel::onCloseCreateGroup,
                 onConfirmClick = viewModel::onCreateGroupConfirm,
             )

@@ -4,6 +4,7 @@ import dev.nohus.rift.assets.AssetFilterComparison.BooleanValue
 import dev.nohus.rift.assets.AssetFilterComparison.GroupValue
 import dev.nohus.rift.assets.AssetFilterComparison.MetaGroupValue
 import dev.nohus.rift.assets.AssetFilterComparison.NumberValue
+import dev.nohus.rift.assets.AssetFilterComparison.TechLevelValue
 import dev.nohus.rift.assets.AssetFilterComparison.TextValue
 import dev.nohus.rift.assets.AssetsRepository.AssetOwner
 import dev.nohus.rift.assets.AssetsViewModel.Asset
@@ -53,6 +54,7 @@ class FilterAssetsUseCase {
             is TextValue -> getTextValue(subfilter.attribute).matches(comparison)
             is GroupValue -> matches(comparison)
             is MetaGroupValue -> matches(comparison)
+            is TechLevelValue -> matches(comparison)
         }
     }
 
@@ -96,6 +98,14 @@ class FilterAssetsUseCase {
 
     private fun Asset.matches(comparison: MetaGroupValue): Boolean {
         val matches = type.metaGroupId == comparison.metaGroupId
+        return when (comparison.operator) {
+            GroupFilterOperator.Is -> matches
+            GroupFilterOperator.IsNot -> !matches
+        }
+    }
+
+    private fun Asset.matches(comparison: TechLevelValue): Boolean {
+        val matches = type.techLevel == comparison.techLevel
         return when (comparison.operator) {
             GroupFilterOperator.Is -> matches
             GroupFilterOperator.IsNot -> !matches

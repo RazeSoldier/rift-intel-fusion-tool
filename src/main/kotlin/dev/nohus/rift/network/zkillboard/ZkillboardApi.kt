@@ -10,6 +10,7 @@ import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import retrofit2.http.Path
 
 @Single
 class ZkillboardApi(
@@ -32,5 +33,9 @@ class ZkillboardApi(
 
     suspend fun getCharacterStats(originator: Originator, characterId: Int): Result<ZkillCharacterStats> {
         return execute { service.getCharacterStats(originator, characterId) }
+    }
+
+    suspend fun postKillmail(originator: Originator, killId: String, hash: String, delay: Int): Result<PostedKillmail> {
+        return execute { service.postKillmail(originator, killId, hash, delay) }
     }
 }

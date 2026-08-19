@@ -33,6 +33,7 @@ class TypesRepository(
         val iconId: Int,
         val metaGroupId: Int?,
         val metaLevel: Int?,
+        val techLevel: Int?,
         val dogmas: Dogmas,
     )
 
@@ -69,7 +70,7 @@ class TypesRepository(
     private lateinit var groupTypes: Map<Int, List<Type>>
     private lateinit var categories: Map<Int, TypeCategory>
     private lateinit var categoryTypes: Map<Int, List<Type>>
-    private lateinit var metaGroupNames: Map<Int, String>
+    private lateinit var metaGroups: Map<Int, MetaGroup>
     private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
@@ -80,10 +81,10 @@ class TypesRepository(
             val dogmaRows = staticDatabase.transaction {
                 TypeDogmas.selectAll().toList()
             }.associateBy { it[TypeDogmas.typeId] }
-            metaGroupNames = staticDatabase.transaction {
+            metaGroups = staticDatabase.transaction {
                 MetaGroups.selectAll().toList()
             }.associate {
-                it[MetaGroups.metaGroupId] to it[MetaGroups.metaGroupName]
+                it[MetaGroups.metaGroupId] to MetaGroup(it[MetaGroups.metaGroupId], it[MetaGroups.metaGroupName])
             }
             types = rows.associate {
                 val id = it[Types.typeId]
@@ -98,6 +99,7 @@ class TypesRepository(
                     iconId = it[Types.iconId] ?: it[Types.typeId],
                     metaGroupId = it[Types.metaGroupId],
                     metaLevel = it[Types.metaLevel],
+                    techLevel = it[Types.techLevel],
                     dogmas = Dogmas(
                         entityOverviewShipGroupId = dogmaRows[id]?.get(TypeDogmas.entityOverviewShipGroupId),
                     ),
@@ -180,6 +182,7 @@ class TypesRepository(
             iconId = -1,
             metaGroupId = null,
             metaLevel = null,
+            techLevel = null,
             dogmas = Dogmas(null),
         )
     }
@@ -212,15 +215,9 @@ class TypesRepository(
         return categories[id]?.name
     }
 
-    fun getMetaGroupName(id: Int): String? {
-        blockUntilLoaded()
-        return metaGroupNames[id]
-    }
-
     fun getMetaGroups(): List<MetaGroup> {
         blockUntilLoaded()
-        return metaGroupNames.map { (id, name) -> MetaGroup(id, name) }
-            .sortedBy { it.name }
+        return metaGroups.values.sortedBy { it.id }
     }
 
     /**

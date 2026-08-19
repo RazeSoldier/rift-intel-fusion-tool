@@ -29,6 +29,7 @@ import dev.nohus.rift.assets.AssetFilterComparison.BooleanValue
 import dev.nohus.rift.assets.AssetFilterComparison.GroupValue
 import dev.nohus.rift.assets.AssetFilterComparison.MetaGroupValue
 import dev.nohus.rift.assets.AssetFilterComparison.NumberValue
+import dev.nohus.rift.assets.AssetFilterComparison.TechLevelValue
 import dev.nohus.rift.assets.AssetFilterComparison.TextValue
 import dev.nohus.rift.assets.AssetFilterDefinition
 import dev.nohus.rift.assets.AssetFilterMatch
@@ -58,6 +59,7 @@ import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.MetaGroup
 import dev.nohus.rift.repositories.TypesRepository.TypeCategory
 import dev.nohus.rift.repositories.TypesRepository.TypeGroup
+import dev.nohus.rift.utils.getRomanNumerals
 import dev.nohus.rift.windowing.WindowManager
 
 @Composable
@@ -358,6 +360,21 @@ private fun SubfilterRow(
                     )
                 }
             }
+            is TechLevelValue -> {
+                RiftDropdown(
+                    items = GroupFilterOperator.entries,
+                    selectedItem = comparison.operator,
+                    onItemSelected = { onChange(subfilter.copy(comparison = comparison.copy(operator = it))) },
+                    getItemName = { it.label },
+                )
+                RiftDropdown(
+                    items = listOf(1, 2, 3),
+                    selectedItem = comparison.techLevel,
+                    onItemSelected = { onChange(subfilter.copy(comparison = comparison.copy(techLevel = it))) },
+                    getItemName = { "Tech ${getRomanNumerals(it)}" },
+                    modifier = Modifier.weight(1f),
+                )
+            }
             is TextValue -> {
                 RiftDropdown(
                     items = TextFilterOperator.entries,
@@ -387,6 +404,7 @@ private fun defaultComparison(attribute: AssetFilterAttribute, categories: List<
         AttributeType.Number -> NumberValue(NumberFilterOperator.LessThan, 0)
         AttributeType.Group -> GroupValue(GroupFilterOperator.Is, categoryId = categories.firstOrNull()?.id ?: 0, groupId = null)
         AttributeType.MetaGroup -> MetaGroupValue(GroupFilterOperator.Is, metaGroupId = metaGroups.firstOrNull()?.id ?: 0)
+        AttributeType.TechLevel -> TechLevelValue(GroupFilterOperator.Is, techLevel = 1)
         AttributeType.Text -> TextValue(TextFilterOperator.Contains, "")
     }
 }
@@ -411,6 +429,7 @@ private fun AssetSubfilter.isValid(): Boolean {
         is NumberValue -> attribute.type == AttributeType.Number
         is GroupValue -> attribute.type == AttributeType.Group
         is MetaGroupValue -> attribute.type == AttributeType.MetaGroup && comparison.metaGroupId != 0
+        is TechLevelValue -> attribute.type == AttributeType.TechLevel
         is TextValue -> attribute.type == AttributeType.Text && comparison.value.isNotBlank()
     }
 }
@@ -420,6 +439,7 @@ private enum class AttributeType {
     Number,
     Group,
     MetaGroup,
+    TechLevel,
     Text,
 }
 
@@ -442,6 +462,8 @@ private val AssetFilterAttribute.type: AttributeType
         -> AttributeType.Group
         AssetFilterAttribute.MetaGroup,
         -> AttributeType.MetaGroup
+        AssetFilterAttribute.TechLevel,
+        -> AttributeType.TechLevel
         AssetFilterAttribute.Name,
         AssetFilterAttribute.Owner,
         -> AttributeType.Text
@@ -455,6 +477,7 @@ private val AssetFilterAttribute.label: String
         AssetFilterAttribute.Group -> "Group"
         AssetFilterAttribute.MetaGroup -> "Meta Group"
         AssetFilterAttribute.MetaLevel -> "Meta Level"
+        AssetFilterAttribute.TechLevel -> "Tech Level"
         AssetFilterAttribute.Name -> "Name"
         AssetFilterAttribute.StackSize -> "Stack size"
         AssetFilterAttribute.Volume -> "Volume"

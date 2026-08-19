@@ -13,4 +13,6 @@ data class MapMarkerItem(
     val color: Color?,
     val iconName: String,
     val icon: DrawableResource,
+    val isEnabled: Boolean,
+    val group: String?,
 )

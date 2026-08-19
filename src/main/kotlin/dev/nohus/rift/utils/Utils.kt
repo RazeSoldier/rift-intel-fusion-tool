@@ -117,3 +117,20 @@ operator fun <K : Any, V : Any> Cache<K, V>.plusAssign(map: Map<K, V>) {
         put(key, value)
     }
 }
+
+fun getRomanNumerals(number: Int): String {
+    require(number in 1..3999) { "Number must be between 1 and 3999" }
+
+    val values = listOf(1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1)
+    val symbols = listOf("M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I")
+
+    var remaining = number
+    return buildString {
+        for (i in values.indices) {
+            while (remaining >= values[i]) {
+                append(symbols[i])
+                remaining -= values[i]
+            }
+        }
+    }
+}

@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.OnVisibilityChange
+import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftTabBar
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -31,14 +32,17 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_structures
+import dev.nohus.rift.structures.EquinoxStructuresRepository.Skyhook
+import dev.nohus.rift.structures.EquinoxStructuresRepository.SkyhookResource
+import dev.nohus.rift.structures.StructuresViewModel.SkyhookResourceFilter
 import dev.nohus.rift.structures.StructuresViewModel.StructuresTab
 import dev.nohus.rift.structures.StructuresViewModel.UiState
 import dev.nohus.rift.structures.compose.MercenaryDen
-import dev.nohus.rift.structures.compose.Skyhook
 import dev.nohus.rift.structures.compose.SovereigntyHub
 import dev.nohus.rift.structures.compose.StructuresLoadingProgress
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
+import dev.nohus.rift.structures.compose.Skyhook as SkyhookCard
 
 @Composable
 fun StructuresWindow(
@@ -63,6 +67,7 @@ fun StructuresWindow(
     ) {
         StructuresWindowContent(
             state = state,
+            onSkyhookResourceFilterSelected = viewModel::onSkyhookResourceFilterSelected,
             onViewOperationClick = viewModel::onViewOperationClick,
         )
         OnVisibilityChange(viewModel::onVisibilityChange)
@@ -111,6 +116,7 @@ fun ToolbarRow(
 @Composable
 private fun StructuresWindowContent(
     state: UiState,
+    onSkyhookResourceFilterSelected: (SkyhookResourceFilter) -> Unit,
     onViewOperationClick: (id: String) -> Unit,
 ) {
     Column {
@@ -126,7 +132,7 @@ private fun StructuresWindowContent(
         if (state.loading.stage != null && state.structures == null) {
             StructuresLoadingProgress(state.loading, state.loading.stage)
         } else {
-            LoadedState(state, onViewOperationClick)
+            LoadedState(state, onSkyhookResourceFilterSelected, onViewOperationClick)
         }
     }
 }
@@ -134,6 +140,7 @@ private fun StructuresWindowContent(
 @Composable
 private fun LoadedState(
     state: UiState,
+    onSkyhookResourceFilterSelected: (SkyhookResourceFilter) -> Unit,
     onViewOperationClick: (id: String) -> Unit,
 ) {
     Box(
@@ -145,11 +152,25 @@ private fun LoadedState(
         when (state.selectedTab) {
             StructuresTab.Skyhooks -> {
                 if (structures?.skyhooks?.isNotEmpty() == true) {
-                    ScrollbarLazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
+                    val filteredSkyhooks = structures.skyhooks.filter { it.matches(state.skyhookResourceFilter) }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
                     ) {
-                        items(structures.skyhooks) { item ->
-                            Skyhook(item, now, Modifier.animateItem())
+                        SkyhookResourceFilterDropdown(
+                            selectedFilter = state.skyhookResourceFilter,
+                            onFilterSelected = onSkyhookResourceFilterSelected,
+                        )
+                        if (filteredSkyhooks.isNotEmpty()) {
+                            ScrollbarLazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                items(filteredSkyhooks) { item ->
+                                    SkyhookCard(item, now, Modifier.animateItem())
+                                }
+                            }
+                        } else {
+                            EmptyState("All Skyhooks filtered out", "Select a different resource type to see matching Skyhooks.")
                         }
                     }
                 } else {
@@ -186,6 +207,46 @@ private fun LoadedState(
         }
     }
 }
+
+@Composable
+private fun SkyhookResourceFilterDropdown(
+    selectedFilter: SkyhookResourceFilter,
+    onFilterSelected: (SkyhookResourceFilter) -> Unit,
+) {
+    val filters = listOf(
+        SkyhookResourceFilter.All,
+        SkyhookResourceFilter.Power,
+        SkyhookResourceFilter.Workforce,
+        SkyhookResourceFilter.ReagentGas,
+        SkyhookResourceFilter.ReagentIce,
+    )
+    RiftDropdownWithLabel(
+        label = "Resource filter",
+        items = filters,
+        selectedItem = selectedFilter,
+        onItemSelected = onFilterSelected,
+        getItemName = { it.displayName },
+    )
+}
+
+private fun Skyhook.matches(filter: SkyhookResourceFilter): Boolean {
+    return when (filter) {
+        SkyhookResourceFilter.All -> true
+        SkyhookResourceFilter.Power -> resource is SkyhookResource.Power
+        SkyhookResourceFilter.Workforce -> resource is SkyhookResource.Workforce
+        SkyhookResourceFilter.ReagentGas -> resource is SkyhookResource.Reagent && resource.name == "Magmatic Gas"
+        SkyhookResourceFilter.ReagentIce -> resource is SkyhookResource.Reagent && resource.name == "Superionic Ice"
+    }
+}
+
+private val SkyhookResourceFilter.displayName: String
+    get() = when (this) {
+        SkyhookResourceFilter.All -> "All"
+        SkyhookResourceFilter.Power -> "Power"
+        SkyhookResourceFilter.Workforce -> "Workforce"
+        SkyhookResourceFilter.ReagentGas -> "Magmatic Gas"
+        SkyhookResourceFilter.ReagentIce -> "Superionic Ice"
+    }
 
 @Composable
 private fun EmptyState(text: String, description: String) {

@@ -107,7 +107,7 @@ fun ChatWindow(
             ),
         ),
         onCloseClick = onCloseRequest,
-        titleBarStyle = TitleBarStyle.Minimal,
+        titleBarStyle = TitleBarStyle.Small,
         titleBarContent = { height ->
             ToolbarRow(
                 state = state,

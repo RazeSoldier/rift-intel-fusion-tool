@@ -44,6 +44,8 @@ import dev.nohus.rift.opportunities.OpportunitiesInputModel
 import dev.nohus.rift.opportunities.OpportunitiesWindow
 import dev.nohus.rift.pings.PingsWindow
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryWindow
+import dev.nohus.rift.postkillmail.PostKillmailInputModel
+import dev.nohus.rift.postkillmail.PostKillmailWindow
 import dev.nohus.rift.push.PushWindow
 import dev.nohus.rift.settings.SettingsInputModel
 import dev.nohus.rift.settings.SettingsWindow
@@ -168,6 +170,9 @@ class WindowManager(
         @SerialName("Structures")
         Structures,
 
+        @SerialName("PostKillmail")
+        PostKillmail,
+
         @Deprecated("Removed")
         @SerialName("CorporationProjects")
         CorporationProjects,
@@ -226,6 +231,7 @@ class WindowManager(
         RiftWindow.StartupWarning,
         RiftWindow.CharacterSettings,
         RiftWindow.InfoDialog,
+        RiftWindow.PostKillmail,
     )
     private val multiInstanceWindows = listOf(
         RiftWindow.Map,
@@ -293,6 +299,7 @@ class WindowManager(
                             RiftWindow.ClipboardTest -> ClipboardTestWindow(state, onCloseRequest = { onWindowClose(RiftWindow.ClipboardTest, state.uuid) })
                             RiftWindow.Chat -> ChatWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Chat, state.uuid) })
                             RiftWindow.Structures -> StructuresWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Structures, state.uuid) })
+                            RiftWindow.PostKillmail -> PostKillmailWindow(state.inputModel as PostKillmailInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.PostKillmail, state.uuid) })
                             RiftWindow.CorporationProjects -> {}
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
@@ -424,7 +431,7 @@ class WindowManager(
             RiftWindow.IntelFeedSettings -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.Settings -> WindowSizing(defaultSize = (820 to null), minimumSize = 820 to null)
             RiftWindow.Map -> WindowSizing(defaultSize = saved ?: (800 to 800), minimumSize = 350 to 300)
-            RiftWindow.MapMarkers -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
+            RiftWindow.MapMarkers -> WindowSizing(defaultSize = (450 to null), minimumSize = 450 to null)
             RiftWindow.Characters -> WindowSizing(defaultSize = saved ?: (420 to 400), minimumSize = 400 to 300)
             RiftWindow.Alerts -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = 500 to 500)
             RiftWindow.About -> WindowSizing(defaultSize = (500 to null), minimumSize = (500 to null))
@@ -453,6 +460,7 @@ class WindowManager(
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Structures -> WindowSizing(defaultSize = saved ?: (600 to 800), minimumSize = 600 to 300)
+            RiftWindow.PostKillmail -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
         }
         return windowSizing.scaled(uiScaleController.uiScale)
     }

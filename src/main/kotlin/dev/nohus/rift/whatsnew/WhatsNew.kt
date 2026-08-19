@@ -877,6 +877,22 @@ object WhatsNew {
                 - Easily see when a piece of intel was reported, and when it was cleared
                 """.trimIndent(),
             )
+            add(
+                "5.26.0" description """
+                -! New Feature: Map Marker Groups
+                - You can now organize your map markers into named groups
+                - Every marker can be toggled on and off to view or hide it from the Map
+                - You can also toggle entire groups with one click
+                - Groups can be collapsed/expanded, edited, or deleted
+                                
+                -! New Feature: Killmail Posting
+                - When you copy a killmail URL (by pressing Copy External Kill Link), RIFT can show a dialog to easily post it to zKillboard
+                - The dialog also allows you to specify a delay, if you don't want your killmail to appear publicly right away
+                - In Settings, you also have the option to post killmail automatically without showing the dialog, if that's what you want
+                
+                - The Structures window was updated to have a Skyhooks filter, where you can choose to only see Skyhooks producing a particular resource
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

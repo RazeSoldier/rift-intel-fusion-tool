@@ -1,6 +1,7 @@
 package dev.nohus.rift.map.markers
 
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.alerts.creategroup.CreateGroupInputModel
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.generated.resources.Res
@@ -13,6 +14,7 @@ import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.MapMarker
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.toggle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -34,6 +36,10 @@ class MapMarkersViewModel(
         val systemText: String = "",
         var editingMarker: MapMarkerItem? = null,
         val markers: List<MapMarkerItem> = emptyList(),
+        val groups: Set<String> = emptySet(),
+        val collapsedGroups: Set<String?> = emptySet(),
+        val expandedMarker: UUID? = null,
+        val isCreateGroupDialogOpen: CreateGroupInputModel? = null,
         val dialog: DialogMessage? = null,
     )
 
@@ -49,7 +55,7 @@ class MapMarkersViewModel(
         }
         loadMarkers()
         viewModelScope.launch {
-            settings.updateFlow.map { it.mapMarkers }.collect {
+            settings.updateFlow.map { it.mapMarkers to it.mapMarkerGroups }.collect {
                 loadMarkers()
             }
         }
@@ -66,9 +72,11 @@ class MapMarkersViewModel(
                 color = it.color,
                 iconName = it.icon,
                 icon = Res.allDrawableResources[it.icon] ?: Res.drawable.map_marker_place_bookmark,
+                isEnabled = it.isEnabled,
+                group = it.group,
             )
         }.sortedWith(compareBy({ it.regionName }, { it.systemName }))
-        _state.update { it.copy(markers = markers) }
+        _state.update { it.copy(markers = markers, groups = settings.mapMarkerGroups) }
     }
 
     fun onSystemTextChange(text: String) {
@@ -94,8 +102,83 @@ class MapMarkersViewModel(
         deleteMarker(id)
     }
 
+    fun onMarkerClick(id: UUID) {
+        val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
+        val expandedMarker = if (_state.value.expandedMarker != marker.id) marker.id else null
+        _state.update { it.copy(expandedMarker = expandedMarker) }
+    }
+
+    fun onGroupClick(name: String?) {
+        _state.update { it.copy(collapsedGroups = it.collapsedGroups.toggle(name)) }
+    }
+
+    fun onToggleMarker(id: UUID, isEnabled: Boolean) {
+        val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
+        settings.mapMarkers = settings.mapMarkers.map {
+            if (it.id == marker.id) it.copy(isEnabled = isEnabled) else it
+        }
+    }
+
+    fun onGroupChange(id: UUID, group: String?) {
+        val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
+        settings.mapMarkers = settings.mapMarkers.map {
+            if (it.id == marker.id) it.copy(group = group) else it
+        }
+    }
+
+    fun onCreateGroupClick() {
+        _state.update { it.copy(isCreateGroupDialogOpen = CreateGroupInputModel.New) }
+    }
+
+    fun onCloseCreateGroup() {
+        _state.update { it.copy(isCreateGroupDialogOpen = null) }
+    }
+
+    fun onCreateGroupConfirm(name: String) {
+        when (val inputModel = _state.value.isCreateGroupDialogOpen) {
+            CreateGroupInputModel.New -> {
+                if (name.isNotBlank()) {
+                    settings.mapMarkerGroups = (settings.mapMarkerGroups + name).toSet()
+                }
+            }
+            is CreateGroupInputModel.Rename -> {
+                if (name.isNotBlank()) {
+                    _state.update { it.copy(collapsedGroups = it.collapsedGroups - inputModel.name) }
+                    settings.mapMarkerGroups = settings.mapMarkerGroups.map {
+                        if (it == inputModel.name) name else it
+                    }.toSet()
+                    settings.mapMarkers = settings.mapMarkers.map { marker ->
+                        if (marker.group == inputModel.name) marker.copy(group = name) else marker
+                    }
+                }
+            }
+            null -> {}
+        }
+        _state.update { it.copy(isCreateGroupDialogOpen = null) }
+    }
+
+    fun onGroupRenameClick(group: String) {
+        _state.update { it.copy(isCreateGroupDialogOpen = CreateGroupInputModel.Rename(group)) }
+    }
+
+    fun onGroupDeleteClick(group: String) {
+        _state.update { it.copy(collapsedGroups = it.collapsedGroups - group) }
+        settings.mapMarkers = settings.mapMarkers.map { marker ->
+            if (marker.group == group) marker.copy(group = null) else marker
+        }
+        settings.mapMarkerGroups = settings.mapMarkerGroups.filterNot { it == group }.toSet()
+    }
+
+    fun onGroupToggleMarkers(group: String?) {
+        val hasEnabledMarkers = settings.mapMarkers.any { it.group == group && it.isEnabled }
+        settings.mapMarkers = settings.mapMarkers.map {
+            if (it.group == group) it.copy(isEnabled = !hasEnabledMarkers) else it
+        }
+    }
+
     private fun addMarker(system: MapSolarSystem, input: NewMarkerInput) {
         val id = _state.value.editingMarker?.id ?: UUID.randomUUID()
+        val existingMarker = settings.mapMarkers.firstOrNull { it.id == id }
         deleteMarker(id)
         val newMarker = MapMarker(
             id = id,
@@ -103,6 +186,8 @@ class MapMarkersViewModel(
             label = input.label,
             color = input.color,
             icon = input.icon,
+            isEnabled = existingMarker?.isEnabled ?: true,
+            group = existingMarker?.group,
         )
         _state.update { it.copy(editingMarker = null) }
         settings.mapMarkers += newMarker
@@ -121,7 +206,7 @@ class MapMarkersViewModel(
         }
     }
 
-    fun onMarkerClick(id: UUID) {
+    fun onShowMarkerClick(id: UUID) {
         val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
         mapExternalControl.showSystemOnMap(marker.systemId)
     }

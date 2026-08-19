@@ -31,6 +31,7 @@ enum class AssetFilterAttribute {
     Group,
     MetaGroup,
     MetaLevel,
+    TechLevel,
     Name,
     StackSize,
     Volume,
@@ -58,6 +59,10 @@ sealed interface AssetFilterComparison {
     @Serializable
     @SerialName("MetaGroup")
     data class MetaGroupValue(val operator: GroupFilterOperator, val metaGroupId: Int) : AssetFilterComparison
+
+    @Serializable
+    @SerialName("TechLevel")
+    data class TechLevelValue(val operator: GroupFilterOperator, val techLevel: Int) : AssetFilterComparison
 }
 
 @Serializable

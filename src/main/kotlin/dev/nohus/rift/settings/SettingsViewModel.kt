@@ -17,6 +17,7 @@ import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.postkillmail.KillmailPostingDelay
 import dev.nohus.rift.settings.GetStorageStatsUseCase.StorageStats
 import dev.nohus.rift.settings.persistence.CharacterPortraits
 import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength
@@ -24,6 +25,7 @@ import dev.nohus.rift.settings.persistence.CharacterPortraitsStandingsTargets
 import dev.nohus.rift.settings.persistence.ConfigurationPack
 import dev.nohus.rift.settings.persistence.IntelChannel
 import dev.nohus.rift.settings.persistence.IntelMap
+import dev.nohus.rift.settings.persistence.KillmailPosting
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesRepository
 import dev.nohus.rift.utils.Pos
@@ -99,6 +101,8 @@ class SettingsViewModel(
         val windowTransparencyModifier: Float,
         val characterPortraits: CharacterPortraits,
         val isZkillboardMonitoringEnabled: Boolean,
+        val killmailPosting: KillmailPosting,
+        val killmailPostingDelay: KillmailPostingDelay,
         val storageStats: StorageStats? = null,
         // Map
         val intelMap: IntelMap,
@@ -174,6 +178,8 @@ class SettingsViewModel(
             windowTransparencyModifier = settings.windowTransparencyModifier,
             characterPortraits = settings.characterPortraits,
             isZkillboardMonitoringEnabled = settings.isZkillboardMonitoringEnabled,
+            killmailPosting = settings.killmailPosting,
+            killmailPostingDelay = KillmailPostingDelay.fromValue(settings.killmailPostingDelay),
             // Map
             intelMap = settings.intelMap,
             isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
@@ -219,6 +225,8 @@ class SettingsViewModel(
                         windowTransparencyModifier = settings.windowTransparencyModifier,
                         characterPortraits = settings.characterPortraits,
                         isZkillboardMonitoringEnabled = settings.isZkillboardMonitoringEnabled,
+                        killmailPosting = settings.killmailPosting,
+                        killmailPostingDelay = KillmailPostingDelay.fromValue(settings.killmailPostingDelay),
                         // Map
                         intelMap = settings.intelMap,
                         isUsingRiftAutopilotRoute = settings.isUsingRiftAutopilotRoute,
@@ -607,6 +615,14 @@ class SettingsViewModel(
 
     fun onIsSovereigntyUpgradesHackImportingOfflineEnabledClick(enabled: Boolean) {
         settings.isSovereigntyUpgradesHackImportingOfflineEnabled = enabled
+    }
+
+    fun onKillmailPostingChange(killmailPosting: KillmailPosting) {
+        settings.killmailPosting = killmailPosting
+    }
+
+    fun onKillmailPostingDelayChange(delay: KillmailPostingDelay) {
+        settings.killmailPostingDelay = delay.value
     }
 
     fun onClipboardTesterClick() {

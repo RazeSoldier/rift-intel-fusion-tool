@@ -87,6 +87,7 @@ import dev.nohus.rift.generated.resources.deleteicon
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_warning
 import dev.nohus.rift.notifications.NotificationEditWindow
+import dev.nohus.rift.postkillmail.KillmailPostingDelay
 import dev.nohus.rift.repositories.SolarSystemChipState
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.settings.SettingsViewModel.JumpBridgeCopyState
@@ -97,6 +98,7 @@ import dev.nohus.rift.settings.SettingsViewModel.UiState
 import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength
 import dev.nohus.rift.settings.persistence.CharacterPortraitsStandingsTargets
 import dev.nohus.rift.settings.persistence.ConfigurationPack
+import dev.nohus.rift.settings.persistence.KillmailPosting
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.utils.OperatingSystem.MacOs
@@ -355,6 +357,9 @@ private fun SettingsWindowContent(
                         SectionContainer(inputModel) {
                             ClipboardSection(state, viewModel)
                         }
+                        SectionContainer(inputModel) {
+                            KillmailPostingSection(state, viewModel)
+                        }
                         if (BuildConfig.isDevEnvironment) {
                             SectionContainer(inputModel) {
                                 DevSection(state, viewModel)
@@ -578,6 +583,44 @@ private fun KillmailMonitoringSection(
             isChecked = state.isZkillboardMonitoringEnabled,
             onCheckedChange = viewModel::onIsZkillboardMonitoringChanged,
             modifier = Modifier.padding(bottom = Spacing.small),
+        )
+    }
+}
+
+@Composable
+private fun KillmailPostingSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("Killmail posting", Modifier.padding(bottom = Spacing.medium))
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+        Text(
+            text = "When you copy a killmail link:",
+            style = RiftTheme.typography.bodySecondary,
+        )
+        RiftRadioButtonWithLabel(
+            label = "Do nothing",
+            isChecked = state.killmailPosting == KillmailPosting.DoNothing,
+            onChecked = { viewModel.onKillmailPostingChange(KillmailPosting.DoNothing) },
+        )
+        RiftRadioButtonWithLabel(
+            label = "Show a dialog for posting the killmail",
+            isChecked = state.killmailPosting == KillmailPosting.Dialog,
+            onChecked = { viewModel.onKillmailPostingChange(KillmailPosting.Dialog) },
+        )
+        RiftRadioButtonWithLabel(
+            label = "Automatically post the killmail",
+            isChecked = state.killmailPosting == KillmailPosting.Automatic,
+            onChecked = { viewModel.onKillmailPostingChange(KillmailPosting.Automatic) },
+        )
+        RiftDropdownWithLabel(
+            label = "Posting delay:",
+            items = KillmailPostingDelay.entries,
+            selectedItem = state.killmailPostingDelay,
+            onItemSelected = viewModel::onKillmailPostingDelayChange,
+            getItemName = { it.displayName },
+            maxItems = KillmailPostingDelay.entries.size,
+            modifier = Modifier.padding(top = Spacing.small),
         )
     }
 }

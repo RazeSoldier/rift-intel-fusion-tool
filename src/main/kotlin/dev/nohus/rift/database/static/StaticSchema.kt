@@ -78,6 +78,7 @@ object Types : Table() {
     val iconId = integer("iconID").nullable()
     val metaGroupId = integer("metaGroupID").nullable()
     val metaLevel = integer("metaLevel").nullable()
+    val techLevel = integer("techLevel").nullable()
     override val primaryKey = PrimaryKey(typeId)
 }
 

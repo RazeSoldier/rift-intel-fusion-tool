@@ -91,6 +91,7 @@ sealed class Endpoint(
     data object EveScoutRescue : Endpoint()
     data object ZkillboardRecentActivity : Endpoint()
     data object ZkillboardCharacterStats : Endpoint()
+    data object ZkillboardPostKillmail : Endpoint()
     data object ZkillboardR2Z2Sequence : Endpoint()
     data object ZkillboardR2Z2Killmail : Endpoint()
     data object Pushover : Endpoint()

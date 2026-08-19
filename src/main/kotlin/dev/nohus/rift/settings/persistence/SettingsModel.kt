@@ -81,12 +81,15 @@ data class SettingsModel(
     val windowTransparencyModifier: Float = 1f,
     val isSmartAlwaysAbove: Boolean = false,
     val mapMarkers: List<MapMarker> = emptyList(),
+    val mapMarkerGroups: Set<String> = emptySet(),
     val assetLocationPins: Map<Long, LocationPinStatus> = emptyMap(),
     val assetLocationCustomNames: Map<Long, String> = emptyMap(),
     val isJukeboxRevealed: Boolean = false,
     val sovereigntyUpgrades: Map<String, List<Int>> = emptyMap(),
     val isSovereigntyUpgradesHackImportingEnabled: Boolean = true,
     val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean = false,
+    val killmailPosting: KillmailPosting = KillmailPosting.Dialog,
+    val killmailPostingDelay: Int = 0,
     val preferredExternalServices2: List<ExternalService> = emptyList(),
     val corpWalletDivisionNames: Map<Int, Map<Int, String>> = emptyMap(),
     val newVersionSeenTimestamp: Long? = null,
@@ -105,6 +108,13 @@ data class SettingsModel(
     val isShowingPaps: Boolean? = null,
     val assetFilters: List<AssetFilterDefinition> = emptyList(),
 )
+
+@Serializable
+enum class KillmailPosting {
+    DoNothing,
+    Dialog,
+    Automatic,
+}
 
 @Serializable
 data class ChatWindowState(
@@ -423,6 +433,8 @@ data class MapMarker(
     @Serializable(with = ColorSerializer::class)
     val color: Color?,
     val icon: String,
+    val isEnabled: Boolean = true,
+    val group: String? = null,
 )
 
 @Serializable

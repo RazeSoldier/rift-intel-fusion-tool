@@ -253,6 +253,10 @@ class Settings(
         get() = model.mapMarkers
         set(value) = update { copy(mapMarkers = value) }
 
+    var mapMarkerGroups: Set<String>
+        get() = model.mapMarkerGroups
+        set(value) = update { copy(mapMarkerGroups = value) }
+
     var assetLocationPins: Map<Long, LocationPinStatus>
         get() = model.assetLocationPins
         set(value) = update { copy(assetLocationPins = value) }
@@ -280,6 +284,14 @@ class Settings(
     var isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean
         get() = model.isSovereigntyUpgradesHackImportingOfflineEnabled
         set(value) = update { copy(isSovereigntyUpgradesHackImportingOfflineEnabled = value) }
+
+    var killmailPosting: KillmailPosting
+        get() = model.killmailPosting
+        set(value) = update { copy(killmailPosting = value) }
+
+    var killmailPostingDelay: Int
+        get() = model.killmailPostingDelay
+        set(value) = update { copy(killmailPostingDelay = value) }
 
     var preferredExternalServices: List<ExternalService>
         get() = model.preferredExternalServices2

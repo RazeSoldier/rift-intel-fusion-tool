@@ -27,7 +27,16 @@ class StructuresViewModel(
         val structures: Structures? = null,
         val loading: LoadingState = LoadingState(),
         val operations: Operations? = null,
+        val skyhookResourceFilter: SkyhookResourceFilter = SkyhookResourceFilter.All,
     )
+
+    sealed interface SkyhookResourceFilter {
+        data object All : SkyhookResourceFilter
+        data object Power : SkyhookResourceFilter
+        data object Workforce : SkyhookResourceFilter
+        data object ReagentGas : SkyhookResourceFilter
+        data object ReagentIce : SkyhookResourceFilter
+    }
 
     enum class StructuresTab {
         Skyhooks,
@@ -59,6 +68,10 @@ class StructuresViewModel(
 
     fun onTabSelected(tab: StructuresTab) {
         _state.update { it.copy(selectedTab = tab) }
+    }
+
+    fun onSkyhookResourceFilterSelected(filter: SkyhookResourceFilter) {
+        _state.update { it.copy(skyhookResourceFilter = filter) }
     }
 
     fun onViewOperationClick(id: String) {

@@ -291,7 +291,6 @@ fun WindowScope.RiftDialog(
 enum class TitleBarStyle {
     Full,
     Small,
-    Minimal,
 }
 
 @Composable
@@ -509,12 +508,10 @@ private fun TitleBar(
     val horizontalPadding = when (style) {
         TitleBarStyle.Full -> Spacing.mediumLarge
         TitleBarStyle.Small -> Spacing.medium
-        TitleBarStyle.Minimal -> Spacing.medium
     }
     val height = when (style) {
         TitleBarStyle.Full -> 48.dp
         TitleBarStyle.Small -> 32.dp
-        TitleBarStyle.Minimal -> 32.dp
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -555,7 +552,6 @@ private fun TitleBar(
                         style = when (style) {
                             TitleBarStyle.Full -> RiftTheme.typography.headlineHighlighted
                             TitleBarStyle.Small -> RiftTheme.typography.headerHighlighted
-                            TitleBarStyle.Minimal -> RiftTheme.typography.headerHighlighted
                         },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

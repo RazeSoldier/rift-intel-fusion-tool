@@ -25,7 +25,7 @@ class MapMarkersRepository(
     val markers: Flow<Map<Int, List<MapMarker>>> = settings.updateFlow
         .map { it.mapMarkers }
         .map { markers ->
-            markers.map {
+            markers.filter { it.isEnabled }.map {
                 MapMarker(
                     systemId = it.systemId,
                     label = it.label,

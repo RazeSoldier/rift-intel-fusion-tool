@@ -23,12 +23,14 @@ import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
+import dev.nohus.rift.generated.resources.window_smallfolder
 import dev.nohus.rift.windowing.WindowManager
 
 @Composable
 fun WindowScope.CreateGroupDialog(
     inputModel: CreateGroupInputModel,
     parentWindowState: WindowManager.RiftWindowState,
+    description: String,
     onDismiss: () -> Unit,
     onConfirmClick: (name: String) -> Unit,
 ) {
@@ -38,12 +40,13 @@ fun WindowScope.CreateGroupDialog(
     }
     RiftDialog(
         title = title,
-        icon = Res.drawable.window_loudspeaker_icon,
+        icon = Res.drawable.window_smallfolder,
         parentState = parentWindowState,
         state = rememberWindowState(width = 300.dp, height = Dp.Unspecified),
         onCloseClick = onDismiss,
     ) {
         CreateGroupDialogContent(
+            description = description,
             inputModel = inputModel,
             onCancelClick = onDismiss,
             onConfirmClick = onConfirmClick,
@@ -53,6 +56,7 @@ fun WindowScope.CreateGroupDialog(
 
 @Composable
 private fun CreateGroupDialogContent(
+    description: String,
     inputModel: CreateGroupInputModel,
     onCancelClick: () -> Unit,
     onConfirmClick: (name: String) -> Unit,
@@ -62,7 +66,7 @@ private fun CreateGroupDialogContent(
     ) {
         if (inputModel is CreateGroupInputModel.New) {
             Text(
-                text = "Groups allow you to organize your alerts.",
+                text = description,
             )
         }
         val initialText = (inputModel as? CreateGroupInputModel.Rename)?.name ?: ""

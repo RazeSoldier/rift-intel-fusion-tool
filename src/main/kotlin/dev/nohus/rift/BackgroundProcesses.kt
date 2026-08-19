@@ -26,6 +26,7 @@ import dev.nohus.rift.opportunities.FreelanceJobsRepository
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository
 import dev.nohus.rift.pings.PingsRepository
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
+import dev.nohus.rift.postkillmail.PostKillmailWatcher
 import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.character.ZkillboardRecentActivityRepository
 import dev.nohus.rift.settings.persistence.Settings
@@ -72,6 +73,7 @@ class BackgroundProcesses(
     private val logLiteServer: LogLiteServer,
     private val logLiteParser: LogLiteParser,
     private val sovereigntyUpgradesHackWatcher: SovereigntyUpgradesHackWatcher,
+    private val postKillmailWatcher: PostKillmailWatcher,
     private val corporationProjectsRepository: CorporationProjectsRepository,
     private val freelanceJobsRepository: FreelanceJobsRepository,
     private val mercenaryTacticalOperationsRepository: MercenaryTacticalOperationsRepository,
@@ -175,6 +177,9 @@ class BackgroundProcesses(
             }
             launch {
                 sovereigntyUpgradesHackWatcher.start()
+            }
+            launch {
+                postKillmailWatcher.start()
             }
             launch {
                 corporationProjectsRepository.start()
