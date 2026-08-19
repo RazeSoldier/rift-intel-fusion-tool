@@ -61,6 +61,7 @@ import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.SystemDetails
 import dev.nohus.rift.compose.SystemEntities
 import dev.nohus.rift.compose.TitleBarStyle
+import dev.nohus.rift.compose.getIntelTimerBorderColor
 import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.getStandardTransitionSpec
 import dev.nohus.rift.compose.pointerInteraction
@@ -242,7 +243,7 @@ private fun IntelFeedItem(
                 }
             }
             val groups = groupIntelByTime(intel)
-            for ((index, group) in groups.entries.sortedByDescending { it.key }.withIndex()) {
+            for ((index, group) in groups.sortedByDescending { it.timestamp }.withIndex()) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -258,19 +259,43 @@ private fun IntelFeedItem(
                             )
                         }
                     }
-                    IntelTimer(
-                        timestamp = group.key,
-                        style = RiftTheme.typography.detailBoldPrimary,
-                        rowHeight = state.settings.rowHeight,
-                        modifier = Modifier.padding(Spacing.small),
-                    )
-                    val hasMultipleCharacters = group.value.count { it is SystemEntity.Character } > 1
+                    if (group.clearedAt == null) {
+                        IntelTimer(
+                            timestamp = group.timestamp,
+                            style = RiftTheme.typography.detailBoldPrimary,
+                            rowHeight = state.settings.rowHeight,
+                            modifier = Modifier.padding(Spacing.small),
+                        )
+                    } else {
+                        BorderedToken(
+                            rowHeight = state.settings.rowHeight,
+                            borderColor = getIntelTimerBorderColor(group.timestamp),
+                        ) {
+                            IntelTimer(
+                                timestamp = group.timestamp,
+                                style = RiftTheme.typography.detailBoldPrimary,
+                                modifier = Modifier.padding(Spacing.small),
+                            )
+                            Text(
+                                text = "Cleared",
+                                style = RiftTheme.typography.detailSecondary,
+                                modifier = Modifier.padding(Spacing.small),
+                            )
+                            IntelTimer(
+                                timestamp = group.clearedAt,
+                                style = RiftTheme.typography.detailBoldPrimary,
+                                modifier = Modifier.padding(Spacing.small),
+                            )
+                        }
+                    }
+                    val hasMultipleCharacters = group.entities.count { it is SystemEntity.Character } > 1
                     SystemEntities(
-                        entities = group.value,
+                        entities = group.entities,
                         system = system,
                         rowHeight = state.settings.rowHeight,
                         isHorizontal = true,
                         isGroupingCharacters = !isExpanded && hasMultipleCharacters,
+                        isCleared = group.clearedAt != null,
                     )
                 }
             }

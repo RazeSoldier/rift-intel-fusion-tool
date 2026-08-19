@@ -221,7 +221,7 @@ class AlertsTriggerController(
                                     val regex = containing.toRegexOrNull(RegexOption.IGNORE_CASE)
                                     regex?.find(action.message) != null
                                 } else {
-                                    action.message.lowercase().containsNonNull(containing)
+                                    action.message.lowercase().containsNonNull(containing.lowercase())
                                 }
                             } else {
                                 false

@@ -19,6 +19,7 @@ import dev.nohus.rift.network.requests.OriginatorRateLimitInterceptor
 import dev.nohus.rift.network.requests.RequestExecutor
 import dev.nohus.rift.network.requests.RequestExecutorImpl
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
+import dev.nohus.rift.network.zkillboard.ZkillboardCacheOverrideInterceptor
 import dev.nohus.rift.network.zkillboard.ZkillboardRateLimitInterceptor
 import dev.nohus.rift.notifications.system.LinuxSendNotificationUseCase
 import dev.nohus.rift.notifications.system.MacSendNotificationUseCase
@@ -157,6 +158,7 @@ val factoryModule = module {
             .cache(Cache(directory.toFile(), size))
             .addInterceptor(get<UserAgentInterceptor>())
             .addInterceptor(get<ZkillboardRateLimitInterceptor>())
+            .addNetworkInterceptor(get<ZkillboardCacheOverrideInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()

@@ -17,6 +17,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.loading_bar
 import dev.nohus.rift.generated.resources.loading_track
 import dev.nohus.rift.generated.resources.loading_track_overlay
+import dev.nohus.rift.generated.resources.spinner_16px
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -48,6 +49,23 @@ fun LoadingSpinner(
             modifier = Modifier.size(72.dp),
         )
     }
+}
+
+@Composable
+fun LoadingSpinner16(
+    modifier: Modifier = Modifier,
+) {
+    val transition = rememberInfiniteTransition()
+    val rotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing)),
+    )
+    Image(
+        painter = painterResource(Res.drawable.spinner_16px),
+        contentDescription = null,
+        modifier = modifier.size(16.dp).rotate(rotation),
+    )
 }
 
 @Composable

@@ -247,6 +247,8 @@ class ParsePingUseCase(
             "Snail" to "https://goonfleet.com/index.php/topic/366187-active-strat-snail-fleet/",
             "Vultures" to "https://goonfleet.com/index.php/topic/369029-active-strat-vultures/",
             "Crusaders" to "https://goonfleet.com/index.php/topic/372184-active-strat-contraceptors/",
+            "Typhoon" to "https://goonfleet.com/index.php/topic/380930-active-strat-typhoons/",
+            "Ruptures" to "https://goonfleet.com/index.php/topic/371893-active-peacetime-ruptures/",
         )
         if (text.contains("(")) {
             val name = text.substringBefore("(")

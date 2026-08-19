@@ -32,7 +32,6 @@ fun main() {
         }
     } catch (e: Throwable) {
         handleFatalException(e)
-        throw e
     }
 }
 

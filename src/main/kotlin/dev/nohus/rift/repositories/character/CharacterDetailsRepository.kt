@@ -19,7 +19,6 @@ import java.time.Instant
 @Single
 class CharacterDetailsRepository(
     private val esiApi: EsiApi,
-    private val zkillboardApi: ZkillboardApi,
     private val standingsRepository: StandingsRepository,
     private val contactsRepository: ContactsRepository,
     private val characterTitlesRepository: CharacterTitlesRepository,
@@ -46,7 +45,6 @@ class CharacterDetailsRepository(
         val birthday: Instant,
         val factionId: Int?,
         val securityStatus: Double?,
-        val dangerRatio: Int?,
     )
 
     data class CorporationDetails(
@@ -83,7 +81,6 @@ class CharacterDetailsRepository(
 
     suspend fun getCharacterDetails(originator: Originator, characterId: Int): CharacterDetails? = coroutineScope {
         val characterDeferred = async { esiApi.getCharactersId(originator, characterId).success }
-        val zkillStatsDeferred = async { zkillboardApi.getCharacterStats(originator, characterId).success }
         val character = characterDeferred.await() ?: return@coroutineScope null
         val corporationId = character.corporationId
         val allianceId = character.allianceId
@@ -98,7 +95,6 @@ class CharacterDetailsRepository(
         val allianceLabels = allianceId
             ?.let { contactsRepository.getLabels(listOf(allianceId)).map { it.name }.distinct() }
             ?: emptyList()
-        val zkillStats = zkillStatsDeferred.await()
         CharacterDetails(
             characterId = characterId,
             name = character.name,
@@ -120,7 +116,6 @@ class CharacterDetailsRepository(
             birthday = character.birthday,
             factionId = character.factionId,
             securityStatus = character.securityStatus,
-            dangerRatio = zkillStats?.dangerRatio,
         )
     }
 

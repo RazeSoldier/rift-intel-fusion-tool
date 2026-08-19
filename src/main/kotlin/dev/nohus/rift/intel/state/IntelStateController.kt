@@ -30,7 +30,10 @@ class IntelStateController(
     data class Dated<T>(
         val timestamp: Instant,
         val item: T,
-    )
+        val clearedAt: Instant? = null,
+    ) {
+        val isCleared: Boolean get() = clearedAt != null
+    }
 
     private val systemContents = mutableMapOf<MapSolarSystem, List<Dated<SystemEntity>>>()
 
@@ -104,7 +107,7 @@ class IntelStateController(
                 entities = entities + NoVisual
             }
             if (understanding.reportedClear) {
-                updateSystemToClear(system)
+                updateSystemToClear(timestamp, system)
                 entities = entities.filter { it !is Clearable }
             }
             if (understanding.movement == null) {
@@ -173,10 +176,15 @@ class IntelStateController(
         systemContents[system] = newContents
     }
 
-    private fun updateSystemToClear(system: MapSolarSystem) {
+    private fun updateSystemToClear(timestamp: Instant, system: MapSolarSystem) {
         val existingContents = systemContents[system] ?: emptyList()
-        val remainingContents = existingContents.filter { it.item !is Clearable }
-        systemContents[system] = remainingContents
+        systemContents[system] = existingContents.map { entity ->
+            if (entity.item is Clearable && !entity.isCleared) {
+                entity.copy(clearedAt = timestamp)
+            } else {
+                entity
+            }
+        }
     }
 
     /**
@@ -237,14 +245,15 @@ class IntelStateController(
      */
     private fun removeEmptyEntities() {
         systemContents.keys.forEach { system ->
-            val hasNoCharacters = systemContents[system]?.none { it.item is Character || it.item is UnspecifiedCharacter } ?: true
+            val activeContents = systemContents[system]?.filter { !it.isCleared } ?: emptyList()
+            val hasNoCharacters = activeContents.none { it.item is Character || it.item is UnspecifiedCharacter }
             if (hasNoCharacters) {
-                val filtered = systemContents[system]?.filter { it.item !is NoVisual } ?: emptyList()
+                val filtered = systemContents[system]?.filter { it.isCleared || it.item !is NoVisual } ?: emptyList()
                 systemContents[system] = filtered
             }
-            val hasOnlyGate = systemContents[system]?.all { it.item is Gate } ?: false
+            val hasOnlyGate = activeContents.isNotEmpty() && activeContents.all { it.item is Gate }
             if (hasOnlyGate) {
-                systemContents[system] = emptyList()
+                systemContents[system] = systemContents[system]?.filter { it.isCleared || it.item !is Gate } ?: emptyList()
             }
         }
     }

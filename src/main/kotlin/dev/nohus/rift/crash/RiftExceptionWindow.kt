@@ -29,6 +29,7 @@ import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.about.UpdateController
 import dev.nohus.rift.about.UpdateController.UpdateAvailability.UPDATE_AUTOMATIC
 import dev.nohus.rift.about.UpdateController.UpdateAvailability.UPDATE_MANUAL
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
@@ -52,21 +53,21 @@ fun RiftExceptionWindow(
 ) {
     val scale = try {
         koin.get<UiScaleController>().uiScale
-    } catch (ignored: Exception) {
+    } catch (_: Exception) {
         1f
     }
-    val windowState = rememberWindowState(width = (400 * scale).dp, height = (150 * scale).dp)
+    val windowState = rememberWindowState(width = (450 * scale).dp, height = (200 * scale).dp)
     var isUpdateAvailable: Boolean by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         try {
             val updateAvailability = UpdateController().isUpdateAvailable()
             isUpdateAvailable = updateAvailability == UPDATE_MANUAL || updateAvailability == UPDATE_AUTOMATIC
-        } catch (ignored: Exception) {}
+        } catch (_: Exception) {}
     }
     RiftWindow(
         title = "Fatal Error",
         icon = Res.drawable.window_log,
-        state = RiftWindowState(windowState = windowState, minimumSize = (200 * scale).toInt() to (200 * scale).toInt()),
+        state = RiftWindowState(windowState = windowState, minimumSize = (450 * scale).toInt() to (200 * scale).toInt()),
         onCloseClick = onCloseRequest,
     ) {
         Column {
@@ -156,6 +157,7 @@ fun RiftExceptionWindow(
                         text = "Report error",
                         type = ButtonType.Primary,
                         onClick = {
+                            Clipboard.copy("Error code: $errorId")
                             "https://discord.com/channels/1185575651575607458/1185579273583599676".toURIOrNull()?.openBrowser()
                         },
                     )

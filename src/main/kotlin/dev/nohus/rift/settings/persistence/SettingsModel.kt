@@ -2,6 +2,7 @@ package dev.nohus.rift.settings.persistence
 
 import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.alerts.Alert
+import dev.nohus.rift.assets.AssetFilterDefinition
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Assets
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Clones
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Colonies
@@ -101,6 +102,8 @@ data class SettingsModel(
     val forbiddenStructures: Map<Int, Set<Long>> = emptyMap(),
     val isShowingChatPortraits: Boolean = true,
     val isShowingChatStandings: Boolean = false,
+    val isShowingPaps: Boolean? = null,
+    val assetFilters: List<AssetFilterDefinition> = emptyList(),
 )
 
 @Serializable

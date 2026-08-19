@@ -225,7 +225,8 @@ class HostileOrbitPainter {
      */
     fun getTotalCount(intel: List<Dated<SystemEntity>>?): Int {
         if (intel == null) return 0
-        val entities = intel.map { it.item }
+        val activeIntel = intel.filter { !it.isCleared }
+        val entities = activeIntel.map { it.item }
         val characterCount = entities.filterIsInstance<SystemEntity.Character>().count() + entities.filterIsInstance<SystemEntity.UnspecifiedCharacter>().sumOf { it.count }
         val shipCount = entities.filterIsInstance<SystemEntity.Ship>().sumOf { it.count }
         var count = maxOf(characterCount, shipCount)
@@ -244,10 +245,11 @@ class HostileOrbitPainter {
     @Composable
     fun getEntityIcons(intel: List<Dated<SystemEntity>>?): List<EntityIcon> {
         if (intel == null) return emptyList()
-        val entities = intel.map { it.item }
+        val activeIntel = intel.filter { !it.isCleared }
+        val entities = activeIntel.map { it.item }
         val totalCount = getTotalCount(intel) // Total count of both friendly and hostile
-        val hostileShipIcons = getIcons(intel.filter { it.item is SystemEntity.Ship && it.item.standing?.isFriendly != true })
-        val friendlyShipIcons = getIcons(intel.filter { it.item is SystemEntity.Ship && it.item.standing?.isFriendly == true })
+        val hostileShipIcons = getIcons(activeIntel.filter { it.item is SystemEntity.Ship && it.item.standing?.isFriendly != true })
+        val friendlyShipIcons = getIcons(activeIntel.filter { it.item is SystemEntity.Ship && it.item.standing?.isFriendly == true })
         val friendlyCharacters = entities.count { it is SystemEntity.Character && it.details.standingLevel.isFriendly }
         val friendlyCount = maxOf(friendlyShipIcons.size, friendlyCharacters) // Total count of friendly
         val hostileCharacters = totalCount - friendlyCount // Total count of hostile

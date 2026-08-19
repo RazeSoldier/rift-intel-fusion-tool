@@ -76,18 +76,29 @@ object Types : Table() {
     val radius = float("radius").nullable()
     val repackagedVolume = float("repackagedVolume").nullable()
     val iconId = integer("iconID").nullable()
+    val metaGroupId = integer("metaGroupID").nullable()
+    val metaLevel = integer("metaLevel").nullable()
     override val primaryKey = PrimaryKey(typeId)
+}
+
+object MetaGroups : Table() {
+    val metaGroupId = integer("metaGroupID")
+    val metaGroupName = varchar("metaGroupName", 100)
+    override val primaryKey = PrimaryKey(metaGroupId)
 }
 
 object TypeGroups : Table() {
     val groupId = integer("groupId")
     val groupName = varchar("groupName", 100)
+    val categoryId = integer("categoryId")
+    val published = bool("published")
     override val primaryKey = PrimaryKey(groupId)
 }
 
 object TypeCategories : Table() {
     val categoryId = integer("categoryId")
     val categoryName = varchar("categoryName", 100)
+    val published = bool("published")
     override val primaryKey = PrimaryKey(categoryId)
 }
 

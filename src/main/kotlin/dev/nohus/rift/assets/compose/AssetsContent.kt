@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,6 +68,7 @@ import dev.nohus.rift.compose.RiftContextMenuArea
 import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMulticolorIcon
+import dev.nohus.rift.compose.RiftPill
 import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -80,6 +82,8 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.corphangar
 import dev.nohus.rift.generated.resources.editplanicon
+import dev.nohus.rift.generated.resources.expand_less_16px
+import dev.nohus.rift.generated.resources.expand_more_16px
 import dev.nohus.rift.generated.resources.goaldeliveries
 import dev.nohus.rift.generated.resources.menu_hide
 import dev.nohus.rift.generated.resources.menu_pinned
@@ -108,6 +112,10 @@ fun AssetsContent(
     onPinChange: (Long, LocationPinStatus) -> Unit,
     onRenameClick: (locationId: Long) -> Unit,
     onReloadClick: () -> Unit,
+    onAssetFilterToggle: (String) -> Unit,
+    onIsAssetFiltersShownChange: (Boolean) -> Unit,
+    onNewAssetFilterClick: () -> Unit,
+    onEditAssetFilterClick: (String) -> Unit,
 ) {
     Column {
         Row(
@@ -149,6 +157,40 @@ fun AssetsContent(
                 isCompact = false,
                 onSearchChange = { onFiltersUpdate(state.filters.copy(search = it.takeIf { it.isNotBlank() })) },
             )
+            Spacer(Modifier.width(Spacing.medium))
+            RiftButton(
+                text = "Filters",
+                icon = if (state.isAssetFiltersShown) Res.drawable.expand_less_16px else Res.drawable.expand_more_16px,
+                type = ButtonType.Secondary,
+                onClick = { onIsAssetFiltersShownChange(!state.isAssetFiltersShown) },
+            )
+        }
+
+        val enabledFilters = state.savedAssetFilters.filter { it.id in state.enabledAssetFilterIds }
+        val filtersToShow = if (state.isAssetFiltersShown) state.savedAssetFilters else enabledFilters
+        if (filtersToShow.isNotEmpty() || state.isAssetFiltersShown) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = Spacing.medium),
+            ) {
+                filtersToShow.forEach { filter ->
+                    RiftPill(
+                        text = filter.name,
+                        isSelected = filter.id in state.enabledAssetFilterIds,
+                        onClick = { onAssetFilterToggle(filter.id) },
+                        onEditClick = { onEditAssetFilterClick(filter.id) },
+                    )
+                }
+                if (state.isAssetFiltersShown) {
+                    RiftPill(
+                        text = "New Filter",
+                        onClick = onNewAssetFilterClick,
+                    )
+                }
+            }
         }
 
         var expandedLocations by remember { mutableStateOf<Set<AssetLocation>>(emptySet()) }
@@ -236,7 +278,7 @@ fun AssetsContent(
                                 .fillMaxWidth()
                                 .padding(top = Spacing.medium),
                         ) {
-                            val isFiltering = state.filters.search != null || state.filters.ownerTypes.isNotEmpty()
+                            val isFiltering = state.filters.search != null || state.filters.ownerTypes.isNotEmpty() || state.enabledAssetFilterIds.isNotEmpty()
                             val text = if (isFiltering) {
                                 "All assets filtered out"
                             } else {

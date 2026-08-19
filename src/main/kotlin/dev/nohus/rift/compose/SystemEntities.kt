@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -66,9 +67,11 @@ fun SystemEntities(
     rowHeight: Dp,
     isHorizontal: Boolean = false,
     isGroupingCharacters: Boolean = false,
+    isCleared: Boolean = false,
 ) {
+    val modifier = if (isCleared) Modifier.alpha(0.5f) else Modifier
     entities.filterIsInstance<SystemEntity.Killmail>().forEach { killmail ->
-        SystemEntityInfoRow(rowHeight, isHorizontal) {
+        SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
             ClickableEntity(
                 onClick = { killmail.url.toURIOrNull()?.openBrowser() },
             ) {
@@ -149,7 +152,7 @@ fun SystemEntities(
     }
     entities.filterIsInstance<SystemEntity.Ship>().forEach { ship ->
         ClickableShip(ship.type) {
-            SystemEntityInfoRow(rowHeight, isHorizontal) {
+            SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
                 AsyncTypeIcon(
                     typeId = ship.type.id,
                     modifier = Modifier.size(rowHeight),
@@ -177,7 +180,7 @@ fun SystemEntities(
                 it.details.allianceId ?: if (it.details.corporationId.isNpcCorp()) 1 else it.details.corporationId
             }
             .forEach { (_, characters) ->
-                SystemEntityInfoRow(rowHeight, isHorizontal) {
+                SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
                     CharactersPortraits(characters.map { it.details }, rowHeight)
 
                     val representative = characters.first().details
@@ -219,7 +222,7 @@ fun SystemEntities(
         entities.filterIsInstance<SystemEntity.Character>()
             .sortedWith(compareBy({ it.details.allianceId }, { it.details.corporationId }))
             .forEach { character ->
-                SystemEntityInfoRow(rowHeight, isHorizontal) {
+                SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
                     CharacterDetails(character.details, rowHeight, isAnimated = true)
                 }
             }
@@ -236,25 +239,27 @@ fun SystemEntities(
             )
         }
         if (isHorizontal) {
-            SystemEntityInfoRow(rowHeight, true) {
+            SystemEntityInfoRow(rowHeight, true, modifier = modifier) {
                 content()
             }
         } else {
-            content()
+            Row(modifier = modifier) {
+                content()
+            }
         }
     }
     entities.forEach { entity ->
         when (entity) {
-            SystemEntity.Bubbles -> IconInfoRow(Res.drawable.keywords_interdiction_probe, "Bubbles", rowHeight, isHorizontal)
-            SystemEntity.CombatProbes -> IconInfoRow(Res.drawable.keywords_combat_probe, "Combat probes", rowHeight, isHorizontal)
-            SystemEntity.Ess -> IconInfoRow(Res.drawable.keywords_ess, "ESS", rowHeight, isHorizontal)
-            SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "Skyhook", rowHeight, isHorizontal)
-            is SystemEntity.Gate -> GateInfoRow(system, entity, rowHeight, isHorizontal)
-            is SystemEntity.Celestial -> CelestialInfoRow(entity, rowHeight, isHorizontal)
-            SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "Gate camp", rowHeight, isHorizontal)
-            SystemEntity.NoVisual -> NoVisualRow(rowHeight, isHorizontal)
-            SystemEntity.Spike -> IconInfoRow(Res.drawable.keywords_spike, "Spike", rowHeight, isHorizontal)
-            SystemEntity.Wormhole -> WormholeInfoRow(rowHeight, isHorizontal)
+            SystemEntity.Bubbles -> IconInfoRow(Res.drawable.keywords_interdiction_probe, "Bubbles", rowHeight, isHorizontal, modifier)
+            SystemEntity.CombatProbes -> IconInfoRow(Res.drawable.keywords_combat_probe, "Combat probes", rowHeight, isHorizontal, modifier)
+            SystemEntity.Ess -> IconInfoRow(Res.drawable.keywords_ess, "ESS", rowHeight, isHorizontal, modifier)
+            SystemEntity.Skyhook -> IconInfoRow(Res.drawable.keywords_skyhook, "Skyhook", rowHeight, isHorizontal, modifier)
+            is SystemEntity.Gate -> GateInfoRow(system, entity, rowHeight, isHorizontal, modifier)
+            is SystemEntity.Celestial -> CelestialInfoRow(entity, rowHeight, isHorizontal, modifier)
+            SystemEntity.GateCamp -> IconInfoRow(Res.drawable.keywords_gatecamp, "Gate camp", rowHeight, isHorizontal, modifier)
+            SystemEntity.NoVisual -> NoVisualRow(rowHeight, isHorizontal, modifier)
+            SystemEntity.Spike -> IconInfoRow(Res.drawable.keywords_spike, "Spike", rowHeight, isHorizontal, modifier)
+            SystemEntity.Wormhole -> WormholeInfoRow(rowHeight, isHorizontal, modifier)
             is SystemEntity.Character -> {}
             is SystemEntity.UnspecifiedCharacter -> {}
             is SystemEntity.Ship -> {}
@@ -360,12 +365,13 @@ private fun CharacterMembership(
 fun SystemEntityInfoRow(
     rowHeight: Dp,
     hasBorder: Boolean,
+    modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
     val border = RiftTheme.colors.borderGreyLight
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .height(IntrinsicSize.Max)
             .heightIn(min = rowHeight)
             .modifyIf(hasBorder) { Modifier.border(1.dp, border) },
@@ -374,8 +380,8 @@ fun SystemEntityInfoRow(
 }
 
 @Composable
-private fun IconInfoRow(icon: DrawableResource, text: String, rowHeight: Dp, isHorizontal: Boolean) {
-    SystemEntityInfoRow(rowHeight, isHorizontal) {
+private fun IconInfoRow(icon: DrawableResource, text: String, rowHeight: Dp, isHorizontal: Boolean, modifier: Modifier = Modifier) {
+    SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
         Image(
             painter = painterResource(icon),
             contentDescription = null,
@@ -390,8 +396,8 @@ private fun IconInfoRow(icon: DrawableResource, text: String, rowHeight: Dp, isH
 }
 
 @Composable
-private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
-    SystemEntityInfoRow(rowHeight, isHorizontal) {
+private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean, modifier: Modifier = Modifier) {
+    SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
         val transition = rememberInfiniteTransition()
         val rotation by transition.animateFloat(
             initialValue = 0f,
@@ -414,7 +420,7 @@ private fun WormholeInfoRow(rowHeight: Dp, isHorizontal: Boolean) {
 }
 
 @Composable
-private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHeight: Dp, isHorizontal: Boolean) {
+private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHeight: Dp, isHorizontal: Boolean, modifier: Modifier = Modifier) {
     val starGatesRepository: StarGatesRepository = remember { koin.get() }
     val gate = starGatesRepository.getGate(entity.isAnsiblex, system.id, entity.system2.id)
     val gateText = if (entity.isAnsiblex) "Ansiblex" else "Gate"
@@ -425,7 +431,7 @@ private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHe
         locationTypeId = gate.typeId,
         locationName = name,
     ) {
-        SystemEntityInfoRow(rowHeight, isHorizontal) {
+        SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
             AsyncTypeIcon(
                 typeId = gate.typeId,
                 modifier = Modifier.size(rowHeight),
@@ -457,14 +463,14 @@ private fun GateInfoRow(system: MapSolarSystem, entity: SystemEntity.Gate, rowHe
 }
 
 @Composable
-private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHorizontal: Boolean) {
+private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHorizontal: Boolean, modifier: Modifier = Modifier) {
     ClickableLocation(
         systemId = entity.celestial.solarSystemId,
         locationId = entity.celestial.id.toLong(),
         locationTypeId = entity.celestial.type.id,
         locationName = entity.celestial.name,
     ) {
-        SystemEntityInfoRow(rowHeight, isHorizontal) {
+        SystemEntityInfoRow(rowHeight, isHorizontal, modifier = modifier) {
             AsyncTypeIcon(
                 type = entity.celestial.type,
                 modifier = Modifier.size(rowHeight),
@@ -500,6 +506,7 @@ private fun CelestialInfoRow(entity: SystemEntity.Celestial, rowHeight: Dp, isHo
 private fun NoVisualRow(
     rowHeight: Dp,
     isHorizontal: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     val content = @Composable {
         Image(
@@ -515,12 +522,12 @@ private fun NoVisualRow(
     }
     if (isHorizontal) {
         if (rowHeight < 32.dp) {
-            SystemEntityInfoRow(rowHeight, true) {
+            SystemEntityInfoRow(rowHeight, true, modifier = modifier) {
                 Spacer(Modifier.width(Spacing.verySmall))
                 content()
             }
         } else {
-            SystemEntityInfoRow(rowHeight, true) {
+            SystemEntityInfoRow(rowHeight, true, modifier = modifier) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     content()
                 }
@@ -529,7 +536,7 @@ private fun NoVisualRow(
     } else {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(IntrinsicSize.Max).heightIn(min = 16.dp),
+            modifier = modifier.height(IntrinsicSize.Max).heightIn(min = 16.dp),
         ) {
             content()
         }

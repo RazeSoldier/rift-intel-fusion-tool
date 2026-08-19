@@ -16,10 +16,13 @@ import dev.nohus.rift.windowing.WindowManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
+import java.time.Instant
 import java.time.ZoneId
 import kotlin.time.Duration.Companion.minutes
 
@@ -36,7 +39,10 @@ class PingsViewModel(
 ) : ViewModel() {
 
     data class UiState(
+        val isPapsDialogOpen: Boolean = false,
+        val isShowingPaps: Boolean?,
         val paps: Paps? = null,
+        var papsLastChecked: Instant = Instant.EPOCH,
         val pings: List<PingUiModel> = emptyList(),
         val displayTimezone: ZoneId,
         val isJabberConnected: Boolean,
@@ -44,6 +50,7 @@ class PingsViewModel(
 
     private val _state = MutableStateFlow(
         UiState(
+            isShowingPaps = settings.isShowingPaps,
             displayTimezone = settings.displayTimeZone,
             isJabberConnected = jabberClient.state.value.isConnected,
         ),
@@ -55,7 +62,12 @@ class PingsViewModel(
     init {
         viewModelScope.launch {
             settings.updateFlow.collect {
-                _state.update { it.copy(displayTimezone = settings.displayTimeZone) }
+                _state.update {
+                    it.copy(
+                        isShowingPaps = settings.isShowingPaps,
+                        displayTimezone = settings.displayTimeZone,
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -69,14 +81,35 @@ class PingsViewModel(
             }
         }
         viewModelScope.launch {
-            while (true) {
-                val paps = getPapsUseCase()
-                if (paps != null) {
-                    _state.update { it.copy(paps = paps) }
+            state.map { it.isShowingPaps to it.papsLastChecked }.distinctUntilChanged().collectLatest { (isShowingPaps, papsLastChecked) ->
+                if (isShowingPaps == true) {
+                    while (true) {
+                        val paps = getPapsUseCase()
+                        if (paps != null) {
+                            _state.update { it.copy(paps = paps) }
+                        }
+                        delay(60.minutes)
+                    }
                 }
-                delay(5.minutes)
             }
         }
+    }
+
+    fun isShowingPapsChanged(enabled: Boolean) {
+        _state.update { it.copy(isShowingPaps = enabled, isPapsDialogOpen = false) }
+        settings.isShowingPaps = enabled
+    }
+
+    fun onPapsDialogClose() {
+        _state.update { it.copy(isPapsDialogOpen = false) }
+    }
+
+    fun onPapsDialogOpen() {
+        _state.update { it.copy(isPapsDialogOpen = true) }
+    }
+
+    fun onCheckPapsClick() {
+        _state.update { it.copy(papsLastChecked = Instant.now()) }
     }
 
     fun onOpenJabberClick() {
@@ -99,6 +132,7 @@ class PingsViewModel(
                 sender = sender,
                 target = target,
             )
+
             is PingModel.FleetPing -> PingUiModel.FleetPing(
                 timestamp = timestamp,
                 sourceText = sourceText,

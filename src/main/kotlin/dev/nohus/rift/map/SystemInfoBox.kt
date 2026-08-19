@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -920,13 +921,13 @@ private fun InfoTypeIndicator(
 
 @Composable
 private fun Intel(
-    groups: Map<Instant, List<SystemEntity>>,
+    groups: List<IntelGroup>,
     system: MapSolarSystem,
 ) {
     CompositionLocalProvider(LocalNow provides getNow()) {
         Column {
             val isCompact = groups.hasAtLeast(8)
-            for ((index, group) in groups.entries.sortedByDescending { it.key }.withIndex()) {
+            for ((index, group) in groups.sortedByDescending { it.timestamp }.withIndex()) {
                 if (index > 0) {
                     Divider(
                         color = RiftTheme.colors.divider,
@@ -937,17 +938,31 @@ private fun Intel(
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    val entities = group.value
-                    IntelTimer(
-                        timestamp = group.key,
-                        style = RiftTheme.typography.detailBoldPrimary,
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                    )
+                    ) {
+                        IntelTimer(
+                            timestamp = group.timestamp,
+                            style = RiftTheme.typography.detailBoldPrimary,
+                        )
+                        if (group.clearedAt != null) {
+                            Text(
+                                text = "Cleared",
+                                style = RiftTheme.typography.detailSecondary,
+                            )
+                            IntelTimer(
+                                timestamp = group.clearedAt,
+                                style = RiftTheme.typography.detailBoldPrimary,
+                            )
+                        }
+                    }
                     SystemEntities(
-                        entities = entities,
+                        entities = group.entities,
                         system = system,
                         rowHeight = if (isCompact) 24.dp else 32.dp,
                         isGroupingCharacters = isCompact,
+                        isCleared = group.clearedAt != null,
                     )
                 }
             }
@@ -955,24 +970,42 @@ private fun Intel(
     }
 }
 
-private fun <T1, T2> Map<T1, List<T2>>.hasAtLeast(count: Int): Boolean {
+private fun List<IntelGroup>.hasAtLeast(count: Int): Boolean {
     var sum = 0
-    for (entry in entries) {
-        sum += entry.value.size
+    for (group in this) {
+        sum += group.entities.size
         if (sum >= count) return true
     }
     return false
 }
 
-fun groupIntelByTime(intel: List<Dated<SystemEntity>>): Map<Instant, List<SystemEntity>> {
+data class IntelGroup(
+    val timestamp: Instant,
+    val clearedAt: Instant?,
+    val entities: List<SystemEntity>,
+)
+
+fun groupIntelByTime(intel: List<Dated<SystemEntity>>): List<IntelGroup> {
     // Group entities by when they were reported, so they can be displayed with a single timer by group
-    val groups = mutableMapOf<Instant, List<SystemEntity>>()
+    val groups = mutableListOf<IntelGroup>()
     intel.forEach { item ->
-        val group = groups.keys.firstOrNull { Duration.between(item.timestamp, it).abs() < Duration.ofSeconds(30) }
-        if (group != null) {
-            groups[group] = groups.getValue(group) + item.item
+        val timestamp = item.timestamp
+        val clearedAt = item.clearedAt
+        val groupIndex = groups.indexOfFirst { group ->
+            val isSameReportGroup = Duration.between(timestamp, group.timestamp).abs() < Duration.ofSeconds(30)
+            val isSameClearState = (clearedAt == null) == (group.clearedAt == null)
+            val isSameClearGroup = if (clearedAt != null && group.clearedAt != null) {
+                Duration.between(clearedAt, group.clearedAt).abs() < Duration.ofSeconds(30)
+            } else {
+                true
+            }
+            isSameReportGroup && isSameClearState && isSameClearGroup
+        }
+        if (groupIndex != -1) {
+            val group = groups[groupIndex]
+            groups[groupIndex] = group.copy(entities = group.entities + item.item)
         } else {
-            groups[item.timestamp] = listOf(item.item)
+            groups += IntelGroup(timestamp, clearedAt, listOf(item.item))
         }
     }
     return groups

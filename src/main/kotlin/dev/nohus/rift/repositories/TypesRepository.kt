@@ -1,6 +1,7 @@
 package dev.nohus.rift.repositories
 
 import dev.nohus.rift.database.static.StaticDatabase
+import dev.nohus.rift.database.static.MetaGroups
 import dev.nohus.rift.database.static.TypeCategories
 import dev.nohus.rift.database.static.TypeDogmas
 import dev.nohus.rift.database.static.TypeGroups
@@ -30,11 +31,31 @@ class TypesRepository(
         val radius: Float?,
         val repackagedVolume: Float?,
         val iconId: Int,
+        val metaGroupId: Int?,
+        val metaLevel: Int?,
         val dogmas: Dogmas,
     )
 
     data class Dogmas(
         val entityOverviewShipGroupId: Int?,
+    )
+
+    data class TypeCategory(
+        val id: Int,
+        val name: String,
+        val isPublished: Boolean,
+    )
+
+    data class TypeGroup(
+        val id: Int,
+        val categoryId: Int,
+        val name: String,
+        val isPublished: Boolean,
+    )
+
+    data class MetaGroup(
+        val id: Int,
+        val name: String,
     )
 
     private val scope = CoroutineScope(Job())
@@ -44,10 +65,11 @@ class TypesRepository(
      */
     private lateinit var types: Map<Int, Type>
     private lateinit var typeIds: Map<String, Int>
-    private lateinit var groupNames: Map<Int, String>
+    private lateinit var groups: Map<Int, TypeGroup>
     private lateinit var groupTypes: Map<Int, List<Type>>
-    private lateinit var categoryNames: Map<Int, String>
+    private lateinit var categories: Map<Int, TypeCategory>
     private lateinit var categoryTypes: Map<Int, List<Type>>
+    private lateinit var metaGroupNames: Map<Int, String>
     private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
@@ -58,6 +80,11 @@ class TypesRepository(
             val dogmaRows = staticDatabase.transaction {
                 TypeDogmas.selectAll().toList()
             }.associateBy { it[TypeDogmas.typeId] }
+            metaGroupNames = staticDatabase.transaction {
+                MetaGroups.selectAll().toList()
+            }.associate {
+                it[MetaGroups.metaGroupId] to it[MetaGroups.metaGroupName]
+            }
             types = rows.associate {
                 val id = it[Types.typeId]
                 id to Type(
@@ -69,6 +96,8 @@ class TypesRepository(
                     radius = it[Types.radius],
                     repackagedVolume = it[Types.repackagedVolume],
                     iconId = it[Types.iconId] ?: it[Types.typeId],
+                    metaGroupId = it[Types.metaGroupId],
+                    metaLevel = it[Types.metaLevel],
                     dogmas = Dogmas(
                         entityOverviewShipGroupId = dogmaRows[id]?.get(TypeDogmas.entityOverviewShipGroupId),
                     ),
@@ -77,15 +106,15 @@ class TypesRepository(
             val groupRows = staticDatabase.transaction {
                 TypeGroups.selectAll().toList()
             }
-            groupNames = groupRows.associate {
-                it[TypeGroups.groupId] to it[TypeGroups.groupName]
+            groups = groupRows.associate {
+                it[TypeGroups.groupId] to TypeGroup(it[TypeGroups.groupId], it[TypeGroups.categoryId], it[TypeGroups.groupName], it[TypeGroups.published])
             }
             groupTypes = types.values.groupBy { it.groupId }
             val categoryRows = staticDatabase.transaction {
                 TypeCategories.selectAll().toList()
             }
-            categoryNames = categoryRows.associate {
-                it[TypeCategories.categoryId] to it[TypeCategories.categoryName]
+            categories = categoryRows.associate {
+                it[TypeCategories.categoryId] to TypeCategory(it[TypeCategories.categoryId], it[TypeCategories.categoryName], it[TypeCategories.published])
             }
             categoryTypes = types.values.groupBy { it.categoryId }
             typeIds = rows.groupBy { it[Types.typeName] }.map { (name, rows) ->
@@ -149,6 +178,8 @@ class TypesRepository(
             radius = null,
             repackagedVolume = null,
             iconId = -1,
+            metaGroupId = null,
+            metaLevel = null,
             dogmas = Dogmas(null),
         )
     }
@@ -161,14 +192,35 @@ class TypesRepository(
         return categoryTypes[categoryId] ?: listOf()
     }
 
+    fun getCategories(): List<TypeCategory> {
+        blockUntilLoaded()
+        return categories.values.sortedBy { it.name }
+    }
+
+    fun getGroupsInCategory(categoryId: Int): List<TypeGroup> {
+        blockUntilLoaded()
+        return groups.values.filter { it.categoryId == categoryId }.sortedBy { it.name }
+    }
+
     fun getGroupName(id: Int): String? {
         blockUntilLoaded()
-        return groupNames[id]
+        return groups[id]?.name
     }
 
     fun getCategoryName(id: Int): String? {
         blockUntilLoaded()
-        return categoryNames[id]
+        return categories[id]?.name
+    }
+
+    fun getMetaGroupName(id: Int): String? {
+        blockUntilLoaded()
+        return metaGroupNames[id]
+    }
+
+    fun getMetaGroups(): List<MetaGroup> {
+        blockUntilLoaded()
+        return metaGroupNames.map { (id, name) -> MetaGroup(id, name) }
+            .sortedBy { it.name }
     }
 
     /**

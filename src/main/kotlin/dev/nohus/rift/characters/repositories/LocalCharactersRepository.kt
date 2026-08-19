@@ -35,7 +35,6 @@ class LocalCharactersRepository(
     private val settings: Settings,
     private val getEveCharactersSettingsUseCase: GetEveCharactersSettingsUseCase,
     private val esiApi: EsiApi,
-    private val zkillboardApi: ZkillboardApi,
     private val characterTitlesRepository: CharacterTitlesRepository,
 ) {
 
@@ -141,7 +140,6 @@ class LocalCharactersRepository(
     }
 
     private suspend fun loadEsiCharacters(characters: List<LocalCharacter>) = coroutineScope {
-        val characterIds = characters.map { it.characterId }
         for (localCharacter in characters) {
             launch {
                 val characterInfo = combine(
@@ -155,12 +153,7 @@ class LocalCharactersRepository(
                             Result.Success(emptyList())
                         }
                     },
-                    result3 = async {
-                        zkillboardApi.getCharacterStats(Originator.LocalCharacters, localCharacter.characterId).success.let {
-                            Result.Success(it)
-                        }
-                    },
-                ) { details, roles, zkillStats ->
+                ) { details, roles ->
                     val corporationId = details.corporationId
                     val allianceId = details.allianceId
                     val corporationDeferred = async { esiApi.getCorporationsId(Originator.LocalCharacters, corporationId) }
@@ -188,7 +181,6 @@ class LocalCharactersRepository(
                         birthday = details.birthday,
                         factionId = details.factionId,
                         securityStatus = details.securityStatus,
-                        dangerRatio = zkillStats?.dangerRatio,
                     )
                 }.success
 

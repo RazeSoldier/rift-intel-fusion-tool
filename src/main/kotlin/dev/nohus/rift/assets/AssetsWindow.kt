@@ -27,6 +27,7 @@ import dev.nohus.rift.assets.AssetsViewModel.AssetsTab
 import dev.nohus.rift.assets.AssetsViewModel.FitAction
 import dev.nohus.rift.assets.AssetsViewModel.UiState
 import dev.nohus.rift.assets.FittingController.Fitting
+import dev.nohus.rift.assets.compose.AssetFilterDialog
 import dev.nohus.rift.assets.compose.AssetsContent
 import dev.nohus.rift.assets.compose.AssetsLoadingProgress
 import dev.nohus.rift.assets.compose.OwnersContent
@@ -75,6 +76,10 @@ fun AssetsWindow(
             onPinChange = viewModel::onPinChange,
             onRenameClick = viewModel::onRenameClick,
             onReloadClick = viewModel::onReloadClick,
+            onAssetFilterToggle = viewModel::onAssetFilterToggle,
+            onIsAssetFiltersShownChange = viewModel::onIsAssetFiltersShownChange,
+            onNewAssetFilterClick = viewModel::onNewAssetFilterClick,
+            onEditAssetFilterClick = viewModel::onEditAssetFilterClick,
         )
         OnVisibilityChange(viewModel::onVisibilityChange)
 
@@ -85,6 +90,17 @@ fun AssetsWindow(
                 parentWindowState = windowState,
                 onDismiss = viewModel::onRenameClose,
                 onConfirmClick = viewModel::onRenameConfirm,
+            )
+        }
+
+        val assetFilterDialog = state.assetFilterDialog
+        if (assetFilterDialog != null) {
+            AssetFilterDialog(
+                filter = assetFilterDialog.filter,
+                parentWindowState = windowState,
+                onDismiss = viewModel::onAssetFilterDialogDismiss,
+                onSaveClick = viewModel::onAssetFilterSave,
+                onDeleteClick = viewModel::onAssetFilterDelete,
             )
         }
     }
@@ -133,6 +149,10 @@ private fun AssetsWindowContent(
     onPinChange: (Long, LocationPinStatus) -> Unit,
     onRenameClick: (locationId: Long) -> Unit,
     onReloadClick: () -> Unit,
+    onAssetFilterToggle: (String) -> Unit,
+    onIsAssetFiltersShownChange: (Boolean) -> Unit,
+    onNewAssetFilterClick: () -> Unit,
+    onEditAssetFilterClick: (String) -> Unit,
 ) {
     Column {
         val offset = LocalDensity.current.run { 1.dp.toPx() }
@@ -182,6 +202,10 @@ private fun AssetsWindowContent(
                                     onPinChange = onPinChange,
                                     onRenameClick = onRenameClick,
                                     onReloadClick = onReloadClick,
+                                    onAssetFilterToggle = onAssetFilterToggle,
+                                    onIsAssetFiltersShownChange = onIsAssetFiltersShownChange,
+                                    onNewAssetFilterClick = onNewAssetFilterClick,
+                                    onEditAssetFilterClick = onEditAssetFilterClick,
                                 )
                             }
                         }

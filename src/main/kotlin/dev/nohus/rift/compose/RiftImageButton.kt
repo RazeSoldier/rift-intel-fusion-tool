@@ -36,6 +36,7 @@ fun RiftImageButton(
     size: Dp,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     tint: Color? = null,
     isFullAlpha: Boolean = false,
     iconPadding: Dp = 0.dp,
@@ -65,14 +66,14 @@ fun RiftImageButton(
             modifier = modifier
                 .pointerInteraction(pointerInteractionStateHolder)
                 .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-                .modifyIfNotNull(onClick) {
+                .modifyIfNotNull(onClick.takeIf { isEnabled }) {
                     onClick(onClick = it)
                 },
         ) {
             Box(
                 modifier = Modifier.size(size + iconPadding * 2),
             ) {
-                if (onClick != null) {
+                if (onClick != null && isEnabled) {
                     val blur = LocalDensity.current.run { size.toPx() } * 0.35f
                     repeat(2) {
                         Image(
@@ -92,6 +93,7 @@ fun RiftImageButton(
                 contentDescription = null,
                 colorFilter = tint?.let { ColorFilter.tint(tint) },
                 modifier = Modifier
+                    .modifyIf(!isEnabled) { greyScale().alpha(0.4f) }
                     .size(size)
                     .alpha(iconAlpha),
             )

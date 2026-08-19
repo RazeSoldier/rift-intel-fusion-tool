@@ -7,6 +7,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import kotlin.io.path.exists
 import kotlin.io.path.getLastModifiedTime
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
@@ -22,6 +23,10 @@ class MatchChatLogFilenameUseCase {
     operator fun invoke(file: Path): ChatLogFile? {
         try {
             if (file.isDirectory()) return null
+            if (!file.exists()) {
+                logger.debug { "Chat log filename \"${file.name}\" does not exist, not parsing" }
+                return null
+            }
             val match = chatLogFilenameRegex.find(file.name) ?: run {
                 logger.debug { "Chat log filename \"${file.name}\" could not be parsed: did not match regex" }
                 return null

@@ -1,5 +1,6 @@
 package dev.nohus.rift.network.zkillboard
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -15,7 +16,7 @@ import java.time.Instant
 @Single
 class ZkillboardRateLimitInterceptor : Interceptor {
 
-    // Rate limit is 600 request per minute
+    // Rate limit is 600 requests per minute
     private val maxQuota = 500 // A bit lower than the real max
     private val quotaPerSecond = 8 // Regenerate quota a bit slower than allowed
     private var quota = 100 // Assume at start-up most of the quota is used up

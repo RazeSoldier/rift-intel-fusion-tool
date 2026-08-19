@@ -864,6 +864,19 @@ object WhatsNew {
                 - Updated data and splash screen for the Cradle of War expansion
                 """.trimIndent(),
             )
+            add(
+                "5.25.0" description """
+                -! New Feature: Asset Filters
+                - You can now create and save filters for your assets, to easily find what you are looking for
+                - Filter by price, category, group, meta group, meta level, name, stack size, volume, and many more
+                - Combine many attributes and logical operators to create complex filters
+                - Use different matching options or activate multiple filters at once
+                
+                -! Intel clearing improvements
+                - When intel in a system is cleared, it will now stay on the Map and Intel Feed while being marked as cleared
+                - Easily see when a piece of intel was reported, and when it was cleared
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

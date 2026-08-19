@@ -30,7 +30,7 @@ fun IntelTimer(
     val duration = Duration.between(timestamp, now)
     val colorFadePercentage = (duration.toSeconds() / Duration.ofMinutes(3).seconds.toFloat()).coerceIn(0f, 1f)
     val color = lerp(RiftTheme.colors.textSpecialHighlighted, RiftTheme.colors.textSecondary, colorFadePercentage)
-    val borderColor = lerp(RiftTheme.colors.textSpecialHighlighted, RiftTheme.colors.borderGreyLight, colorFadePercentage)
+    val borderColor = getIntelTimerBorderColor(timestamp)
     val content = @Composable {
         Text(
             text = formatDuration(duration),
@@ -45,6 +45,14 @@ fun IntelTimer(
     } else {
         content()
     }
+}
+
+@Composable
+fun getIntelTimerBorderColor(timestamp: Instant): Color {
+    val now = LocalNow.current
+    val duration = Duration.between(timestamp, now)
+    val colorFadePercentage = (duration.toSeconds() / Duration.ofMinutes(3).seconds.toFloat()).coerceIn(0f, 1f)
+    return lerp(RiftTheme.colors.textSpecialHighlighted, RiftTheme.colors.borderGreyLight, colorFadePercentage)
 }
 
 private fun formatDuration(duration: Duration): String {

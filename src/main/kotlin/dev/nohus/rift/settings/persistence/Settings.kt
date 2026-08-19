@@ -1,6 +1,7 @@
 package dev.nohus.rift.settings.persistence
 
 import dev.nohus.rift.alerts.Alert
+import dev.nohus.rift.assets.AssetFilterDefinition
 import dev.nohus.rift.standings.StandingsRepository.Standings
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -260,6 +261,10 @@ class Settings(
         get() = model.assetLocationCustomNames
         set(value) = update { copy(assetLocationCustomNames = value) }
 
+    var assetFilters: List<AssetFilterDefinition>
+        get() = model.assetFilters
+        set(value) = update { copy(assetFilters = value) }
+
     var isJukeboxRevealed: Boolean
         get() = model.isJukeboxRevealed
         set(value) = update { copy(isJukeboxRevealed = value) }
@@ -319,4 +324,8 @@ class Settings(
     var isShowingChatStandings: Boolean
         get() = model.isShowingChatStandings
         set(value) = update { copy(isShowingChatStandings = value) }
+
+    var isShowingPaps: Boolean?
+        get() = model.isShowingPaps
+        set(value) = update { copy(isShowingPaps = value) }
 }

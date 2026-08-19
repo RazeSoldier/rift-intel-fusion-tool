@@ -31,11 +31,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -52,6 +54,7 @@ class AssetsViewModel(
     private val pricesRepository: PricesRepository,
     private val settings: Settings,
     private val typesRepository: TypesRepository,
+    private val filterAssetsUseCase: FilterAssetsUseCase,
 ) : ViewModel() {
 
     data class AssetLocation(
@@ -74,6 +77,7 @@ class AssetsViewModel(
         val quantity: Int,
         val itemId: Long,
         val locationFlag: String,
+        val isAssembled: Boolean,
         val isBlueprintCopy: Boolean,
         val children: List<Asset>,
         val price: Double? = null,
@@ -102,10 +106,18 @@ class AssetsViewModel(
         val pins: Map<Long, LocationPinStatus> = emptyMap(),
         val tab: AssetsTab = AssetsTab.Owners,
         val renameLocationDialog: RenameLocationDialog? = null,
+        val savedAssetFilters: List<AssetFilterDefinition> = emptyList(),
+        val enabledAssetFilterIds: Set<String> = emptySet(),
+        val isAssetFiltersShown: Boolean = false,
+        val assetFilterDialog: AssetFilterDialog? = null,
     )
 
     data class RenameLocationDialog(
         val location: AssetLocation,
+    )
+
+    data class AssetFilterDialog(
+        val filter: AssetFilterDefinition?,
     )
 
     data class LoadedData(
@@ -130,6 +142,7 @@ class AssetsViewModel(
     private val _state = MutableStateFlow(
         UiState(
             pins = settings.assetLocationPins,
+            savedAssetFilters = settings.assetFilters,
         ),
     )
     val state = _state.asStateFlow()
@@ -142,6 +155,13 @@ class AssetsViewModel(
                 val activeCharacter: Int?,
                 val characterLocations: Map<Int, CharacterLocationRepository.Location>,
                 val filters: AssetsFilters,
+                val savedAssetFilters: List<AssetFilterDefinition>,
+                val enabledAssetFilterIds: Set<String>,
+            )
+            data class FilterParams(
+                val filters: AssetsFilters,
+                val savedAssetFilters: List<AssetFilterDefinition>,
+                val enabledAssetFilterIds: Set<String>,
             )
 
             combine(
@@ -149,14 +169,22 @@ class AssetsViewModel(
                 assetsRepository.state.map { it.loading },
                 activeCharacterRepository.activeCharacter,
                 characterLocationRepository.locations,
-                _state.map { it.filters },
-            ) { loadedState, loading, activeCharacter, characterLocations, filters ->
-                UpdateParams(loadedState, loading, activeCharacter, characterLocations, filters)
+                _state.map { FilterParams(it.filters, it.savedAssetFilters, it.enabledAssetFilterIds) },
+            ) { loadedState, loading, activeCharacter, characterLocations, filterParams ->
+                UpdateParams(
+                    loadedState = loadedState,
+                    loading = loading,
+                    activeCharacter = activeCharacter,
+                    characterLocations = characterLocations,
+                    filters = filterParams.filters,
+                    savedAssetFilters = filterParams.savedAssetFilters,
+                    enabledAssetFilterIds = filterParams.enabledAssetFilterIds,
+                )
             }
                 .debounce(100)
-                .collectLatest { (loadedState, loading, activeCharacter, characterLocations, filters) ->
+                .collectLatest { (loadedState, loading, activeCharacter, characterLocations, filters, savedAssetFilters, enabledAssetFilterIds) ->
                     _state.update { it.copy(loading = loading) }
-                    updateAssets(loadedState, activeCharacter, characterLocations, filters)
+                    updateAssets(loadedState, activeCharacter, characterLocations, filters, savedAssetFilters, enabledAssetFilterIds)
                 }
         }
 
@@ -164,6 +192,20 @@ class AssetsViewModel(
             localCharactersRepository.characters.collect { characters ->
                 _state.update { it.copy(characters = characters.filter { ScopeGroups.readAssets in it.scopes }) }
             }
+        }
+
+        viewModelScope.launch {
+            settings.updateFlow
+                .map { it.assetFilters }
+                .distinctUntilChanged()
+                .collect { assetFilters ->
+                    _state.update { state ->
+                        state.copy(
+                            savedAssetFilters = assetFilters,
+                            enabledAssetFilterIds = state.enabledAssetFilterIds.intersect(assetFilters.map { it.id }.toSet()),
+                        )
+                    }
+                }
         }
     }
 
@@ -185,6 +227,52 @@ class AssetsViewModel(
 
     fun onFiltersUpdate(filters: AssetsFilters) {
         _state.update { it.copy(filters = filters) }
+    }
+
+    fun onAssetFilterToggle(filterId: String) {
+        _state.update {
+            val enabled = it.enabledAssetFilterIds
+            val updated = if (filterId in enabled) enabled - filterId else enabled + filterId
+            it.copy(enabledAssetFilterIds = updated)
+        }
+    }
+
+    fun onIsAssetFiltersShownChange(isShown: Boolean) {
+        _state.update { it.copy(isAssetFiltersShown = isShown) }
+    }
+
+    fun onNewAssetFilterClick() {
+        _state.update { it.copy(assetFilterDialog = AssetFilterDialog(null)) }
+    }
+
+    fun onEditAssetFilterClick(filterId: String) {
+        val filter = _state.value.savedAssetFilters.firstOrNull { it.id == filterId } ?: return
+        _state.update { it.copy(assetFilterDialog = AssetFilterDialog(filter)) }
+    }
+
+    fun onAssetFilterDialogDismiss() {
+        _state.update { it.copy(assetFilterDialog = null) }
+    }
+
+    fun onAssetFilterSave(filter: AssetFilterDefinition) {
+        val saved = settings.assetFilters
+        val filterToSave = if (filter.id.isBlank()) filter.copy(id = UUID.randomUUID().toString()) else filter
+        settings.assetFilters = if (saved.any { it.id == filterToSave.id }) {
+            saved.map { if (it.id == filterToSave.id) filterToSave else it }
+        } else {
+            saved + filterToSave
+        }
+        _state.update { it.copy(assetFilterDialog = null) }
+    }
+
+    fun onAssetFilterDelete(filterId: String) {
+        settings.assetFilters = settings.assetFilters.filterNot { it.id == filterId }
+        _state.update {
+            it.copy(
+                enabledAssetFilterIds = it.enabledAssetFilterIds - filterId,
+                assetFilterDialog = null,
+            )
+        }
     }
 
     fun onFitAction(fitting: Fitting, action: FitAction) {
@@ -225,6 +313,8 @@ class AssetsViewModel(
         activeCharacter: Int?,
         characterLocations: Map<Int, CharacterLocationRepository.Location>,
         filters: AssetsFilters,
+        savedAssetFilters: List<AssetFilterDefinition>,
+        enabledAssetFilterIds: Set<String>,
     ) {
         val loaded = loadedState ?: return
         val activeCharacterSolarSystemId = characterLocations[activeCharacter]?.solarSystemId
@@ -233,7 +323,8 @@ class AssetsViewModel(
                 pricesRepository.refreshPrices(Originator.Assets)
                 val processedAssets = getAssetsByLocation(loaded.assets, activeCharacterSolarSystemId)
                     .map { it.first to processCorporationOffices(it.second, loaded.divisionNames) }
-                val filteredAssets = getFilteredAssets(processedAssets, filters)
+                val enabledFilters = savedAssetFilters.filter { it.id in enabledAssetFilterIds }
+                val filteredAssets = getFilteredAssets(processedAssets, filters, enabledFilters)
                 val totals = getAssetTotals(filteredAssets)
                 LoadedData(
                     assets = loaded.assets,
@@ -256,7 +347,11 @@ class AssetsViewModel(
         return AssetTotals(totalLocations, totalItems, totalPrice, totalVolume)
     }
 
-    private fun getFilteredAssets(assets: List<Pair<AssetLocation, List<Asset>>>, filters: AssetsFilters): List<Pair<AssetLocation, List<Asset>>> {
+    private fun getFilteredAssets(
+        assets: List<Pair<AssetLocation, List<Asset>>>,
+        filters: AssetsFilters,
+        enabledAssetFilters: List<AssetFilterDefinition>,
+    ): List<Pair<AssetLocation, List<Asset>>> {
         var filtered = assets
 
         if (filters.ownerTypes.isNotEmpty()) {
@@ -306,6 +401,8 @@ class AssetsViewModel(
                     if (matchingAssets.isNotEmpty()) location to matchingAssets else null
                 }
         }
+        filtered = filterAssetsUseCase(filtered, enabledAssetFilters)
+
         val pins = _state.value.pins
         val sorted = when (filters.sort) {
             SortType.Distance -> filtered.sortedWith(
@@ -360,6 +457,7 @@ class AssetsViewModel(
                 quantity = 1,
                 itemId = 10_000_000_000_000 + index,
                 locationFlag = "CapsuleerDeliveries",
+                isAssembled = true,
                 isBlueprintCopy = false,
                 children = assets,
             )
@@ -563,6 +661,7 @@ class AssetsViewModel(
             quantity = asset.asset.quantity,
             itemId = asset.asset.itemId,
             locationFlag = asset.asset.locationFlag,
+            isAssembled = asset.asset.isSingleton,
             isBlueprintCopy = asset.asset.isBlueprintCopy == true,
             children = getAssetTree(assets, asset.asset.itemId),
             price = pricesRepository.getPrice(asset.asset.typeId)

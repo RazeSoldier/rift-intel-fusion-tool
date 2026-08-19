@@ -431,7 +431,7 @@ class WindowManager(
             RiftWindow.Jabber -> WindowSizing(defaultSize = saved ?: (400 to 500), minimumSize = (200 to 200))
             RiftWindow.Pings -> WindowSizing(defaultSize = saved ?: (440 to 500), minimumSize = (440 to 300))
             RiftWindow.ConfigurationPackReminder -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
-            RiftWindow.Assets -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = (500 to 300))
+            RiftWindow.Assets -> WindowSizing(defaultSize = saved ?: (600 to 500), minimumSize = (600 to 300))
             RiftWindow.WhatsNew -> WindowSizing(defaultSize = (450 to 600), minimumSize = (450 to 600))
             RiftWindow.Debug -> WindowSizing(defaultSize = saved ?: (1500 to 950), minimumSize = (450 to 500))
             RiftWindow.LogLite -> WindowSizing(defaultSize = saved ?: (1200 to 600), minimumSize = (1000 to 500))
