@@ -78,7 +78,7 @@ fun CharacterTooltip(
                                 text = character.name,
                                 style = RiftTheme.typography.headlineHighlighted,
                             )
-                            FlagIcon(character.standing)
+                            FlagIcon(character.standingLevel)
                         }
                         if (character.title != null) {
                             Row(

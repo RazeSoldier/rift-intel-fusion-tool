@@ -73,6 +73,7 @@ class MapMarkersViewModel(
                 iconName = it.icon,
                 icon = Res.allDrawableResources[it.icon] ?: Res.drawable.map_marker_place_bookmark,
                 isEnabled = it.isEnabled,
+                isPinned = it.isPinned,
                 group = it.group,
             )
         }.sortedWith(compareBy({ it.regionName }, { it.systemName }))
@@ -116,6 +117,13 @@ class MapMarkersViewModel(
         val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
         settings.mapMarkers = settings.mapMarkers.map {
             if (it.id == marker.id) it.copy(isEnabled = isEnabled) else it
+        }
+    }
+
+    fun onToggleMarkerPinned(id: UUID) {
+        val marker = _state.value.markers.firstOrNull { it.id == id } ?: return
+        settings.mapMarkers = settings.mapMarkers.map {
+            if (it.id == marker.id) it.copy(isPinned = !it.isPinned) else it
         }
     }
 
@@ -187,6 +195,7 @@ class MapMarkersViewModel(
             color = input.color,
             icon = input.icon,
             isEnabled = existingMarker?.isEnabled ?: true,
+            isPinned = existingMarker?.isPinned ?: false,
             group = existingMarker?.group,
         )
         _state.update { it.copy(editingMarker = null) }

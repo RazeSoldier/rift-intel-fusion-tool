@@ -1,5 +1,7 @@
 package dev.nohus.rift.network.esi.models
 
+import androidx.compose.ui.graphics.Color
+import dev.nohus.rift.network.HexColorSerializer
 import dev.nohus.rift.network.IsoDateTimeSerializer
 import dev.nohus.rift.network.esi.pagination.OffsetId
 import kotlinx.serialization.SerialName
@@ -104,6 +106,21 @@ data class CorporationsIdCorporation(
     val ticker: String,
     @SerialName("alliance_id")
     val allianceId: Int? = null,
+    @SerialName("palette")
+    val palette: CorporationPalette? = null,
+)
+
+@Serializable
+data class CorporationPalette(
+    @SerialName("main_color")
+    @Serializable(with = HexColorSerializer::class)
+    val mainColor: Color,
+    @SerialName("secondary_color")
+    @Serializable(with = HexColorSerializer::class)
+    val secondaryColor: Color? = null,
+    @SerialName("tertiary_color")
+    @Serializable(with = HexColorSerializer::class)
+    val tertiaryColor: Color? = null,
 )
 
 @Serializable

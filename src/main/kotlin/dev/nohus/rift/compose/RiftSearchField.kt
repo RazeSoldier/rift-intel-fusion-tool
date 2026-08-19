@@ -2,6 +2,7 @@ package dev.nohus.rift.compose
 
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,15 +25,18 @@ fun RiftSearchField(
     onSearchConfirm: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var search by remember { mutableStateOf(search ?: "") }
+    var text by remember { mutableStateOf(search ?: "") }
+    LaunchedEffect(search) {
+        text = search ?: ""
+    }
     val focusManager = LocalFocusManager.current
     RiftAutocompleteTextField(
-        text = search,
+        text = text,
         suggestions = suggestions,
         icon = Res.drawable.search_16px,
         placeholder = "Search",
         onTextChanged = {
-            search = it
+            text = it
             onSearchChange(it)
         },
         onSuggestionConfirmed = {
@@ -40,7 +44,7 @@ fun RiftSearchField(
         },
         height = if (isCompact) 24.dp else 32.dp,
         onDeleteClick = {
-            search = ""
+            text = ""
             onSearchChange("")
         },
         modifier = modifier

@@ -1,5 +1,6 @@
 package dev.nohus.rift.compose
 
+import dev.nohus.rift.assets.AssetsExternalControl
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.contacts.ContactsExternalControl
 import dev.nohus.rift.contacts.ContactsRepository
@@ -7,6 +8,7 @@ import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.game.GameUiController
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.indicator_assets
 import dev.nohus.rift.generated.resources.map_marker_place_bookmark
 import dev.nohus.rift.generated.resources.menu_add
 import dev.nohus.rift.generated.resources.menu_set_destination
@@ -14,6 +16,7 @@ import dev.nohus.rift.map.MapExternalControl
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.repositories.ExternalServiceRepository
+import dev.nohus.rift.repositories.MapStatusRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.Settings
@@ -31,6 +34,8 @@ class EntityInteractionProvider(
     val solarSystemsRepository: SolarSystemsRepository,
     val windowManager: WindowManager,
     val settings: Settings,
+    val mapStatusRepository: MapStatusRepository,
+    val assetsExternalControl: AssetsExternalControl,
 ) {
 
     data class Interaction(
@@ -255,6 +260,17 @@ class EntityInteractionProvider(
                     },
                 ),
             )
+            if ((mapStatusRepository.status.value[systemId]?.assetCount ?: 0) > 0) {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Show Assets",
+                        iconResource = Res.drawable.indicator_assets,
+                        onClick = {
+                            assetsExternalControl.showSystem(system.name)
+                        },
+                    ),
+                )
+            }
             if (isKnownSpace) {
                 if (mapType == null) {
                     add(

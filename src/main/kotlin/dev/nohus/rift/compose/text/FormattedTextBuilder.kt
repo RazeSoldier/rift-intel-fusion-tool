@@ -65,6 +65,12 @@ class SpanBuilder(
 }
 
 operator fun FormattedText.plus(other: FormattedText): FormattedText {
+    if (other is FormattedText.Empty || other is FormattedText.Formatted && other.text is FormattedText.Empty) {
+        return this
+    } else if (this is FormattedText.Empty || this is FormattedText.Formatted && this.text is FormattedText.Empty) {
+        return other
+    }
+
     return if (this is FormattedText.Compound) {
         FormattedText.Compound(texts + other)
     } else if (other is FormattedText.Compound) {

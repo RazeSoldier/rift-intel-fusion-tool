@@ -2,6 +2,7 @@ package dev.nohus.rift.wallet
 
 import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.settings.persistence.Settings
@@ -37,6 +38,7 @@ class WalletViewModel(
     private val walletRepository: WalletRepository,
     private val typesRepository: TypesRepository,
     private val settings: Settings,
+    private val localCharactersRepository: LocalCharactersRepository,
 ) : ViewModel() {
 
     data class UiState(
@@ -290,6 +292,8 @@ class WalletViewModel(
     }
 
     private suspend fun getStatistics(journal: List<WalletJournalItem>): Statistics {
+        val ownCharacterIds = localCharactersRepository.characters.value.map { it.characterId }.toSet()
+        val statisticsJournal = journal.filterNot { it.isTransferBetweenOwnCharacters(ownCharacterIds) }
         val incomes = mutableListOf<WalletJournalItem>()
         val expenses = mutableListOf<WalletJournalItem>()
         val parties = mutableSetOf<TypeDetail>()
@@ -298,7 +302,7 @@ class WalletViewModel(
         var expenseSum = 0.0
         var balance = 0.0
 
-        journal.forEach { item ->
+        statisticsJournal.forEach { item ->
             if (item.amount > 0) {
                 incomes.add(item)
                 incomeSum += item.amount
@@ -330,7 +334,7 @@ class WalletViewModel(
             val expensesSegments = async { getSegments(expenses) }
 
             Statistics(
-                journal = journal,
+                journal = statisticsJournal,
                 income = incomeSum,
                 expenses = expenseSum,
                 balance = balance,
@@ -346,6 +350,13 @@ class WalletViewModel(
                 activity = activity.await(),
             )
         }
+    }
+
+    private fun WalletJournalItem.isTransferBetweenOwnCharacters(ownCharacterIds: Set<Int>): Boolean {
+        if (refType != "player_donation") return false
+        val firstCharacterId = (firstParty as? TypeDetail.Character)?.character?.characterId ?: return false
+        val secondCharacterId = (secondParty as? TypeDetail.Character)?.character?.characterId ?: return false
+        return (firstCharacterId in ownCharacterIds && secondCharacterId in ownCharacterIds)
     }
 
     private fun getPartyTransactions(

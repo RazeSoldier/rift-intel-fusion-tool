@@ -766,6 +766,14 @@ private fun getAlertText(
                                 append("a module has run ")
                                 withStyle(primary) { append("out of charges") }
                             }
+                            GameActionType.InvitedToConversation -> {
+                                append("you are ")
+                                withStyle(primary) { append("invited to a conversation") }
+                            }
+                            GameActionType.AsteroidDepleted -> {
+                                append("an ")
+                                withStyle(primary) { append("asteroid has been depleted") }
+                            }
 
                             is GameActionType.Custom -> {
                                 append("a game action has happened containing ")

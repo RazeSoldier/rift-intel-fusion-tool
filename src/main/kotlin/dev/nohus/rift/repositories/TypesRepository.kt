@@ -1,7 +1,7 @@
 package dev.nohus.rift.repositories
 
-import dev.nohus.rift.database.static.StaticDatabase
 import dev.nohus.rift.database.static.MetaGroups
+import dev.nohus.rift.database.static.StaticDatabase
 import dev.nohus.rift.database.static.TypeCategories
 import dev.nohus.rift.database.static.TypeDogmas
 import dev.nohus.rift.database.static.TypeGroups

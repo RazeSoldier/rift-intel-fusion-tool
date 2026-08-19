@@ -66,6 +66,7 @@ import dev.nohus.rift.generated.resources.allDrawableResources
 import dev.nohus.rift.generated.resources.delete
 import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.flag_background
+import dev.nohus.rift.generated.resources.menu_pinned
 import dev.nohus.rift.generated.resources.toggle_off_18
 import dev.nohus.rift.generated.resources.toggle_on_18
 import dev.nohus.rift.generated.resources.window_locations
@@ -104,6 +105,7 @@ fun MapMarkersWindow(
             onShowMarkerClick = viewModel::onShowMarkerClick,
             onEditMarkerClick = viewModel::onEditMarkerClick,
             onToggleMarker = viewModel::onToggleMarker,
+            onToggleMarkerPinned = viewModel::onToggleMarkerPinned,
             onGroupChange = viewModel::onGroupChange,
             onGroupClick = viewModel::onGroupClick,
             onCreateGroupClick = viewModel::onCreateGroupClick,
@@ -145,6 +147,7 @@ private fun MapMarkersWindowContent(
     onShowMarkerClick: (UUID) -> Unit,
     onEditMarkerClick: (UUID) -> Unit,
     onToggleMarker: (UUID, Boolean) -> Unit,
+    onToggleMarkerPinned: (UUID) -> Unit,
     onGroupChange: (UUID, String?) -> Unit,
     onGroupClick: (String?) -> Unit,
     onCreateGroupClick: () -> Unit,
@@ -227,6 +230,7 @@ private fun MapMarkersWindowContent(
                                     onEditMarkerClick = { onEditMarkerClick(marker.id) },
                                     onDeleteMarkerClick = { onDeleteMarkerClick(marker.id) },
                                     onToggleMarker = { onToggleMarker(marker.id, it) },
+                                    onToggleMarkerPinned = { onToggleMarkerPinned(marker.id) },
                                     onGroupChange = { onGroupChange(marker.id, it) },
                                 )
                             }
@@ -492,6 +496,7 @@ private fun LazyItemScope.MarkerItem(
     onEditMarkerClick: () -> Unit,
     onDeleteMarkerClick: () -> Unit,
     onToggleMarker: (Boolean) -> Unit,
+    onToggleMarkerPinned: () -> Unit,
     onGroupChange: (String?) -> Unit,
 ) {
     Column(
@@ -523,6 +528,30 @@ private fun LazyItemScope.MarkerItem(
                     .alpha(alpha)
                     .size(16.dp),
             )
+            RiftTooltipArea(
+                tooltip = @Composable {
+                    Column(
+                        modifier = Modifier.padding(Spacing.large),
+                    ) {
+                        Text(
+                            text = if (marker.isPinned) "Unpin marker" else "Pin marker",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                        Text(
+                            text = "Pinned systems are visible on all zoom levels",
+                            style = RiftTheme.typography.bodySecondary,
+                        )
+                    }
+                },
+            ) {
+                RiftImageButton(
+                    resource = Res.drawable.menu_pinned,
+                    size = 16.dp,
+                    onClick = onToggleMarkerPinned,
+                    isFullAlpha = marker.isPinned,
+                    modifier = Modifier.alpha(if (marker.isPinned) alpha else alpha * 0.35f),
+                )
+            }
             Text(
                 text = "${marker.systemName} (${marker.regionName})",
                 style = RiftTheme.typography.bodyHighlighted,

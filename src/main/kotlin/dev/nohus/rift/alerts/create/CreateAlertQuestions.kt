@@ -3,7 +3,6 @@ package dev.nohus.rift.alerts.create
 import dev.nohus.rift.alerts.create.FormQuestion.CombatTargetQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.ContactsLabelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.FreeformTextQuestion
-import dev.nohus.rift.alerts.create.FormQuestion.IntelChannelQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.JumpsRangeQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.MultipleChoiceQuestion
 import dev.nohus.rift.alerts.create.FormQuestion.OwnedCharacterQuestion
@@ -29,7 +28,6 @@ class CreateAlertQuestions(
     val ALERT_TRIGGER_CHAT_MESSAGE = FormChoiceItem(id = id++, text = "Chat message is received")
     val ALERT_TRIGGER_JABBER_PING = FormChoiceItem(id = id++, text = "Jabber ping is received")
     val ALERT_TRIGGER_JABBER_MESSAGE = FormChoiceItem(id = id++, text = "Jabber message is received")
-    val ALERT_TRIGGER_NO_MESSAGE = FormChoiceItem(id = id++, text = "No reports are being received")
     val ALERT_TRIGGER_QUESTION = SingleChoiceQuestion(
         title = "Trigger the alert when:",
         items = buildList {
@@ -41,7 +39,6 @@ class CreateAlertQuestions(
                 add(ALERT_TRIGGER_JABBER_PING)
                 add(ALERT_TRIGGER_JABBER_MESSAGE)
             }
-            add(ALERT_TRIGGER_NO_MESSAGE)
         },
     )
 
@@ -143,6 +140,11 @@ class CreateAlertQuestions(
         id = id++,
         text = "You are attacking",
     )
+    val GAME_ACTION_TYPE_COMBAT_STOPPED = FormChoiceItem(
+        id = id++,
+        text = "You are no longer in combat",
+        description = "Includes both being under attack and attacking",
+    )
     val GAME_ACTION_TYPE_BEING_WARP_SCRAMBLED = FormChoiceItem(
         id = id++,
         text = "You are being warp scrambled",
@@ -151,14 +153,18 @@ class CreateAlertQuestions(
         id = id++,
         text = "You have been decloaked by a nearby object",
     )
-    val GAME_ACTION_TYPE_COMBAT_STOPPED = FormChoiceItem(
-        id = id++,
-        text = "You are no longer in combat",
-        description = "Includes both being under attack and attacking",
-    )
     val GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES = FormChoiceItem(
         id = id++,
         text = "Module has run out of charges",
+    )
+    val GAME_ACTION_TYPE_INVITED_TO_CONVERSATION = FormChoiceItem(
+        id = id++,
+        text = "You are invited to a conversation",
+    )
+    val GAME_ACTION_TYPE_ASTEROID_DEPLETED = FormChoiceItem(
+        id = id++,
+        text = "Asteroid has been depleted",
+        description = "Includes gas clouds"
     )
     val GAME_ACTION_TYPE_CUSTOM = FormChoiceItem(
         id = id++,
@@ -175,6 +181,8 @@ class CreateAlertQuestions(
             GAME_ACTION_TYPE_DECLOAKED,
             GAME_ACTION_TYPE_COMBAT_STOPPED,
             GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES,
+            GAME_ACTION_TYPE_INVITED_TO_CONVERSATION,
+            GAME_ACTION_TYPE_ASTEROID_DEPLETED,
             GAME_ACTION_TYPE_CUSTOM,
         ),
     )
@@ -410,41 +418,6 @@ class CreateAlertQuestions(
         placeholder = "Message contents. Leave empty for any.",
         allowEmpty = true,
         isRegexAllowed = true,
-    )
-
-    // No message channel type
-    val NO_MESSAGE_CHANNEL_ALL = FormChoiceItem(id = id++, text = "All monitored channels")
-    val NO_MESSAGE_CHANNEL_ANY = FormChoiceItem(id = id++, text = "Any monitored channel")
-    val NO_MESSAGE_CHANNEL_SPECIFIC = FormChoiceItem(id = id++, text = "A chosen channel")
-    val NO_MESSAGE_CHANNEL_TYPE_QUESTION = SingleChoiceQuestion(
-        title = "In:",
-        items = listOf(
-            NO_MESSAGE_CHANNEL_ALL,
-            NO_MESSAGE_CHANNEL_ANY,
-            NO_MESSAGE_CHANNEL_SPECIFIC,
-        ),
-    )
-
-    // No message channel type, specific channel
-    val NO_MESSAGE_CHANNEL_SPECIFIC_QUESTION = IntelChannelQuestion(
-        title = "With name:",
-    )
-
-    // No message duration
-    val NO_MESSAGE_DURATION_2_MINUTES = FormChoiceItem(id = id++, text = "2 minutes")
-    val NO_MESSAGE_DURATION_5_MINUTES = FormChoiceItem(id = id++, text = "5 minutes")
-    val NO_MESSAGE_DURATION_10_MINUTES = FormChoiceItem(id = id++, text = "10 minutes")
-    val NO_MESSAGE_DURATION_20_MINUTES = FormChoiceItem(id = id++, text = "20 minutes")
-    val NO_MESSAGE_DURATION_30_MINUTES = FormChoiceItem(id = id++, text = "30 minutes")
-    val NO_MESSAGE_DURATION_QUESTION = SingleChoiceQuestion(
-        title = "For at least:",
-        items = listOf(
-            NO_MESSAGE_DURATION_2_MINUTES,
-            NO_MESSAGE_DURATION_5_MINUTES,
-            NO_MESSAGE_DURATION_10_MINUTES,
-            NO_MESSAGE_DURATION_20_MINUTES,
-            NO_MESSAGE_DURATION_30_MINUTES,
-        ),
     )
 
     // Alert action

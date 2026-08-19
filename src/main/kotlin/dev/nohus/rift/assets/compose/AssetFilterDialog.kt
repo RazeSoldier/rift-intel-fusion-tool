@@ -273,7 +273,7 @@ private fun SubfilterRow(
             resource = Res.drawable.minus_12px,
             size = 12.dp,
             isEnabled = isRemovable,
-            onClick = onRemove
+            onClick = onRemove,
         )
         RiftDropdown(
             items = AssetFilterAttribute.entries,
@@ -330,14 +330,14 @@ private fun SubfilterRow(
                             selectedItem = selectedCategory,
                             onItemSelected = { onChange(subfilter.copy(comparison = comparison.copy(categoryId = it.id, groupId = null))) },
                             getItemName = { it.name },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                         RiftDropdown(
                             items = groupOptions,
                             selectedItem = selectedGroup,
                             onItemSelected = { onChange(subfilter.copy(comparison = comparison.copy(groupId = it.id))) },
                             getItemName = { it.name },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }

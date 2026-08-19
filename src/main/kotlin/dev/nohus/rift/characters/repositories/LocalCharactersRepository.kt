@@ -167,6 +167,7 @@ class LocalCharactersRepository(
                         corporationName = corporation.success?.name ?: "?",
                         corporationTicker = corporation.success?.ticker ?: "?",
                         corporationRoles = roles,
+                        corporationPalette = corporation.success?.palette,
                         allianceId = allianceId,
                         allianceName = if (alliance != null) alliance.success?.name ?: "?" else null,
                         allianceTicker = alliance?.success?.ticker,

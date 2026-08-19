@@ -20,6 +20,7 @@ class MapMarkersRepository(
         val label: String,
         val color: Color?,
         val icon: DrawableResource,
+        val isPinned: Boolean,
     )
 
     val markers: Flow<Map<Int, List<MapMarker>>> = settings.updateFlow
@@ -31,6 +32,7 @@ class MapMarkersRepository(
                     label = it.label,
                     color = it.color,
                     icon = Res.allDrawableResources[it.icon] ?: Res.drawable.map_marker_place_bookmark,
+                    isPinned = it.isPinned,
                 )
             }.groupBy { it.systemId }
         }

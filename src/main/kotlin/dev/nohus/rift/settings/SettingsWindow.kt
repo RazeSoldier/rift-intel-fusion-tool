@@ -1207,7 +1207,7 @@ private fun MapUserInterfaceSection(
                 withColor(RiftTheme.colors.textPrimary) {
                     append("Tip:")
                 }
-                append(" Press Space on the map to automatically resize")
+                append(" Press Page Up/Down or scroll on the map to zoom")
             },
             style = RiftTheme.typography.bodySecondary,
         )

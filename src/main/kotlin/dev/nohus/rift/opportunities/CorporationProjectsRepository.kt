@@ -168,7 +168,7 @@ class CorporationProjectsRepository(
             .filter { ScopeGroups.readProjects in it.scopes }
             .mapNotNull { character ->
                 val corporation = character.info?.let {
-                    Corporation(it.corporationId, it.corporationName)
+                    Corporation(it.corporationId, it.corporationName, it.corporationPalette)
                 } ?: return@mapNotNull null
                 corporation to character
             }

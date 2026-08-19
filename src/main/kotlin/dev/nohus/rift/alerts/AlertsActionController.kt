@@ -63,22 +63,54 @@ class AlertsActionController(
         solarSystem: MapSolarSystem,
     ) {
         val title = getNotificationTitle(matchingEntities)
+        val plainTextTitle = "$title in ${solarSystem.name}"
         val message = getNotificationMessage(locationMatch)
         val notification = Notification.IntelNotification(title, locationMatch, entities, solarSystem)
-        triggerAlert(alert, notification, title, message)
+        triggerAlert(alert, notification, plainTextTitle, message)
     }
 
     fun triggerGameActionAlert(alert: Alert, action: GameLogAction, characterId: Int) {
         val title = getNotificationTitle(action)
         val message = getNotificationMessage(action)
         val type = getNotificationItemType(action)
-        val notification = Notification.TextNotification(title, message, characterId, type)
         val iconUrl = if (type != null) {
             "https://images.evetech.net/types/${type.id}/icon"
+        } else if (action is GameLogAction.InvitedToConversation && action.characterId != null) {
+            "https://images.evetech.net/characters/${action.characterId}/portrait"
         } else {
             null
         }
-        triggerAlert(alert, notification, title, message.toString(), iconUrl)
+        if (action is GameLogAction.InvitedToConversation && action.characterId != null) {
+            scope.launch {
+                val notification = getGameActionNotification(action, title, message, characterId, type)
+                triggerAlert(alert, notification, title, message.toString(), iconUrl)
+            }
+        } else {
+            val notification = Notification.TextNotification(title, message, characterId, type)
+            triggerAlert(alert, notification, title, message.toString(), iconUrl)
+        }
+    }
+
+    private suspend fun getGameActionNotification(
+        action: GameLogAction.InvitedToConversation,
+        title: String,
+        message: AnnotatedString,
+        characterId: Int,
+        type: Type?,
+    ): Notification.TextNotification {
+        val inviterCharacterId = action.characterId ?: throw IllegalArgumentException("Conversation invite has no character ID")
+        val details = characterDetailsRepository.getCharacterDetails(Originator.Alerts, inviterCharacterId)
+        return Notification.TextNotification(
+            title = title,
+            message = message,
+            characterId = characterId,
+            type = type,
+            relatedCharacter = Notification.Character(
+                id = inviterCharacterId,
+                name = details?.name ?: action.characterName,
+                standing = details?.standingLevel,
+            ),
+        )
     }
 
     fun triggerChatMessageAlert(alert: Alert, chatMessage: ChannelChatMessage, highlight: String?) {
@@ -287,7 +319,7 @@ class AlertsActionController(
     }
 
     /**
-     * Only used for system notifications which cannot show rich content
+     * Only used for text notifications which cannot show rich content
      */
     private fun getNotificationMessage(locationMatch: AlertLocationMatch): String {
         val message = when (locationMatch) {
@@ -320,6 +352,8 @@ class AlertsActionController(
             is GameLogAction.CombatStopped -> "Combat stopped"
             GameLogAction.CloneJumping -> throw IllegalStateException("Not used")
             is GameLogAction.RanOutOfCharges -> "Module out of charges"
+            is GameLogAction.InvitedToConversation -> "Conversation invite"
+            is GameLogAction.AsteroidDepleted -> "Asteroid depleted"
             is GameLogAction.Generic -> action.type.replaceFirstChar { it.titlecase(Locale.US) }
         }
     }
@@ -365,6 +399,18 @@ class AlertsActionController(
                 }
                 append(" needs to reload")
             }
+            is GameLogAction.InvitedToConversation -> buildAnnotatedString {
+                withAnnotation(styleTag, styleValue) {
+                    append(action.characterName)
+                }
+                append(" is inviting you to a conversation")
+            }
+            is GameLogAction.AsteroidDepleted -> buildAnnotatedString {
+                withAnnotation(styleTag, styleValue) {
+                    append(action.module)
+                }
+                append(" deactivated")
+            }
             is GameLogAction.Generic -> buildAnnotatedString {
                 append(action.message)
             }
@@ -380,6 +426,8 @@ class AlertsActionController(
             is GameLogAction.CombatStopped -> typesRepository.getType(action.target)
             GameLogAction.CloneJumping -> throw IllegalStateException("Not used")
             is GameLogAction.RanOutOfCharges -> typesRepository.getType(action.module)
+            is GameLogAction.InvitedToConversation -> null
+            is GameLogAction.AsteroidDepleted -> typesRepository.getType(action.module)
             is GameLogAction.Generic -> typesRepository.findTypeInText(action.message)
         }
     }

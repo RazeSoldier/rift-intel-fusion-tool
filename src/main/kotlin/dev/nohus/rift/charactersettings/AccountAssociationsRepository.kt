@@ -7,6 +7,7 @@ import dev.nohus.rift.loglite.LogLiteAction
 import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import kotlin.io.path.getLastModifiedTime
@@ -27,9 +28,14 @@ class AccountAssociationsRepository(
         val now = Instant.now()
         val character = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId } ?: return
         val accountId = getAccounts().flatMap { it.paths.values }
-            .map { accountSettingsFile ->
-                val accountLastModified = accountSettingsFile.getLastModifiedTime().toInstant()
-                accountSettingsFile to Duration.between(accountLastModified, now)
+            .mapNotNull { accountSettingsFile ->
+                try {
+                    val accountLastModified = accountSettingsFile.getLastModifiedTime().toInstant()
+                    accountSettingsFile to Duration.between(accountLastModified, now)
+                } catch (e: IOException) {
+                    logger.error { "Failed reading account settings file: ${e.message}" }
+                    null
+                }
             }.singleOrNull { (_, age) -> age < Duration.ofSeconds(10) }
             ?.first?.nameWithoutExtension?.substringAfterLast("_")?.toIntOrNull() ?: return
         if (settings.accountAssociations[characterId] != accountId) {

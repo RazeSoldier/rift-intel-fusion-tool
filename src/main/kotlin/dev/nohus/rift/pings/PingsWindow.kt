@@ -167,7 +167,7 @@ private fun PingsWindowContent(
                     val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
                     Column(
                         modifier = Modifier
-                            .pointerInteraction(pointerInteractionStateHolder)
+                            .pointerInteraction(pointerInteractionStateHolder),
                     ) {
                         val now = getNow()
                         val lastUpdated = key(now) { "Checked PAPs ${getRelativeTime(paps.timestamp, state.displayTimezone, now)}" }
@@ -176,19 +176,19 @@ private fun PingsWindowContent(
                         AnimatedVisibility(Duration.between(paps.timestamp, now).toMinutes() > 5) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(start = Spacing.large, end = Spacing.large, top = Spacing.medium)
+                                modifier = Modifier.padding(start = Spacing.large, end = Spacing.large, top = Spacing.medium),
                             ) {
                                 Text(
                                     text = lastUpdated,
                                     style = RiftTheme.typography.bodySecondary,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                                 val alpha by animateFloatAsState(if (pointerInteractionStateHolder.isHovered) 1f else 0f)
                                 RiftButton(
                                     text = "Check now",
                                     isCompact = true,
                                     onClick = onCheckPapsClick,
-                                    modifier = Modifier.alpha(alpha)
+                                    modifier = Modifier.alpha(alpha),
                                 )
                             }
                         }

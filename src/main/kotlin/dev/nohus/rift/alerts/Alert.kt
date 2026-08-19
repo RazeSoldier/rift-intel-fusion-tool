@@ -61,6 +61,7 @@ sealed interface AlertTrigger {
         val pingType: JabberPingType,
     ) : AlertTrigger
 
+    @Deprecated("Removed")
     @Serializable
     @SerialName("NoChannelActivity")
     data class NoChannelActivity(
@@ -195,6 +196,14 @@ sealed interface GameActionType {
     @Serializable
     @SerialName("RanOutOfCharges")
     data object RanOutOfCharges : GameActionType
+
+    @Serializable
+    @SerialName("InvitedToConversation")
+    data object InvitedToConversation : GameActionType
+
+    @Serializable
+    @SerialName("AsteroidDepleted")
+    data object AsteroidDepleted : GameActionType
 
     @Serializable
     @SerialName("Custom")

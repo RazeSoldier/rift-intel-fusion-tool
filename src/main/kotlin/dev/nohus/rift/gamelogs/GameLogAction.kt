@@ -9,4 +9,6 @@ sealed interface GameLogAction {
     data class CombatStopped(val target: String) : GameLogAction // Synthetic
     data object CloneJumping : GameLogAction
     data class RanOutOfCharges(val module: String) : GameLogAction
+    data class InvitedToConversation(val characterId: Int?, val characterName: String) : GameLogAction
+    data class AsteroidDepleted(val module: String) : GameLogAction
 }

@@ -158,7 +158,7 @@ class CreateAlertViewModel(
                     is AlertTrigger.IntelReported -> answers += ALERT_TRIGGER_QUESTION to SingleChoiceAnswer(id = ALERT_TRIGGER_INTEL_REPORTED.id)
                     is AlertTrigger.JabberMessage -> answers += ALERT_TRIGGER_QUESTION to SingleChoiceAnswer(id = ALERT_TRIGGER_JABBER_MESSAGE.id)
                     is AlertTrigger.JabberPing -> answers += ALERT_TRIGGER_QUESTION to SingleChoiceAnswer(id = ALERT_TRIGGER_JABBER_PING.id)
-                    is AlertTrigger.NoChannelActivity -> answers += ALERT_TRIGGER_QUESTION to SingleChoiceAnswer(id = ALERT_TRIGGER_NO_MESSAGE.id)
+                    is AlertTrigger.NoChannelActivity -> {}
                     is AlertTrigger.PlanetaryIndustry -> answers += ALERT_TRIGGER_QUESTION to SingleChoiceAnswer(id = ALERT_TRIGGER_PLANETARY_INDUSTRY.id)
                 }
             }
@@ -380,18 +380,6 @@ class CreateAlertViewModel(
                     JABBER_MESSAGE_SENDER_QUESTION.answer ?: return JABBER_MESSAGE_SENDER_QUESTION
                     JABBER_MESSAGE_MESSAGE_CONTAINING_QUESTION.answer ?: return JABBER_MESSAGE_MESSAGE_CONTAINING_QUESTION
                 }
-
-                ALERT_TRIGGER_NO_MESSAGE.id -> {
-                    val channelType = NO_MESSAGE_CHANNEL_TYPE_QUESTION.answer ?: return NO_MESSAGE_CHANNEL_TYPE_QUESTION
-                    when (channelType.id) {
-                        NO_MESSAGE_CHANNEL_ALL.id -> {}
-                        NO_MESSAGE_CHANNEL_ANY.id -> {}
-                        NO_MESSAGE_CHANNEL_SPECIFIC.id -> {
-                            NO_MESSAGE_CHANNEL_SPECIFIC_QUESTION.answer ?: return NO_MESSAGE_CHANNEL_SPECIFIC_QUESTION
-                        }
-                    }
-                    NO_MESSAGE_DURATION_QUESTION.answer ?: return NO_MESSAGE_DURATION_QUESTION
-                }
             }
         }
         if (inputModel == CreateAlertInputModel.New || inputModel is CreateAlertInputModel.EditAction) {
@@ -527,6 +515,12 @@ class CreateAlertViewModel(
                                 GAME_ACTION_TYPE_RUN_OUT_OF_CHARGES.id -> {
                                     GameActionType.RanOutOfCharges
                                 }
+                                GAME_ACTION_TYPE_INVITED_TO_CONVERSATION.id -> {
+                                    GameActionType.InvitedToConversation
+                                }
+                                GAME_ACTION_TYPE_ASTEROID_DEPLETED.id -> {
+                                    GameActionType.AsteroidDepleted
+                                }
                                 GAME_ACTION_TYPE_CUSTOM.id -> {
                                     val message = GAME_ACTION_TYPE_CUSTOM_MESSAGE_QUESTION.answer ?: return null
                                     GameActionType.Custom(message.text, message.isRegex)
@@ -658,31 +652,6 @@ class CreateAlertViewModel(
                         sender = sender.takeIf { it.isNotBlank() },
                         messageContaining = messageContaining.text.takeIf { it.isNotBlank() },
                         isRegex = messageContaining.isRegex,
-                    )
-                }
-
-                ALERT_TRIGGER_NO_MESSAGE.id -> {
-                    val intelChannel = when (NO_MESSAGE_CHANNEL_TYPE_QUESTION.answer?.id ?: return null) {
-                        NO_MESSAGE_CHANNEL_ALL.id -> IntelChannel.All
-                        NO_MESSAGE_CHANNEL_ANY.id -> IntelChannel.Any
-                        NO_MESSAGE_CHANNEL_SPECIFIC.id -> {
-                            IntelChannel.Channel(
-                                name = NO_MESSAGE_CHANNEL_SPECIFIC_QUESTION.answer?.channel ?: return null,
-                            )
-                        }
-                        else -> throw IllegalStateException()
-                    }
-                    val durationSeconds = when (NO_MESSAGE_DURATION_QUESTION.answer?.id ?: return null) {
-                        NO_MESSAGE_DURATION_2_MINUTES.id -> 60 * 2
-                        NO_MESSAGE_DURATION_5_MINUTES.id -> 60 * 5
-                        NO_MESSAGE_DURATION_10_MINUTES.id -> 60 * 10
-                        NO_MESSAGE_DURATION_20_MINUTES.id -> 60 * 20
-                        NO_MESSAGE_DURATION_30_MINUTES.id -> 60 * 30
-                        else -> throw IllegalStateException()
-                    }
-                    AlertTrigger.NoChannelActivity(
-                        channel = intelChannel,
-                        durationSeconds = durationSeconds,
                     )
                 }
 

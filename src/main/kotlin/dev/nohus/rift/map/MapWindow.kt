@@ -52,6 +52,10 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -135,9 +139,11 @@ import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.settings.persistence.MapSystemInfoType
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
+import kotlinx.coroutines.delay
 import org.koin.core.parameter.parametersOf
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import dev.nohus.rift.settings.persistence.MapType as SettingsMapType
 
 @Composable
@@ -492,9 +498,6 @@ private fun Map(
     EventEffect(state.mapState.centeredSystem) { centeredSystem ->
         val selectedPosition = state.layout[centeredSystem]?.position ?: return@EventEffect
         center = Offset(selectedPosition.x.toFloat(), selectedPosition.y.toFloat())
-        if (state.mapType is ClusterSystemsMap) {
-            zoom = 4.0
-        }
     }
 
     val density = LocalDensity.current.density
@@ -573,6 +576,15 @@ private fun Map(
                 )
             }
             val focusRequester = remember { FocusRequester() }
+
+            var isKeyboardZooming by remember { mutableStateOf(0) }
+            LaunchedEffect(isKeyboardZooming) {
+                while (true) {
+                    zoom = (zoom * 1.2.pow(isKeyboardZooming)).coerceIn(zoomRange)
+                    delay(100.milliseconds)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -622,6 +634,19 @@ private fun Map(
                     }
                     .onKeyPress(Key.Enter) {
                         onFocusCurrentClick()
+                    }
+                    .onKeyEvent {
+                        if (it.type == KeyEventType.KeyDown) {
+                            isKeyboardZooming = when (it.key) {
+                                Key.PageUp -> 1
+                                Key.PageDown -> -1
+                                else -> return@onKeyEvent false
+                            }
+                            return@onKeyEvent true
+                        } else if (it.type == KeyEventType.KeyUp) {
+                            isKeyboardZooming = 0
+                        }
+                        false
                     },
             )
             if (mapScale != 0.0f && canvasSize != Size.Zero) {
@@ -812,6 +837,7 @@ private fun SystemInfoBoxesLayer(
     val infoBoxInfoTypes = getInfoBoxInfoTypes(state)
     ForEachSystem(state, animatedCenter, mapScale, canvasSize, forceDrawWithIntel = false) { isHighlightedOrHovered, dpCoordinates, _, system ->
         val hasIntelPopup = system.id in state.mapState.intelPopupSystems
+        val hasPinnedMarker = state.mapState.systemStatus[system.id]?.markers?.any { it.isPinned } == true
         val zIndex = if (hasIntelPopup || isHighlightedOrHovered) 1f else 0f
         val isRegionNameForced = state.mapType is RegionMap && system.regionId !in state.mapType.regionIds
 
@@ -819,8 +845,8 @@ private fun SystemInfoBoxesLayer(
         val isShowingSystemInfoBox = isHighlightedOrHovered || when (state.mapType) {
             ClusterRegionsMap -> false
             is ClusterSystemsMap -> true
-            is DistanceMap -> isZoomEnough
-            is RegionMap -> isZoomEnough
+            is DistanceMap -> isZoomEnough || hasPinnedMarker
+            is RegionMap -> isZoomEnough || hasPinnedMarker
         }
         if (isShowingSystemInfoBox) {
             val maxHeight = with(LocalDensity.current) { canvasSize.height.toDp() } - (dpCoordinates.second + nodeSizes.radius) - Spacing.medium
@@ -884,6 +910,7 @@ private fun ForEachSystem(
         state.layout - state.jumpBridgeAdditionalSystems
     }
     layout.forEach { (systemId, layout) ->
+        val hasPinnedMarker = state.mapState.systemStatus[systemId]?.markers?.any { it.isPinned } == true
         val isHighlightedOrHovered = systemId == state.mapState.hoveredSystem ||
             systemId == state.mapState.selectedSystem ||
             systemId in state.mapState.searchResults
@@ -893,7 +920,7 @@ private fun ForEachSystem(
             ClusterRegionsMap -> false // N/A
             is ClusterSystemsMap -> {
                 val isZoomedInEnough = if (state.mapType.is2D) mapScale <= 0.8 else mapScale <= 0.5
-                isZoomedInEnough || isHighlightedOrHovered || forceDrawWithIntel && (state.mapState.intel[systemId] != null || systemId in state.mapState.onlineCharacterLocations)
+                isZoomedInEnough || isHighlightedOrHovered || hasPinnedMarker || forceDrawWithIntel && (state.mapState.intel[systemId] != null || systemId in state.mapState.onlineCharacterLocations)
             }
             is DistanceMap -> true // Always draw
             is RegionMap -> true // Always draw

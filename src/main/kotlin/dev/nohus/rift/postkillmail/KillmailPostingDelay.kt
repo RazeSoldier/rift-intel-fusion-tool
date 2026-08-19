@@ -9,7 +9,8 @@ enum class KillmailPostingDelay(
     ThreeHours(2, "3 hours"),
     EightHours(3, "8 hours"),
     OneDay(4, "24 hours"),
-    ThreeDays(5, "72 hours");
+    ThreeDays(5, "72 hours"),
+    ;
 
     companion object {
         fun fromValue(value: Int): KillmailPostingDelay {

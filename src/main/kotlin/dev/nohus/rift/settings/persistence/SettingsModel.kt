@@ -434,6 +434,7 @@ data class MapMarker(
     val color: Color?,
     val icon: String,
     val isEnabled: Boolean = true,
+    val isPinned: Boolean = false,
     val group: String? = null,
 )
 

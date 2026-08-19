@@ -75,7 +75,7 @@ private fun PostKillmailContent(
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.small),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(
                     text = "Post the kill you copied to zKillboard?",

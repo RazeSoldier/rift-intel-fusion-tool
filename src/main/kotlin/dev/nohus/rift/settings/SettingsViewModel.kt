@@ -12,12 +12,12 @@ import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedInt
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.MatchChatLogFilenameUseCase
+import dev.nohus.rift.postkillmail.KillmailPostingDelay
 import dev.nohus.rift.repositories.JumpBridgesRepository
 import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository.Type
-import dev.nohus.rift.postkillmail.KillmailPostingDelay
 import dev.nohus.rift.settings.GetStorageStatsUseCase.StorageStats
 import dev.nohus.rift.settings.persistence.CharacterPortraits
 import dev.nohus.rift.settings.persistence.CharacterPortraitsParallaxStrength

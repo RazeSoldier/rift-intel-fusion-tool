@@ -82,9 +82,9 @@ import dev.nohus.rift.generated.resources.careerpaths_sof_flair
 import dev.nohus.rift.generated.resources.careerpaths_soldier_of_fortune_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_flair
+import dev.nohus.rift.network.esi.models.CorporationPalette
 import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.repositories.SolarSystemChipState
-import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.DrawableResource
@@ -136,6 +136,7 @@ sealed interface RiftOpportunityCardTopRight {
         val name: String,
         val id: Int,
         val progressGauge: RiftOpportunityCardProgressGauge,
+        val palette: CorporationPalette?,
     ) : RiftOpportunityCardTopRight
 
     data class RiftOpportunityCardProgressGauge(
@@ -457,36 +458,8 @@ private fun BoxScope.CorporationColorsSwatch(
     pointerInteractionStateHolder: PointerInteractionStateHolder,
 ) {
     if (topRight is RiftOpportunityCardCorporation) {
-        val colors by produceCorporationColors(topRight.id)
-        val primaryColor by animateColorAsState(colors.primary)
-        val secondaryColor by animateColorAsState(colors.secondary)
-        val isActive = pointerInteractionStateHolder.isHovered
-        val alpha by animateFloatAsState(if (isActive) 0.5f else 0.1f)
-        val blur by animateFloatAsState(if (isActive) 4f else 0.5f)
-        val extent by animateFloatAsState(if (isActive) 4f else 2f)
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .width(corporationStandardWidth)
-                .fillMaxHeight()
-                .background(primaryColor),
-        ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                    .clip(CutCornerShape(topStartPercent = 100))
-                    .size((48 + extent).dp)
-                    .background(secondaryColor.copy(alpha = alpha)),
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .clip(CutCornerShape(topStartPercent = 100))
-                    .size(48.dp)
-                    .background(secondaryColor),
-            )
-        }
+        val colors by produceCorporationColors(topRight.id, topRight.palette)
+        CorporationColorsSwatch(colors, corporationStandardWidth, 64.dp, pointerInteractionStateHolder)
     }
 }
 

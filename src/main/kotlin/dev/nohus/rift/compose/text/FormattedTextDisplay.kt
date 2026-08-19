@@ -28,6 +28,7 @@ fun FormattedText.toLinkedAnnotatedString(hoveredLink: Link? = null): LinkedAnno
             }
             LinkedAnnotatedString(annotatedString, links)
         }
+        FormattedText.Empty -> LinkedAnnotatedString(AnnotatedString(""), emptyList())
     }
 }
 
@@ -38,6 +39,7 @@ fun FormattedText.toPlainString(): String {
         is FormattedText.Compound -> texts.joinToString("") {
             it.toPlainString()
         }
+        FormattedText.Empty -> ""
     }
 }
 

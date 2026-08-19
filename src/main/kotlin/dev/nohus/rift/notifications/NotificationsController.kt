@@ -32,12 +32,19 @@ class NotificationsController(
             val message: AnnotatedString,
             val characterId: Int?, // Associated character
             val type: Type?, // Associated type ID
+            val relatedCharacter: Character? = null,
         ) : Notification {
             companion object {
                 const val STYLE_TAG = "Style"
                 const val STYLE_VALUE = "Primary"
             }
         }
+
+        data class Character(
+            val id: Int,
+            val name: String,
+            val standing: Standing?,
+        )
 
         data class ChatMessageNotification(
             val channel: String,

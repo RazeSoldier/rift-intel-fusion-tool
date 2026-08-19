@@ -737,6 +737,7 @@ private fun ProjectCard(
             name = opportunity.creator.corporation?.name ?: "",
             id = opportunity.creator.corporation?.id ?: -1,
             progressGauge = progressGauge,
+            palette = opportunity.creator.corporation?.palette,
         )
         OpportunityType.MercenaryTacticalOperation -> null
     }

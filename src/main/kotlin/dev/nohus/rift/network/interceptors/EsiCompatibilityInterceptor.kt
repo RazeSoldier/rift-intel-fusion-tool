@@ -10,12 +10,11 @@ import org.koin.core.annotation.Single
  * [Documentation](https://developers.eveonline.com/docs/services/esi/overview/#versioning)
  */
 @Single
-class EsiCompatibilityInterceptor(
-) : Interceptor {
+class EsiCompatibilityInterceptor : Interceptor {
 
     companion object {
         const val COMPATIBILITY_DATE_KEY = "X-Compatibility-Date"
-        const val COMPATIBILITY_DATE = "2026-06-09"
+        const val COMPATIBILITY_DATE = "2026-07-21"
         const val COMPATIBILITY_DATE_EARLY_ACCESS = "2099-01-01"
     }
 

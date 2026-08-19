@@ -4,6 +4,7 @@ import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
+import dev.nohus.rift.network.esi.models.CorporationPalette
 import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.zkillboard.ZkillboardApi
@@ -31,6 +32,7 @@ class CharacterDetailsRepository(
         val corporationName: String,
         val corporationTicker: String,
         val corporationRoles: List<String>,
+        val corporationPalette: CorporationPalette?,
         val allianceId: Int?,
         val allianceName: String?,
         val allianceTicker: String?,
@@ -102,6 +104,7 @@ class CharacterDetailsRepository(
             corporationName = corporation.name,
             corporationTicker = corporation.ticker,
             corporationRoles = emptyList(),
+            corporationPalette = corporation.palette,
             allianceId = allianceId,
             allianceName = alliance?.name,
             allianceTicker = alliance?.ticker,

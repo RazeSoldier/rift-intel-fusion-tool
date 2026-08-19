@@ -6,6 +6,7 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.Archetype
 import dev.nohus.rift.network.esi.models.ConflictType
 import dev.nohus.rift.network.esi.models.CorporationId
+import dev.nohus.rift.network.esi.models.CorporationPalette
 import dev.nohus.rift.network.esi.models.DockableLocation
 import dev.nohus.rift.network.esi.models.Faction
 import dev.nohus.rift.network.esi.models.Identity
@@ -60,6 +61,7 @@ data class Creator(
 data class Corporation(
     val id: Int,
     val name: String,
+    val palette: CorporationPalette?,
 )
 
 data class Contribution(

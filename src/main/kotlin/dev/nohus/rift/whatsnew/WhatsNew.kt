@@ -893,6 +893,23 @@ object WhatsNew {
                 - The Structures window was updated to have a Skyhooks filter, where you can choose to only see Skyhooks producing a particular resource
                 """.trimIndent(),
             )
+            add(
+                "5.27.0" description """
+                - Planetary Industry colonies shown in the List and Grid view modes now show an expiry time badge right on the colony icon
+                - Map Markers can now be pinned, which makes the marked system visible on all zoom levels
+                - Freelance Jobs and Corporation Projects in the Opportunities window now show the corporation color palettes
+                - New alert type is available for getting a conversation invite, which also shows the other character and their standing
+                - New alert type is available for the mined asteroid or gas cloud being depleted
+                - The Wallet now excludes transfers between your own characters from the income/expenses statistics
+                - The system name is now in the notification title in intel notifications delivered using system notifications or mobile push notifications
+                
+                -! New Map features:
+                - The right-click menu for systems now has an option to show your Assets in that system
+                - Following your character on the Map now keeps your set zoom level untouched
+                - Three new region map layouts are now available: Exordium, Amarr vs Minmatar FW map, and Caldari vs Gallente FW map
+                - The Map can now be zoomed with the Page Up/Down keys
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

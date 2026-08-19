@@ -12,6 +12,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,16 +44,19 @@ import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.assets.PlanetaryIndustryCommoditiesRepository
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.RiftTooltipArea
+import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.scale
 import dev.nohus.rift.compose.theme.Cursors
+import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
@@ -75,9 +79,12 @@ import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NotSetup
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Producing
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.TypesRepository.Type
+import dev.nohus.rift.utils.formatDurationCompact
+import dev.nohus.rift.utils.withColor
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import java.time.Duration
 
 private val colonyIconSize = 72.dp
 private val colonyIconPlanetSize = 64.dp
@@ -118,12 +125,40 @@ fun ColonyPlanetSnippet(
             )
             ColonyIcon(
                 colony = colony,
+                ffwdColony = item.ffwdColony,
                 transition = transition,
                 modifier = colonyIconModifier
                     .requiredSize(colonyIconSize)
                     .align(Alignment.TopStart),
             )
         }
+
+        val expiresIn = Duration.between(getNow(), item.ffwdColony.currentSimTime)
+        if (expiresIn.toSeconds() >= 1) {
+            val expiryAnimatable = remember { Animatable(0f) }
+            LaunchedEffect(Unit) {
+                delay(200)
+                expiryAnimatable.animateTo(1f, tween(500))
+            }
+            Box(
+                modifier = Modifier
+                    .scale(expiryAnimatable.value)
+                    .border(1.dp, RiftTheme.colors.borderPrimaryDark, CircleShape)
+                    .background(RiftTheme.colors.backgroundPrimary.copy(alpha = 0.7f), CircleShape)
+                    .padding(start = Spacing.small, end = Spacing.small, top = 2.dp, bottom = 0.dp)
+            ) {
+                val color = when {
+                    expiresIn < Duration.ofHours(12) -> EveColors.dangerRed
+                    expiresIn < Duration.ofHours(24) -> EveColors.warningOrange
+                    else -> RiftTheme.colors.textPrimary
+                }
+                Text(
+                    text = formatCompactExpiryDuration(expiresIn),
+                    style = RiftTheme.typography.detailPrimary.copy(color = color),
+                )
+            }
+        }
+
         if (isShowingCharacter) {
             val animatable = remember { Animatable(0f) }
             LaunchedEffect(Unit) {
@@ -148,18 +183,25 @@ fun ColonyPlanetSnippet(
     }
 }
 
+fun formatCompactExpiryDuration(duration: Duration): String {
+    if (duration.toDays() >= 2) return "${duration.toDays()}d"
+    if (duration.toHours() >= 1) return "${duration.toHours()}h"
+    if (duration.toMinutes() >= 1) return "${duration.toMinutes()}m"
+    return "${duration.toSeconds()}s"
+}
+
 /**
  * Planet icon with production status
  */
 @Composable
 fun ColonyIcon(
     colony: Colony,
+    ffwdColony: Colony,
     transition: InfiniteTransition,
     modifier: Modifier = Modifier,
 ) {
-    val type = colony.type
     RiftTooltipArea(
-        tooltip = { ColonyTooltip(colony) },
+        tooltip = { ColonyTooltip(colony, ffwdColony) },
         modifier = modifier,
     ) {
         Box(
@@ -194,6 +236,7 @@ private fun PlanetIcon(
 @Composable
 private fun ColonyTooltip(
     colony: Colony,
+    ffwdColony: Colony,
 ) {
     Column(
         modifier = Modifier.padding(Spacing.large),
@@ -205,6 +248,21 @@ private fun ColonyTooltip(
             is NeedsAttention -> Text("Needs attention", fontWeight = FontWeight.Bold, color = RiftTheme.colors.textRed)
             is Idle -> Text("Idle", fontWeight = FontWeight.Bold)
         }
+
+        val expiresIn = Duration.between(getNow(), ffwdColony.currentSimTime)
+        if (expiresIn.toSeconds() >= 1) {
+            Text(
+                text = buildAnnotatedString {
+                    withColor(RiftTheme.colors.textSecondary) {
+                        append("Expires in")
+                    }
+                    append(" ")
+                    append(formatDurationCompact(expiresIn))
+                },
+                style = RiftTheme.typography.bodyPrimary,
+            )
+        }
+
         val finalProducts = colony.overview.finalProducts
         if (finalProducts.isNotEmpty()) {
             Row(

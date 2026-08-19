@@ -103,7 +103,7 @@ fun ColonyTitle(
             modifier = Modifier
                 .background(Brush.linearGradient(listOf(Color.Transparent, RiftTheme.colors.backgroundPrimaryDark))),
         ) {
-            ColonyIcon(colony, rememberInfiniteTransition(), colonyIconModifier)
+            ColonyIcon(colony, item.ffwdColony, rememberInfiniteTransition(), colonyIconModifier)
             Column(
                 modifier = Modifier.padding(vertical = Spacing.small),
             ) {

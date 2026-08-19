@@ -214,6 +214,12 @@ class AlertsTriggerController(
                         GameActionType.RanOutOfCharges -> {
                             action is GameLogAction.RanOutOfCharges
                         }
+                        GameActionType.InvitedToConversation -> {
+                            action is GameLogAction.InvitedToConversation
+                        }
+                        GameActionType.AsteroidDepleted -> {
+                            action is GameLogAction.AsteroidDepleted
+                        }
                         is GameActionType.Custom -> {
                             if (action is GameLogAction.Generic) {
                                 val containing = trigger.messageContaining

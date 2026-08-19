@@ -165,6 +165,28 @@ fun NotificationContent(
                 if (notification.characterId != null) {
                     Character(notification.characterId, "Your character")
                 }
+                if (notification.relatedCharacter != null) {
+                    ClickableCharacter(notification.relatedCharacter.id) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            DynamicCharacterPortraitStandings(
+                                characterId = notification.relatedCharacter.id,
+                                size = 32.dp,
+                                standingLevel = notification.relatedCharacter.standing ?: Standing.Neutral,
+                                isAnimated = true,
+                            )
+                            Text(
+                                text = notification.relatedCharacter.name,
+                                style = RiftTheme.typography.headerPrimary,
+                            )
+                            if (notification.relatedCharacter.standing != null) {
+                                FlagIcon(notification.relatedCharacter.standing)
+                            }
+                        }
+                    }
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Spacing.small),

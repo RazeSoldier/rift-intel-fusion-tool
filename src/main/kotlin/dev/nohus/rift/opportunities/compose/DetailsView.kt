@@ -37,7 +37,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.BlendModeColorFilter
-import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageShader
@@ -64,6 +63,7 @@ import dev.nohus.rift.compose.CharacterTooltip
 import dev.nohus.rift.compose.ClickableAlliance
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
+import dev.nohus.rift.compose.CorporationColorsSwatch
 import dev.nohus.rift.compose.LinkText
 import dev.nohus.rift.compose.MulticolorIconType
 import dev.nohus.rift.compose.PointerInteractionStateHolder
@@ -89,11 +89,14 @@ import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.produceCorporationColors
 import dev.nohus.rift.compose.sharedTransitionElement
 import dev.nohus.rift.compose.text.LinkedText
+import dev.nohus.rift.compose.text.ParseEveFormattedTextUseCase
+import dev.nohus.rift.compose.text.toFormattedText
 import dev.nohus.rift.compose.text.toPlainString
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
+import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.calendar_16px
 import dev.nohus.rift.generated.resources.checkmark_16px
@@ -1219,47 +1222,13 @@ private fun BoxScope.CorporationColorsSwatch(
     pointerInteractionStateHolder: PointerInteractionStateHolder,
 ) {
     if (opportunity.creator.corporation == null) return
-    val colors by produceCorporationColors(opportunity.creator.corporation.id)
-    val isActive = pointerInteractionStateHolder.isHovered
-    val alpha by animateFloatAsState(if (isActive) 0.5f else 0.1f)
-    val blur by animateFloatAsState(if (isActive) 4f else 0.5f)
-    val extent by animateFloatAsState(if (isActive) 4f else 2f)
-    Box(
-        modifier = Modifier
-            .align(Alignment.BottomEnd),
-    ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .size((96 + extent).dp)
-                .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                .clip(CutCornerShape(topStartPercent = 100, bottomEndPercent = 18))
-                .background(colors.primary.copy(alpha = alpha)),
-        ) {}
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .clip(CutCornerShape(topStartPercent = 100, bottomEndPercent = 18))
-                .size(96.dp)
-                .background(colors.primary),
-        ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                    .clip(CutCornerShape(topStartPercent = 100))
-                    .size((48 + extent).dp)
-                    .background(colors.secondary.copy(alpha = alpha)),
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .clip(CutCornerShape(topStartPercent = 100))
-                    .size(48.dp)
-                    .background(colors.secondary),
-            )
-        }
-    }
+    val colors by produceCorporationColors(opportunity.creator.corporation.id, opportunity.creator.corporation.palette)
+    CorporationColorsSwatch(
+        colors = colors,
+        backgroundWidth = null,
+        size = 96.dp,
+        pointerInteractionStateHolder = pointerInteractionStateHolder,
+    )
 }
 
 @Composable

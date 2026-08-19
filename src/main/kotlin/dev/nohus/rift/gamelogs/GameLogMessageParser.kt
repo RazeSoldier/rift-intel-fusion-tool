@@ -2,10 +2,12 @@ package dev.nohus.rift.gamelogs
 
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.clones.ClonesRepository
+import dev.nohus.rift.gamelogs.GameLogAction.AsteroidDepleted
 import dev.nohus.rift.gamelogs.GameLogAction.Attacking
 import dev.nohus.rift.gamelogs.GameLogAction.BeingWarpScrambled
 import dev.nohus.rift.gamelogs.GameLogAction.CloneJumping
 import dev.nohus.rift.gamelogs.GameLogAction.Decloaked
+import dev.nohus.rift.gamelogs.GameLogAction.InvitedToConversation
 import dev.nohus.rift.gamelogs.GameLogAction.RanOutOfCharges
 import dev.nohus.rift.gamelogs.GameLogAction.UnderAttack
 import dev.nohus.rift.logs.parse.GameLogMessageWithMetadata
@@ -22,13 +24,14 @@ class GameLogMessageParser(
 
     fun onMessage(messageWithMetadata: GameLogMessageWithMetadata) {
         val type = messageWithMetadata.message.type
-        val message = removeFormatting(messageWithMetadata.message.message)
+        val rawMessage = messageWithMetadata.message.message
+        val message = removeFormatting(rawMessage)
         val action: GameLogAction? = when (type) {
             "combat" -> checkCombatMessage(message)
             "bounty" -> checkBountyMessage(message)
             "notify" -> checkNotifyMessage(message)
             "hint" -> checkHintMessage(message)
-            "None" -> checkNoneMessage(message)
+            "None" -> checkNoneMessage(rawMessage, message)
             "question" -> checkQuestionMessage(message)
             "info" -> checkInfoMessage(message)
             "warning" -> checkWarningMessage(message)
@@ -111,7 +114,8 @@ class GameLogMessageParser(
         NOTIFY_PI_EXPEDITED_TRANSFER_SELECT.onMatch(message) { return null }
         NOTIFY_UNABLE_TO_ONLINE_MODULE_MISSING_SKILLS.onMatch(message) { return null }
         NOTIFY_FOLLOWING_WARP.onMatch(message) { return null }
-        NOTIFY_MODULE_DEACTIVATES_RESOURCE_GONE.onMatch(message) { return null }
+        NOTIFY_MODULE_DEACTIVATES_RESOURCE_GONE.onMatch(message) { (module) -> return AsteroidDepleted(module) }
+        NOTIFY_MODULE_DEACTIVATES_TARGET_DEPLETED.onMatch(message) { (module) -> return AsteroidDepleted(module) }
         NOTIFY_ALL_DRONES_RETURNING.onMatch(message) { return null }
         NOTIFY_REQUESTED_TO_DOCK.onMatch(message) { return null }
         NOTIFY_SETTING_COURSE_TO_DOCK.onMatch(message) { return null }
@@ -130,7 +134,10 @@ class GameLogMessageParser(
         return null
     }
 
-    private fun checkNoneMessage(message: String): GameLogAction? {
+    private fun checkNoneMessage(rawMessage: String, message: String): GameLogAction? {
+        NONE_INVITED_TO_CONVERSATION.onMatch(rawMessage) { (characterId, characterName) ->
+            return InvitedToConversation(characterId.toIntOrNull(), characterName)
+        }
         NONE_JUMPING.onMatch(message) { (from, to) -> return null }
         NONE_UNDOCKING.onMatch(message) { return null }
         return null
@@ -253,7 +260,8 @@ private val NOTIFY_POCO_DRAG_FIRST = """^You must add items into the Customs Off
 private val NOTIFY_PI_EXPEDITED_TRANSFER_SELECT = """^Please select one or more commodities to transfer.$""".toRegex()
 private val NOTIFY_UNABLE_TO_ONLINE_MODULE_MISSING_SKILLS = """^Unable to bring (?<module>.*) online. This action requires having learned the following skills: (?<skills>.*).$""".toRegex()
 private val NOTIFY_FOLLOWING_WARP = """^Following (?<character>.*) in warp$""".toRegex()
-private val NOTIFY_MODULE_DEACTIVATES_RESOURCE_GONE = """^(?<module>.*) deactivates as it finds the resource it was harvesting a pale shadow of its former glory.$""".toRegex()
+private val NOTIFY_MODULE_DEACTIVATES_RESOURCE_GONE = """^(?<module>.*) deactivates as it finds the resource it was harvesting a pale shadow of its former glory\.$""".toRegex()
+private val NOTIFY_MODULE_DEACTIVATES_TARGET_DEPLETED = """^(?<module>.*) deactivates as its target has been depleted\.$""".toRegex()
 private val NOTIFY_ALL_DRONES_RETURNING = """^All drones returning to drone bay$""".toRegex()
 private val NOTIFY_REQUESTED_TO_DOCK = """^Requested to dock at (?<station>.*) station$""".toRegex()
 private val NOTIFY_SETTING_COURSE_TO_DOCK = """^Setting course to docking perimeter$""".toRegex()
@@ -267,6 +275,7 @@ private val NOTIFY_PI_BUSY = """^The planetary communications network is busy. P
 private val HINT_ATTEMPTING_TO_JOIN_A_CHANNEL = """^Attempting to join a channel$""".toRegex()
 private val HINT_MODULE_ALREADY_ACTIVE = """^(?<module>.*) is already active$""".toRegex()
 
+private val NONE_INVITED_TO_CONVERSATION = """^<a href=showinfo:\d+//(?<characterId>\d+)>(?<characterName>.*)</a> is inviting you to a conversation\.$""".toRegex()
 private val NONE_JUMPING = """^Jumping from (?<from>.*) to (?<to>.*)$""".toRegex()
 private val NONE_UNDOCKING = """^Undocking from (?<from>.*) to (?<to>.*) solar system.$""".toRegex()
 

@@ -58,13 +58,17 @@ class ParsePingUseCaseTest : FreeSpec({
             // U-QMOA
             30000629 to mockk {
                 every { sovereignty } returns mockk {
-                    every { allianceId } returns 1
+                    every { alliance } returns mockk {
+                        every { allianceId } returns 1
+                    }
                 }
             },
             // U-QVWD
             30001155 to mockk {
                 every { sovereignty } returns mockk {
-                    every { allianceId } returns 2
+                    every { alliance } returns mockk {
+                        every { allianceId } returns 2
+                    }
                 }
             },
         )

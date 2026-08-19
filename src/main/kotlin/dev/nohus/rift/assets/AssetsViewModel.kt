@@ -1,6 +1,8 @@
 package dev.nohus.rift.assets
 
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.get
+import dev.nohus.rift.assets.AssetsExternalControl.AssetsExternalControlEvent
 import dev.nohus.rift.assets.AssetsRepository.AssetBalance
 import dev.nohus.rift.assets.AssetsRepository.AssetOwner
 import dev.nohus.rift.assets.AssetsRepository.AssetWithLocation
@@ -55,6 +57,7 @@ class AssetsViewModel(
     private val settings: Settings,
     private val typesRepository: TypesRepository,
     private val filterAssetsUseCase: FilterAssetsUseCase,
+    private val assetsExternalControl: AssetsExternalControl,
 ) : ViewModel() {
 
     data class AssetLocation(
@@ -206,6 +209,22 @@ class AssetsViewModel(
                         )
                     }
                 }
+        }
+
+        viewModelScope.launch {
+            assetsExternalControl.event.collect {
+                when (val event = it.get()) {
+                    is AssetsExternalControlEvent.ShowSystem -> {
+                        _state.update { state ->
+                            state.copy(
+                                tab = AssetsTab.Assets,
+                                filters = state.filters.copy(search = event.systemName),
+                            )
+                        }
+                    }
+                    null -> {}
+                }
+            }
         }
     }
 
@@ -384,6 +403,7 @@ class AssetsViewModel(
                             search in (asset.categoryName?.lowercase() ?: "") ||
                             search in location.name.lowercase() ||
                             search in (location.customName?.lowercase() ?: "") ||
+                            search in (system?.name?.lowercase() ?: "") ||
                             search in (regionName?.lowercase() ?: "")
                         ) {
                             asset

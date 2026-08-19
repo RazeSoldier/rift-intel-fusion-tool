@@ -17,6 +17,8 @@ sealed interface FormattedText {
     data class Compound(
         val texts: List<FormattedText>,
     ) : FormattedText
+
+    data object Empty : FormattedText
 }
 
 sealed class Span(open val target: SpanTarget) {

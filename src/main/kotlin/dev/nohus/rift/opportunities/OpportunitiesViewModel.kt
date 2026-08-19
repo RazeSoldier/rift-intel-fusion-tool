@@ -256,7 +256,7 @@ class OpportunitiesViewModel(
         val memberCorporations = localCharactersRepository.characters.value.mapNotNull { character ->
             character.info ?: return@mapNotNull null
             if (IdRanges.isNpcCorporation(character.info.corporationId)) return@mapNotNull null
-            Corporation(character.info.corporationId, character.info.corporationName)
+            Corporation(character.info.corporationId, character.info.corporationName, character.info.corporationPalette)
         }.toSet()
         _state.update { it.copy(corporations = memberCorporations.toList()) }
 

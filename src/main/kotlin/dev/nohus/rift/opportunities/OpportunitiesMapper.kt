@@ -108,11 +108,12 @@ class OpportunitiesMapper(
         eligibleCharacters: List<LocalCharacter>,
     ): Opportunity {
         val creator = details.details.creator.let {
+            val characterDetails = characterDetailsRepository.getCharacterDetails(Originator.FreelanceJobs, it.character.id.toInt())
             Creator(
                 characterId = it.character.id.toInt(),
                 characterName = it.character.name,
-                characterDetails = characterDetailsRepository.getCharacterDetails(Originator.FreelanceJobs, it.character.id.toInt()),
-                corporation = Corporation(it.corporation.id.toInt(), it.corporation.name),
+                characterDetails = characterDetails,
+                corporation = Corporation(it.corporation.id.toInt(), it.corporation.name, characterDetails?.corporationPalette),
             )
         }
         val details = details.let {

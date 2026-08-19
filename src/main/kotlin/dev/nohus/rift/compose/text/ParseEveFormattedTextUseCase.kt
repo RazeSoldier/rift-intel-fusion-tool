@@ -50,7 +50,7 @@ class ParseEveFormattedTextUseCase(
      * Returns formatted text from tokens
      */
     private fun format(remaining: List<Token>): FormattedText {
-        if (remaining.isEmpty()) return "".toFormattedText()
+        if (remaining.isEmpty()) return FormattedText.Empty
         when (val nextToken = remaining.first()) {
             is Token.OpenTag -> {
                 // Find the corresponding close tag
@@ -172,7 +172,7 @@ class ParseEveFormattedTextUseCase(
 
     private val tagName = """^[A-z]+""".toRegex()
     private val parameter = """(?<key>[A-z]+)="(?<value>[^"]*)"""".toRegex()
-    private val unquotedParameter = """(?<key>[A-z]+)=(?<value>[^ ]*)""".toRegex()
+    private val unquotedParameter = """(?<key>[A-z]+)=(?!")(?<value>[^ ]*)""".toRegex()
 
     sealed interface Token {
         data class Text(val text: String) : Token

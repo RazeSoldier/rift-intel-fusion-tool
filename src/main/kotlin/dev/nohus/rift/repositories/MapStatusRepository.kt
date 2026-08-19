@@ -127,7 +127,7 @@ class MapStatusRepository(
                 val stationsPerSystem = stationsRepository.getStations()
                 val systems = (
                     universe.keys + incursions.keys + factionWarfare.keys + sovereignty.keys + storms.keys +
-                        industryIndices.keys + assetsPerSystem.keys + stationsPerSystem.keys + distances.keys
+                        industryIndices.keys + assetsPerSystem.keys + stationsPerSystem.keys + distances.keys + markers.keys
                     ).distinct()
                 val clones = clones.entries.flatMap { (characterId, clones) ->
                     clones.mapNotNull { clone ->
