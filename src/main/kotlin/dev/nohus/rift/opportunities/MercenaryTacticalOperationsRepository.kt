@@ -92,7 +92,7 @@ class MercenaryTacticalOperationsRepository(
             }
         }
         launch {
-            equinoxStructuresRepository.structures.map { it.mercenaryDens }.collectLatest {
+            equinoxStructuresRepository.state.map { it.structures?.mercenaryDens }.collectLatest {
                 reloadRequest.value = true
             }
         }
@@ -119,7 +119,7 @@ class MercenaryTacticalOperationsRepository(
             val characters = localCharactersRepository.characters.value
                 .filter { it.info != null }
                 .filter { ScopeGroups.readYourStructures in it.scopes }
-            val mercenaryDensById = equinoxStructuresRepository.structures.value.mercenaryDens.associateBy { it.id }
+            val mercenaryDensById = equinoxStructuresRepository.state.value.structures?.mercenaryDens?.associateBy { it.id } ?: emptyMap()
             val operations = characters.flatMap { character ->
                 val mtos = esiApi.getCharactersIdMercenaryTacticalOperations(Originator.Structures, character.characterId)
                 mtos.success?.operations?.mapNotNull { mto ->

@@ -2,7 +2,7 @@ package dev.nohus.rift.compose.theme
 
 import dev.nohus.rift.generated.resources.Res
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.skiko.Cursor
+import java.awt.Cursor
 import java.awt.Point
 import java.awt.Toolkit
 import java.awt.image.BufferedImage

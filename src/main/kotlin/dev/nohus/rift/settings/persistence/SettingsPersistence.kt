@@ -43,6 +43,7 @@ class SettingsPersistence(
 
     fun load(): SettingsModel {
         return try {
+            logger.debug { "Loading settings" }
             val serialized = configFile.readText()
             json.decodeFromString<SettingsModel>(serialized)
         } catch (e: NoSuchFileException) {

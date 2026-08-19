@@ -36,6 +36,7 @@ import dev.nohus.rift.structures.StructuresViewModel.UiState
 import dev.nohus.rift.structures.compose.MercenaryDen
 import dev.nohus.rift.structures.compose.Skyhook
 import dev.nohus.rift.structures.compose.SovereigntyHub
+import dev.nohus.rift.structures.compose.StructuresLoadingProgress
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
 
@@ -121,52 +122,65 @@ private fun StructuresWindowContent(
                 .height(1.dp)
                 .background(RiftTheme.colors.borderGreyLight),
         )
-        Box(
-            modifier = Modifier.padding(Spacing.large),
-        ) {
-            val now = getNow()
-            val structures = state.structures
 
-            when (state.selectedTab) {
-                StructuresTab.Skyhooks -> {
-                    if (structures?.skyhooks?.isNotEmpty() == true) {
-                        ScrollbarLazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
-                        ) {
-                            items(structures.skyhooks) { item ->
-                                Skyhook(item, now, Modifier.animateItem())
-                            }
+        if (state.loading.stage != null && state.structures == null) {
+            StructuresLoadingProgress(state.loading, state.loading.stage)
+        } else {
+            LoadedState(state, onViewOperationClick)
+        }
+    }
+}
+
+@Composable
+private fun LoadedState(
+    state: UiState,
+    onViewOperationClick: (id: String) -> Unit,
+) {
+    Box(
+        modifier = Modifier.padding(Spacing.large),
+    ) {
+        val now = getNow()
+        val structures = state.structures
+
+        when (state.selectedTab) {
+            StructuresTab.Skyhooks -> {
+                if (structures?.skyhooks?.isNotEmpty() == true) {
+                    ScrollbarLazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
+                    ) {
+                        items(structures.skyhooks) { item ->
+                            Skyhook(item, now, Modifier.animateItem())
                         }
-                    } else {
-                        EmptyState("No Skyhooks found", "Add a character with the Station Manager role in a corporation with Skyhooks.")
                     }
+                } else {
+                    EmptyState("No Skyhooks found", "Add a character with the Station Manager role in a corporation with Skyhooks.")
                 }
-                StructuresTab.SovereigntyHubs -> {
-                    if (structures?.sovHubs?.isNotEmpty() == true) {
-                        ScrollbarLazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
-                        ) {
-                            items(structures.sovHubs) { item ->
-                                SovereigntyHub(item, now, Modifier.animateItem())
-                            }
+            }
+            StructuresTab.SovereigntyHubs -> {
+                if (structures?.sovHubs?.isNotEmpty() == true) {
+                    ScrollbarLazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
+                    ) {
+                        items(structures.sovHubs) { item ->
+                            SovereigntyHub(item, now, Modifier.animateItem())
                         }
-                    } else {
-                        EmptyState("No Sovereignty Hubs found", "Add a character with the Station Manager role in a corporation with Sovereignty Hubs.")
                     }
+                } else {
+                    EmptyState("No Sovereignty Hubs found", "Add a character with the Station Manager role in a corporation with Sovereignty Hubs.")
                 }
-                StructuresTab.MercenaryDens -> {
-                    if (structures?.mercenaryDens?.isNotEmpty() == true) {
-                        ScrollbarLazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
-                        ) {
-                            items(structures.mercenaryDens) { item ->
-                                val operations = state.operations?.operations?.filter { it.mercenaryDen == item } ?: emptyList()
-                                MercenaryDen(item, operations, now, onViewOperationClick, Modifier.animateItem())
-                            }
+            }
+            StructuresTab.MercenaryDens -> {
+                if (structures?.mercenaryDens?.isNotEmpty() == true) {
+                    ScrollbarLazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
+                    ) {
+                        items(structures.mercenaryDens) { item ->
+                            val operations = state.operations?.operations?.filter { it.mercenaryDen == item } ?: emptyList()
+                            MercenaryDen(item, operations, now, onViewOperationClick, Modifier.animateItem())
                         }
-                    } else {
-                        EmptyState("No Mercenary Dens found", "Deploy a Mercenary Den to see it here.")
                     }
+                } else {
+                    EmptyState("No Mercenary Dens found", "Deploy a Mercenary Den to see it here.")
                 }
             }
         }

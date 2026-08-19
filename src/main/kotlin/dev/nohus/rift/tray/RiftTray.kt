@@ -62,7 +62,7 @@ fun ApplicationScope.RiftTray(
             icon = icon,
             iconRenderProperties = getIconRenderProperties(operatingSystem),
             tooltip = "RIFT",
-            primaryAction = { viewModel.onButtonClick(RiftWindow.Neocom) },
+            primaryAction = { viewModel.onButtonClick(RiftWindow.Neocom, isOpenFromTray = true) },
             menuContent = {
                 for (item in items) {
                     when (item) {

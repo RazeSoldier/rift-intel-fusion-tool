@@ -4,6 +4,7 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository.Operations
 import dev.nohus.rift.opportunities.OpportunitiesInputModel
+import dev.nohus.rift.structures.EquinoxStructuresRepository.LoadingState
 import dev.nohus.rift.structures.EquinoxStructuresRepository.Structures
 import dev.nohus.rift.windowing.WindowManager
 import kotlinx.coroutines.FlowPreview
@@ -24,6 +25,7 @@ class StructuresViewModel(
     data class UiState(
         val selectedTab: StructuresTab = StructuresTab.Skyhooks,
         val structures: Structures? = null,
+        val loading: LoadingState = LoadingState(),
         val operations: Operations? = null,
     )
 
@@ -38,8 +40,8 @@ class StructuresViewModel(
 
     init {
         viewModelScope.launch {
-            equinoxStructuresRepository.structures.collect { structures ->
-                _state.update { it.copy(structures = structures) }
+            equinoxStructuresRepository.state.collect { state ->
+                _state.update { it.copy(structures = state.structures, loading = state.loading) }
             }
         }
         viewModelScope.launch {

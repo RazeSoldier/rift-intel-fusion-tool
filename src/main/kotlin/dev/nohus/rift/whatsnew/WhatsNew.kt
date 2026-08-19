@@ -844,6 +844,14 @@ object WhatsNew {
                 - Another option was added to show a standings flag next to every message. This is especially useful when you hide the portraits.
                 """.trimIndent(),
             )
+            add(
+                "5.22.0" description """
+                - Structures loading was improved, and now shows progress in the Structures window
+                - The tray icon was improved, and automatically adapts to the system theme
+                - The Neocom window is now opened near the tray icon when clicking the icon
+                - RIFT settings and data is now located in the easier to find Documents folder on Windows
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

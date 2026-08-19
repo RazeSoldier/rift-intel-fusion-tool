@@ -402,7 +402,7 @@ private fun getLegalText(): AnnotatedString {
         }
         appendLine(" include any personal data.")
         appendLine()
-        appendLine("These metrics are required by CCP for the EVE Online Partnership Program.")
+        appendLine("These metrics are required by FC for the EVE Online Partnership Program.")
     }
 }
 
@@ -423,7 +423,7 @@ private fun getCreditsText(): AnnotatedString {
         appendLine()
         append("Thanks to ")
         withStyle(SpanStyle(color = RiftTheme.colors.textHighlighted)) {
-            append("CCP")
+            append("FC")
         }
         append(" for creating EVE Online.")
     }

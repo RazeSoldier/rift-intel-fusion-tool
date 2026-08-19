@@ -1444,11 +1444,11 @@ private fun JumpBridgeNetworkSection(
                         )
                     }
                 }
-                JumpBridgeSearchState.SearchFailed -> {
+                is JumpBridgeSearchState.SearchFailed -> {
                     Column(
                         modifier = Modifier.padding(top = Spacing.medium),
                     ) {
-                        Text("Unable to search")
+                        Text(searchState.message)
                     }
                 }
                 is JumpBridgeSearchState.SearchDone -> {

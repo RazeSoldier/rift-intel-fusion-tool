@@ -41,26 +41,15 @@ fun AssetsLoadingProgress(
     ) {
         LoadingSpinnerAmbient()
         Spacer(Modifier.height(Spacing.medium))
-        when (stage) {
-            LoadingStage.LoadingAssets -> {
-                Text(
-                    text = "Loading assets…",
-                    style = RiftTheme.typography.headlinePrimary,
-                )
-            }
-            LoadingStage.LoadingLocations -> {
-                Text(
-                    text = "Loading asset locations…",
-                    style = RiftTheme.typography.headlinePrimary,
-                )
-            }
-            LoadingStage.LoadingDivisionNames -> {
-                Text(
-                    text = "Loading division names…",
-                    style = RiftTheme.typography.headlinePrimary,
-                )
-            }
+        val title = when (stage) {
+            LoadingStage.LoadingAssets -> "Loading assets…"
+            LoadingStage.LoadingLocations -> "Loading asset locations…"
+            LoadingStage.LoadingDivisionNames -> "Loading division names…"
         }
+        Text(
+            text = "Loading assets…",
+            style = RiftTheme.typography.headlinePrimary,
+        )
 
         Spacer(Modifier.height(Spacing.large))
 

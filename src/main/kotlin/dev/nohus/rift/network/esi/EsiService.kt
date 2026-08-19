@@ -746,6 +746,7 @@ interface EsiService {
 
     @GET("/characters/{character_id}/structures/mercenary-dens")
     @EndpointTag(Endpoint.GetCharactersIdStructuresMercenaryDens::class)
+    @RateLimit(RateLimitGroup.CharStructure::class)
     @Scope(EsiScope.Structures.ReadCharacter::class)
     suspend fun getCharactersIdStructuresMercenaryDens(
         @Tag originator: Originator,
@@ -755,6 +756,7 @@ interface EsiService {
 
     @GET("/characters/{character_id}/structures/mercenary-dens/{mercenary_den_id}")
     @EndpointTag(Endpoint.GetCharactersIdStructuresMercenaryDensId::class)
+    @RateLimit(RateLimitGroup.CharStructure::class)
     @Scope(EsiScope.Structures.ReadCharacter::class)
     suspend fun getCharactersIdStructuresMercenaryDensId(
         @Tag originator: Originator,
@@ -765,6 +767,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/structures/skyhooks")
     @EndpointTag(Endpoint.GetCorporationsIdStructuresSkyhooks::class)
+    @RateLimit(RateLimitGroup.CorpStructure::class)
     @Scope(EsiScope.Structures.ReadCorporation::class)
     suspend fun getCorporationsIdStructuresSkyhooks(
         @Tag originator: Originator,
@@ -774,6 +777,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/structures/skyhooks/{skyhook_id}")
     @EndpointTag(Endpoint.GetCorporationsIdStructuresSkyhooksId::class)
+    @RateLimit(RateLimitGroup.CorpStructure::class)
     @Scope(EsiScope.Structures.ReadCorporation::class)
     suspend fun getCorporationsIdStructuresSkyhooksId(
         @Tag originator: Originator,
@@ -784,6 +788,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/structures/sovereignty-hubs")
     @EndpointTag(Endpoint.GetCorporationsIdStructuresSovereigntyHubs::class)
+    @RateLimit(RateLimitGroup.CorpStructure::class)
     @Scope(EsiScope.Structures.ReadCorporation::class)
     suspend fun getCorporationsIdStructuresSovereigntyHubs(
         @Tag originator: Originator,
@@ -793,6 +798,7 @@ interface EsiService {
 
     @GET("/corporations/{corporation_id}/structures/sovereignty-hubs/{sovereignty_hub_id}")
     @EndpointTag(Endpoint.GetCorporationsIdStructuresSovereigntyHubsId::class)
+    @RateLimit(RateLimitGroup.CorpStructure::class)
     @Scope(EsiScope.Structures.ReadCorporation::class)
     suspend fun getCorporationsIdStructuresSovereigntyHubsId(
         @Tag originator: Originator,
@@ -803,6 +809,7 @@ interface EsiService {
 
     @GET("/characters/{character_id}/mercenary-tactical-operations")
     @EndpointTag(Endpoint.GetCharactersIdMercenaryTacticalOperations::class)
+    @RateLimit(RateLimitGroup.CharActivity::class)
     @Scope(EsiScope.Activities.ReadCharacter::class)
     suspend fun getCharactersIdMercenaryTacticalOperations(
         @Tag originator: Originator,
@@ -812,6 +819,7 @@ interface EsiService {
 
     @GET("/characters/{character_id}/mercenary-tactical-operations/{operation_id}")
     @EndpointTag(Endpoint.GetCharactersIdMercenaryTacticalOperationsId::class)
+    @RateLimit(RateLimitGroup.CharActivity::class)
     @Scope(EsiScope.Activities.ReadCharacter::class)
     suspend fun getCharactersIdMercenaryTacticalOperationsId(
         @Tag originator: Originator,
@@ -822,6 +830,7 @@ interface EsiService {
 
     @GET("/skyhooks/raidable")
     @EndpointTag(Endpoint.GetSkyhooksRaidable::class)
+    @RateLimit(RateLimitGroup.Activity::class)
     suspend fun getSkyhooksRaidable(
         @Tag originator: Originator,
     ): SkyhooksRaidable

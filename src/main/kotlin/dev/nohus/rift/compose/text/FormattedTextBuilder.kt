@@ -1,6 +1,5 @@
 package dev.nohus.rift.compose.text
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 
 class FormattedTextBuilder {

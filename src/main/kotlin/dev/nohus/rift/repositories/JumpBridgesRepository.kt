@@ -66,7 +66,7 @@ class JumpBridgesRepository(
     sealed interface SearchState {
         data class Progress(val progress: Float, val connectionsCount: Int) : SearchState
         data class Result(val connections: List<JumpBridgeConnection>) : SearchState
-        data object Error : SearchState
+        data class Error(val message: String) : SearchState
     }
 
     fun search(): Flow<SearchState> = channelFlow {
@@ -76,7 +76,7 @@ class JumpBridgesRepository(
                 ?.characterId
             if (characterId == null) {
                 logger.error { "No authenticated characters" }
-                send(SearchState.Error)
+                send(SearchState.Error("No characters with Read structures scope"))
                 return@coroutineScope
             }
 
@@ -132,7 +132,7 @@ class JumpBridgesRepository(
                                                 }
                                             }
                                             else -> {
-                                                send(SearchState.Error)
+                                                send(SearchState.Error("Could not get structure details from ESI"))
                                                 cancel()
                                             }
                                         }
@@ -140,7 +140,7 @@ class JumpBridgesRepository(
                                 }.awaitAll()
                             }
                             else -> {
-                                send(SearchState.Error)
+                                send(SearchState.Error("Could not get search results from ESI"))
                                 cancel()
                             }
                         }

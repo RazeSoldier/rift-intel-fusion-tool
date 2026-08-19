@@ -31,6 +31,7 @@ import dev.nohus.rift.utils.openFileManager
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -45,6 +46,7 @@ import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.pathString
+import kotlin.time.Duration.Companion.milliseconds
 
 private val logger = KotlinLogging.logger {}
 
@@ -132,7 +134,7 @@ class SettingsViewModel(
     sealed interface JumpBridgeSearchState {
         data object NotSearched : JumpBridgeSearchState
         data class Searching(val progress: Float, val connectionsCount: Int) : JumpBridgeSearchState
-        data object SearchFailed : JumpBridgeSearchState
+        data class SearchFailed(val message: String) : JumpBridgeSearchState
         data class SearchDone(val network: List<JumpBridgeConnection>) : JumpBridgeSearchState
     }
 
@@ -554,9 +556,9 @@ class SettingsViewModel(
                     is JumpBridgesRepository.SearchState.Progress -> {
                         _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.Searching(searchState.progress, searchState.connectionsCount)) }
                     }
-                    JumpBridgesRepository.SearchState.Error -> {
-                        _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.SearchFailed) }
-                        kotlinx.coroutines.delay(2000)
+                    is JumpBridgesRepository.SearchState.Error -> {
+                        _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.SearchFailed(searchState.message)) }
+                        delay(2000.milliseconds)
                         _state.update { it.copy(jumpBridgeSearchState = JumpBridgeSearchState.NotSearched) }
                     }
                     is JumpBridgesRepository.SearchState.Result -> {

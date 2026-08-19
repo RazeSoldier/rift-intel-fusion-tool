@@ -192,14 +192,13 @@ private fun SkyhookIllustration(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
         Row {
-            val isActive = skyhook.isEnabled == true
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .zIndex(1f)
                     .padding(top = 33.dp),
             ) {
-                val colorFilter = if (!isActive) {
+                val colorFilter = if (!skyhook.isActive) {
                     ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0.25f) })
                 } else {
                     null
@@ -212,7 +211,7 @@ private fun SkyhookIllustration(
                         .size(planetIconSize),
                 )
                 val transition = rememberInfiniteTransition()
-                if (isActive) {
+                if (skyhook.isActive) {
                     ExtractionAnimation(transition)
                 }
                 when (skyhook.resource) {
@@ -227,7 +226,7 @@ private fun SkyhookIllustration(
                     }
                     null -> {}
                 }
-                if (!isActive) {
+                if (!skyhook.isActive) {
                     NeedsAttentionAnimation(transition)
                 }
             }
@@ -254,8 +253,8 @@ private fun SkyhookIllustration(
                 val containerTravelDistanceLeftPx = LocalDensity.current.run { containerTravelDistanceLeft.toPx() }
                 val animatable = remember { Animatable(containerTravelDistanceLeftPx) }
                 var isContainerFull by remember { mutableStateOf(false) }
-                LaunchedEffect(isActive) {
-                    while (isActive) {
+                LaunchedEffect(skyhook.isActive) {
+                    while (skyhook.isActive) {
                         isContainerFull = true
                         animatable.animateTo(
                             targetValue = containerTravelDistanceRightPx,

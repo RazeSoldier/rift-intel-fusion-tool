@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -17,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.ButtonCornerCut
-import dev.nohus.rift.compose.ImprovedWindowDraggableArea
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.text.LinkedText
@@ -52,7 +52,7 @@ fun InfoDialogWindow(
         withContentPadding = false,
         isResizable = false,
     ) {
-        ImprovedWindowDraggableArea {
+        WindowDraggableArea {
             InfoDialogContent(
                 state = state,
                 icon = icon,

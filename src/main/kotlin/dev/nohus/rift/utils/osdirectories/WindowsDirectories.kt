@@ -19,6 +19,6 @@ class WindowsDirectories : OperatingSystemDirectories {
     }
 
     private fun getAppDataDirectory(): Path {
-        return Path.of(System.getenv("AppData"))
+        return getUserDirectory().resolve("Documents")
     }
 }

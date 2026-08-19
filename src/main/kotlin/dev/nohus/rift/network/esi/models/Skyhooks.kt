@@ -31,8 +31,8 @@ data class SkyhooksId(
     val reagents: List<SkyhookReagent>? = null,
     @SerialName("reinforcement_timer")
     val reinforcementTimer: ReinforcementTimer? = null,
-    @SerialName("enabled")
-    val isEnabled: Boolean? = null,
+    @SerialName("is_active")
+    val isActive: Boolean,
     @SerialName("state")
     val state: SkyhookState,
     @SerialName("theft_vulnerability")

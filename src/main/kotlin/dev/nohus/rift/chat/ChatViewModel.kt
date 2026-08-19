@@ -298,7 +298,9 @@ class ChatViewModel(
         characterId: Int?,
         characterDetails: CharacterDetails?
     ): RichChatMessage {
-        processedMessagesCache.get(message)?.let { return it }
+        processedMessagesCache.get(message)?.let {
+            return it.copy(id = processedStub.id)
+        }
 
         val authorFormattedText = buildFormattedText {
             if (characterId != null) {

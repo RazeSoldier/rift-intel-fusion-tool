@@ -35,9 +35,11 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesTypesRepository
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesTypesRepository.SovereigntyUpgradeType
 import dev.nohus.rift.sso.scopes.ScopeGroups
-import dev.nohus.rift.structures.PlanetResourcesRepository.PlanetResource
 import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHubWorkforceTransport.Import.ImportSource
+import dev.nohus.rift.structures.PlanetResourcesRepository.PlanetResource
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,9 +47,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.jetbrains.compose.resources.DrawableResource
 import org.koin.core.annotation.Single
@@ -70,6 +74,28 @@ class EquinoxStructuresRepository(
     private val characterDetailsRepository: CharacterDetailsRepository,
     private val settings: Settings,
 ) {
+
+    data class State(
+        val structures: Structures? = null,
+        val loading: LoadingState = LoadingState(stage = LoadingStage.LoadingMercenaryDens),
+    )
+
+    data class LoadingState(
+        val stage: LoadingStage? = null,
+        val mercenaryDensTotal: Int? = null,
+        val mercenaryDensLoaded: Int = 0,
+        val sovHubsTotal: Int? = null,
+        val sovHubsLoaded: Int = 0,
+        val skyhooksTotal: Int? = null,
+        val skyhooksLoaded: Int = 0,
+    )
+
+    enum class LoadingStage {
+        LoadingMercenaryDens,
+        LoadingSkyhooks,
+        LoadingSovHubs,
+        LoadingDetails,
+    }
 
     data class Structures(
         val skyhooks: List<Skyhook> = emptyList(),
@@ -104,7 +130,7 @@ class EquinoxStructuresRepository(
         val system: MapSolarSystem,
         val planet: Planet,
         val resource: SkyhookResource?,
-        val isEnabled: Boolean?,
+        val isActive: Boolean,
         val reinforcementTimer: ReinforcementTimer?,
         val state: SkyhookState,
         val theftVulnerability: VulnerabilityWindow?,
@@ -194,8 +220,8 @@ class EquinoxStructuresRepository(
         val details: SovereigntyUpgradeType,
     )
 
-    private val _structures = MutableStateFlow(Structures())
-    val structures = _structures.asStateFlow()
+    private val _state = MutableStateFlow(State())
+    val state = _state.asStateFlow()
 
     private val reloadRequest = MutableStateFlow(false)
     private val loadingMutex = Mutex()
@@ -226,7 +252,7 @@ class EquinoxStructuresRepository(
         launch {
             reloadRequest.filter { it }.collect {
                 reloadRequest.value = false
-                updateStructures()
+                load()
             }
         }
     }
@@ -235,57 +261,76 @@ class EquinoxStructuresRepository(
         this.isRealtime = isRealtime
     }
 
-    private suspend fun updateStructures() {
+    private suspend fun load() = withContext(Dispatchers.Default) {
         loadingMutex.withLock {
-            _structures.value = load()
-        }
-    }
+            val characters = localCharactersRepository.characters.value
+                .filter { it.info != null }
+                .filter { ScopeGroups.readYourStructures in it.scopes }
+            if (characters.isEmpty()) {
+                _state.update { it.copy(loading = LoadingState()) }
+                return@withContext
+            }
+            val now = Instant.now()
 
-    private suspend fun load(): Structures {
-        val characters = localCharactersRepository.characters.value
-            .filter { it.info != null }
-            .filter { ScopeGroups.readYourStructures in it.scopes }
-        if (characters.isEmpty()) return Structures()
-        val now = Instant.now()
+            logger.debug { "Loading structures" }
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingMercenaryDens)) }
 
-        logger.debug { "Loading structures" }
+            val mercenaryDens = characters
+                .flatMap { character ->
+                    val mercenaryDens = esiApi.getCharactersIdStructuresMercenaryDens(Originator.Structures, character.characterId)
+                    mercenaryDens.success?.mercenaryDens?.map { it to character } ?: emptyList()
+                }
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingSkyhooks, mercenaryDensTotal = mercenaryDens.size)) }
+            val skyhooks = getStationManagerPerCorporation(characters)
+                .flatMap { (character, characterInfo) ->
+                    val skyhooks = esiApi.getCorporationsIdStructuresSkyhooks(Originator.Structures, character.characterId, characterInfo.corporationId)
+                    skyhooks.success?.skyhooks?.map { it to characterInfo } ?: emptyList()
+                }
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingSovHubs, skyhooksTotal = skyhooks.size)) }
+            val sovHubs = getStationManagerPerCorporation(characters)
+                .flatMap { (character, characterInfo) ->
+                    val sovHubs = esiApi.getCorporationsIdStructuresSovereigntyHubs(Originator.Structures, character.characterId, characterInfo.corporationId)
+                    sovHubs.success?.sovereigntyHubs?.map { it to characterInfo } ?: emptyList()
+                }
+            _state.update { it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingDetails, sovHubsTotal = sovHubs.size)) }
 
-        val mercenaryDens = characters.flatMap { character ->
-            val mercenaryDens = esiApi.getCharactersIdStructuresMercenaryDens(Originator.Structures, character.characterId)
-            mercenaryDens.success?.mercenaryDens?.mapNotNull { mercenaryDen ->
-                val response = esiApi.getCharactersIdStructuresMercenaryDensId(Originator.Structures, character.characterId, mercenaryDen.id).success
-                    ?: return@mapNotNull null
-                getMercenaryDen(response, character.info!!)
-            } ?: emptyList()
-        }.sortedBy { it.planet.id }
-
-        val skyhooks = getStationManagerPerCorporation(characters)
-            .flatMap { (character, characterInfo) ->
-                val skyhooks = esiApi.getCorporationsIdStructuresSkyhooks(Originator.Structures, character.characterId, characterInfo.corporationId)
-                skyhooks.success?.skyhooks?.mapNotNull { skyhook ->
-                    val response = esiApi.getCorporationsIdStructuresSkyhooksId(Originator.Structures, character.characterId, characterInfo.corporationId, skyhook.id).success
-                        ?: return@mapNotNull null
-                    getSkyhook(response, characterInfo, now)
-                } ?: emptyList()
-            }.sortedBy { it.planet.id }
-
-        val sovHubs = getStationManagerPerCorporation(characters)
-            .flatMap { (character, characterInfo) ->
-                val sovHubs = esiApi.getCorporationsIdStructuresSovereigntyHubs(Originator.Structures, character.characterId, characterInfo.corporationId)
-                sovHubs.success?.sovereigntyHubs?.mapNotNull { sovHub ->
-                    val response = esiApi.getCorporationsIdStructuresSovereigntyHubsId(Originator.Structures, character.characterId, characterInfo.corporationId, sovHub.id).success
-                        ?: return@mapNotNull null
-                    getSovereigntyHub(response, sovHub.solarSystemId, characterInfo)
-                } ?: emptyList()
+            val mercenaryDensDetailsDeferred = async {
+                mercenaryDens
+                    .mapNotNull { (mercenaryDen, character) ->
+                        val response = esiApi.getCharactersIdStructuresMercenaryDensId(Originator.Structures, character.characterId, mercenaryDen.id).success
+                        _state.update { it.copy(loading = it.loading.copy(mercenaryDensLoaded = it.loading.mercenaryDensLoaded + 1)) }
+                        getMercenaryDen(response ?: return@mapNotNull null, character.info!!)
+                    }.sortedBy { it.planet.id }
+            }
+            val skyhooksDetailsDeferred = async {
+                skyhooks
+                    .mapNotNull { (skyhook, characterInfo) ->
+                        val response = esiApi.getCorporationsIdStructuresSkyhooksId(Originator.Structures, characterInfo.characterId, characterInfo.corporationId, skyhook.id)
+                        _state.update { it.copy(loading = it.loading.copy(skyhooksLoaded = it.loading.skyhooksLoaded + 1)) }
+                        getSkyhook(response.success ?: return@mapNotNull null, characterInfo, now)
+                    }.sortedBy { it.planet.id }
+            }
+            val sovHubsDetailsDeferred = async {
+                sovHubs
+                    .mapNotNull { (sovHub, characterInfo) ->
+                        val response = esiApi.getCorporationsIdStructuresSovereigntyHubsId(Originator.Structures, characterInfo.characterId, characterInfo.corporationId, sovHub.id)
+                        _state.update { it.copy(loading = it.loading.copy(sovHubsLoaded = it.loading.sovHubsLoaded + 1)) }
+                        getSovereigntyHub(response.success ?: return@mapNotNull null, sovHub.solarSystemId, characterInfo)
+                    }
             }
 
-        logger.debug { "Loaded structures: ${mercenaryDens.size} mercenary dens, ${skyhooks.size} skyhooks, ${sovHubs.size} sovereignty hubs" }
+            val mercenaryDensDetails = mercenaryDensDetailsDeferred.await()
+            val skyhooksDetails = skyhooksDetailsDeferred.await()
+            val sovHubsDetails = sovHubsDetailsDeferred.await()
+            logger.debug { "Loaded structures: ${mercenaryDens.size} mercenary dens, ${skyhooks.size} skyhooks, ${sovHubs.size} sovereignty hubs" }
 
-        return Structures(
-            skyhooks = skyhooks,
-            mercenaryDens = mercenaryDens,
-            sovHubs = sovHubs,
-        )
+            val structures = Structures(
+                skyhooks = skyhooksDetails,
+                mercenaryDens = mercenaryDensDetails,
+                sovHubs = sovHubsDetails,
+            )
+            _state.update { it.copy(structures = structures, loading = LoadingState()) }
+        }
     }
 
     private suspend fun getMercenaryDen(
@@ -350,7 +395,7 @@ class EquinoxStructuresRepository(
             system = system,
             planet = planet,
             resource = getSkyhookResource(skyhook, planetResource, now),
-            isEnabled = skyhook.isEnabled,
+            isActive = skyhook.isActive,
             reinforcementTimer = skyhook.reinforcementTimer,
             state = skyhook.state,
             theftVulnerability = skyhook.theftVulnerability,

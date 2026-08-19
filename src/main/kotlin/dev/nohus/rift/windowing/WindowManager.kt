@@ -38,6 +38,7 @@ import dev.nohus.rift.loglite.LogLiteWindow
 import dev.nohus.rift.map.MapWindow
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.map.markers.MapMarkersWindow
+import dev.nohus.rift.neocom.NeocomInputModel
 import dev.nohus.rift.neocom.NeocomWindow
 import dev.nohus.rift.opportunities.OpportunitiesInputModel
 import dev.nohus.rift.opportunities.OpportunitiesWindow
@@ -244,7 +245,7 @@ class WindowManager(
             if (settings.isRememberOpenWindows) {
                 settings.openWindows.filter { it !in nonSavedWindows }.forEach { onWindowOpen(it) }
             }
-            if (!settings.isRememberOpenWindows || !settings.isTrayIconWorking) {
+            if (!settings.isRememberOpenWindows) {
                 onWindowOpen(RiftWindow.Neocom, ifClosed = true)
             }
         }
@@ -313,7 +314,7 @@ class WindowManager(
             if (window in multiInstanceWindows) {
                 // This is a multi instance window, open another instance
                 if (existingStates.size >= 5) return // Don't open more than 5 instances of a window
-                val geometry = getWindowOpenInfo(window, forceNew = true).single()
+                val geometry = getWindowOpenInfo(window, inputModel, forceNew = true).single()
                 existingStates + createWindowState(window, geometry, inputModel)
             } else {
                 // This is a single instance window, bring up the existing window
@@ -334,7 +335,7 @@ class WindowManager(
     }
 
     private fun createWindowStates(window: RiftWindow, inputModel: Any?): List<RiftWindowState> {
-        val geometries = getWindowOpenInfo(window, forceNew = false)
+        val geometries = getWindowOpenInfo(window, inputModel, forceNew = false)
         return geometries.mapIndexed { index, geometry ->
             val instanceInputModel = if (window in multiInstanceWindows) {
                 // This is a multi instance window, only use the input model on the latest window
@@ -364,6 +365,7 @@ class WindowManager(
     }
 
     fun onWindowClose(window: RiftWindow, uuid: UUID?) {
+        rememberWindowPlacements()
         val existingStates = states.value[window] ?: return
         val statesToClose = if (uuid != null) {
             listOfNotNull(existingStates.firstOrNull { it.uuid == uuid })
@@ -393,7 +395,7 @@ class WindowManager(
      *
      * @param forceNew When true, will return a single new window geometry
      */
-    private fun getWindowOpenInfo(window: RiftWindow, forceNew: Boolean): List<WindowInfo> {
+    private fun getWindowOpenInfo(window: RiftWindow, inputModel: Any?, forceNew: Boolean): List<WindowInfo> {
         val savedPlacements = if (settings.isRememberWindowPlacement && !forceNew) {
             settings.windowSettings[window] ?: listOf(null)
         } else {
@@ -401,7 +403,7 @@ class WindowManager(
         }
         return savedPlacements.map { saved ->
             val sizing = getWindowOpenSizing(window, saved)
-            val position = getWindowOpenPosition(window, saved, sizing)
+            val position = getWindowOpenPosition(window, inputModel,saved, sizing)
             val geometry = WindowGeometry(sizing, position)
             WindowInfo(
                 uuid = saved?.uuid ?: UUID.randomUUID(),
@@ -462,7 +464,7 @@ class WindowManager(
         )
     }
 
-    private fun getWindowOpenPosition(window: RiftWindow, savedPlacement: WindowSettings?, sizing: WindowSizing): WindowPosition {
+    private fun getWindowOpenPosition(window: RiftWindow, inputModel: Any?, savedPlacement: WindowSettings?, sizing: WindowSizing): WindowPosition {
         val position = when (window) {
             RiftWindow.Jukebox -> {
                 states.value[RiftWindow.JukeboxCollapsed]?.singleOrNull()?.windowState?.position
@@ -470,7 +472,7 @@ class WindowManager(
             RiftWindow.JukeboxCollapsed -> {
                 states.value[RiftWindow.Jukebox]?.singleOrNull()?.windowState?.position
             }
-            RiftWindow.Neocom -> {
+            RiftWindow.Neocom if (inputModel as? NeocomInputModel)?.isOpenFromTray == true -> {
                 getTrayWindowPosition(sizing.defaultSize.first ?: 0, sizing.defaultSize.second ?: 0)
             }
             else -> null

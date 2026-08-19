@@ -76,7 +76,6 @@ data class SettingsModel(
     val dismissedWarnings: List<String> = emptyList(),
     val uiScale: Float = 1f,
     val accountAssociations: Map<Int, Int> = emptyMap(),
-    val isTrayIconWorking: Boolean = false,
     val isWindowTransparencyEnabled: Boolean = false,
     val windowTransparencyModifier: Float = 1f,
     val isSmartAlwaysAbove: Boolean = false,

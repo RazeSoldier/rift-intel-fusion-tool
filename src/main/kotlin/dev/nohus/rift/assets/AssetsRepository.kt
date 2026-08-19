@@ -192,7 +192,6 @@ class AssetsRepository(
     }
 
     private suspend fun load() = withContext(Dispatchers.Default) {
-        logger.debug { "Loading assets requested" }
         loadingMutex.withLock {
             logger.debug { "Loading assets" }
             val charactersWithAssetsScopes = localCharactersRepository.characters.value

@@ -1,7 +1,7 @@
 {
     "id": 1045871435222,
     "planet_id": 40034895,
-    "enabled": true,
+    "is_active": true,
     "effective_workforce": 8100,
     "state": "HullVulnerable"
 }

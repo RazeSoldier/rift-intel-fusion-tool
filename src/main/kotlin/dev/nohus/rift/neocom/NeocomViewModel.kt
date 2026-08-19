@@ -3,7 +3,6 @@ package dev.nohus.rift.neocom
 import dev.nohus.rift.ApplicationViewModel
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
-import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +14,6 @@ class NeocomViewModel(
     private val windowManager: WindowManager,
     private val applicationViewModel: ApplicationViewModel,
     configurationPackRepository: ConfigurationPackRepository,
-    private val settings: Settings,
 ) : ViewModel() {
 
     data class UiState(
@@ -29,10 +27,12 @@ class NeocomViewModel(
     )
     val state = _state.asStateFlow()
 
-    fun onButtonClick(window: RiftWindow) {
+    fun onButtonClick(window: RiftWindow, isOpenFromTray: Boolean = false) {
         if (window == RiftWindow.Jukebox && windowManager.getOpenWindowUuids(RiftWindow.JukeboxCollapsed).isNotEmpty()) {
             // We want to open the Jukebox, but collapsed Jukebox is already open so bring that up instead
             windowManager.onWindowOpen(RiftWindow.JukeboxCollapsed)
+        } else if (window == RiftWindow.Neocom) {
+            windowManager.onWindowOpen(window, NeocomInputModel(isOpenFromTray))
         } else {
             windowManager.onWindowOpen(window)
         }
@@ -40,13 +40,5 @@ class NeocomViewModel(
 
     fun onQuitClick() {
         applicationViewModel.onQuit()
-    }
-
-    override fun onClose() {
-        if (!settings.isTrayIconWorking) {
-            // We don't have confirmation that the tray icon is working
-            // Close the app, so it's not running in the background without the user having the ability to quit it
-            applicationViewModel.onQuit()
-        }
     }
 }

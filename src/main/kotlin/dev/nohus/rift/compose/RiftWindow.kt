@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -459,7 +460,7 @@ private fun WindowScope.TitleBar(
             onCloseClick = onCloseClick,
         )
     } else {
-        ImprovedWindowDraggableArea {
+        WindowDraggableArea {
             TitleBar(
                 style = style,
                 width = width,

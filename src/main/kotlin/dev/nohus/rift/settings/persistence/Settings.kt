@@ -236,10 +236,6 @@ class Settings(
         get() = model.accountAssociations
         set(value) = update { copy(accountAssociations = value) }
 
-    var isTrayIconWorking: Boolean
-        get() = model.isTrayIconWorking
-        set(value) = update { copy(isTrayIconWorking = value) }
-
     var isWindowTransparencyEnabled: Boolean
         get() = model.isWindowTransparencyEnabled
         set(value) = update { copy(isWindowTransparencyEnabled = value) }

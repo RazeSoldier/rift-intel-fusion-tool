@@ -1,7 +1,7 @@
 {
     "id": 1049414232767,
     "planet_id": 40034889,
-    "enabled": true,
+    "is_active": true,
     "reagents": [
         {
             "type_id": 81143,
