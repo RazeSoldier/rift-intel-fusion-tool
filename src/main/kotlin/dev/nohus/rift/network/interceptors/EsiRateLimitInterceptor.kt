@@ -146,15 +146,16 @@ class EsiRateLimitInterceptor : Interceptor {
         val potentiallyUsedTokens = inflightCount * 5
         val tokensRemaining = bucket.remaining + replenishedTokens - potentiallyUsedTokens
 
+        val slowDownBreakpoint = (bucket.limit.tokens * 0.3f).toInt()
+            .coerceIn(10..200)
         return if (tokensRemaining <= 0) {
             logger.info { "Request in group \"${group.name}\", tokens remaining: $tokensRemaining (inflight $inflightCount), waiting for 10 seconds before rechecking" }
             RateLimitAction.RecheckAfterDelay(Duration.ofSeconds(10))
-        } else if (tokensRemaining < 100) {
+        } else if (tokensRemaining < slowDownBreakpoint) {
             val tokensPerSecond = bucket.limit.tokens / bucket.limit.windowSeconds.toFloat()
             val secondsToRegenerateTokensBackTo100 = ((100 - tokensRemaining) / tokensPerSecond)
-            val waitFactor = getWaitFactor(tokensRemaining)
+            val waitFactor = getWaitFactor(tokensRemaining, slowDownBreakpoint)
             val delayMillis = (secondsToRegenerateTokensBackTo100 * waitFactor * 1000).toLong()
-            logger.info { "Request in group \"${group.name}\", tokens remaining: $tokensRemaining (inflight $inflightCount), waiting for ${delayMillis}ms before sending" }
             RateLimitAction.ProceedAfterDelay(Duration.ofMillis(delayMillis))
         } else {
             // 100+ tokens remaining, no need to throttle
@@ -165,14 +166,15 @@ class EsiRateLimitInterceptor : Interceptor {
     /**
      * Determines how much we want to slow down requests based on remaining tokens.
      * The function returns:
-     * - For 100 tokens or more -> 0 (no wait needed)
-     * - For 50 tokens -> 0.22 (22% wait needed)
-     * - For 0 tokens -> 1 (100% wait needed)
+     * - For 100% tokens or more -> 0 (no wait needed)
+     * - For 50% tokens -> 0.22 (22% wait needed)
+     * - For 0% tokens -> 1 (100% wait needed)
      * with a gradual non-linear ramp up inbetween.
      */
-    private fun getWaitFactor(tokensRemaining: Int): Double {
-        if (tokensRemaining <= 0) return 1.0
-        return (1.5513 - (ln(tokensRemaining.toDouble() + 5) / 3.0)).coerceIn(0.0..1.0)
+    private fun getWaitFactor(tokensRemaining: Int, slowDownBreakpoint: Int): Double {
+        if (tokensRemaining <= 0 || slowDownBreakpoint <= 0) return 1.0
+        val scaledTokens = tokensRemaining.toDouble() / slowDownBreakpoint * 100.0
+        return (1.5513 - (ln(scaledTokens + 5) / 3.0)).coerceIn(0.0..1.0)
     }
 
     private suspend fun handleResponse(

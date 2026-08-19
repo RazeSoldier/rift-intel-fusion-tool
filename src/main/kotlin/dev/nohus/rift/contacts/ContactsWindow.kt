@@ -493,11 +493,7 @@ private fun ContactFilterRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         modifier = Modifier
-            .modifyIfNotNull(filter) { filter ->
-                modifyIfNotNull(onClick) { onClick ->
-                    onClick { onClick(filter) }
-                }
-            }
+            .onClick { if (filter != null) onClick?.invoke(filter) }
             .modifyIf(filter != null) {
                 hoverBackground(
                     hoverColor = RiftTheme.colors.backgroundSelected,

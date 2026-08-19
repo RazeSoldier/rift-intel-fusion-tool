@@ -242,10 +242,10 @@ class WindowManager(
 
     fun openInitialWindows() {
         if (settings.isSetupWizardFinished) {
-            if (settings.isRememberOpenWindows) {
-                settings.openWindows.filter { it !in nonSavedWindows }.forEach { onWindowOpen(it) }
-            }
-            if (!settings.isRememberOpenWindows) {
+            val rememberedWindows = settings.openWindows.filter { it !in nonSavedWindows }
+            if (settings.isRememberOpenWindows && rememberedWindows.isNotEmpty()) {
+                rememberedWindows.forEach { onWindowOpen(it) }
+            } else {
                 onWindowOpen(RiftWindow.Neocom, ifClosed = true)
             }
         }

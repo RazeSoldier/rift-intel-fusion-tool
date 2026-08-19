@@ -19,13 +19,6 @@ import dev.nohus.rift.notifications.NotificationsController
 import dev.nohus.rift.singleinstance.SingleInstanceWrapper
 import dev.nohus.rift.splash.SplashWindowWrapper
 import dev.nohus.rift.tray.RiftTray
-import dev.nohus.rift.utils.GetOperatingSystemUseCase
-import dev.nohus.rift.utils.OperatingSystem
-import dev.nohus.rift.utils.directories.AppDirectories
-import dev.nohus.rift.utils.osdirectories.LinuxDirectories
-import dev.nohus.rift.utils.osdirectories.MacDirectories
-import dev.nohus.rift.utils.osdirectories.WindowsDirectories
-import dev.nohus.rift.whatsnew.MigrateAppDataUseCase
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.wizard.WizardWindowWrapper
 import io.kamel.image.config.LocalKamelConfig
@@ -33,7 +26,6 @@ import io.kamel.image.config.LocalKamelConfig
 fun main() {
     try {
         initializeLogging()
-        runMigration()
         startKoin()
         application {
             riftApplication()
@@ -78,16 +70,4 @@ private fun ApplicationScope.riftApplication() {
 
         if (!state.isApplicationRunning) exitApplication()
     }
-}
-
-private fun runMigration() {
-    val operatingSystem = GetOperatingSystemUseCase()()
-    val appDirectories = AppDirectories(
-        when (operatingSystem) {
-            OperatingSystem.Linux -> LinuxDirectories()
-            OperatingSystem.Windows -> WindowsDirectories()
-            OperatingSystem.MacOs -> MacDirectories()
-        },
-    )
-    MigrateAppDataUseCase(operatingSystem, appDirectories)()
 }

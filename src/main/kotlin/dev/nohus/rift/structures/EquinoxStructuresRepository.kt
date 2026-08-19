@@ -515,8 +515,8 @@ class EquinoxStructuresRepository(
         } while (securedStock < planetResource.securedCapacity || unsecuredStock < planetResource.unsecuredCapacity)
 
         return ReagentSimulationResult(
-            securedStock = securedStockNow ?: securedStock,
-            unsecuredStock = unsecuredStockNow ?: unsecuredStock,
+            securedStock = securedStockNow ?: reagent.securedStock,
+            unsecuredStock = unsecuredStockNow ?: reagent.unsecuredStock,
             securedStockFullTimestamp = securedStockFullTimestamp,
             unsecuredStockFullTimestamp = unsecuredStockFullTimestamp,
         )

@@ -20,8 +20,9 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalWindowInfo
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.windowing.LocalRiftWindowState
@@ -66,14 +67,29 @@ fun Modifier.pointerInteraction(state: PointerInteractionStateHolder): Modifier 
         state.isPressed = false
     }
     return this
-        .onPointerEvent(PointerEventType.Enter) {
-            if (Duration.between(windowLostFocusTimestamp, Instant.now()) > IGNORE_HOVER_ON_LOST_FOCUS_DURATION) {
-                state.isHovered = true
+        .pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    when (event.type) {
+                        PointerEventType.Enter -> {
+                            if (Duration.between(windowLostFocusTimestamp, Instant.now()) > IGNORE_HOVER_ON_LOST_FOCUS_DURATION) {
+                                state.isHovered = true
+                            }
+                        }
+                        PointerEventType.Exit -> {
+                            state.isHovered = false
+                        }
+                        PointerEventType.Press -> {
+                            state.isPressed = true
+                        }
+                        PointerEventType.Release -> {
+                            state.isPressed = false
+                        }
+                    }
+                }
             }
         }
-        .onPointerEvent(PointerEventType.Exit) { state.isHovered = false }
-        .onPointerEvent(PointerEventType.Press) { state.isPressed = true }
-        .onPointerEvent(PointerEventType.Release) { state.isPressed = false }
 }
 
 fun <T> getStandardTransitionSpec(): @Composable Transition.Segment<PointerInteractionState>.() -> FiniteAnimationSpec<T> {

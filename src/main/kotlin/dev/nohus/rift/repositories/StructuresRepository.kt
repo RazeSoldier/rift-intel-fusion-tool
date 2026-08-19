@@ -68,9 +68,13 @@ class StructuresRepository(
                     delay(Duration.ofSeconds(10))
                     mutex.withLock {
                         val newForbidden = unwrittenForbiddenStructures
-                            .groupBy({ it.first }, { it.second } )
+                            .groupBy({ it.first }, { it.second })
                             .mapValues { (_, values) -> values.toSet() }
-                        settings.forbiddenStructures += newForbidden
+                        settings.forbiddenStructures = settings.forbiddenStructures.toMutableMap().apply {
+                            newForbidden.forEach { (characterId, structures) ->
+                                this[characterId] = getOrDefault(characterId, emptySet()) + structures
+                            }
+                        }
                         unwrittenForbiddenStructures = emptyList()
                         logger.debug { "Forbidden structures now: ${settings.forbiddenStructures}" }
                     }
