@@ -14,7 +14,7 @@ import org.koin.core.annotation.Factory
 class NeocomViewModel(
     private val windowManager: WindowManager,
     private val applicationViewModel: ApplicationViewModel,
-    private val configurationPackRepository: ConfigurationPackRepository,
+    configurationPackRepository: ConfigurationPackRepository,
     private val settings: Settings,
 ) : ViewModel() {
 

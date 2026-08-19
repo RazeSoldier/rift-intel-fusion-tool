@@ -19,6 +19,8 @@ class LogLiteServer(
     private var sessions = mutableListOf<LogLiteSession>()
 
     suspend fun start() = coroutineScope {
+        return@coroutineScope
+
         val serverSocket = try {
             ServerSocket(3273)
         } catch (e: IOException) {

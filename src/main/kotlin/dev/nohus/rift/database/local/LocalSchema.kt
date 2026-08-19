@@ -18,15 +18,6 @@ enum class CharacterStatus {
     DoesNotExists,
 }
 
-object CharacterAffiliations : Table() {
-    val characterId = integer("characterId")
-    val corporationId = integer("corporationId")
-    val allianceId = integer("allianceId").nullable()
-    val factionId = integer("factionId").nullable()
-    val checkTimestamp = long("checkTimestamp")
-    override val primaryKey = PrimaryKey(characterId)
-}
-
 object WalletJournalEntries : Table() {
     val amount = double("amount").nullable()
     val balance = double("balance").nullable()

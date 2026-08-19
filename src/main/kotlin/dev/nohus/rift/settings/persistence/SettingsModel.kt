@@ -9,6 +9,7 @@ import dev.nohus.rift.settings.persistence.MapSystemInfoType.Incursions
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.IntelHostiles
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.JoveObservatories
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.MetaliminalStorms
+import dev.nohus.rift.settings.persistence.MapSystemInfoType.RaidableSkyhooks
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Security
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.Sovereignty
 import dev.nohus.rift.settings.persistence.MapSystemInfoType.SovereigntyUpgrades
@@ -44,7 +45,7 @@ data class SettingsModel(
     val jabberPassword: String? = null,
     val jabberCollapsedGroups: List<String> = emptyList(),
     val jabberIsUsingBiggerFontSize: Boolean = false,
-    val jabberConferences: List<String> = emptyList(),
+    val jabberConferences: Set<String> = emptySet(),
     val isDemoMode: Boolean = false,
     val isSettingsReadFailure: Boolean = false,
     val isUsingDarkTrayIcon: Boolean = false,
@@ -92,6 +93,24 @@ data class SettingsModel(
     val newVersionSeenTimestamp: Long? = null,
     val characterPortraits: CharacterPortraits = CharacterPortraits(),
     val isZkillboardMonitoringEnabled: Boolean = true,
+    val chatWindows: Map<
+        @Serializable(with = UuidSerializer::class)
+        UUID,
+        ChatWindowState,
+        > = emptyMap(),
+    val isEquinoxMockingEnabled: Boolean = false,
+)
+
+@Serializable
+data class ChatWindowState(
+    val openChannels: List<Channel> = emptyList(),
+    val selectedChannel: Channel? = null,
+)
+
+@Serializable
+data class Channel(
+    val characterId: Int?,
+    val name: String,
 )
 
 @Serializable
@@ -136,6 +155,7 @@ enum class MapSystemInfoType {
     FactionWarfare,
     Sovereignty,
     SovereigntyUpgrades,
+    RaidableSkyhooks,
     MetaliminalStorms,
     JumpRange,
     Planets,

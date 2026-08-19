@@ -2,11 +2,6 @@ package dev.nohus.rift.network.requests
 
 import dev.nohus.rift.network.requests.CacheStatistics.CacheStatus
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.koin.core.annotation.Single

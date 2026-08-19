@@ -119,6 +119,7 @@ import dev.nohus.rift.map.systemcolor.strategies.KillsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.MetaliminalStormsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.NpcKillsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.NullSecuritySystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.RaidableSkyhooksColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.RatsTypeSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.SecuritySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.SovereigntySystemColorStrategy
@@ -447,6 +448,7 @@ private fun Map(
             factionWarfare = FactionWarfareSystemColorStrategy(state.mapState.systemStatus),
             sovereignty = koin.get { parametersOf(state.mapState.systemStatus) },
             sovereigntyUpgrades = SovereigntyUpgradesSystemColorStrategy(state.mapState.systemStatus),
+            raidableSkyhooks = RaidableSkyhooksColorStrategy(state.mapState.systemStatus),
             storms = MetaliminalStormsSystemColorStrategy(state.mapState.systemStatus),
             wormholes = WormholesSystemColorStrategy(state.mapState.systemStatus),
             jumpRange = JumpRangeSystemColorStrategy(state.mapState.systemStatus),
@@ -682,6 +684,7 @@ data class SystemStatusColorStrategies(
     val factionWarfare: FactionWarfareSystemColorStrategy,
     val sovereignty: SovereigntySystemColorStrategy,
     val sovereigntyUpgrades: SovereigntyUpgradesSystemColorStrategy,
+    val raidableSkyhooks: RaidableSkyhooksColorStrategy,
     val storms: MetaliminalStormsSystemColorStrategy,
     val wormholes: WormholesSystemColorStrategy,
     val jumpRange: JumpRangeSystemColorStrategy,
@@ -723,6 +726,7 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.FactionWarfare -> systemStatusColorStrategies.factionWarfare
         MapSystemInfoType.Sovereignty -> systemStatusColorStrategies.sovereignty
         MapSystemInfoType.SovereigntyUpgrades -> systemStatusColorStrategies.sovereigntyUpgrades
+        MapSystemInfoType.RaidableSkyhooks -> systemStatusColorStrategies.raidableSkyhooks
         MapSystemInfoType.MetaliminalStorms -> systemStatusColorStrategies.storms
         MapSystemInfoType.JumpRange -> systemStatusColorStrategies.jumpRange
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for coloring")

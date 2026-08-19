@@ -3,11 +3,9 @@ package dev.nohus.rift.settings
 import dev.nohus.rift.repositories.JumpBridgesRepository.JumpBridgeConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
-import dev.nohus.rift.utils.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Single
 
 @Factory
 class JumpBridgesParser(

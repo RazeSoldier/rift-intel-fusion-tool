@@ -1,0 +1,104 @@
+{
+    "id": 1049780119122,
+    "solar_system_id": 30000571,
+    "upgrades": [
+        {
+            "type_id": 88221,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 81615,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 87951,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 87705,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 87706,
+            "power_state": "Offline"
+        },
+        {
+            "type_id": 82496,
+            "power_state": "Offline"
+        },
+        {
+            "type_id": 81621,
+            "power_state": "Offline"
+        }
+    ],
+    "reagent_bay": {
+        "last_updated": "2026-05-10T13:52:52.359518518Z",
+        "reagents": [
+            {
+                "type_id": 81143,
+                "amount": 67476,
+                "burning_per_hour": 212
+            },
+            {
+                "type_id": 81144,
+                "amount": 5935,
+                "burning_per_hour": 25
+            }
+        ]
+    },
+    "resources": {
+        "power": {
+            "available": 2730,
+            "allocated": 2250
+        },
+        "workforce": {
+            "available": 42010,
+            "allocated": 32300
+        }
+    },
+    "workforce_transport": {
+        "configuration": {
+            "import": {
+                "sources": [
+                    {
+                        "solar_system_id": 30000548
+                    },
+                    {
+                        "solar_system_id": 30000560
+                    },
+                    {
+                        "solar_system_id": 30000585
+                    }
+                ]
+            }
+        },
+        "state": {
+            "import": {
+                "sources": [
+                    {
+                        "solar_system_id": 30000560,
+                        "amount": 2000
+                    },
+                    {
+                        "solar_system_id": 30000548,
+                        "amount": 3000
+                    },
+                    {
+                        "solar_system_id": 30000585,
+                        "amount": 17000
+                    }
+                ]
+            }
+        },
+        "state": {
+            "export": {
+                "solar_system_id": 30000558,
+                "amount": 6000
+            }
+        }
+    },
+    "vulnerability_window": {
+        "start": "2026-05-19T14:38:47Z",
+        "end": "2026-05-19T16:38:47Z"
+    }
+}

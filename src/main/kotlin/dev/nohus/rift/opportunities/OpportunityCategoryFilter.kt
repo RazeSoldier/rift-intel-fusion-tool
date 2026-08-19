@@ -8,6 +8,7 @@ import dev.nohus.rift.generated.resources.careerpaths_soldier_of_fortune_16px
 import dev.nohus.rift.generated.resources.corporation_management_16px
 import dev.nohus.rift.generated.resources.flag_16px
 import dev.nohus.rift.generated.resources.freelance_projects_16px
+import dev.nohus.rift.generated.resources.mercenary_den_16px
 import dev.nohus.rift.generated.resources.mining_16px
 import dev.nohus.rift.generated.resources.pinpoint_probe_formation_32px
 import dev.nohus.rift.generated.resources.sword_16px
@@ -50,8 +51,16 @@ sealed class OpportunityCategoryFilter(
         icon = Res.drawable.freelance_projects_16px,
     )
 
-    data object Enforcer : OpportunityCategoryFilter(
+    data object MercenaryTacticalOperations : OpportunityCategoryFilter(
         order = 3,
+        name = "Mercenary Tactical Operations",
+        type = OpportunityCategoryFilterType.Feature,
+        description = "Mercenary Tactical Operations are available when at least one\nMercenary Den is deployed. While only the Den's owner can\ntrack these operations, they can still be completed by other\ncapsuleers.",
+        icon = Res.drawable.mercenary_den_16px,
+    )
+
+    data object Enforcer : OpportunityCategoryFilter(
+        order = 4,
         name = "Enforcer",
         type = OpportunityCategoryFilterType.CareerPath,
         description = "Opportunities for those focused on the\nEnforcer Career path or who are interested in\nCombat against non-capsuleers.",
@@ -59,7 +68,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Explorer : OpportunityCategoryFilter(
-        order = 4,
+        order = 5,
         name = "Explorer",
         type = OpportunityCategoryFilterType.CareerPath,
         description = "Opportunities for those focused on the\nExplorer Career path or who are interested in\nexploration, scanning, or hacking.",
@@ -67,7 +76,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Industrialist : OpportunityCategoryFilter(
-        order = 5,
+        order = 6,
         name = "Industrialist",
         type = OpportunityCategoryFilterType.CareerPath,
         description = "Opportunities for those focused on the\nIndustrialist Career path or who are interested\nin resource gathering, manufacturing, or hauling.",
@@ -75,7 +84,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object SoldierOfFortune : OpportunityCategoryFilter(
-        order = 6,
+        order = 7,
         name = "Soldier of Fortune",
         type = OpportunityCategoryFilterType.CareerPath,
         description = "Opportunities for those focused on the\nSoldier of Fortune Career path or who are interested\nin combat against other capsuleers.",
@@ -83,7 +92,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Combat : OpportunityCategoryFilter(
-        order = 7,
+        order = 8,
         name = "Combat",
         type = OpportunityCategoryFilterType.Activity,
         description = "Engaging with hostile forces.",
@@ -91,7 +100,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object CosmicSignatures : OpportunityCategoryFilter(
-        order = 8,
+        order = 9,
         name = "Cosmic Signatures",
         type = OpportunityCategoryFilterType.Activity,
         description = "A site that needs to be located by probe\nscanning before you can travel to it.",
@@ -99,35 +108,35 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Fleet : OpportunityCategoryFilter(
-        order = 9,
+        order = 10,
         name = "Fleet",
         type = OpportunityCategoryFilterType.Activity,
         description = "Form a fleet with other capsuleers to\ncooperate and complete objectives.",
     )
 
     data object Hauling : OpportunityCategoryFilter(
-        order = 10,
+        order = 11,
         name = "Hauling",
         type = OpportunityCategoryFilterType.Activity,
         description = "Transporting items from location to location.",
     )
 
     data object Logistics : OpportunityCategoryFilter(
-        order = 11,
+        order = 13,
         name = "Logistics",
         type = OpportunityCategoryFilterType.Activity,
         description = "Using remote modules to boost, repair, or\ntransfer energy to friendly targets.",
     )
 
     data object Manufacturing : OpportunityCategoryFilter(
-        order = 12,
+        order = 14,
         name = "Manufacturing",
         type = OpportunityCategoryFilterType.Activity,
         description = "Using blueprints to produce items.",
     )
 
     data object Mining : OpportunityCategoryFilter(
-        order = 13,
+        order = 15,
         name = "Mining",
         type = OpportunityCategoryFilterType.Activity,
         description = "Harvesting ore from asteroids.",

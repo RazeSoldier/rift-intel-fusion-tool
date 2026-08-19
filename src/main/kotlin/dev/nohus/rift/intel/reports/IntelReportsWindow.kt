@@ -35,6 +35,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_bleedchannel
+import dev.nohus.rift.generated.resources.window_warreport
 import dev.nohus.rift.intel.ParsedChannelChatMessage
 import dev.nohus.rift.intel.reports.IntelReportsViewModel.UiState
 import dev.nohus.rift.intel.state.AlertTriggeringMessagesRepository.AlertTriggeringMessage
@@ -51,7 +52,7 @@ fun IntelReportsWindow(
     val state by viewModel.state.collectAsState()
     RiftWindow(
         title = "Intel Reports",
-        icon = Res.drawable.window_bleedchannel,
+        icon = Res.drawable.window_warreport,
         state = windowState,
         tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),
         onCloseClick = onCloseRequest,

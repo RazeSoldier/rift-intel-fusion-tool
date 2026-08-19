@@ -4,7 +4,6 @@ import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
-import dev.nohus.rift.network.esi.models.CharactersAffiliation
 import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.standings.Standing
@@ -19,7 +18,6 @@ class CharacterDetailsRepository(
     private val esiApi: EsiApi,
     private val standingsRepository: StandingsRepository,
     private val contactsRepository: ContactsRepository,
-    private val characterAffiliationRepository: CharacterAffiliationRepository,
 ) {
 
     data class CharacterDetails(
@@ -64,23 +62,18 @@ class CharacterDetailsRepository(
     // TODO: Check if batch version can be applied anywhere else
     suspend fun getCharacterDetails(originator: Originator, characterIds: List<Int>): Map<Int, CharacterDetails?> = coroutineScope {
         val distinct = characterIds.distinct()
-        val affiliations = characterAffiliationRepository.getCharacterAffiliations(originator, distinct)
         distinct.map {
             async {
-                it to getCharacterDetails(originator, it, affiliations[it])
+                it to getCharacterDetails(originator, it)
             }
         }.awaitAll().toMap()
     }
 
-    suspend fun getCharacterDetails(originator: Originator, characterId: Int, affiliation: CharactersAffiliation? = null): CharacterDetails? = coroutineScope {
+    suspend fun getCharacterDetails(originator: Originator, characterId: Int): CharacterDetails? = coroutineScope {
         val characterDeferred = async { esiApi.getCharactersId(originator, characterId).success }
-        val affiliationDeferred = async {
-            affiliation ?: characterAffiliationRepository.getCharacterAffiliation(originator, characterId)
-        }
         val character = characterDeferred.await() ?: return@coroutineScope null
-        val affiliation = affiliationDeferred.await()
-        val corporationId = affiliation?.corporationId ?: character.corporationId
-        val allianceId = affiliation?.allianceId ?: character.allianceId
+        val corporationId = character.corporationId
+        val allianceId = character.allianceId
         val deferredCorporation = async { esiApi.getCorporationsId(originator, corporationId).success }
         val deferredAlliance = async { allianceId?.let { esiApi.getAlliancesId(originator, it).success } }
         val corporation = deferredCorporation.await()

@@ -41,6 +41,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
+import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
@@ -64,7 +65,6 @@ import dev.nohus.rift.compose.RiftRadioButtonWithLabel
 import dev.nohus.rift.compose.RiftSliderWithLabel
 import dev.nohus.rift.compose.RiftSolarSystemChip
 import dev.nohus.rift.compose.RiftTabBar
-import dev.nohus.rift.compose.RiftTable
 import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
@@ -72,8 +72,6 @@ import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.SectionTitle
 import dev.nohus.rift.compose.Tab
-import dev.nohus.rift.compose.TableCell
-import dev.nohus.rift.compose.TableRow
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
 import dev.nohus.rift.compose.pointerInteraction
@@ -356,6 +354,11 @@ private fun SettingsWindowContent(
                     ) {
                         SectionContainer(inputModel) {
                             ClipboardSection(state, viewModel)
+                        }
+                        if (BuildConfig.isDevEnvironment) {
+                            SectionContainer(inputModel) {
+                                DevSection(state, viewModel)
+                            }
                         }
                     }
                 }
@@ -747,6 +750,25 @@ private fun ClipboardSection(
             text = "Clipboard tester",
             type = ButtonType.Primary,
             onClick = viewModel::onClipboardTesterClick,
+        )
+    }
+}
+
+@Composable
+private fun DevSection(
+    state: UiState,
+    viewModel: SettingsViewModel,
+) {
+    SectionTitle("Development", Modifier.padding(bottom = Spacing.medium))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        RiftCheckboxWithLabel(
+            label = "Mocked Equinox requests",
+            isChecked = state.isEquinoxMockingEnabled,
+            onCheckedChange = viewModel::onIsEquinoxMockingEnabledChange,
         )
     }
 }

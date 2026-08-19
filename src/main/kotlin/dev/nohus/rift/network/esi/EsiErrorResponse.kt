@@ -9,7 +9,17 @@ data class EsiErrorResponse(
     val error: String,
     @SerialName("sso_status")
     val ssoStatus: Int? = null,
-)
+) {
+    override fun toString(): String {
+        return buildString {
+            append("EsiError($error")
+            if (ssoStatus != null) {
+                append(", ssoStatus=$ssoStatus")
+            }
+            append(")")
+        }
+    }
+}
 
 data class EsiErrorException(
     val error: EsiErrorResponse,

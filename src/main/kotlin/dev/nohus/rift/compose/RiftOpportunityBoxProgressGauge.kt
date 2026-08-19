@@ -78,7 +78,7 @@ fun RiftOpportunityCardProgressGauge(
                     iconColor = EveColors.platinumGrey,
                     iconResource = Res.drawable.corporation_project_state_checkmark_16px,
                 )
-                OpportunityState.Active, OpportunityState.Unspecified -> {
+                OpportunityState.Available, OpportunityState.Active, OpportunityState.Unspecified -> {
                     val hasPersonallyCompleted = innerGaugeProgress >= 1f
                     ProgressConfiguration(
                         outerGauge = Color(0xFFA9DBE9),
@@ -162,7 +162,7 @@ fun RiftOpportunityCardSmallProgressGauge(
                         iconResource = Res.drawable.corporation_project_state_checkmark_16px,
                     )
 
-                    OpportunityState.Active, OpportunityState.Unspecified -> {
+                    OpportunityState.Available, OpportunityState.Active, OpportunityState.Unspecified -> {
                         val hasPersonallyCompleted = innerGaugeProgress >= 1f
                         ProgressConfiguration(
                             outerGauge = Color(0xFFA9DBE9),

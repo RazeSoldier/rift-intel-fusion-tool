@@ -10,6 +10,7 @@ import org.koin.core.annotation.Single
 import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
+import java.util.UUID
 import kotlin.io.path.pathString
 
 @Single
@@ -116,7 +117,7 @@ class Settings(
         get() = model.jabberIsUsingBiggerFontSize
         set(value) = update { copy(jabberIsUsingBiggerFontSize = value) }
 
-    var jabberConferences: List<String>
+    var jabberConferences: Set<String>
         get() = model.jabberConferences
         set(value) = update { copy(jabberConferences = value) }
 
@@ -302,4 +303,12 @@ class Settings(
     var isZkillboardMonitoringEnabled: Boolean
         get() = model.isZkillboardMonitoringEnabled
         set(value) = update { copy(isZkillboardMonitoringEnabled = value) }
+
+    var chatWindows: Map<UUID, ChatWindowState>
+        get() = model.chatWindows
+        set(value) = update { copy(chatWindows = value) }
+
+    var isEquinoxMockingEnabled: Boolean
+        get() = model.isEquinoxMockingEnabled
+        set(value) = update { copy(isEquinoxMockingEnabled = value) }
 }

@@ -17,7 +17,10 @@ import dev.nohus.rift.network.esi.models.OwnerType
 import dev.nohus.rift.network.esi.models.ParticipationState
 import dev.nohus.rift.network.esi.models.SignatureTypeId
 import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttributeType
+import dev.nohus.rift.opportunities.TypeListsRepository.TypeList
 import dev.nohus.rift.repositories.SolarSystemChipState
+import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import java.time.Instant
 
@@ -40,6 +43,7 @@ data class Opportunity(
 enum class OpportunityType {
     CorporationProject,
     FreelanceJob,
+    MercenaryTacticalOperation,
 }
 
 data class Reward(
@@ -50,7 +54,7 @@ data class Reward(
 data class Creator(
     val characterId: Int,
     val characterName: String,
-    val corporation: Corporation,
+    val corporation: Corporation?,
 )
 
 data class Corporation(
@@ -91,7 +95,7 @@ data class OpportunityDetails(
     val submissionLimit: Long?,
     val submissionMultiplier: Double?,
     val career: OpportunityCareer,
-    val created: Instant,
+    val created: Instant?,
     val description: FormattedText,
     val expires: Instant?,
     val finished: Instant?,
@@ -187,6 +191,18 @@ sealed interface OpportunityConfiguration {
     data class ScanSignature(
         val locations: List<Location>?,
         val signatures: List<SignatureTypeId>?,
+    ) : OpportunityConfiguration
+
+    data class MercenaryTacticalOperation(
+        val solarSystem: MapSolarSystem?,
+        val archetypeTitle: String,
+        val archetypeDescription: String,
+        val allowedShipsLists: List<TypeList>?,
+        val developmentImpact: Int,
+        val anarchyImpact: Int,
+        val infomorphBonus: Int,
+        val hostiles: String,
+        val status: String,
     ) : OpportunityConfiguration
 
     data class Unknown(

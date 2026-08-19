@@ -7,7 +7,7 @@ enum class Standing {
     Good,
     Excellent,
 
-    Self,
-    Corporation,
     Alliance,
+    Corporation,
+    Self,
 }

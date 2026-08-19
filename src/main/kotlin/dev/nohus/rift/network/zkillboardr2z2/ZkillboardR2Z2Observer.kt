@@ -55,14 +55,16 @@ class ZkillboardR2Z2Observer(
             val pastKillmailsFlow = observePastKillmails(latestKillmailId)
             val killmailsFlow = observeKillmails(latestKillmailId + 1)
 
-            launch {
-                pastKillmailsFlow.collect {
-                    killmailProcessor.submit(it)
+            if (isEnabled) {
+                launch {
+                    pastKillmailsFlow.collect {
+                        killmailProcessor.submit(it)
+                    }
                 }
-            }
-            launch {
-                killmailsFlow.collect {
-                    killmailProcessor.submit(it)
+                launch {
+                    killmailsFlow.collect {
+                        killmailProcessor.submit(it)
+                    }
                 }
             }
         }

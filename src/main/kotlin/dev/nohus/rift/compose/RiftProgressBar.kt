@@ -27,8 +27,10 @@ import dev.nohus.rift.compose.theme.RiftTheme
 fun RiftProgressBar(
     percentage: Float,
     secondaryPercentage: Float? = null,
+    tertiaryPercentage: Float? = null,
     color: Color,
     secondaryColor: Color? = null,
+    tertiaryColor: Color? = null,
     hasInitialAnimation: Boolean = true,
     modifier: Modifier,
 ) {
@@ -40,15 +42,21 @@ fun RiftProgressBar(
         val height = maxHeight
         var animatedPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else percentage) }
         var animatedSecondaryPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else secondaryPercentage ?: 0f) }
+        var animatedTertiaryPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else tertiaryPercentage ?: 0f) }
         val progressWidth by animateDpAsState(animatedPercentage * width, spring(stiffness = StiffnessVeryLow))
         val secondaryProgressWidth by animateDpAsState(animatedSecondaryPercentage * width, spring(stiffness = StiffnessVeryLow))
+        val tertiaryProgressWidth by animateDpAsState(animatedTertiaryPercentage * width, spring(stiffness = StiffnessVeryLow))
         LaunchedEffect(percentage, secondaryPercentage) {
             animatedPercentage = percentage
             animatedSecondaryPercentage = secondaryPercentage ?: 0f
+            animatedTertiaryPercentage = tertiaryPercentage ?: 0f
         }
         ProgressBarFill(progressWidth, height, color)
         if (secondaryColor != null) {
             ProgressBarFill(secondaryProgressWidth, height, secondaryColor, Modifier.offset(x = progressWidth))
+        }
+        if (tertiaryColor != null) {
+            ProgressBarFill(tertiaryProgressWidth, height, tertiaryColor, Modifier.offset(x = progressWidth + secondaryProgressWidth))
         }
     }
 }

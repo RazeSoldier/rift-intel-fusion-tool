@@ -4,44 +4,56 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.chat.ChatsController.Channel
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.EntityInteractionProvider
 import dev.nohus.rift.compose.text.FormattedText
 import dev.nohus.rift.compose.text.Link
 import dev.nohus.rift.compose.text.LinkStyle
 import dev.nohus.rift.compose.text.buildFormattedText
 import dev.nohus.rift.compose.text.toFormattedText
+import dev.nohus.rift.compose.text.toPlainString
+import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.logs.parse.ChatMessage
 import dev.nohus.rift.network.requests.Originator
-import dev.nohus.rift.repositories.character.CharacterAffiliationRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.character.CharactersRepository
+import dev.nohus.rift.settings.persistence.ChatWindowState
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.formatTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.reactivecircus.cache4k.Cache
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.InjectedParam
 import java.time.Instant
 import java.time.ZoneId
+import java.util.UUID
+import dev.nohus.rift.settings.persistence.Channel as SettingsChannel
 
 private val logger = KotlinLogging.logger {}
 
 @Factory
 class ChatViewModel(
+    @InjectedParam private val windowUuid: UUID,
     private val chatsController: ChatsController,
     private val localCharactersRepository: LocalCharactersRepository,
     private val charactersRepository: CharactersRepository,
     private val characterDetailsRepository: CharacterDetailsRepository,
     private val entityInteractionProvider: EntityInteractionProvider,
     private val linkMessageUseCase: LinkMessageUseCase,
+    private val contactsRepository: ContactsRepository,
     private val settings: Settings,
-    private val characterAffiliationRepository: CharacterAffiliationRepository,
 ) : ViewModel() {
 
     data class UiState(
@@ -75,6 +87,11 @@ class ChatViewModel(
 
     init {
         viewModelScope.launch {
+            // Wait for contacts to load before loading messages, unless they take too long
+            withTimeoutOrNull(10_000) {
+                contactsRepository.finishedLoading.filter { it }.first()
+            }
+
             _state.map { it.selectedChannel }.distinctUntilChanged().collectLatest { channel ->
                 _state.update { it.copy(messages = emptyList()) }
                 chatsController.chats.map { it.messages[channel] ?: emptyList() }.distinctUntilChanged().collect { messages ->
@@ -108,6 +125,35 @@ class ChatViewModel(
                     )
                 }
             }
+        }
+        viewModelScope.launch {
+            _state.map { listOf(it.openChannels, it.selectedChannel) }.distinctUntilChanged().collect {
+                save()
+            }
+        }
+
+        initialize()
+    }
+
+    private fun initialize() {
+        settings.chatWindows[windowUuid]?.let { savedState ->
+            _state.update {
+                val channels = savedState.openChannels.map { Channel(it.characterId, it.name) }
+                it.copy(
+                    openChannels = channels,
+                    selectedChannel = savedState.selectedChannel?.let { Channel(it.characterId, it.name) },
+                    lastViewedTimestamp = channels.associateWith { Instant.now() },
+                )
+            }
+        }
+    }
+
+    private fun save() {
+        viewModelScope.launch(Dispatchers.IO) {
+            settings.chatWindows += windowUuid to ChatWindowState(
+                openChannels = _state.value.openChannels.map { SettingsChannel(it.characterId, it.name) },
+                selectedChannel = _state.value.selectedChannel?.let { SettingsChannel(it.characterId, it.name) },
+            )
         }
     }
 
@@ -156,6 +202,25 @@ class ChatViewModel(
         _state.update { it.copy(openChannels = it.openChannels - channel) }
     }
 
+    fun onCopyClick(message: RichChatMessage) {
+        Clipboard.copy(getCopyText(message))
+    }
+
+    fun onCopyAllClick() {
+        val messages = _state.value.messages
+        Clipboard.copy(messages.joinToString("\n") { getCopyText(it) })
+    }
+
+    private fun getCopyText(message: RichChatMessage): String {
+        return buildString {
+            append("[${formatTime(message.timestamp, _state.value.displayTimezone)}]")
+            append(" ")
+            append(message.authorText.toPlainString())
+            append(" > ")
+            append(message.message.toPlainString())
+        }
+    }
+
     /**
      * Returns a stub rich message to be processed later, or if this was an EVE System message, the final rich message
      * since no more processing is required
@@ -175,13 +240,11 @@ class ChatViewModel(
             val authorsCharacterIds = processedStubs.mapNotNull {
                 it.first.author to (charactersRepository.getCharacterId(Originator.ChatLogs, it.first.author) ?: return@mapNotNull null)
             }.toMap()
-            val authorsAffiliations = characterAffiliationRepository.getCharacterAffiliations(Originator.ChatLogs, authorsCharacterIds.values.toList())
             processedStubs.forEach { (message, processedStub) ->
                 launch {
                     val authorCharacterId = authorsCharacterIds[message.author]
                     val characterDetails = if (authorCharacterId != null) {
-                        val authorAffiliation = authorsAffiliations[authorCharacterId]
-                        characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, authorCharacterId, authorAffiliation)
+                        characterDetailsRepository.getCharacterDetails(Originator.ChatLogs, authorCharacterId)
                     } else {
                         null
                     }

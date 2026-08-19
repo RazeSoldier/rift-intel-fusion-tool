@@ -50,4 +50,11 @@ sealed class EsiScope(val id: String) {
     abstract class Fleets(id: String) : EsiScope(id) {
         object ReadFleet : Fleets("esi-fleets.read_fleet.v1")
     }
+    abstract class Structures(id: String) : EsiScope(id) {
+        object ReadCharacter : Structures("esi-structures.read_character.v1")
+        object ReadCorporation : Structures("esi-structures.read_corporation.v1")
+    }
+    abstract class Activities(id: String) : EsiScope(id) {
+        object ReadCharacter : Structures("esi-activities.read_character.v1")
+    }
 }

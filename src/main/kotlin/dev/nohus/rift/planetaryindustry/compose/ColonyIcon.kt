@@ -65,15 +65,6 @@ import dev.nohus.rift.generated.resources.pi_needsattention
 import dev.nohus.rift.generated.resources.pi_processor
 import dev.nohus.rift.generated.resources.pi_processoradvanced
 import dev.nohus.rift.generated.resources.pi_processorhightech
-import dev.nohus.rift.generated.resources.planet_barren_128
-import dev.nohus.rift.generated.resources.planet_gas_128
-import dev.nohus.rift.generated.resources.planet_ice_128
-import dev.nohus.rift.generated.resources.planet_lava_128
-import dev.nohus.rift.generated.resources.planet_ocean_128
-import dev.nohus.rift.generated.resources.planet_plasma_128
-import dev.nohus.rift.generated.resources.planet_storm_128
-import dev.nohus.rift.generated.resources.planet_temperate_128
-import dev.nohus.rift.network.esi.models.PlanetType
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem
 import dev.nohus.rift.planetaryindustry.models.Colony
 import dev.nohus.rift.planetaryindustry.models.ColonyOverview
@@ -82,6 +73,8 @@ import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Idle
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NeedsAttention
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NotSetup
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Producing
+import dev.nohus.rift.repositories.PlanetTypes
+import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.TypesRepository.Type
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.DrawableResource
@@ -175,7 +168,7 @@ fun ColonyIcon(
             modifier = Modifier.size(colonyIconSize),
         ) {
             ColonyFillLevel(colony.overview)
-            PlanetIcon(type, colony)
+            PlanetIcon(colony.planet.type, colony)
             StatusIcon(colony, transition)
         }
     }
@@ -186,23 +179,13 @@ private fun PlanetIcon(
     type: PlanetType,
     colony: Colony,
 ) {
-    val icon = when (type) {
-        PlanetType.Temperate -> Res.drawable.planet_temperate_128
-        PlanetType.Barren -> Res.drawable.planet_barren_128
-        PlanetType.Oceanic -> Res.drawable.planet_ocean_128
-        PlanetType.Ice -> Res.drawable.planet_ice_128
-        PlanetType.Gas -> Res.drawable.planet_gas_128
-        PlanetType.Lava -> Res.drawable.planet_lava_128
-        PlanetType.Storm -> Res.drawable.planet_storm_128
-        PlanetType.Plasma -> Res.drawable.planet_plasma_128
-    }
     val colorFilter = if (colony.status is NeedsAttention) {
         ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0.25f) })
     } else {
         null
     }
     Image(
-        painter = painterResource(icon),
+        painter = painterResource(type.icon128),
         contentDescription = null,
         colorFilter = colorFilter,
         modifier = Modifier.size(colonyIconPlanetSize),
@@ -289,7 +272,7 @@ private fun StatusIcon(colony: Colony, transition: InfiniteTransition) {
 }
 
 @Composable
-private fun NeedsAttentionAnimation(transition: InfiniteTransition) {
+fun NeedsAttentionAnimation(transition: InfiniteTransition) {
     val alpha by transition.animateFloat(
         initialValue = 0.2f,
         targetValue = 1f,
@@ -352,7 +335,7 @@ private fun ProductionAnimation(
 }
 
 @Composable
-private fun ExtractionAnimation(transition: InfiniteTransition) {
+fun ExtractionAnimation(transition: InfiniteTransition) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.size(colonyIconPlanetSize),
@@ -403,6 +386,14 @@ private fun ProductIcon(
     modifier: Modifier = Modifier,
 ) {
     val product = colony.overview.finalProducts.firstOrNull() ?: return
+    ProductIcon(product, modifier)
+}
+
+@Composable
+private fun ProductIcon(
+    type: Type,
+    modifier: Modifier = Modifier,
+) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier,
@@ -414,7 +405,7 @@ private fun ProductIcon(
             modifier = Modifier.size(32.dp),
         )
         AsyncTypeIcon(
-            type = product,
+            type = type,
             modifier = Modifier.size(32.dp),
         )
     }

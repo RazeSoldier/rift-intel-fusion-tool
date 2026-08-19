@@ -15,6 +15,7 @@ build/
 .idea/csv-editor.xml
 .idea/db-forest-config.xml
 .idea/inspectionProfiles/
+.idea/AndroidProjectSystem.xml
 *.iws
 *.iml
 *.ipr

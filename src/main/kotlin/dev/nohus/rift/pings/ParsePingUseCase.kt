@@ -214,6 +214,8 @@ class ParsePingUseCase(
 
     private fun getDoctrineLink(text: String): String? {
         val doctrines = mapOf(
+            "Tigerclaw" to "https://goonfleet.com/index.php/topic/376533-active-strat-tigers-claw-carriers/",
+            "Svipul" to "https://goonfleet.com/index.php/topic/374663-active-strat-svipuls/",
             "CFI" to "https://goonfleet.com/index.php/topic/353938-active-strat-cyclone-fleet-issue/",
             "SuperTrains" to "https://goonfleet.com/index.php/topic/342568-active-strat-supertrains-mainfleet-editionrokh/",
             "Techfleet" to "https://goonfleet.com/index.php/topic/327228-active%E2%80%94strat%E2%80%94techfleet/",

@@ -622,7 +622,7 @@ class ChatMessageParser(
             var ship = shipTypesRepository.getFuzzyShip(cleanedText)
             if (ship != null) {
                 add(Ship(ship, isPlural = false))
-            } else if (text.last() == 's') {
+            } else if (text.lastOrNull() == 's') {
                 ship = shipTypesRepository.getFuzzyShip(cleanedText.dropLast(1))
                 if (ship != null) {
                     add(Ship(ship, isPlural = true))

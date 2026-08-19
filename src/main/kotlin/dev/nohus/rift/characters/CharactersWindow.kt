@@ -70,6 +70,7 @@ import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftIconButton
 import dev.nohus.rift.compose.RiftImageButton
+import dev.nohus.rift.compose.RiftIndicatorDot
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -759,33 +760,13 @@ private fun OnlineIndicatorBar(isOnline: Boolean) {
 @Composable
 fun OnlineIndicatorDot(
     isOnline: Boolean,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    val color by animateColorAsState(
-        targetValue = if (isOnline) RiftTheme.colors.successGreen else RiftTheme.colors.hotRed,
-        animationSpec = tween(1000),
-    )
-    val blur by animateFloatAsState(
-        targetValue = if (isOnline) 4f else 1f,
-        animationSpec = tween(1000),
-    )
-    Box(
-        contentAlignment = Alignment.Center,
+    RiftIndicatorDot(
+        color = if (isOnline) RiftTheme.colors.successGreen else RiftTheme.colors.hotRed,
+        isActive = isOnline,
         modifier = modifier,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                .border(2.dp, color, CircleShape),
-        ) {}
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(color),
-        ) {}
-    }
+    )
 }
 
 @Composable

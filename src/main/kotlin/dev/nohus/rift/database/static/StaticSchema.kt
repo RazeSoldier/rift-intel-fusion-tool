@@ -152,3 +152,52 @@ object Backdrops : Table() {
     val name = varchar("name", 100)
     val bytes = binary("values")
 }
+
+object PlanetResources : Table() {
+    val id = integer("id")
+    val power = integer("power").nullable()
+    val workforce = integer("workforce").nullable()
+    val reagentTypeId = integer("reagentTypeId").nullable()
+    val reagentAmountPerCycle = integer("reagentAmountPerCycle").nullable()
+    val reagentCyclePeriod = integer("reagentCyclePeriod").nullable()
+    val reagentSecuredCapacity = integer("reagentSecuredCapacity").nullable()
+    val reagentUnsecuredCapacity = integer("reagentUnsecuredCapacity").nullable()
+    override val primaryKey = PrimaryKey(id)
+}
+
+object SovereigntyUpgrades : Table() {
+    val id = integer("id")
+    val fuelTypeId = integer("typeId").nullable()
+    val fuelHourlyUpkeep = integer("fuelHourlyUpkeep").nullable()
+    val fuelStartupCost = integer("fuelStartupCost").nullable()
+    val mutuallyExclusiveGroup = varchar("mutuallyExclusiveGroup", 100)
+    val powerAllocation = integer("powerAllocation").nullable()
+    val powerProduction = integer("powerProduction").nullable()
+    val workforceAllocation = integer("workforceAllocation").nullable()
+    val workforceProduction = integer("workforceProduction").nullable()
+    override val primaryKey = PrimaryKey(PlanetResources.id)
+}
+
+object MercenaryTacticalOperations : Table() {
+    val id = integer("id")
+    val name = varchar("name", 100)
+    val description = varchar("description", 500)
+    val archetypeTitle = varchar("archetypeTitle", 100)
+    val archetypeDescription = varchar("archetypeDescription", 500)
+    val allowedShipsList = varchar("allowedShipsList", 100).nullable()
+    val factionId = integer("factionId").nullable()
+    val anarchyImpact = integer("anarchyImpact")
+    val developmentImpact = integer("developmentImpact")
+    val infomorphBonus = integer("infomorphBonus")
+}
+
+object TypeLists : Table() {
+    val id = integer("id")
+    val name = varchar("name", 1000)
+    val includedCategoryIDs = varchar("includedCategoryIds", 10_000).nullable()
+    val includedGroupIDs = varchar("includedGroupIDs", 10_000).nullable()
+    val includedTypeIDs = varchar("includedTypeIDs", 10_000).nullable()
+    val excludedCategoryIDs = varchar("excludedCategoryIDs", 10_000).nullable()
+    val excludedGroupIDs = varchar("excludedGroupIDs", 10_000).nullable()
+    val excludedTypeIDs = varchar("excludedTypeIDs", 10_000).nullable()
+}

@@ -21,7 +21,7 @@ import java.time.Instant
 import kotlin.io.path.listDirectoryEntries
 
 private val logger = KotlinLogging.logger {}
-private const val MAX_MESSAGES_PER_CHANNEL = 100
+private const val MAX_MESSAGES_PER_CHANNEL = 500
 
 @Single
 class ChatsController(

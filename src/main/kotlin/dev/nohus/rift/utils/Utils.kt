@@ -3,6 +3,7 @@ package dev.nohus.rift.utils
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import io.github.reactivecircus.cache4k.Cache
 import kotlinx.coroutines.CoroutineScope
@@ -71,6 +72,12 @@ operator fun MatchResult.get(key: String): String {
 
 fun AnnotatedString.Builder.withColor(color: Color, block: AnnotatedString.Builder.() -> Unit) {
     withStyle(style = SpanStyle(color = color)) {
+        block()
+    }
+}
+
+fun AnnotatedString.Builder.withStyle(color: Color = Color.Unspecified, fontWeight: FontWeight? = null, block: AnnotatedString.Builder.() -> Unit) {
+    withStyle(style = SpanStyle(color = color, fontWeight = fontWeight)) {
         block()
     }
 }

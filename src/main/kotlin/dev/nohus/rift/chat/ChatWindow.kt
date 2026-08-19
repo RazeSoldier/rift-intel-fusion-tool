@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,7 +42,6 @@ import dev.nohus.rift.chat.ChatViewModel.UiState
 import dev.nohus.rift.chat.ChatsController.Channel
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
-import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.EntityInteractionProvider
 import dev.nohus.rift.compose.FlagIcon
@@ -72,6 +72,7 @@ import dev.nohus.rift.generated.resources.buttoniconplus
 import dev.nohus.rift.generated.resources.chat_eve_system
 import dev.nohus.rift.generated.resources.default_character
 import dev.nohus.rift.generated.resources.map_marker_pilot_person
+import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.formatTime
@@ -86,12 +87,12 @@ fun ChatWindow(
     windowState: RiftWindowState,
     onCloseRequest: () -> Unit,
 ) {
-    val viewModel: ChatViewModel = viewModel()
+    val viewModel: ChatViewModel = viewModel(windowState.uuid)
     val state by viewModel.state.collectAsState()
 
     RiftWindow(
         title = "Chat",
-        icon = Res.drawable.window_chatchannels,
+        icon = Res.drawable.window_bleedchannel,
         state = windowState,
         onCloseClick = onCloseRequest,
         titleBarStyle = TitleBarStyle.Minimal,
@@ -111,6 +112,8 @@ fun ChatWindow(
             onChannelClick = viewModel::onChannelSelected,
             onChannelOpenClick = viewModel::onChannelOpenClick,
             onChannelCloseClick = viewModel::onChannelCloseClick,
+            onCopyClick = viewModel::onCopyClick,
+            onCopyAllClick = viewModel::onCopyAllClick,
         )
     }
 }
@@ -178,6 +181,8 @@ private fun ChatWindowContent(
     onChannelClick: (Channel) -> Unit,
     onChannelOpenClick: (Channel) -> Unit = {},
     onChannelCloseClick: (Channel) -> Unit = {},
+    onCopyClick: (RichChatMessage) -> Unit,
+    onCopyAllClick: () -> Unit,
 ) {
     Column {
         Box(
@@ -194,6 +199,8 @@ private fun ChatWindowContent(
                     channel = state.selectedChannel,
                     messages = state.messages,
                     displayTimezone = state.displayTimezone,
+                    onCopyClick = onCopyClick,
+                    onCopyAllClick = onCopyAllClick,
                 )
             }
         } else {
@@ -216,26 +223,44 @@ private fun ChatChannel(
     channel: Channel,
     messages: List<RichChatMessage>,
     displayTimezone: ZoneId,
+    onCopyClick: (RichChatMessage) -> Unit,
+    onCopyAllClick: () -> Unit,
 ) {
     Row {
-        val listState = rememberLazyListState()
-        // TODO: Empty state
-        ScrollbarLazyColumn(
-            listState = listState,
-            verticalArrangement = Arrangement.spacedBy(Spacing.small),
-            reverseLayout = true,
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f)
-                .padding(Spacing.medium),
-        ) {
-            keepScrolledToBottomItem()
-            items(
-                items = messages.reversed(),
-                key = { "${channel.name}-${channel.characterId}-${it.timestamp}-${it.author}-${it.message}" },
-            ) { message ->
-                ChatMessageItem(message, displayTimezone)
+        if (messages.isNotEmpty()) {
+            val listState = rememberLazyListState()
+            ScrollbarLazyColumn(
+                listState = listState,
+                verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                reverseLayout = true,
+                isScrollbarConditional = true,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .padding(Spacing.medium),
+            ) {
+                keepScrolledToBottomItem()
+                items(
+                    items = messages.reversed(),
+                    key = { "${channel.name}-${channel.characterId}-${it.timestamp}-${it.author}-${it.message}" },
+                ) { message ->
+                    ChatMessageItem(
+                        message = message,
+                        displayTimezone = displayTimezone,
+                        onCopyClick = { onCopyClick(message) },
+                        onCopyAllClick = onCopyAllClick,
+                    )
+                }
             }
+        } else {
+            Text(
+                text = "No messages yet",
+                style = RiftTheme.typography.headerSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(Spacing.large),
+            )
         }
 
         Box(
@@ -256,28 +281,30 @@ private fun ChatChannel(
                 .mapNotNull { (it.author as? Author.Character)?.characterDetails }
                 .distinct()
                 .sortedBy { it.name }
-            RiftTooltipArea(
-                text = "This counter and list shows characters that have recently sent a message, and not all characters in the channel. Similar to wormhole local in-game.",
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+            if (characters.isNotEmpty()) {
+                RiftTooltipArea(
+                    text = "This counter and list shows characters that have recently sent a message, and not all characters in the channel. Similar to wormhole local in-game.",
                 ) {
-                    Image(
-                        painter = painterResource(Res.drawable.map_marker_pilot_person),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(RiftTheme.colors.textPrimary),
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Text(
-                        text = characters.size.toString(),
-                        style = RiftTheme.typography.detailPrimary,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.map_marker_pilot_person),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(RiftTheme.colors.textPrimary),
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = characters.size.toString(),
+                            style = RiftTheme.typography.detailPrimary,
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(Spacing.small))
-            // TODO: Empty state
             ScrollbarLazyColumn(
+                isScrollbarConditional = true,
                 scrollbarModifier = Modifier.fillMaxHeight(),
                 scrollbarBackground = Color(0xFF000000).copy(alpha = 0.25f),
             ) {
@@ -324,6 +351,8 @@ private fun ChatChannel(
 private fun LazyItemScope.ChatMessageItem(
     message: RichChatMessage,
     displayTimezone: ZoneId,
+    onCopyClick: () -> Unit,
+    onCopyAllClick: () -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -332,9 +361,8 @@ private fun LazyItemScope.ChatMessageItem(
     ) {
         RiftContextMenuArea(
             items = listOf(
-                ContextMenuItem.TextItem("Copy") {
-                    println("Copy")
-                },
+                ContextMenuItem.TextItem("Copy", onClick = onCopyClick),
+                ContextMenuItem.TextItem("Copy All", onClick = onCopyAllClick),
             ),
         ) {
             Row(
@@ -372,9 +400,16 @@ private fun LazyItemScope.ChatMessageItem(
                     append(" > ")
                     append(message.message)
                 }
+                val color = if (message.author is Author.EveSystem) {
+                    Color(0xB2EE6666)
+                } else {
+                    RiftTheme.colors.textPrimary
+                }
                 LinkedText(
                     text = text,
                     style = RiftTheme.typography.bodyPrimary,
+                    color = color,
+                    modifier = Modifier.padding(vertical = Spacing.small),
                 )
             }
         }
@@ -391,7 +426,6 @@ private fun ChannelList(
     onChannelOpenClick: (Channel) -> Unit,
     onChannelCloseClick: (Channel) -> Unit,
 ) {
-    // TODO: Empty state
     Column(
         modifier = Modifier.padding(top = Spacing.large, bottom = Spacing.large, start = Spacing.medium, end = Spacing.large),
     ) {
@@ -478,6 +512,19 @@ private fun ChannelList(
                             onClick = { onChannelOpenClick(channel) },
                         )
                     }
+                }
+            }
+
+            if (sortedChannels.isEmpty()) {
+                item {
+                    Text(
+                        text = "No channels available. Log in to the game and get chatting.",
+                        style = RiftTheme.typography.headerSecondary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(Spacing.medium),
+                    )
                 }
             }
         }

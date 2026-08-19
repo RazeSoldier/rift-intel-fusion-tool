@@ -2,6 +2,8 @@ package dev.nohus.rift.whatsnew
 
 import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.database.local.LocalDatabase
+import dev.nohus.rift.settings.persistence.MapSystemInfoType
+import dev.nohus.rift.settings.persistence.MapType
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.windowing.WindowManager

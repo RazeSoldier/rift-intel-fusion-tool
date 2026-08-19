@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -27,6 +28,8 @@ import dev.nohus.rift.compose.theme.Spacing
 fun LinkedText(
     text: FormattedText,
     style: TextStyle,
+    color: Color = Color.Unspecified,
+    modifier: Modifier = Modifier,
 ) {
     var textLayout by remember { mutableStateOf<TextLayoutResult?>(null) }
     var hoveredLink by remember { mutableStateOf<Link?>(null) }
@@ -34,7 +37,7 @@ fun LinkedText(
 
     val linkedAnnotatedString = text.toLinkedAnnotatedString(hoveredLink)
 
-    Box {
+    Box(modifier) {
         shownContextMenu?.let { (offset, items) ->
             RiftContextMenuPopup(
                 items = items,
@@ -46,6 +49,7 @@ fun LinkedText(
         Text(
             text = linkedAnnotatedString.text,
             style = style,
+            color = color,
             onTextLayout = {
                 textLayout = it
             },
@@ -93,8 +97,7 @@ fun LinkedText(
                             }
                         }
                     }
-                }
-                .padding(vertical = Spacing.small),
+                },
         )
     }
 }

@@ -403,13 +403,14 @@ class AssetsViewModel(
         location: AssetsRepository.AssetLocation,
         activeCharacterSolarSystem: Int?,
     ): AssetLocation {
+        val customName = settings.assetLocationCustomNames[location.locationId]
         val systemId = when (location) {
             is AssetsRepository.AssetLocation.Station -> location.systemId
             is AssetsRepository.AssetLocation.Structure -> location.systemId
             is AssetsRepository.AssetLocation.System -> location.systemId
-            is AssetsRepository.AssetLocation.AssetSafety -> null
-            is AssetsRepository.AssetLocation.CustomsOffice -> null
-            is AssetsRepository.AssetLocation.Unknown -> null
+            is AssetsRepository.AssetLocation.AssetSafety -> getSystemIdFromCustomName(customName)
+            is AssetsRepository.AssetLocation.CustomsOffice -> getSystemIdFromCustomName(customName)
+            is AssetsRepository.AssetLocation.Unknown -> getSystemIdFromCustomName(customName)
         }
         val system = systemId?.let { solarSystemsRepository.getSystem(it) }
         val distance = if (activeCharacterSolarSystem != null && systemId != null) {
@@ -417,7 +418,6 @@ class AssetsViewModel(
         } else {
             null
         }
-        val customName = settings.assetLocationCustomNames[location.locationId]
         return when (location) {
             is AssetsRepository.AssetLocation.Station -> {
                 AssetLocation(
@@ -462,12 +462,12 @@ class AssetsViewModel(
                 AssetLocation(
                     locationId = location.locationId,
                     locationTypeId = null,
-                    security = null,
+                    security = system?.security,
                     name = "Asset Safety",
                     isNameAuthoritative = true,
                     customName = customName,
-                    systemId = null,
-                    distance = null,
+                    systemId = systemId,
+                    distance = distance,
                 )
             }
 
@@ -475,12 +475,12 @@ class AssetsViewModel(
                 AssetLocation(
                     locationId = location.locationId,
                     locationTypeId = null,
-                    security = null,
+                    security = system?.security,
                     name = "Unknown",
                     isNameAuthoritative = false,
                     customName = customName,
-                    systemId = null,
-                    distance = null,
+                    systemId = systemId,
+                    distance = distance,
                 )
             }
 
@@ -488,15 +488,22 @@ class AssetsViewModel(
                 AssetLocation(
                     locationId = location.locationId,
                     locationTypeId = null,
-                    security = null,
+                    security = system?.security,
                     name = "Customs Office / Skyhook",
                     isNameAuthoritative = false,
                     customName = customName,
-                    systemId = null,
-                    distance = null,
+                    systemId = systemId,
+                    distance = distance,
                 )
             }
         }
+    }
+
+    private fun getSystemIdFromCustomName(customName: String?): Int? {
+        if (customName == null) return null
+        return solarSystemsRepository.getSystems()
+            .firstOrNull { customName.startsWith(it.name) }
+            ?.id
     }
 
     /**

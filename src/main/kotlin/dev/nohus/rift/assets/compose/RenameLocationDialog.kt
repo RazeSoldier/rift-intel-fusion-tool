@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.rememberWindowState
-import dev.nohus.rift.alerts.creategroup.CreateGroupInputModel
 import dev.nohus.rift.assets.AssetsViewModel.AssetLocation
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
@@ -27,7 +26,6 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_assets
-import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager
 
 @Composable

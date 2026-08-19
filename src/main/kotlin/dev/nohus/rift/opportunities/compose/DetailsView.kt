@@ -99,6 +99,7 @@ import dev.nohus.rift.generated.resources.checkmark_16px
 import dev.nohus.rift.generated.resources.contribution_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
 import dev.nohus.rift.generated.resources.isk
+import dev.nohus.rift.generated.resources.location_16px
 import dev.nohus.rift.generated.resources.navigate_back_16px
 import dev.nohus.rift.generated.resources.open_window_16px
 import dev.nohus.rift.generated.resources.ratio_16px
@@ -112,12 +113,14 @@ import dev.nohus.rift.opportunities.Contributors
 import dev.nohus.rift.opportunities.Corporation
 import dev.nohus.rift.opportunities.Creator
 import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttribute
+import dev.nohus.rift.opportunities.OpportunitiesUtils
 import dev.nohus.rift.opportunities.OpportunitiesUtils.getOpportunityCategory
 import dev.nohus.rift.opportunities.OpportunitiesUtils.getOpportunityTypeMetadata
 import dev.nohus.rift.opportunities.Opportunity
 import dev.nohus.rift.opportunities.OpportunityCategoryFilter
 import dev.nohus.rift.opportunities.OpportunityConfiguration
 import dev.nohus.rift.opportunities.OpportunityType
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.utils.formatDate
 import dev.nohus.rift.utils.formatDateTime2
 import dev.nohus.rift.utils.formatDuration
@@ -183,6 +186,7 @@ fun DetailsView(
             val opportunityType = when (opportunity.type) {
                 OpportunityType.CorporationProject -> "Project"
                 OpportunityType.FreelanceJob -> "Job"
+                OpportunityType.MercenaryTacticalOperation -> "Operation"
             }
 
             EndDateRow(opportunity)
@@ -192,104 +196,388 @@ fun DetailsView(
                 Spacer(Modifier.height(Spacing.veryLarge))
             }
 
-            TitledSection(title = "Progress") {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(50.dp),
-                ) {
-                    ProgressGauge(
-                        progress = opportunity.currentProgress,
-                        maxProgress = opportunity.desiredProgress,
-                        color = progressColor,
-                        iconResource = metadata.icon,
-                        progressUnit = metadata.progressUnit,
-                        characterId = null,
-                        characterName = null,
-                        isIskProgress = opportunity.details.configuration is OpportunityConfiguration.ShipInsurance,
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Spacing.large),
-                    ) {
-                        if (opportunity.details.configuration is OpportunityConfiguration.ShipInsurance) {
-                            opportunity.reward?.let { reward ->
-                                val tooltip: @Composable () -> Unit = {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                        modifier = Modifier
-                                            .width(IntrinsicSize.Max)
-                                            .padding(Spacing.large),
-                                    ) {
-                                        Text(
-                                            text = "Total ISK Allocated:",
-                                            style = RiftTheme.typography.detailSecondary,
-                                        )
-                                        Text(
-                                            text = formatIsk(reward.initial, withCents = true),
-                                            style = RiftTheme.typography.bodyPrimary,
-                                        )
-                                        Text(
-                                            text = "Total compensation paid to all capsuleers:",
-                                            style = RiftTheme.typography.detailSecondary,
-                                        )
-                                        Text(
-                                            text = formatIsk(reward.initial - reward.remaining, withCents = true),
-                                            style = RiftTheme.typography.bodyPrimary,
-                                        )
-                                        Divider(
-                                            color = RiftTheme.colors.textSecondary,
-                                        )
-                                        Text(
-                                            text = "Remaining compensation:",
-                                            style = RiftTheme.typography.detailSecondary,
-                                        )
-                                        Text(
-                                            text = formatIsk(reward.remaining, withCents = true),
-                                            style = RiftTheme.typography.bodyPrimary,
-                                        )
-                                    }
-                                }
-                                if (opportunity.details.submissionLimit != null) {
-                                    RewardInfo(
-                                        text = formatIsk(opportunity.details.submissionLimit, withCents = false),
-                                        caption = "Coverage limit per loss",
-                                        icon = Res.drawable.spaceship_command_16px,
-                                        tooltip = tooltip,
-                                    )
-                                } else {
-                                    RewardInfo(
-                                        text = formatIsk(reward.remaining, withCents = false),
-                                        caption = "Remaining ISK in $opportunityType",
-                                        icon = Res.drawable.spaceship_command_16px,
-                                        tooltip = tooltip,
-                                    )
-                                }
-                            }
+            if (opportunity.type in listOf(OpportunityType.CorporationProject, OpportunityType.FreelanceJob)) {
+                ProgressSection(opportunity, progressColor, metadata, opportunityType)
+                Spacer(Modifier.height(Spacing.veryLarge))
+                YourContributionSection(opportunity, progressColor, metadata)
+                Spacer(Modifier.height(Spacing.veryLarge))
+                ParticipantsSection(opportunity)
+                Spacer(Modifier.height(Spacing.veryLarge))
+                ObjectivesSection(metadata, opportunity)
+                Spacer(Modifier.height(Spacing.veryLarge))
+            }
+            if (opportunity.details.description.toPlainString().isNotEmpty()) {
+                DescriptionSection(opportunity)
+                Spacer(Modifier.height(Spacing.veryLarge))
+            }
+            if (opportunity.type == OpportunityType.MercenaryTacticalOperation) {
+                MercenaryTacticalOperationSections(opportunity)
+                Spacer(Modifier.height(Spacing.veryLarge))
+            }
+            CreatorSection(opportunity)
+        }
+    }
+}
 
-                            if (opportunity.details.submissionMultiplier != null) {
-                                RewardInfo(
-                                    text = String.format("%.0f%%", opportunity.details.submissionMultiplier * 100),
-                                    caption = "Coverage Ratio",
-                                    icon = Res.drawable.ratio_16px,
-                                    tooltip = {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                            modifier = Modifier
-                                                .width(IntrinsicSize.Max)
-                                                .padding(Spacing.large),
-                                        ) {
-                                            Text(
-                                                text = "The percentage of the value of the ship plus fitting lost that will be compensated.",
-                                                style = RiftTheme.typography.bodyPrimary,
-                                            )
+@Composable
+private fun MercenaryTacticalOperationSections(
+    opportunity: Opportunity,
+) {
+    val operation = opportunity.details.configuration as OpportunityConfiguration.MercenaryTacticalOperation
+    TitledSection("Operational Intel") {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Spacing.large),
+        ) {
+            opportunity.details.contributionAttributes.forEach { attribute ->
+                OpportunityAttribute(
+                    caption = attribute.name,
+                    icon = attribute.icon,
+                    values = attribute.values,
+                    tooltip = attribute.description,
+                )
+            }
+        }
+    }
+    Spacer(Modifier.height(Spacing.veryLarge))
+    TitledSection(operation.archetypeTitle) {
+        Text(
+            text = operation.archetypeDescription,
+            style = RiftTheme.typography.bodyPrimary,
+        )
+    }
+}
+
+@Composable
+private fun CreatorSection(opportunity: Opportunity) {
+    val title = if (opportunity.details.created != null) {
+        "Created on ${formatDate(opportunity.details.created)}"
+    } else {
+        "Creator"
+    }
+    TitledSection(title) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(50.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        ) {
+            Creator(opportunity.creator)
+            if (opportunity.creator.corporation != null) {
+                Corporation(opportunity.creator.corporation)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DescriptionSection(opportunity: Opportunity) {
+    TitledSection(title = "Description") {
+        LinkedText(
+            text = opportunity.details.description,
+            style = RiftTheme.typography.bodyPrimary,
+        )
+    }
+}
+
+@Composable
+private fun ObjectivesSection(
+    metadata: OpportunitiesUtils.OpportunityCategoryMetadata?,
+    opportunity: Opportunity,
+) {
+    TitledSection(title = "Objectives") {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Spacing.large),
+        ) {
+            OpportunityAttribute(
+                caption = "Contribution Method",
+                icon = metadata?.icon,
+                values = listOfNotNull(
+                    metadata?.name?.let {
+                        OpportunityContributionAttribute.Text(
+                            metadata.name,
+                            isPlain = true,
+                        )
+                    },
+                ),
+                tooltip = metadata?.tooltip,
+            )
+
+            opportunity.details.contributionAttributes.forEach { attribute ->
+                OpportunityAttribute(
+                    caption = attribute.name,
+                    icon = attribute.icon,
+                    values = attribute.values,
+                    tooltip = attribute.description,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ParticipantsSection(
+    opportunity: Opportunity,
+) {
+    TitledSection(title = "Participants") {
+        when (val result = opportunity.contributors) {
+            is Contributors.Available -> {
+                when (opportunity.type) {
+                    OpportunityType.CorporationProject -> {
+                        val rows = result.contributors.map { contributor ->
+                            val percent = contributor.contributed / opportunity.desiredProgress.toFloat()
+                            val payout = contributor.contributed * (opportunity.details.rewardPerContribution ?: 0.0)
+                            TableRow(
+                                id = contributor.characterId.toString(),
+                                cells = listOf(
+                                    TextTableCell(contributor.details?.name ?: "${contributor.characterId}"),
+                                    TextTableCell(
+                                        formatNumber(contributor.contributed),
+                                        sortingAmount = contributor.contributed.toDouble(),
+                                    ),
+                                    TextTableCell(
+                                        String.format("%.1f%%", percent * 100),
+                                        sortingAmount = percent.toDouble(),
+                                    ),
+                                    TextTableCell(formatIsk(payout, withCents = false), sortingAmount = payout),
+                                ),
+                                characterId = contributor.characterId,
+                            )
+                        }
+                        RiftTable(
+                            columns = listOf("Contributor", "Total Amount", "Of Project Target", "Payout"),
+                            rows = rows,
+                            extraSpacing = 30.dp,
+                            defaultSort = SortingColumn(1, Sort.Descending),
+                        )
+                    }
+
+                    OpportunityType.FreelanceJob -> {
+                        val rows = result.contributors.map { contributor ->
+                            val percent = contributor.contributed / opportunity.desiredProgress.toFloat()
+                            val payout = contributor.contributed * (opportunity.details.rewardPerContribution ?: 0.0)
+                            TableRow(
+                                id = contributor.characterId.toString(),
+                                cells = listOf(
+                                    RichTableCell(
+                                        contributor.details?.name ?: "${contributor.characterId}",
+                                        32.dp,
+                                        120.dp,
+                                    ) {
+                                        ClickableCharacter(contributor.characterId) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                            ) {
+                                                AsyncCharacterPortrait(
+                                                    characterId = contributor.characterId,
+                                                    size = 32,
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .clip(CircleShape),
+                                                )
+                                                LinkText(
+                                                    text = contributor.details?.name
+                                                        ?: contributor.characterId.toString(),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Clip,
+                                                    softWrap = false,
+                                                )
+                                            }
                                         }
                                     },
+                                    RichTableCell(
+                                        contributor.details?.corporationName ?: "${contributor.details?.corporationId}",
+                                        32.dp,
+                                        120.dp,
+                                    ) {
+                                        if (contributor.details?.corporationId != null) {
+                                            ClickableCorporation(contributor.details.corporationId) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                                ) {
+                                                    AsyncCorporationLogo(
+                                                        corporationId = contributor.details.corporationId,
+                                                        size = 32,
+                                                        modifier = Modifier
+                                                            .size(24.dp),
+                                                    )
+                                                    LinkText(
+                                                        text = contributor.details.corporationName ?: "Unknown",
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Clip,
+                                                        softWrap = false,
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            Text(text = "-")
+                                        }
+                                    },
+                                    RichTableCell(
+                                        contributor.details?.allianceName ?: "${contributor.details?.allianceId}",
+                                        32.dp,
+                                        120.dp,
+                                    ) {
+                                        if (contributor.details?.allianceId != null) {
+                                            ClickableAlliance(contributor.details.allianceId) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                                ) {
+                                                    AsyncAllianceLogo(
+                                                        allianceId = contributor.details.allianceId,
+                                                        size = 32,
+                                                        modifier = Modifier
+                                                            .size(24.dp),
+                                                    )
+                                                    LinkText(
+                                                        text = contributor.details.allianceName ?: "Unknown",
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Clip,
+                                                        softWrap = false,
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            Text(text = "-")
+                                        }
+                                    },
+                                    TextTableCell(
+                                        formatNumber(contributor.contributed),
+                                        sortingAmount = contributor.contributed.toDouble(),
+                                    ),
+                                    TextTableCell(
+                                        String.format("%.1f%%", percent * 100),
+                                        sortingAmount = percent.toDouble(),
+                                    ),
+                                    TextTableCell(formatIsk(payout, withCents = false), sortingAmount = payout),
+                                    RichTableCell(
+                                        contributor.details?.allianceName ?: "${contributor.details?.allianceId}",
+                                        32.dp,
+                                        120.dp,
+                                    ) {
+                                        val (text, color) = when (contributor.participationState) {
+                                            ParticipationState.Unspecified -> "Unspecified" to RiftTheme.colors.textSecondary
+                                            ParticipationState.Commited -> "Accepted" to EveColors.successGreen
+                                            ParticipationState.Kicked -> "Removed" to EveColors.dangerRed
+                                            ParticipationState.Resigned -> "Resigned" to EveColors.warningOrange
+                                        }
+                                        Text(
+                                            text = text,
+                                            style = RiftTheme.typography.bodyPrimary.copy(color = color),
+                                        )
+                                    },
+                                ),
+                                characterId = null,
+                            )
+                        }
+                        RiftTable(
+                            columns = listOf(
+                                "Participant",
+                                "Corporation",
+                                "Alliance",
+                                "Total Amount",
+                                "Of Target Value",
+                                "ISK Payout",
+                                "State",
+                            ),
+                            rows = rows,
+                            extraSpacing = 30.dp,
+                            defaultSort = SortingColumn(1, Sort.Descending),
+                        )
+                    }
+
+                    OpportunityType.MercenaryTacticalOperation -> {
+                        // MTO's don't have contributors
+                    }
+                }
+            }
+
+            Contributors.Empty -> Text(
+                text = "No contributions found",
+                style = RiftTheme.typography.displaySecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+            )
+
+            Contributors.NoAccess -> Text(
+                text = "You are not a Project Manager",
+                style = RiftTheme.typography.bodySecondary,
+            )
+
+            is Contributors.Error -> Text(
+                text = "Couldn't load contributors: ${result.message}",
+                style = RiftTheme.typography.bodySecondary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun YourContributionSection(
+    opportunity: Opportunity,
+    progressColor: Color,
+    metadata: OpportunitiesUtils.OpportunityCategoryMetadata?,
+) {
+    TitledSection(
+        title = "Your Contribution",
+        tooltip = if (opportunity.details.participationLimit != null) {
+            "This project has a participation\nlimit of ${formatNumber(opportunity.details.participationLimit)}. This means you can only\ncontribute up to that limit."
+        } else {
+            null
+        },
+    ) {
+        opportunity.contributions.forEach { contribution ->
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(50.dp),
+            ) {
+                ProgressGauge(
+                    progress = contribution.contribution.success ?: 0,
+                    maxProgress = opportunity.details.participationLimit ?: opportunity.desiredProgress,
+                    color = progressColor,
+                    iconResource = null,
+                    progressUnit = metadata?.progressUnit,
+                    characterId = contribution.characterId,
+                    characterName = contribution.characterName,
+                    isIskProgress = opportunity.details.configuration is OpportunityConfiguration.ShipInsurance,
+                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+                ) {
+                    if (contribution.contribution is Result.Success && opportunity.details.rewardPerContribution != null) {
+                        if (opportunity.details.configuration is OpportunityConfiguration.ShipInsurance) {
+                            if (opportunity.details.participationLimit != null) {
+                                val availableProgress =
+                                    opportunity.details.participationLimit - contribution.contribution.data
+                                RewardInfo(
+                                    text = formatIsk(
+                                        availableProgress * opportunity.details.rewardPerContribution,
+                                        withCents = false,
+                                    ),
+                                    caption = "Remaining Compensation",
+                                    icon = Res.drawable.isk,
                                 )
                             }
                         } else {
-                            opportunity.reward?.let { reward ->
+                            if (opportunity.details.participationLimit != null) {
+                                val availableProgress =
+                                    opportunity.details.participationLimit - contribution.contribution.data
                                 RewardInfo(
-                                    text = formatIsk(reward.remaining, withCents = false),
-                                    caption = "Remaining ISK in $opportunityType",
+                                    text = formatIsk(
+                                        availableProgress * opportunity.details.rewardPerContribution,
+                                        withCents = false,
+                                    ),
+                                    caption = "Available to earn",
                                     icon = Res.drawable.isk,
+                                )
+                            }
+
+                            val totalEarnings =
+                                contribution.contribution.data * opportunity.details.rewardPerContribution
+                            contribution.contribution.success?.let {
+                                RewardInfo(
+                                    text = formatIsk(totalEarnings, withCents = false),
+                                    caption = "ISK total earnings",
+                                    icon = Res.drawable.checkmark_16px,
                                     tooltip = {
                                         Column(
                                             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -298,322 +586,184 @@ fun DetailsView(
                                                 .padding(Spacing.large),
                                         ) {
                                             Text(
-                                                text = "Total ISK Allocated:",
+                                                text = "My Total Earnings:",
                                                 style = RiftTheme.typography.detailSecondary,
                                             )
                                             Text(
-                                                text = formatIsk(reward.initial, withCents = true),
-                                                style = RiftTheme.typography.bodyPrimary,
-                                            )
-                                            Text(
-                                                text = "Total earned by all capsuleers:",
-                                                style = RiftTheme.typography.detailSecondary,
-                                            )
-                                            Text(
-                                                text = formatIsk(reward.initial - reward.remaining, withCents = true),
-                                                style = RiftTheme.typography.bodyPrimary,
-                                            )
-                                            Divider(
-                                                color = RiftTheme.colors.textSecondary,
-                                            )
-                                            Text(
-                                                text = "Remaining ISK:",
-                                                style = RiftTheme.typography.detailSecondary,
-                                            )
-                                            Text(
-                                                text = formatIsk(reward.remaining, withCents = true),
+                                                text = formatIsk(totalEarnings, withCents = true),
                                                 style = RiftTheme.typography.bodyPrimary,
                                             )
                                         }
                                     },
                                 )
-                                opportunity.details.rewardPerContribution?.let {
-                                    RewardInfo(
-                                        text = formatIsk(it, withCents = false),
-                                        caption = "Reward per ${metadata.rewardPer}",
-                                        icon = Res.drawable.contribution_16px,
-                                    )
-                                    // TODO: Deliver jobs in-game shows value warnings / universal price %
-                                }
                             }
                         }
                     }
                 }
             }
-            Spacer(Modifier.height(Spacing.veryLarge))
-            TitledSection(
-                title = "Your Contribution",
-                tooltip = if (opportunity.details.participationLimit != null) {
-                    "This project has a participation\nlimit of ${formatNumber(opportunity.details.participationLimit)}. This means you can only\ncontribute up to that limit."
-                } else {
-                    null
-                },
+        }
+        if (opportunity.contributions.isEmpty()) {
+            Text(
+                text = "You are not participating in this project",
+                style = RiftTheme.typography.displaySecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProgressSection(
+    opportunity: Opportunity,
+    progressColor: Color,
+    metadata: OpportunitiesUtils.OpportunityCategoryMetadata?,
+    opportunityType: String,
+) {
+    TitledSection(title = "Progress") {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(50.dp),
+        ) {
+            ProgressGauge(
+                progress = opportunity.currentProgress,
+                maxProgress = opportunity.desiredProgress,
+                color = progressColor,
+                iconResource = metadata?.icon,
+                progressUnit = metadata?.progressUnit,
+                characterId = null,
+                characterName = null,
+                isIskProgress = opportunity.details.configuration is OpportunityConfiguration.ShipInsurance,
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.large),
             ) {
-                opportunity.contributions.forEach { contribution ->
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(50.dp),
-                    ) {
-                        ProgressGauge(
-                            progress = contribution.contribution.success ?: 0,
-                            maxProgress = opportunity.details.participationLimit ?: opportunity.desiredProgress,
-                            color = progressColor,
-                            iconResource = null,
-                            progressUnit = metadata.progressUnit,
-                            characterId = contribution.characterId,
-                            characterName = contribution.characterName,
-                            isIskProgress = opportunity.details.configuration is OpportunityConfiguration.ShipInsurance,
-                        )
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
-                        ) {
-                            if (contribution.contribution is Result.Success && opportunity.details.rewardPerContribution != null) {
-                                if (opportunity.details.configuration is OpportunityConfiguration.ShipInsurance) {
-                                    if (opportunity.details.participationLimit != null) {
-                                        val availableProgress = opportunity.details.participationLimit - contribution.contribution.data
-                                        RewardInfo(
-                                            text = formatIsk(availableProgress * opportunity.details.rewardPerContribution, withCents = false),
-                                            caption = "Remaining Compensation",
-                                            icon = Res.drawable.isk,
-                                        )
-                                    }
-                                } else {
-                                    if (opportunity.details.participationLimit != null) {
-                                        val availableProgress = opportunity.details.participationLimit - contribution.contribution.data
-                                        RewardInfo(
-                                            text = formatIsk(availableProgress * opportunity.details.rewardPerContribution, withCents = false),
-                                            caption = "Available to earn",
-                                            icon = Res.drawable.isk,
-                                        )
-                                    }
-
-                                    val totalEarnings = contribution.contribution.data * opportunity.details.rewardPerContribution
-                                    contribution.contribution.success?.let {
-                                        RewardInfo(
-                                            text = formatIsk(totalEarnings, withCents = false),
-                                            caption = "ISK total earnings",
-                                            icon = Res.drawable.checkmark_16px,
-                                            tooltip = {
-                                                Column(
-                                                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                                    modifier = Modifier
-                                                        .width(IntrinsicSize.Max)
-                                                        .padding(Spacing.large),
-                                                ) {
-                                                    Text(
-                                                        text = "My Total Earnings:",
-                                                        style = RiftTheme.typography.detailSecondary,
-                                                    )
-                                                    Text(
-                                                        text = formatIsk(totalEarnings, withCents = true),
-                                                        style = RiftTheme.typography.bodyPrimary,
-                                                    )
-                                                }
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (opportunity.contributions.isEmpty()) {
-                    Text(
-                        text = "You are not participating in this project",
-                        style = RiftTheme.typography.displaySecondary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
-                    )
-                }
-            }
-            Spacer(Modifier.height(Spacing.veryLarge))
-            TitledSection(title = "Participants") {
-                when (val result = opportunity.contributors) {
-                    is Contributors.Available -> {
-                        when (opportunity.type) {
-                            OpportunityType.CorporationProject -> {
-                                val rows = result.contributors.map { contributor ->
-                                    val percent = contributor.contributed / opportunity.desiredProgress.toFloat()
-                                    val payout = contributor.contributed * (opportunity.details.rewardPerContribution ?: 0.0)
-                                    TableRow(
-                                        id = contributor.characterId.toString(),
-                                        cells = listOf(
-                                            TextTableCell(contributor.details?.name ?: "${contributor.characterId}"),
-                                            TextTableCell(formatNumber(contributor.contributed), sortingAmount = contributor.contributed.toDouble()),
-                                            TextTableCell(String.format("%.1f%%", percent * 100), sortingAmount = percent.toDouble()),
-                                            TextTableCell(formatIsk(payout, withCents = false), sortingAmount = payout),
-                                        ),
-                                        characterId = contributor.characterId,
-                                    )
-                                }
-                                RiftTable(
-                                    columns = listOf("Contributor", "Total Amount", "Of Project Target", "Payout"),
-                                    rows = rows,
-                                    extraSpacing = 30.dp,
-                                    defaultSort = SortingColumn(1, Sort.Descending),
+                if (opportunity.details.configuration is OpportunityConfiguration.ShipInsurance) {
+                    opportunity.reward?.let { reward ->
+                        val tooltip: @Composable () -> Unit = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                modifier = Modifier
+                                    .width(IntrinsicSize.Max)
+                                    .padding(Spacing.large),
+                            ) {
+                                Text(
+                                    text = "Total ISK Allocated:",
+                                    style = RiftTheme.typography.detailSecondary,
                                 )
-                            }
-                            OpportunityType.FreelanceJob -> {
-                                val rows = result.contributors.map { contributor ->
-                                    val percent = contributor.contributed / opportunity.desiredProgress.toFloat()
-                                    val payout = contributor.contributed * (opportunity.details.rewardPerContribution ?: 0.0)
-                                    TableRow(
-                                        id = contributor.characterId.toString(),
-                                        cells = listOf(
-                                            RichTableCell(contributor.details?.name ?: "${contributor.characterId}", 32.dp, 120.dp) {
-                                                ClickableCharacter(contributor.characterId) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                                    ) {
-                                                        AsyncCharacterPortrait(
-                                                            characterId = contributor.characterId,
-                                                            size = 32,
-                                                            modifier = Modifier
-                                                                .size(24.dp)
-                                                                .clip(CircleShape),
-                                                        )
-                                                        LinkText(
-                                                            text = contributor.details?.name ?: contributor.characterId.toString(),
-                                                            maxLines = 1,
-                                                            overflow = TextOverflow.Clip,
-                                                            softWrap = false,
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                            RichTableCell(contributor.details?.corporationName ?: "${contributor.details?.corporationId}", 32.dp, 120.dp) {
-                                                if (contributor.details?.corporationId != null) {
-                                                    ClickableCorporation(contributor.details.corporationId) {
-                                                        Row(
-                                                            verticalAlignment = Alignment.CenterVertically,
-                                                            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                                        ) {
-                                                            AsyncCorporationLogo(
-                                                                corporationId = contributor.details.corporationId,
-                                                                size = 32,
-                                                                modifier = Modifier
-                                                                    .size(24.dp),
-                                                            )
-                                                            LinkText(
-                                                                text = contributor.details.corporationName ?: "Unknown",
-                                                                maxLines = 1,
-                                                                overflow = TextOverflow.Clip,
-                                                                softWrap = false,
-                                                            )
-                                                        }
-                                                    }
-                                                } else {
-                                                    Text(text = "-")
-                                                }
-                                            },
-                                            RichTableCell(contributor.details?.allianceName ?: "${contributor.details?.allianceId}", 32.dp, 120.dp) {
-                                                if (contributor.details?.allianceId != null) {
-                                                    ClickableAlliance(contributor.details.allianceId) {
-                                                        Row(
-                                                            verticalAlignment = Alignment.CenterVertically,
-                                                            horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                                        ) {
-                                                            AsyncAllianceLogo(
-                                                                allianceId = contributor.details.allianceId,
-                                                                size = 32,
-                                                                modifier = Modifier
-                                                                    .size(24.dp),
-                                                            )
-                                                            LinkText(
-                                                                text = contributor.details.allianceName ?: "Unknown",
-                                                                maxLines = 1,
-                                                                overflow = TextOverflow.Clip,
-                                                                softWrap = false,
-                                                            )
-                                                        }
-                                                    }
-                                                } else {
-                                                    Text(text = "-")
-                                                }
-                                            },
-                                            TextTableCell(formatNumber(contributor.contributed), sortingAmount = contributor.contributed.toDouble()),
-                                            TextTableCell(String.format("%.1f%%", percent * 100), sortingAmount = percent.toDouble()),
-                                            TextTableCell(formatIsk(payout, withCents = false), sortingAmount = payout),
-                                            RichTableCell(contributor.details?.allianceName ?: "${contributor.details?.allianceId}", 32.dp, 120.dp) {
-                                                val (text, color) = when (contributor.participationState) {
-                                                    ParticipationState.Unspecified -> "Unspecified" to RiftTheme.colors.textSecondary
-                                                    ParticipationState.Commited -> "Accepted" to EveColors.successGreen
-                                                    ParticipationState.Kicked -> "Removed" to EveColors.dangerRed
-                                                    ParticipationState.Resigned -> "Resigned" to EveColors.warningOrange
-                                                }
-                                                Text(
-                                                    text = text,
-                                                    style = RiftTheme.typography.bodyPrimary.copy(color = color),
-                                                )
-                                            },
-                                        ),
-                                        characterId = null,
-                                    )
-                                }
-                                RiftTable(
-                                    columns = listOf("Participant", "Corporation", "Alliance", "Total Amount", "Of Target Value", "ISK Payout", "State"),
-                                    rows = rows,
-                                    extraSpacing = 30.dp,
-                                    defaultSort = SortingColumn(1, Sort.Descending),
+                                Text(
+                                    text = formatIsk(reward.initial, withCents = true),
+                                    style = RiftTheme.typography.bodyPrimary,
+                                )
+                                Text(
+                                    text = "Total compensation paid to all capsuleers:",
+                                    style = RiftTheme.typography.detailSecondary,
+                                )
+                                Text(
+                                    text = formatIsk(reward.initial - reward.remaining, withCents = true),
+                                    style = RiftTheme.typography.bodyPrimary,
+                                )
+                                Divider(
+                                    color = RiftTheme.colors.textSecondary,
+                                )
+                                Text(
+                                    text = "Remaining compensation:",
+                                    style = RiftTheme.typography.detailSecondary,
+                                )
+                                Text(
+                                    text = formatIsk(reward.remaining, withCents = true),
+                                    style = RiftTheme.typography.bodyPrimary,
                                 )
                             }
                         }
+                        if (opportunity.details.submissionLimit != null) {
+                            RewardInfo(
+                                text = formatIsk(opportunity.details.submissionLimit, withCents = false),
+                                caption = "Coverage limit per loss",
+                                icon = Res.drawable.spaceship_command_16px,
+                                tooltip = tooltip,
+                            )
+                        } else {
+                            RewardInfo(
+                                text = formatIsk(reward.remaining, withCents = false),
+                                caption = "Remaining ISK in $opportunityType",
+                                icon = Res.drawable.spaceship_command_16px,
+                                tooltip = tooltip,
+                            )
+                        }
                     }
-                    Contributors.Empty -> Text(
-                        text = "No contributions found",
-                        style = RiftTheme.typography.displaySecondary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
-                    )
-                    Contributors.NoAccess -> Text(
-                        text = "You are not a Project Manager",
-                        style = RiftTheme.typography.bodySecondary,
-                    )
-                    is Contributors.Error -> Text(
-                        text = "Couldn't load contributors: ${result.message}",
-                        style = RiftTheme.typography.bodySecondary,
-                    )
-                }
-            }
-            Spacer(Modifier.height(Spacing.veryLarge))
-            TitledSection(title = "Objectives") {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Spacing.large),
-                ) {
-                    OpportunityAttribute(
-                        caption = "Contribution Method",
-                        icon = metadata.icon,
-                        values = listOf(OpportunityContributionAttribute.Text(metadata.name, isPlain = true)),
-                        tooltip = metadata.tooltip,
-                    )
 
-                    opportunity.details.contributionAttributes.forEach { attribute ->
-                        OpportunityAttribute(
-                            caption = attribute.name,
-                            icon = attribute.icon,
-                            values = attribute.values,
-                            tooltip = attribute.description,
+                    if (opportunity.details.submissionMultiplier != null) {
+                        RewardInfo(
+                            text = String.format("%.0f%%", opportunity.details.submissionMultiplier * 100),
+                            caption = "Coverage Ratio",
+                            icon = Res.drawable.ratio_16px,
+                            tooltip = {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Max)
+                                        .padding(Spacing.large),
+                                ) {
+                                    Text(
+                                        text = "The percentage of the value of the ship plus fitting lost that will be compensated.",
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+                                }
+                            },
                         )
                     }
-                }
-            }
-            Spacer(Modifier.height(Spacing.veryLarge))
-            if (opportunity.details.description.toPlainString().isNotEmpty()) {
-                TitledSection(title = "Description") {
-                    LinkedText(
-                        text = opportunity.details.description,
-                        style = RiftTheme.typography.bodyPrimary,
-                    )
-                }
-                Spacer(Modifier.height(Spacing.veryLarge))
-            }
-            TitledSection(title = "Created on ${formatDate(opportunity.details.created)}") {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(50.dp),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
-                ) {
-                    Creator(opportunity.creator)
-                    Corporation(opportunity.creator.corporation)
+                } else {
+                    opportunity.reward?.let { reward ->
+                        RewardInfo(
+                            text = formatIsk(reward.remaining, withCents = false),
+                            caption = "Remaining ISK in $opportunityType",
+                            icon = Res.drawable.isk,
+                            tooltip = {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                    modifier = Modifier
+                                        .width(IntrinsicSize.Max)
+                                        .padding(Spacing.large),
+                                ) {
+                                    Text(
+                                        text = "Total ISK Allocated:",
+                                        style = RiftTheme.typography.detailSecondary,
+                                    )
+                                    Text(
+                                        text = formatIsk(reward.initial, withCents = true),
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+                                    Text(
+                                        text = "Total earned by all capsuleers:",
+                                        style = RiftTheme.typography.detailSecondary,
+                                    )
+                                    Text(
+                                        text = formatIsk(reward.initial - reward.remaining, withCents = true),
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+                                    Divider(
+                                        color = RiftTheme.colors.textSecondary,
+                                    )
+                                    Text(
+                                        text = "Remaining ISK:",
+                                        style = RiftTheme.typography.detailSecondary,
+                                    )
+                                    Text(
+                                        text = formatIsk(reward.remaining, withCents = true),
+                                        style = RiftTheme.typography.bodyPrimary,
+                                    )
+                                }
+                            },
+                        )
+                        opportunity.details.rewardPerContribution?.let {
+                            RewardInfo(
+                                text = formatIsk(it, withCents = false),
+                                caption = "Reward per ${metadata?.rewardPer}",
+                                icon = Res.drawable.contribution_16px,
+                            )
+                            // TODO: Deliver jobs in-game shows value warnings / universal price %
+                        }
+                    }
                 }
             }
         }
@@ -1020,21 +1170,23 @@ private fun ProjectHeader(
                         )
                         Spacer(Modifier.height(Spacing.large))
                     }
-                    Box(Modifier.weight(1f)) {
-                        ClickableCorporation(opportunity.creator.corporation.id) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
-                            ) {
-                                AsyncCorporationLogo(
-                                    corporationId = opportunity.creator.corporation.id,
-                                    size = 64,
-                                    modifier = Modifier.size(64.dp),
-                                )
-                                Text(
-                                    text = opportunity.creator.corporation.name,
-                                    style = RiftTheme.typography.headlinePrimary,
-                                )
+                    if (opportunity.creator.corporation != null) {
+                        Box(Modifier.weight(1f)) {
+                            ClickableCorporation(opportunity.creator.corporation.id) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.veryLarge),
+                                ) {
+                                    AsyncCorporationLogo(
+                                        corporationId = opportunity.creator.corporation.id,
+                                        size = 64,
+                                        modifier = Modifier.size(64.dp),
+                                    )
+                                    Text(
+                                        text = opportunity.creator.corporation.name,
+                                        style = RiftTheme.typography.headlinePrimary,
+                                    )
+                                }
                             }
                         }
                     }
@@ -1065,6 +1217,7 @@ private fun BoxScope.CorporationColorsSwatch(
     opportunity: Opportunity,
     pointerInteractionStateHolder: PointerInteractionStateHolder,
 ) {
+    if (opportunity.creator.corporation == null) return
     val colors by produceCorporationColors(opportunity.creator.corporation.id)
     val isActive = pointerInteractionStateHolder.isHovered
     val alpha by animateFloatAsState(if (isActive) 0.5f else 0.1f)

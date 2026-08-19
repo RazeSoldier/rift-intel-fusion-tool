@@ -345,6 +345,7 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.IntelHostiles,
                                     MapSystemInfoType.FactionWarfare,
                                     MapSystemInfoType.RatsType,
+                                    MapSystemInfoType.RaidableSkyhooks,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeIndicatorName,
                                 selected = systemInfoTypes.indicators[settingsMapType].orEmpty(),
@@ -370,6 +371,7 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.StarColor,
                                     MapSystemInfoType.NullSecurity,
                                     MapSystemInfoType.IntelHostiles,
+                                    MapSystemInfoType.RaidableSkyhooks,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeInfoBoxName,
                                 selected = systemInfoTypes.infoBox[settingsMapType].orEmpty(),
@@ -790,7 +792,8 @@ private fun SystemColorPills(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation)
+        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation,
+            MapSystemInfoType.RaidableSkyhooks)
         val pills = if (isCellColor) colorEntries + null else colorEntries
         pills.filter { isExpanded || selected == it }
             .forEach { type ->
@@ -864,6 +867,7 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Colored according to the\nfaction warfare occupier"
         MapSystemInfoType.Sovereignty -> "Sovereignty" to "Colored according to the\nsovereignty holder"
         MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Colored according to the\ninstalled sovereignty upgrades"
+        MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Colored when\na Skyhook is or will shortly be raidable"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Colored according to the\npresence of metaliminal storms"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Colored according to\njump range"
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for colors")
@@ -905,6 +909,7 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.FactionWarfare -> "" to ""
         MapSystemInfoType.Sovereignty -> "Sovereignty" to "Sovereignty holder logo"
         MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Indicators for installed sovereignty upgrades"
+        MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Indicators for raidable Skyhooks"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Indicator for systems with a storm"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Indicator for systems in jump range"
         MapSystemInfoType.Planets -> "Planets" to "Indicators for planets"
@@ -946,6 +951,7 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Faction warfare details"
         MapSystemInfoType.Sovereignty -> "Sovereignty" to "Sovereignty holder"
         MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Installed sovereignty upgrades"
+        MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Raidable Skyhooks information and timers"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Metaliminal storm type"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Jump distance to system"
         MapSystemInfoType.Planets -> "Planets" to "Planets information"

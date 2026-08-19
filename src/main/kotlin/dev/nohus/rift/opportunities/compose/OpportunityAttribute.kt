@@ -68,17 +68,17 @@ fun OpportunityAttribute(
         Row(
             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
         ) {
-            RiftTooltipArea(
-                text = tooltip,
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .clip(CutCornerShape(bottomStart = 8.dp))
-                        .background(Color.White.copy(alpha = 0.05f))
-                        .size(32.dp),
+            if (icon != null) {
+                RiftTooltipArea(
+                    text = tooltip,
                 ) {
-                    if (icon != null) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .clip(CutCornerShape(bottomStart = 8.dp))
+                            .background(Color.White.copy(alpha = 0.05f))
+                            .size(32.dp),
+                    ) {
                         Icon(
                             painter = painterResource(icon),
                             contentDescription = null,
@@ -404,7 +404,7 @@ private fun sort(values: List<OpportunityContributionAttribute>): List<Opportuni
                 is OpportunityContributionAttribute.Faction -> it.name
                 is OpportunityContributionAttribute.Region -> it.region.name
                 is OpportunityContributionAttribute.Ship -> it.type.name
-                is OpportunityContributionAttribute.ShipGroup -> it.name
+                is OpportunityContributionAttribute.ShipGroup -> it.id
                 is OpportunityContributionAttribute.SolarSystem -> it.solarSystem.name
                 is OpportunityContributionAttribute.Station -> it.station?.name
                 is OpportunityContributionAttribute.Structure -> it.structure?.name

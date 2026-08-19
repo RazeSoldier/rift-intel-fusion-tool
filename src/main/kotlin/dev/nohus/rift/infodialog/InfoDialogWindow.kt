@@ -89,6 +89,7 @@ private fun InfoDialogContent(
         LinkedText(
             text = state.text,
             style = RiftTheme.typography.bodyPrimary,
+            modifier = Modifier,
         )
         Spacer(Modifier.height(Spacing.medium))
         RiftButton(

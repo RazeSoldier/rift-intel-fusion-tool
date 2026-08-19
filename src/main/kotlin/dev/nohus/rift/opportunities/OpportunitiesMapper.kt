@@ -1,7 +1,9 @@
 package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
+import dev.nohus.rift.compose.text.FormattedText
 import dev.nohus.rift.compose.text.ParseEveFormattedTextUseCase
+import dev.nohus.rift.compose.text.toFormattedText
 import dev.nohus.rift.network.esi.models.Archetype
 import dev.nohus.rift.network.esi.models.ConflictType
 import dev.nohus.rift.network.esi.models.CorporationProject
@@ -16,10 +18,18 @@ import dev.nohus.rift.network.esi.models.FreelanceJobsId
 import dev.nohus.rift.network.esi.models.Identity
 import dev.nohus.rift.network.esi.models.Item
 import dev.nohus.rift.network.esi.models.Location
+import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationState
+import dev.nohus.rift.network.esi.models.OpportunityCareer
+import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttributeType
+import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository.MercenaryTacticalOperation
+import dev.nohus.rift.opportunities.MercenaryTacticalOperationsTypesRepository.MercenaryTacticalOperationType
 import dev.nohus.rift.repositories.SolarSystemChipState
+import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
+import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,6 +37,61 @@ private val logger = KotlinLogging.logger {}
 class OpportunitiesMapper(
     val parseEveFormattedTextUseCase: ParseEveFormattedTextUseCase,
 ) {
+
+    fun toModel(
+        debugDetails: String,
+        operation: MercenaryTacticalOperation,
+        configuration: OpportunityConfiguration,
+        contributionAttributes: List<OpportunityContributionAttributeType>,
+        solarSystemChipState: SolarSystemChipState?,
+        matchingFilters: List<OpportunityCategoryFilter>,
+    ): Opportunity {
+        val characterInfo = operation.character.info!!
+        val creator = Creator(
+            characterId = characterInfo.characterId,
+            characterName = characterInfo.name,
+            corporation = null,
+        )
+        val details = OpportunityDetails(
+            debugDetails = debugDetails,
+            configuration = configuration,
+            contributionAttributes = contributionAttributes,
+            ageRequirement = null,
+            solarSystemChipState = solarSystemChipState,
+            matchingFilters = matchingFilters,
+            participationLimit = null,
+            rewardPerContribution = null,
+            submissionLimit = null,
+            submissionMultiplier = null,
+            career = OpportunityCareer.Enforcer,
+            created = null,
+            description = operation.type?.description?.toFormattedText() ?: "No description".toFormattedText(),
+            expires = operation.expires,
+            finished = null,
+        )
+        return Opportunity(
+            type = OpportunityType.MercenaryTacticalOperation,
+            creator = creator,
+            currentProgress = 0,
+            desiredProgress = 0,
+            id = operation.id,
+            lastModified = Instant.EPOCH,
+            name = operation.type?.name ?: "Mercenary Tactical Operation",
+            reward = null,
+            state = when (operation.state) {
+                MercenaryTacticalOperationState.Unspecified -> OpportunityState.Unspecified
+                MercenaryTacticalOperationState.Available -> OpportunityState.Available
+                MercenaryTacticalOperationState.Started -> OpportunityState.Active
+                MercenaryTacticalOperationState.Completed -> OpportunityState.Completed
+                MercenaryTacticalOperationState.Expired -> OpportunityState.Expired
+                MercenaryTacticalOperationState.Removed -> OpportunityState.Deleted
+            },
+            details = details,
+            contributions = emptyList(),
+            contributors = Contributors.Empty,
+            eligibleCharacters = listOf(operation.character),
+        )
+    }
 
     fun toModel(
         debugDetails: String,
@@ -423,5 +488,23 @@ class OpportunitiesMapper(
             )
         }
         return OpportunityConfiguration.Unknown(type = "Unknown")
+    }
+
+    fun toModel(
+        configuration: MercenaryTacticalOperationType,
+        solarSystem: MapSolarSystem?,
+        status: String,
+    ): OpportunityConfiguration {
+        return OpportunityConfiguration.MercenaryTacticalOperation(
+            solarSystem = solarSystem,
+            archetypeTitle = configuration.archetypeTitle,
+            archetypeDescription = configuration.archetypeDescription,
+            allowedShipsLists = configuration.allowedShipsLists,
+            developmentImpact = configuration.developmentImpact,
+            anarchyImpact = configuration.anarchyImpact,
+            infomorphBonus = configuration.infomorphBonus,
+            hostiles = configuration.hostiles,
+            status = status,
+        )
     }
 }

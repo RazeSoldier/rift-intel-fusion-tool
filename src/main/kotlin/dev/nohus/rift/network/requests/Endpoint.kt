@@ -8,7 +8,6 @@ sealed class Endpoint(
     data object PostUniverseIds : Endpoint()
     data object PostUniverseNames : Endpoint()
     data object GetCharactersId : Endpoint()
-    data object GetCharactersAffiliation : Endpoint()
     data object GetCorporationsId : Endpoint()
     data object GetAlliancesId : Endpoint()
     data object GetAlliancesIdContacts : Endpoint()
@@ -70,6 +69,15 @@ sealed class Endpoint(
     data object PostUiOpenWindowMarketDetails : Endpoint()
     data object PostUiOpenWindowNewMail : Endpoint()
     data object GetKillmail : Endpoint()
+    data object GetCharactersIdStructuresMercenaryDens : Endpoint()
+    data object GetCharactersIdStructuresMercenaryDensId : Endpoint()
+    data object GetCorporationsIdStructuresSkyhooks : Endpoint()
+    data object GetCorporationsIdStructuresSkyhooksId : Endpoint()
+    data object GetCorporationsIdStructuresSovereigntyHubs : Endpoint()
+    data object GetCorporationsIdStructuresSovereigntyHubsId : Endpoint()
+    data object GetCharactersIdMercenaryTacticalOperations : Endpoint()
+    data object GetCharactersIdMercenaryTacticalOperationsId : Endpoint()
+    data object GetSkyhooksRaidable : Endpoint()
 
     // Image Service
     data object ImageServiceHeadCharacterPortrait : Endpoint()

@@ -152,13 +152,14 @@ class EntityInteractionProvider(
 
     fun getType(
         type: Type,
+        singletonId: Long? = null,
     ): Interaction {
         val contextMenuItems = buildList {
             add(
                 ContextMenuItem.TextItem(
                     text = "Show Info",
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
-                    onClick = { gameUiController.pushType(type, "type") },
+                    onClick = { gameUiController.pushType(type, "type", singletonId) },
                 ),
             )
             add(ContextMenuItem.DividerItem)

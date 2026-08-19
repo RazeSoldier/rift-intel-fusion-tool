@@ -1,0 +1,27 @@
+{
+    "id": 1001,
+    "planet_id": 40034895,
+    "skyhook": {
+        "corporation_id": 98819744,
+        "id": 1045871435222,
+        "planet_id": 40034895
+    },
+    "evolution": {
+        "anarchy": {
+            "amount": 23,
+            "level": "Level1"
+        },
+        "development": {
+            "amount": 86,
+            "level": "Level3"
+        }
+    },
+    "infomorphs": {
+        "amount": 12
+    },
+    "reinforcement_timer": {
+        "end": "2026-05-20T16:38:47Z"
+    },
+    "state": "Running",
+    "type_id": 5001
+}

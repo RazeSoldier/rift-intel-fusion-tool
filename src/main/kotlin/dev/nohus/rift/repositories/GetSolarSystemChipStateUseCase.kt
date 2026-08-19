@@ -79,8 +79,8 @@ class GetSolarSystemChipStateUseCase(
             }
         }
 
-        val regionName = if (isShowingRegion && closestSolarSystem?.regionId != null) {
-            solarSystemsRepository.getRegionBySystemId(closestSolarSystem.regionId)?.name
+        val regionName = if (isShowingRegion && closestSolarSystem != null) {
+            solarSystemsRepository.getRegionBySystemId(closestSolarSystem.id)?.name
         } else {
             null
         }

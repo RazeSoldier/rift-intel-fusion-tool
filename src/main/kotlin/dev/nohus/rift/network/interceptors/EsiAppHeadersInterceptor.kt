@@ -2,6 +2,7 @@ package dev.nohus.rift.network.interceptors
 
 import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.utils.GetInstallationIdUseCase
 import dev.nohus.rift.utils.OperatingSystem
 import okhttp3.Interceptor
 import okhttp3.Protocol
@@ -13,6 +14,7 @@ import java.util.UUID
 @Single
 class EsiAppHeadersInterceptor(
     operatingSystem: OperatingSystem,
+    getInstallationIdUseCase: GetInstallationIdUseCase,
 ) : Interceptor {
 
     companion object {
@@ -22,6 +24,7 @@ class EsiAppHeadersInterceptor(
         const val VERSION_KEY = "App-Version"
         const val CONTACT_KEY = "App-Contact"
         const val REQUEST_ID_KEY = "App-Request-Id"
+        const val INSTALLATION_ID_KEY = "App-Installation-Id"
     }
 
     private val operatingSystemValue = when (operatingSystem) {
@@ -32,6 +35,7 @@ class EsiAppHeadersInterceptor(
     private val nameValue = "RIFT"
     private val versionValue = "${BuildConfig.version}-source"
     private val contactValue = "developer@riftforeve.online; discord:nohus"
+    private val installationId = getInstallationIdUseCase()
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
@@ -45,6 +49,7 @@ class EsiAppHeadersInterceptor(
             .header(OPERATING_SYSTEM_KEY, operatingSystemValue)
             .header(FEATURE_KEY, originator.name)
             .header(REQUEST_ID_KEY, requestId.toString())
+            .header(INSTALLATION_ID_KEY, installationId)
             .build()
         return chain.proceed(newRequest)
     }

@@ -1,0 +1,20 @@
+{
+    "sovereignty_hubs": [
+        {
+            "id": 1049755487730,
+            "solar_system_id": 30000570
+        },
+        {
+            "id": 1049780119122,
+            "solar_system_id": 30000571
+        },
+        {
+            "id": 1049780119287,
+            "solar_system_id": 30000572
+        },
+        {
+            "id": 1049780119339,
+            "solar_system_id": 30000573
+        }
+    ]
+}
