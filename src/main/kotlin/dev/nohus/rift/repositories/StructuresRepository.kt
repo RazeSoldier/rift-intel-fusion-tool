@@ -60,7 +60,7 @@ class StructuresRepository(
         val result = esiApi.getUniverseStructuresId(originator, structureId, characterId)
 
         if (result is Result.Failure && result.cause is EsiErrorException && result.cause.code == 403) {
-            logger.warn { "${originator}, Structure $structureId was Forbidden from character $characterId" }
+            logger.warn { "$originator, Structure $structureId was Forbidden from character $characterId" }
             mutex.withLock {
                 unwrittenForbiddenStructures += characterId to structureId
                 updateSettingsJob?.cancel()
@@ -91,7 +91,7 @@ class StructuresRepository(
                 name = it.name,
                 ownerId = it.ownerId,
                 typeId = it.typeId,
-                solarSystemId = it.solarSystemId
+                solarSystemId = it.solarSystemId,
             )
         }
     }
@@ -109,7 +109,7 @@ class StructuresRepository(
             name = text,
             ownerId = null,
             typeId = null,
-            solarSystemId = solarSystemId
+            solarSystemId = solarSystemId,
         ).also {
             logger.debug { "Replacing Forbidden structure with known structure ${it.name}" }
         }

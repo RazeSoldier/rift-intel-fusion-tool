@@ -53,10 +53,10 @@ import dev.nohus.rift.generated.resources.workforce_32px
 import dev.nohus.rift.network.esi.models.SovereigntyHubPower
 import dev.nohus.rift.network.esi.models.SovereigntyHubUpgradePowerState
 import dev.nohus.rift.network.esi.models.SovereigntyHubWorkforce
-import dev.nohus.rift.structures.SovereigntyReagent
 import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHub
 import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHubReagent
 import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHubWorkforceTransport
+import dev.nohus.rift.structures.SovereigntyReagent
 import dev.nohus.rift.utils.formatDateTime
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.multiplyBrightness

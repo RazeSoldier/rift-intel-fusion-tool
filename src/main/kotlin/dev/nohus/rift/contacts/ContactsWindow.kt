@@ -43,6 +43,7 @@ import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.CharacterTooltip
 import dev.nohus.rift.compose.ClickableAlliance
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
@@ -68,7 +69,6 @@ import dev.nohus.rift.compose.SystemIllustrationIconSmall
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.modifyIf
-import dev.nohus.rift.compose.modifyIfNotNull
 import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
@@ -865,12 +865,14 @@ private fun SearchResultRow(
             )
             SearchCategory.Characters -> {
                 ClickableCharacter(item.id.toInt()) {
-                    DynamicCharacterPortraitParallax(
-                        characterId = item.id.toInt(),
-                        size = 32.dp,
-                        enterTimestamp = null,
-                        pointerInteractionStateHolder = pointerInteractionStateHolder,
-                    )
+                    CharacterTooltip(item.characterDetails) {
+                        DynamicCharacterPortraitParallax(
+                            characterId = item.id.toInt(),
+                            size = 32.dp,
+                            enterTimestamp = null,
+                            pointerInteractionStateHolder = pointerInteractionStateHolder,
+                        )
+                    }
                 }
             }
             SearchCategory.Constellation -> {

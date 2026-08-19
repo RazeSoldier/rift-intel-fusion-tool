@@ -109,6 +109,7 @@ class ConfigurationPackRepository(
                     IntelChannel("ftn.imperium", "Fountain"),
                     IntelChannel("khanid.imperium", "Khanid"),
                     IntelChannel("triangle.imperium", "Pochven"),
+                    IntelChannel("gem.imperium", "Geminate"),
                 ),
             )
 

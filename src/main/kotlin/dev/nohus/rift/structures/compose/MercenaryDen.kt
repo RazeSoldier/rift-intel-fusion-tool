@@ -118,13 +118,15 @@ fun MercenaryDen(
                         Image(
                             painter = painterResource(Res.drawable.upwell_reinforced_armor),
                             contentDescription = null,
-                            modifier = Modifier.height(32.dp)
+                            modifier = Modifier.height(32.dp),
                         )
                         val reinforcedUntil = Duration.between(now, mercenaryDen.reinforcementTimer.end)
                         Text(
                             text = if (reinforcedUntil.isPositive) {
                                 formatDurationCompact(reinforcedUntil)
-                            } else "Reinforcement ended",
+                            } else {
+                                "Reinforcement ended"
+                            },
                             style = RiftTheme.typography.bodyPrimary,
                         )
                     }

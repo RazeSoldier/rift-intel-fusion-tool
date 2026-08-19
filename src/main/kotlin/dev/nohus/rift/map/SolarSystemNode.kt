@@ -47,7 +47,6 @@ import dev.nohus.rift.standings.isFriendly
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 data class NodeSizes(
@@ -148,7 +147,6 @@ class HostileOrbitPainter {
 
     private val shipTypesRepository: ShipTypesRepository by koin.inject()
     private val bitmapsCache = mutableMapOf<DrawableResource, ImageBitmap>()
-    private val bitmapOffset = Offset(8f, 8f)
     private var animationRotation by mutableFloatStateOf(0f)
     private val orbitBrushForColorNodeSizes = mutableMapOf<Pair<Color, NodeSizes>, Brush>()
     private val friendlyEntityRadius = 10f
@@ -209,16 +207,15 @@ class HostileOrbitPainter {
             val angle = Math.toRadians(animationRotation.toDouble() + (index * offsetAngle)).toFloat()
             val radius = nodeSizes.radiusPx + (nodeSizes.marginPx / 2)
             val center = Offset(radius * sin(angle), radius * cos(angle))
-
-            translate(left = center.x.roundToInt().toFloat(), top = center.y.roundToInt().toFloat()) {
+            translate(left = center.x, top = center.y) {
                 if (icon.isFriendly) drawCircle(friendlyEntityBrush, radius = friendlyEntityRadius, center = Offset(-1f, -1f))
-                translate(left = -bitmapOffset.x, top = -bitmapOffset.y) {
-                    drawImage(
-                        image = icon.bitmap,
-                        dstSize = IntSize(icon.bitmap.width, icon.bitmap.height),
-                        dstOffset = IntOffset((icon.bitmap.width * (1 - scope.density) / 2).toInt(), (icon.bitmap.height * (1 - scope.density) / 2).toInt()),
-                    )
-                }
+                val scaledWidth = icon.bitmap.width * scope.density
+                val scaledHeight = icon.bitmap.height * scope.density
+                drawImage(
+                    image = icon.bitmap,
+                    dstSize = IntSize(scaledWidth.toInt(), scaledHeight.toInt()),
+                    dstOffset = IntOffset(-(scaledWidth / 2).toInt(), -(scaledHeight / 2).toInt()),
+                )
             }
         }
     }

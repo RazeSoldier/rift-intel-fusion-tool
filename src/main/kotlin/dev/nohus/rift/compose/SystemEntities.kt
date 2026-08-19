@@ -279,9 +279,7 @@ private fun CharactersPortraits(
                 modifier = Modifier.height(rowHeight).width(rowHeight * 3),
             ) { character ->
                 ClickableCharacter(character.characterId) {
-                    RiftTooltipArea(
-                        text = character.name,
-                    ) {
+                    CharacterTooltip(character) {
                         DynamicCharacterPortraitStandings(
                             characterId = character.characterId,
                             size = rowHeight,
@@ -296,9 +294,7 @@ private fun CharactersPortraits(
             Row {
                 characters.forEach { character ->
                     ClickableCharacter(character.characterId) {
-                        RiftTooltipArea(
-                            text = character.name,
-                        ) {
+                        CharacterTooltip(character) {
                             val now = remember(character.characterId) { Instant.now() }
                             DynamicCharacterPortraitStandings(
                                 characterId = character.characterId,

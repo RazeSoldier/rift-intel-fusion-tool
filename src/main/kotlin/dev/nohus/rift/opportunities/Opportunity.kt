@@ -53,6 +53,7 @@ data class Reward(
 data class Creator(
     val characterId: Int,
     val characterName: String,
+    val characterDetails: CharacterDetails?,
     val corporation: Corporation?,
 )
 

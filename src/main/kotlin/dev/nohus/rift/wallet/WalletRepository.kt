@@ -15,7 +15,7 @@ import dev.nohus.rift.network.esi.pagination.fetchOffsetIdPaginated
 import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.CelestialsRepository
-import dev.nohus.rift.repositories.FactionNames
+import dev.nohus.rift.repositories.FactionsRepository
 import dev.nohus.rift.repositories.GetSystemDistanceUseCase
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.repositories.NamesRepository
@@ -68,6 +68,7 @@ class WalletRepository(
     private val stationsRepository: StationsRepository,
     private val characterLocationRepository: CharacterLocationRepository,
     private val getSystemDistanceUseCase: GetSystemDistanceUseCase,
+    private val factionsRepository: FactionsRepository,
     private val settings: Settings,
 ) {
 
@@ -897,7 +898,7 @@ class WalletRepository(
             }
 
             factionIds.distinct().map { id ->
-                details[id] = TypeDetail.Faction(id, FactionNames[id.toInt()])
+                details[id] = TypeDetail.Faction(id, factionsRepository.getFaction(id.toInt()) ?: "")
             }
             systemIds.distinct().mapNotNull { id ->
                 solarSystemsRepository.getSystem(id.toInt())?.let { details[id] = TypeDetail.SolarSystem(it) }

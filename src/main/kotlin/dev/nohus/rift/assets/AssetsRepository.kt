@@ -73,7 +73,7 @@ class AssetsRepository(
     enum class LoadingStage {
         LoadingAssets,
         LoadingLocations,
-        LoadingDivisionNames
+        LoadingDivisionNames,
     }
 
     data class AssetBalance(
@@ -219,8 +219,8 @@ class AssetsRepository(
                 AssetOwner.Character(it)
             } + corporations
 
-            _state.update { it.copy(
-                loading = LoadingState(stage = LoadingStage.LoadingAssets, owners = assetOwners))
+            _state.update {
+                it.copy(loading = LoadingState(stage = LoadingStage.LoadingAssets, owners = assetOwners))
             }
 
             val divisionNames = async {
@@ -237,8 +237,8 @@ class AssetsRepository(
             val loadedState = loadAllAssetsWithLocations(characters, corporations).map {
                 logger.debug { "Assets loaded: ${it.size}" }
                 val assetBalances = getAssetBalances(it)
-                _state.update { it.copy(
-                    loading = it.loading.copy(stage = LoadingStage.LoadingDivisionNames))
+                _state.update {
+                    it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingDivisionNames))
                 }
                 val divisionNames = divisionNames.await()
                 LoadedState(it, assetBalances, assetOwners, divisionNames)
@@ -264,8 +264,8 @@ class AssetsRepository(
             is Result.Success -> result.data
             is Result.Failure -> return@withContext result
         }
-        _state.update { it.copy(
-            loading = it.loading.copy(stage = LoadingStage.LoadingLocations))
+        _state.update {
+            it.copy(loading = it.loading.copy(stage = LoadingStage.LoadingLocations))
         }
         val itemIds = allAssets.map { it.asset.itemId }.distinct()
         val resolvedAssetLocations = when (val result = resolveAssetLocations(allAssets, itemIds)) {
@@ -302,15 +302,15 @@ class AssetsRepository(
                 }
             }
 
-        _state.update { it.copy(
-            loading = it.loading.copy(totalStationIds = stationIds.size, totalStructureIds = structureIds.size))
+        _state.update {
+            it.copy(loading = it.loading.copy(totalStationIds = stationIds.size, totalStructureIds = structureIds.size))
         }
 
         val stationsByIdDeferred = stationIds.map { stationId ->
             async {
                 val result = esiApi.getUniverseStationsId(Originator.Assets, stationId.toInt())
-                _state.update { it.copy(
-                    loading = it.loading.copy(loadedStationIds = it.loading.loadedStationIds + 1))
+                _state.update {
+                    it.copy(loading = it.loading.copy(loadedStationIds = it.loading.loadedStationIds + 1))
                 }
                 stationId to result
             }
@@ -319,8 +319,8 @@ class AssetsRepository(
             async {
                 val characterId = allAssets.first { it.asset.locationId == structureId }.owner.character.characterId
                 val result = structuresRepository.getStructure(Originator.Assets, structureId, characterId)
-                _state.update { it.copy(
-                    loading = it.loading.copy(loadedStructureIds = it.loading.loadedStructureIds + 1))
+                _state.update {
+                    it.copy(loading = it.loading.copy(loadedStructureIds = it.loading.loadedStructureIds + 1))
                 }
                 structureId to result
             }
@@ -358,17 +358,17 @@ class AssetsRepository(
             async {
                 fetchPagePaginated(
                     onProgressUpdate = { assetsLoaded, percentage ->
-                        _state.update { it.copy(
-                            loading = it.loading.copy(ownerProgress = it.loading.ownerProgress + (character to (assetsLoaded to percentage))))
+                        _state.update {
+                            it.copy(loading = it.loading.copy(ownerProgress = it.loading.ownerProgress + (character to (assetsLoaded to percentage))))
                         }
-                    }
+                    },
                 ) {
                     esiApi.getCharactersIdAssets(Originator.Assets, it, character.character.characterId)
                 }.map { assets ->
                     typesRepository.resolveNamesFromEsi(Originator.Assets, assets.map { it.typeId })
                     val names = getAssetNames(assets, character.character)
-                    _state.update { it.copy(
-                        loading = it.loading.copy(ownerNamesLoaded = it.loading.ownerNamesLoaded + character))
+                    _state.update {
+                        it.copy(loading = it.loading.copy(ownerNamesLoaded = it.loading.ownerNamesLoaded + character))
                     }
                     assets.map { asset ->
                         AssetWithOwner(
@@ -385,17 +385,17 @@ class AssetsRepository(
             async {
                 fetchPagePaginated(
                     onProgressUpdate = { assetsLoaded, percentage ->
-                        _state.update { it.copy(
-                            loading = it.loading.copy(ownerProgress = it.loading.ownerProgress + (corporation to (assetsLoaded to percentage))))
+                        _state.update {
+                            it.copy(loading = it.loading.copy(ownerProgress = it.loading.ownerProgress + (corporation to (assetsLoaded to percentage))))
                         }
-                    }
+                    },
                 ) {
                     esiApi.getCorporationsIdAssets(Originator.Assets, it, corporation.character.characterId, corporation.corporationId)
                 }.map { assets ->
                     typesRepository.resolveNamesFromEsi(Originator.Assets, assets.map { it.typeId })
                     val names = getAssetNames(assets, corporation)
-                    _state.update { it.copy(
-                        loading = it.loading.copy(ownerNamesLoaded = it.loading.ownerNamesLoaded + corporation))
+                    _state.update {
+                        it.copy(loading = it.loading.copy(ownerNamesLoaded = it.loading.ownerNamesLoaded + corporation))
                     }
                     assets.map { asset ->
                         AssetWithOwner(

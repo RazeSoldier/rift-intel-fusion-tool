@@ -12,10 +12,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 
 @Composable
 fun RiftCircularCharacterPortrait(
     characterId: Int?,
+    characterDetails: CharacterDetailsRepository.CharacterDetails?,
     name: String,
     hasPadding: Boolean,
     size: Dp,
@@ -28,9 +30,7 @@ fun RiftCircularCharacterPortrait(
                 padding(4.dp)
             },
     ) {
-        RiftTooltipArea(
-            text = name,
-        ) {
+        CharacterTooltip(characterDetails) {
             ClickableCharacter(characterId) {
                 if (characterId != null) {
                     DynamicCharacterPortraitParallax(

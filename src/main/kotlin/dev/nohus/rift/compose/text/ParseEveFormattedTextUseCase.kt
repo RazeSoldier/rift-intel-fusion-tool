@@ -16,6 +16,31 @@ class ParseEveFormattedTextUseCase(
     val gameUiController: GameUiController,
 ) {
 
+    private val colors = mapOf(
+        "black" to "FF000000",
+        "green" to "FF008000",
+        "silver" to "FFC0C0C0",
+        "lime" to "FF00FF00",
+        "gray" to "FF808080",
+        "grey" to "FF808080",
+        "olive" to "FF808000",
+        "white" to "FFFFFFFF",
+        "yellow" to "FFFFFF00",
+        "maroon" to "FF800000",
+        "navy" to "FF000080",
+        "red" to "FFFF0000",
+        "blue" to "FF0000FF",
+        "purple" to "FF800080",
+        "teal" to "FF008080",
+        "fuchsia" to "FFFF00FF",
+        "aqua" to "FF00FFFF",
+        "orange" to "FFFF8000",
+        "transparent" to "00000000",
+        "lightred" to "FFCC3333",
+        "lightblue" to "FF7777FF",
+        "lightgreen" to "FF80ff80",
+    )
+
     operator fun invoke(text: String): FormattedText {
         val tokens = parse(emptyList(), text)
         return format(tokens)
@@ -58,7 +83,7 @@ class ParseEveFormattedTextUseCase(
      * Returns formatted text from tokens, applying the given tag as the formatting
      */
     private fun applyTag(tag: Token.OpenTag, content: List<Token>): FormattedText {
-        return when (tag.tag) {
+        return when (tag.tag.lowercase()) {
             "b" -> FormattedText.Formatted(
                 text = format(content),
                 spans = listOf(Span.Weight(SpanTarget.Full, FontWeight.Bold)),
@@ -71,19 +96,13 @@ class ParseEveFormattedTextUseCase(
                 text = format(content),
                 spans = listOf(Span.Underline(SpanTarget.Full)),
             )
-            "font" -> {
+            "font", "color" -> {
                 val spans = mutableListOf<Span>()
                 tag.parameters["size"]?.toIntOrNull()?.let {
                     spans += Span.Size(SpanTarget.Full, it)
                 }
-                tag.parameters["color"]?.removePrefix("#")?.let {
-                    if (it.length == 8) {
-                        val alpha = it.take(2).toInt(16)
-                        val red = it.substring(2, 4).toInt(16)
-                        val green = it.substring(4, 6).toInt(16)
-                        val blue = it.substring(6, 8).toInt(16)
-                        spans += Span.CustomColor(SpanTarget.Full, Color(red, green, blue, alpha))
-                    }
+                tag.parameters["color"]?.let {
+                    parseColor(it)?.let { spans += it }
                 }
                 FormattedText.Formatted(format(content), spans)
             }
@@ -134,8 +153,26 @@ class ParseEveFormattedTextUseCase(
         }
     }
 
+    private fun parseColor(color: String): Span.CustomColor? {
+        val hex = when {
+            color.startsWith("#") -> color.removePrefix("#")
+            color.startsWith("0x") -> color.removePrefix("0x")
+            else -> colors[color.lowercase()]
+        } ?: return null
+        return if (hex.length == 8) {
+            val alpha = hex.take(2).toInt(16)
+            val red = hex.substring(2, 4).toInt(16)
+            val green = hex.substring(4, 6).toInt(16)
+            val blue = hex.substring(6, 8).toInt(16)
+            Span.CustomColor(SpanTarget.Full, Color(red, green, blue, alpha))
+        } else {
+            null
+        }
+    }
+
     private val tagName = """^[A-z]+""".toRegex()
     private val parameter = """(?<key>[A-z]+)="(?<value>[^"]*)"""".toRegex()
+    private val unquotedParameter = """(?<key>[A-z]+)=(?<value>[^ ]*)""".toRegex()
 
     sealed interface Token {
         data class Text(val text: String) : Token
@@ -163,7 +200,8 @@ class ParseEveFormattedTextUseCase(
                     parse(current + Token.CloseTag(name), remaining.drop(tagEndIndex + 1))
                 } else {
                     val parameters = parameter.findAll(tag).map { it["key"] to it["value"] }.toMap()
-                    parse(current + Token.OpenTag(name, parameters), remaining.drop(tagEndIndex + 1))
+                    val unquotedParameters = unquotedParameter.findAll(tag).map { it["key"] to it["value"] }.toMap()
+                    parse(current + Token.OpenTag(name, parameters + unquotedParameters), remaining.drop(tagEndIndex + 1))
                 }
             }
             else -> {

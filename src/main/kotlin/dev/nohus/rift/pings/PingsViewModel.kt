@@ -3,12 +3,17 @@ package dev.nohus.rift.pings
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.compose.RiftOpportunityCardCategory
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardCharacter
+import dev.nohus.rift.jabber.GetPapsUseCase
+import dev.nohus.rift.jabber.GetPapsUseCase.Paps
 import dev.nohus.rift.jabber.client.JabberClient
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.GetSolarSystemChipStateUseCase
 import dev.nohus.rift.repositories.SolarSystemChipLocation
 import dev.nohus.rift.repositories.SolarSystemChipState
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -16,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 import java.time.ZoneId
+import kotlin.time.Duration.Companion.minutes
 
 @Factory
 class PingsViewModel(
@@ -25,9 +31,12 @@ class PingsViewModel(
     private val pingsRepository: PingsRepository,
     private val openMumbleUseCase: OpenMumbleUseCase,
     private val getSolarSystemChipStateUseCase: GetSolarSystemChipStateUseCase,
+    private val getPapsUseCase: GetPapsUseCase,
+    private val characterDetailsRepository: CharacterDetailsRepository,
 ) : ViewModel() {
 
     data class UiState(
+        val paps: Paps? = null,
         val pings: List<PingUiModel> = emptyList(),
         val displayTimezone: ZoneId,
         val isJabberConnected: Boolean,
@@ -59,6 +68,15 @@ class PingsViewModel(
                 _state.update { it.copy(pings = pings.map { it.toUiModel() }) }
             }
         }
+        viewModelScope.launch {
+            while (true) {
+                val paps = getPapsUseCase()
+                if (paps != null) {
+                    _state.update { it.copy(paps = paps) }
+                }
+                delay(5.minutes)
+            }
+        }
     }
 
     fun onOpenJabberClick() {
@@ -71,7 +89,7 @@ class PingsViewModel(
         }
     }
 
-    private fun PingModel.toUiModel(): PingUiModel {
+    private suspend fun PingModel.toUiModel(): PingUiModel {
         pingUiModels[this]?.let { return it }
         return when (this) {
             is PingModel.PlainText -> PingUiModel.PlainText(
@@ -107,10 +125,11 @@ class PingsViewModel(
         return getSolarSystemChipStateUseCase(locations)
     }
 
-    private fun FleetCommander.toUiModel(): RiftOpportunityCardCharacter {
+    private suspend fun FleetCommander.toUiModel(): RiftOpportunityCardCharacter {
         return RiftOpportunityCardCharacter(
             name = name,
             id = id,
+            details = id?.let { characterDetailsRepository.getCharacterDetails(Originator.Pings, id) },
         )
     }
 

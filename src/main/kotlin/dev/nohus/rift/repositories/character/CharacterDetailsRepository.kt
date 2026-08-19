@@ -6,35 +6,47 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.models.CorporationsIdCorporation
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.zkillboard.ZkillboardApi
+import dev.nohus.rift.repositories.CharacterTitlesRepository
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.standings.StandingsRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Single
+import java.time.Instant
 
 @Single
 class CharacterDetailsRepository(
     private val esiApi: EsiApi,
+    private val zkillboardApi: ZkillboardApi,
     private val standingsRepository: StandingsRepository,
     private val contactsRepository: ContactsRepository,
+    private val characterTitlesRepository: CharacterTitlesRepository,
 ) {
 
     data class CharacterDetails(
         val characterId: Int,
         val name: String,
         val corporationId: Int,
-        val corporationName: String?,
-        val corporationTicker: String?,
+        val corporationName: String,
+        val corporationTicker: String,
+        val corporationRoles: List<String>,
         val allianceId: Int?,
         val allianceName: String?,
         val allianceTicker: String?,
         val standing: Float,
         val standingLevel: Standing,
+        val corporationTitle: String?,
         val title: String?,
+        val achievementScore: Int,
         val characterLabels: List<String>,
         val corporationLabels: List<String>,
         val allianceLabels: List<String>,
+        val birthday: Instant,
+        val factionId: Int?,
+        val securityStatus: Double?,
+        val dangerRatio: Int?,
     )
 
     data class CorporationDetails(
@@ -71,12 +83,13 @@ class CharacterDetailsRepository(
 
     suspend fun getCharacterDetails(originator: Originator, characterId: Int): CharacterDetails? = coroutineScope {
         val characterDeferred = async { esiApi.getCharactersId(originator, characterId).success }
+        val zkillStatsDeferred = async { zkillboardApi.getCharacterStats(originator, characterId).success }
         val character = characterDeferred.await() ?: return@coroutineScope null
         val corporationId = character.corporationId
         val allianceId = character.allianceId
         val deferredCorporation = async { esiApi.getCorporationsId(originator, corporationId).success }
         val deferredAlliance = async { allianceId?.let { esiApi.getAlliancesId(originator, it).success } }
-        val corporation = deferredCorporation.await()
+        val corporation = deferredCorporation.await() ?: return@coroutineScope null
         val alliance = deferredAlliance.await()
         val standing = standingsRepository.getStanding(allianceId, corporationId, characterId) ?: 0f
         val standingLevel = standingsRepository.getStandingLevel(allianceId, corporationId, characterId)
@@ -85,21 +98,29 @@ class CharacterDetailsRepository(
         val allianceLabels = allianceId
             ?.let { contactsRepository.getLabels(listOf(allianceId)).map { it.name }.distinct() }
             ?: emptyList()
+        val zkillStats = zkillStatsDeferred.await()
         CharacterDetails(
             characterId = characterId,
             name = character.name,
             corporationId = corporationId,
-            corporationName = corporation?.name,
-            corporationTicker = corporation?.ticker,
+            corporationName = corporation.name,
+            corporationTicker = corporation.ticker,
+            corporationRoles = emptyList(),
             allianceId = allianceId,
             allianceName = alliance?.name,
             allianceTicker = alliance?.ticker,
             standing = standing,
             standingLevel = standingLevel,
-            title = character.title,
+            corporationTitle = character.corporationTitle,
+            title = character.characterTitleId?.let { characterTitlesRepository.getTitle(it) },
+            achievementScore = character.achievementScore,
             characterLabels = characterLabels,
             corporationLabels = corporationLabels,
             allianceLabels = allianceLabels,
+            birthday = character.birthday,
+            factionId = character.factionId,
+            securityStatus = character.securityStatus,
+            dangerRatio = zkillStats?.dangerRatio,
         )
     }
 

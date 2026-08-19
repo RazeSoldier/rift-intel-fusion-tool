@@ -1,7 +1,6 @@
 package dev.nohus.rift.structures
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository.CharacterInfo
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.magmatic_gas_32px
@@ -30,6 +29,7 @@ import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CorporationDetails
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesTypesRepository
@@ -114,7 +114,7 @@ class EquinoxStructuresRepository(
         val state: MercenaryDenState,
         val skyhookCorporationId: Int,
         val skyhookCorporation: CorporationDetails?,
-        val character: CharacterInfo,
+        val character: CharacterDetails,
     )
 
     data class MercenaryDenEvolution(
@@ -134,7 +134,7 @@ class EquinoxStructuresRepository(
         val reinforcementTimer: ReinforcementTimer?,
         val state: SkyhookState,
         val theftVulnerability: VulnerabilityWindow?,
-        val character: CharacterInfo,
+        val character: CharacterDetails,
     )
 
     sealed interface SkyhookResource {
@@ -176,7 +176,7 @@ class EquinoxStructuresRepository(
         val workforceTransportConfiguration: SovereigntyHubWorkforceTransport,
         val workforceTransportState: SovereigntyHubWorkforceTransport,
         val vulnerabilityWindow: VulnerabilityWindow?,
-        val character: CharacterInfo,
+        val character: CharacterDetails,
     )
 
     data class SovereigntyHubReagent(
@@ -335,7 +335,7 @@ class EquinoxStructuresRepository(
 
     private suspend fun getMercenaryDen(
         mercenaryDen: MercenaryDensId,
-        characterInfo: CharacterInfo,
+        characterInfo: CharacterDetails,
     ): MercenaryDen? {
         val planet = planetsRepository.getPlanetById(mercenaryDen.skyhook.planetId) ?: return null
         val system = solarSystemsRepository.getSystem(planet.systemId) ?: return null
@@ -380,7 +380,7 @@ class EquinoxStructuresRepository(
 
     private fun getSkyhook(
         skyhook: SkyhooksId,
-        characterInfo: CharacterInfo,
+        characterInfo: CharacterDetails,
         now: Instant,
     ): Skyhook? {
         val planet = planetsRepository.getPlanetById(skyhook.planetId) ?: return null
@@ -525,7 +525,7 @@ class EquinoxStructuresRepository(
     private fun getSovereigntyHub(
         sovereigntyHub: SovereigntyHubsId,
         solarSystemId: Int,
-        characterInfo: CharacterInfo,
+        characterInfo: CharacterDetails,
     ): SovereigntyHub? {
         val system = solarSystemsRepository.getSystem(solarSystemId) ?: return null
         val reagents = listOf(81143, 81144).map { typeId ->
@@ -606,7 +606,7 @@ class EquinoxStructuresRepository(
         )
     }
 
-    private fun getStationManagerPerCorporation(characters: List<LocalCharacter>): List<Pair<LocalCharacter, CharacterInfo>> {
+    private fun getStationManagerPerCorporation(characters: List<LocalCharacter>): List<Pair<LocalCharacter, CharacterDetails>> {
         return characters
             .mapNotNull { it to (it.info ?: return@mapNotNull null) }
             .filter {

@@ -201,3 +201,13 @@ object TypeLists : Table() {
     val excludedGroupIDs = varchar("excludedGroupIDs", 10_000).nullable()
     val excludedTypeIDs = varchar("excludedTypeIDs", 10_000).nullable()
 }
+
+object CharacterTitles : Table() {
+    val id = varchar("id", 100)
+    val name = varchar("name", 100)
+}
+
+object Factions : Table() {
+    val id = integer("id")
+    val name = varchar("name", 100)
+}

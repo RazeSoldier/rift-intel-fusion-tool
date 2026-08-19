@@ -43,14 +43,19 @@ data class SkyhooksId(
 enum class SkyhookState {
     @SerialName("Unspecified")
     Unspecified,
+
     @SerialName("ShieldVulnerable")
     ShieldVulnerable,
+
     @SerialName("ArmorReinforced")
     ArmorReinforced,
+
     @SerialName("ArmorVulnerable")
     ArmorVulnerable,
+
     @SerialName("HullReinforced")
     HullReinforced,
+
     @SerialName("HullVulnerable")
     HullVulnerable,
 }

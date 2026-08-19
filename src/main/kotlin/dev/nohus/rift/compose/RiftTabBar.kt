@@ -130,7 +130,9 @@ fun RiftTabBar(
                             if (tabsWidthToFitSelectedTab <= widthForTabs) break
                             firstTabIndex++
                             if (firstTabIndex >= tabs.lastIndex) break
-                        } else break
+                        } else {
+                            break
+                        }
                     }
 
                     var x = 0

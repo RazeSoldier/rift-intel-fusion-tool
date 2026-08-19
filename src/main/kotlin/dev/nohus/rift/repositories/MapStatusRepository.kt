@@ -263,7 +263,7 @@ class MapStatusRepository(
                 val ids = it.flatMap { listOfNotNull(it.claim.faction?.factionId, it.claim.alliance?.allianceId, it.claim.alliance?.corporationId) }
                 namesRepository.resolveNames(Originator.Map, ids)
             }
-            .associateBy({ it.systemId }, { it.claim } )
+            .associateBy({ it.systemId }, { it.claim })
     }
 
     private suspend fun loadMetaliminalStorms() {

@@ -403,7 +403,7 @@ class WindowManager(
         }
         return savedPlacements.map { saved ->
             val sizing = getWindowOpenSizing(window, saved)
-            val position = getWindowOpenPosition(window, inputModel,saved, sizing)
+            val position = getWindowOpenPosition(window, inputModel, saved, sizing)
             val geometry = WindowGeometry(sizing, position)
             WindowInfo(
                 uuid = saved?.uuid ?: UUID.randomUUID(),

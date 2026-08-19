@@ -15,16 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.AsyncTypeIcon
-import dev.nohus.rift.compose.InfiniteScrollingCarousel
 import dev.nohus.rift.compose.LoadingBox
 import dev.nohus.rift.compose.LoadingSpinnerAmbient
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.VerticalGrid
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
-import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.structures.EquinoxStructuresRepository
 import dev.nohus.rift.structures.EquinoxStructuresRepository.LoadingStage
 

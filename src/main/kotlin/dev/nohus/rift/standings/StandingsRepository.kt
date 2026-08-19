@@ -1,11 +1,12 @@
 package dev.nohus.rift.standings
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository.CharacterInfo
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.contacts.ContactsRepository.Contact
 import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.repositories.IdRanges
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.standings.StandingUtils.getStandingLevel
 import kotlinx.coroutines.FlowPreview
@@ -92,7 +93,7 @@ class StandingsRepository(
         settings.standings = standings
     }
 
-    private fun getStandings(contacts: List<Contact>, characterDetails: List<CharacterInfo>): Standings {
+    private fun getStandings(contacts: List<Contact>, characterDetails: List<CharacterDetails>): Standings {
         val allianceStandings = mutableMapOf<Int, Float>()
         val corporationStandings = mutableMapOf<Int, Float>()
         val characterStandings = mutableMapOf<Int, Float>()

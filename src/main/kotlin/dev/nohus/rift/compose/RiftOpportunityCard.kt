@@ -84,6 +84,8 @@ import dev.nohus.rift.generated.resources.careerpaths_unclassified_16px
 import dev.nohus.rift.generated.resources.careerpaths_unclassified_flair
 import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.repositories.SolarSystemChipState
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
@@ -127,6 +129,7 @@ sealed interface RiftOpportunityCardTopRight {
     data class RiftOpportunityCardCharacter(
         val name: String,
         val id: Int?,
+        val details: CharacterDetails?,
     ) : RiftOpportunityCardTopRight
 
     data class RiftOpportunityCardCorporation(
@@ -283,6 +286,7 @@ fun RiftOpportunityCard(
                             when (topRight) {
                                 is RiftOpportunityCardCharacter -> RiftCircularCharacterPortrait(
                                     characterId = topRight.id,
+                                    characterDetails = topRight.details,
                                     name = topRight.name,
                                     hasPadding = true,
                                     size = 48.dp,

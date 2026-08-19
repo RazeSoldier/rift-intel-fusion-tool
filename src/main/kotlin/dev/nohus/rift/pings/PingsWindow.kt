@@ -1,7 +1,7 @@
 package dev.nohus.rift.pings
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,9 +29,14 @@ import dev.nohus.rift.compose.RiftOpportunityCardBottomContent
 import dev.nohus.rift.compose.RiftOpportunityCardButton
 import dev.nohus.rift.compose.RiftOpportunityCardCategory
 import dev.nohus.rift.compose.RiftOpportunityCardType
+import dev.nohus.rift.compose.RiftStatsRow
+import dev.nohus.rift.compose.RiftStatsRowItem
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarColumn
 import dev.nohus.rift.compose.annotateLinks
+import dev.nohus.rift.compose.getNow
+import dev.nohus.rift.compose.getRelativeTime
+import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
@@ -38,11 +44,14 @@ import dev.nohus.rift.generated.resources.copy_16px
 import dev.nohus.rift.generated.resources.fitting_16px
 import dev.nohus.rift.generated.resources.microphone
 import dev.nohus.rift.generated.resources.window_sovereignty
+import dev.nohus.rift.jabber.GetPapsUseCase.Paps
 import dev.nohus.rift.pings.PingsViewModel.UiState
+import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.openBrowser
 import dev.nohus.rift.utils.toURIOrNull
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager
+import java.time.Duration
 import java.time.ZoneId
 
 @Composable
@@ -73,9 +82,25 @@ private fun PingsWindowContent(
     onOpenJabberClick: () -> Unit,
     onMumbleClick: (url: String) -> Unit,
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-    ) {
+    Column {
+        AnimatedContent(state.paps, contentKey = { Triple(it?.strategic, it?.peacetime, it?.lastStrat) }) { paps ->
+            if (paps != null) {
+                Column {
+                    val now = getNow()
+                    val lastUpdated = key(now) { "Checked ${getRelativeTime(paps.timestamp, state.displayTimezone, now)}" }
+                    PapsStatsRow(paps, lastUpdated)
+
+                    if (Duration.between(paps.timestamp, now).toMinutes() > 15) {
+                        Text(
+                            text = lastUpdated,
+                            style = RiftTheme.typography.bodySecondary,
+                            modifier = Modifier.padding(start = Spacing.mediumLarge, top = Spacing.medium),
+                        )
+                    }
+                }
+            }
+        }
+
         val scrollState = rememberScrollState()
         LaunchedEffect(state.pings) {
             scrollState.animateScrollTo(scrollState.maxValue)
@@ -99,6 +124,7 @@ private fun PingsWindowContent(
         if (state.pings.isEmpty()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 val text = if (state.isJabberConnected) {
                     "No pings received yet.\nClear skies."
@@ -121,6 +147,77 @@ private fun PingsWindowContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PapsStatsRow(
+    paps: Paps,
+    lastUpdated: String,
+) {
+    RiftStatsRow(
+        modifier = Modifier.padding(start = Spacing.medium),
+    ) {
+        RiftStatsRowItem(
+            value = "${paps.strategic.month?.let { formatNumber(it) } ?: "?"} STR",
+            text = "PAPs this month",
+            color = if ((paps.strategic.month ?: 0) > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
+            tooltip = buildAnnotatedString {
+                withStyle(RiftTheme.typography.headlinePrimary.toSpanStyle()) {
+                    appendLine("This month: ${paps.strategic.month?.let { formatNumber(it) } ?: "?"}")
+                }
+                withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
+                    appendLine("Last 30 days: ${paps.strategic.days30?.let { formatNumber(it) } ?: "?"}")
+                }
+                withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
+                    appendLine("Last 90 days: ${paps.strategic.days90?.let { formatNumber(it) } ?: "?"}")
+                }
+                withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
+                    append(lastUpdated)
+                }
+            },
+        )
+        RiftStatsRowItem(
+            value = "${paps.peacetime.month?.let { formatNumber(it) } ?: "?"} PCT",
+            text = "PAPs this month",
+            color = if ((paps.peacetime.month ?: 0) > 0) EveColors.airTurquoise else RiftTheme.colors.textPrimary,
+            tooltip = buildAnnotatedString {
+                withStyle(RiftTheme.typography.headlinePrimary.toSpanStyle()) {
+                    appendLine("This month: ${paps.peacetime.month?.let { formatNumber(it) } ?: "?"}")
+                }
+                withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
+                    appendLine("Last 30 days: ${paps.peacetime.days30?.let { formatNumber(it) } ?: "?"}")
+                }
+                withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
+                    appendLine("Last 90 days: ${paps.peacetime.days90?.let { formatNumber(it) } ?: "?"}")
+                }
+                withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
+                    append(lastUpdated)
+                }
+            },
+        )
+        RiftStatsRowItem(
+            value = paps.lastStrat?.date ?: "N/A",
+            text = "Last Strategic PAP",
+            color = EveColors.airTurquoise,
+            tooltip = buildAnnotatedString {
+                if (paps.lastStrat != null) {
+                    withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
+                        append("Character: ")
+                    }
+                    withStyle(RiftTheme.typography.bodyPrimary.toSpanStyle()) {
+                        appendLine(paps.lastStrat.character)
+                    }
+                } else {
+                    withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
+                        appendLine("No Strategic PAPs yet")
+                    }
+                }
+                withStyle(RiftTheme.typography.detailSecondary.toSpanStyle()) {
+                    append(lastUpdated)
+                }
+            },
+        )
     }
 }
 

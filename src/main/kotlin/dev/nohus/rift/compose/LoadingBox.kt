@@ -37,7 +37,7 @@ fun LoadingBox(
                 percentage = progress,
                 height = 1.dp,
                 color = RiftTheme.colors.progressBarProgress,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 

@@ -32,7 +32,7 @@ import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 @Composable
 fun AssetsLoadingProgress(
     loading: AssetsRepository.LoadingState,
-    stage: LoadingStage
+    stage: LoadingStage,
 ) {
     ScrollbarColumn(
         verticalArrangement = Arrangement.Center,

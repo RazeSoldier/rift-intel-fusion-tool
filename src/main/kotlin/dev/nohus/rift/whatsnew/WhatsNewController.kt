@@ -50,9 +50,9 @@ class WhatsNewController(
                 settings.intelMap = settings.intelMap.let {
                     it.copy(
                         mapTypeInfoBoxInfoTypes = it.mapTypeInfoBoxInfoTypes +
-                                (MapType.NewEden to (it.mapTypeInfoBoxInfoTypes[MapType.NewEden] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks) +
-                                (MapType.Region to (it.mapTypeInfoBoxInfoTypes[MapType.Region] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks) +
-                                (MapType.Distance to (it.mapTypeInfoBoxInfoTypes[MapType.Distance] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks),
+                            (MapType.NewEden to (it.mapTypeInfoBoxInfoTypes[MapType.NewEden] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks) +
+                            (MapType.Region to (it.mapTypeInfoBoxInfoTypes[MapType.Region] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks) +
+                            (MapType.Distance to (it.mapTypeInfoBoxInfoTypes[MapType.Distance] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks),
                     )
                 }
             },

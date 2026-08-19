@@ -497,6 +497,7 @@ private fun ChannelList(
                                 val name = character?.info?.name ?: "Character ${channel.characterId}"
                                 RiftCircularCharacterPortrait(
                                     characterId = channel.characterId,
+                                    characterDetails = null,
                                     name = name,
                                     hasPadding = false,
                                     16.dp,

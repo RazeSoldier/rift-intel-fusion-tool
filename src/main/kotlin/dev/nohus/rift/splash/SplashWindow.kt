@@ -93,7 +93,7 @@ private fun SplashWindowContent(state: UiState) {
             modifier = Modifier.fillMaxSize(),
         )
         val isDarkBackground = false
-        Row(
+        Column(
             modifier = Modifier.fillMaxSize(),
         ) {
             val shadeColor = if (isDarkBackground) {
@@ -101,7 +101,7 @@ private fun SplashWindowContent(state: UiState) {
             } else {
                 Color.Black.copy(alpha = 0.5f)
             }
-
+            Spacer(Modifier.weight(1f))
             Column(
                 modifier = Modifier
                     .padding(vertical = Spacing.medium)
@@ -116,12 +116,9 @@ private fun SplashWindowContent(state: UiState) {
                     style = RiftTheme.typography.headlinePrimary.copy(color = Color.White),
                 )
             }
-            Spacer(Modifier.weight(1f))
+
             if (state.patrons.isNotEmpty()) {
-                Column {
-                    Spacer(Modifier.weight(1f))
-                    VerticalPatrons(isDarkBackground, state.patrons)
-                }
+                Patrons(isDarkBackground, state.patrons)
             }
         }
     }

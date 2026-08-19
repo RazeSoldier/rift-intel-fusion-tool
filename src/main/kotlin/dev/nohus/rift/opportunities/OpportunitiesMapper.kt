@@ -20,11 +20,13 @@ import dev.nohus.rift.network.esi.models.Location
 import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationState
 import dev.nohus.rift.network.esi.models.OpportunityCareer
 import dev.nohus.rift.network.esi.models.OpportunityState
+import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttributeType
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository.MercenaryTacticalOperation
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsTypesRepository.MercenaryTacticalOperationType
 import dev.nohus.rift.repositories.SolarSystemChipState
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
 import java.time.Instant
@@ -34,6 +36,7 @@ private val logger = KotlinLogging.logger {}
 @Single
 class OpportunitiesMapper(
     val parseEveFormattedTextUseCase: ParseEveFormattedTextUseCase,
+    val characterDetailsRepository: CharacterDetailsRepository,
 ) {
 
     fun toModel(
@@ -48,6 +51,7 @@ class OpportunitiesMapper(
         val creator = Creator(
             characterId = characterInfo.characterId,
             characterName = characterInfo.name,
+            characterDetails = characterInfo,
             corporation = null,
         )
         val details = OpportunityDetails(
@@ -91,7 +95,7 @@ class OpportunitiesMapper(
         )
     }
 
-    fun toModel(
+    suspend fun toModel(
         debugDetails: String,
         job: FreelanceJob,
         details: FreelanceJobsId,
@@ -107,6 +111,7 @@ class OpportunitiesMapper(
             Creator(
                 characterId = it.character.id.toInt(),
                 characterName = it.character.name,
+                characterDetails = characterDetailsRepository.getCharacterDetails(Originator.FreelanceJobs, it.character.id.toInt()),
                 corporation = Corporation(it.corporation.id.toInt(), it.corporation.name),
             )
         }
@@ -149,7 +154,7 @@ class OpportunitiesMapper(
         )
     }
 
-    fun toModel(
+    suspend fun toModel(
         debugDetails: String,
         corporation: Corporation,
         project: CorporationProject,
@@ -166,6 +171,7 @@ class OpportunitiesMapper(
             Creator(
                 characterId = it.id,
                 characterName = it.name,
+                characterDetails = characterDetailsRepository.getCharacterDetails(Originator.CorporationProjects, it.id),
                 corporation = corporation,
             )
         }

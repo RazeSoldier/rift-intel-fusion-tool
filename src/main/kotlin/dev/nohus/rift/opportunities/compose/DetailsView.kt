@@ -60,6 +60,7 @@ import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCharacterPortrait
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.ButtonCornerCut
+import dev.nohus.rift.compose.CharacterTooltip
 import dev.nohus.rift.compose.ClickableAlliance
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
@@ -360,24 +361,26 @@ private fun ParticipantsSection(
                                         120.dp,
                                     ) {
                                         ClickableCharacter(contributor.characterId) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
-                                            ) {
-                                                AsyncCharacterPortrait(
-                                                    characterId = contributor.characterId,
-                                                    size = 32,
-                                                    modifier = Modifier
-                                                        .size(24.dp)
-                                                        .clip(CircleShape),
-                                                )
-                                                LinkText(
-                                                    text = contributor.details?.name
-                                                        ?: contributor.characterId.toString(),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Clip,
-                                                    softWrap = false,
-                                                )
+                                            CharacterTooltip(contributor.details) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                                                ) {
+                                                    AsyncCharacterPortrait(
+                                                        characterId = contributor.characterId,
+                                                        size = 32,
+                                                        modifier = Modifier
+                                                            .size(24.dp)
+                                                            .clip(CircleShape),
+                                                    )
+                                                    LinkText(
+                                                        text = contributor.details?.name
+                                                            ?: contributor.characterId.toString(),
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Clip,
+                                                        softWrap = false,
+                                                    )
+                                                }
                                             }
                                         }
                                     },
@@ -1268,6 +1271,7 @@ private fun Creator(creator: Creator) {
         ) {
             RiftCircularCharacterPortrait(
                 characterId = creator.characterId,
+                characterDetails = creator.characterDetails,
                 name = creator.characterName,
                 hasPadding = false,
                 size = 64.dp,

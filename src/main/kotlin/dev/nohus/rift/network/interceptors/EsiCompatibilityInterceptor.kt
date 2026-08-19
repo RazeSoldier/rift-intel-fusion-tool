@@ -15,7 +15,7 @@ class EsiCompatibilityInterceptor(
 
     companion object {
         const val COMPATIBILITY_DATE_KEY = "X-Compatibility-Date"
-        const val COMPATIBILITY_DATE = "2026-05-19"
+        const val COMPATIBILITY_DATE = "2026-06-09"
         const val COMPATIBILITY_DATE_EARLY_ACCESS = "2099-01-01"
     }
 

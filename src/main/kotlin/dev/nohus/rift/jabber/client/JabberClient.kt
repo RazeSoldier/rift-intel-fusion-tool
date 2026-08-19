@@ -212,6 +212,15 @@ class JabberClient(
         multiUserChatController.sendMessage(multiUserChat, message)
     }
 
+    suspend fun sendMessage(jid: String, message: String) = withContext(Dispatchers.IO) {
+        val chat = userChatController.getChat(jid)
+        if (chat != null) {
+            userChatController.sendMessage(chat, message)
+        } else {
+            logger.error { "Could not get chat for $jid, can't send message" }
+        }
+    }
+
     private fun onStanzaReceived(stanza: Stanza) {
         when (stanza) {
             is Presence -> {} // Handled by Roster class

@@ -9,6 +9,8 @@ import dev.nohus.rift.clones.Clone
 import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.CharacterLocationRepository.Location
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.scopes.ScopeGroup
@@ -49,7 +51,7 @@ class CharactersViewModel(
         val settingsFiles: Map<String, Path>,
         val authenticationStatus: AuthenticationStatus,
         val isHidden: Boolean,
-        val info: LocalCharactersRepository.CharacterInfo?,
+        val info: CharacterDetails?,
         val walletBalance: Double?,
         val clones: List<Clone>,
     )

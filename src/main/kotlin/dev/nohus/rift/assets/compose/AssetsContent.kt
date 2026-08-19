@@ -139,7 +139,7 @@ fun AssetsContent(
                     - Structure name (e.g. "Staging Fort")
                     - System (e.g. "Jita")
                     - Region (e.g. "The Forge")
-                """.trimIndent()
+                """.trimIndent(),
             ) {
                 RiftMulticolorIcon(MulticolorIconType.Info)
             }
@@ -590,7 +590,7 @@ private fun AssetRow(
                         appendLine("Group: ${asset.groupName}")
                         append("Category: ${asset.categoryName}")
                     }
-                }
+                },
             ) {
                 Column(
                     modifier = Modifier

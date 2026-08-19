@@ -6,7 +6,7 @@ import dev.nohus.rift.network.requests.Originator
 import retrofit2.http.GET
 import retrofit2.http.Tag
 
-interface EveconomyService  {
+interface EveconomyService {
 
     @GET("structures.json")
     @EndpointTag(Endpoint.EveconomyStructures::class)

@@ -19,6 +19,7 @@ import dev.nohus.rift.network.requests.OriginatorRateLimitInterceptor
 import dev.nohus.rift.network.requests.RequestExecutor
 import dev.nohus.rift.network.requests.RequestExecutorImpl
 import dev.nohus.rift.network.requests.RequestStatisticsInterceptor
+import dev.nohus.rift.network.zkillboard.ZkillboardRateLimitInterceptor
 import dev.nohus.rift.notifications.system.LinuxSendNotificationUseCase
 import dev.nohus.rift.notifications.system.MacSendNotificationUseCase
 import dev.nohus.rift.notifications.system.SendNotificationUseCase
@@ -145,6 +146,17 @@ val factoryModule = module {
         OkHttpClient.Builder()
             .cache(Cache(directory.toFile(), size))
             .addInterceptor(get<UserAgentInterceptor>())
+            .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
+            .addNetworkInterceptor(get<LoggingInterceptor>())
+            .build()
+    }
+    single<OkHttpClient>(qualifier = named("zkill")) {
+        val directory = get<AppDirectories>().getAppCacheDirectory().resolve("zkill-cache")
+        val size = 50L * 1024 * 1024 // 50MB
+        OkHttpClient.Builder()
+            .cache(Cache(directory.toFile(), size))
+            .addInterceptor(get<UserAgentInterceptor>())
+            .addInterceptor(get<ZkillboardRateLimitInterceptor>())
             .addNetworkInterceptor(get<RequestStatisticsInterceptor>())
             .addNetworkInterceptor(get<LoggingInterceptor>())
             .build()

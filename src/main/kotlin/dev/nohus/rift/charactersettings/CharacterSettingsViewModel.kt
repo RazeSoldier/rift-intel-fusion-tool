@@ -2,11 +2,12 @@ package dev.nohus.rift.charactersettings
 
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository.CharacterInfo
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
 import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -35,7 +36,7 @@ class CharacterSettingsViewModel(
         val characterId: Int,
         val accountId: Int?,
         val settingsFiles: Map<String, Path>,
-        val info: CharacterInfo?,
+        val info: CharacterDetails?,
     )
 
     data class UiState(

@@ -523,12 +523,14 @@ private fun TokenWithKeyword(rowHeight: Dp, type: KeywordType) {
 private fun TokenWithCharacter(rowHeight: Dp, name: String, character: TokenType.Character) {
     BorderedToken(rowHeight) {
         ClickableCharacter(character.characterId) {
-            DynamicCharacterPortraitStandings(
-                characterId = character.characterId,
-                size = rowHeight,
-                standingLevel = character.details?.standingLevel ?: Standing.Neutral,
-                isAnimated = true,
-            )
+            CharacterTooltip(character.details) {
+                DynamicCharacterPortraitStandings(
+                    characterId = character.characterId,
+                    size = rowHeight,
+                    standingLevel = character.details?.standingLevel ?: Standing.Neutral,
+                    isAnimated = true,
+                )
+            }
         }
         if (character.details != null) {
             ClickableCorporation(character.details.corporationId) {

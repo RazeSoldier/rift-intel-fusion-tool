@@ -31,9 +31,7 @@ fun RowScope.CharacterDetails(
     isAnimated: Boolean,
 ) {
     ClickableCharacter(character.characterId) {
-        RiftTooltipArea(
-            text = character.name,
-        ) {
+        CharacterTooltip(character) {
             val now = remember(character.characterId) { Instant.now() }
             DynamicCharacterPortraitStandings(
                 characterId = character.characterId,

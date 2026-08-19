@@ -20,6 +20,8 @@ import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.packet.MessageBuilder
 import org.jivesoftware.smackx.delay.DelayInformationManager
 import org.jxmpp.jid.EntityBareJid
+import org.jxmpp.jid.impl.JidCreate
+import org.jxmpp.stringprep.XmppStringprepException
 import org.koin.core.annotation.Factory
 import java.time.Instant
 import java.util.concurrent.Executors
@@ -101,6 +103,16 @@ class UserChatController(
             chat.send(message)
         } catch (e: NotConnectedException) {
             logger.error { "Could not send Jabber message, no longer connected" }
+        }
+    }
+
+    fun getChat(jid: String): Chat? {
+        try {
+            val entityBareJid = JidCreate.entityBareFrom(jid)
+            return chatManager?.chatWith(entityBareJid)
+        } catch (e: XmppStringprepException) {
+            logger.error { "Could not get chat, invalid JID: $e" }
+            return null
         }
     }
 

@@ -27,7 +27,7 @@ import dev.nohus.rift.network.esi.models.OwnerType
 import dev.nohus.rift.network.esi.models.SignatureTypeId
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.opportunities.TypeListsRepository.TypeList
-import dev.nohus.rift.repositories.FactionNames
+import dev.nohus.rift.repositories.FactionsRepository
 import dev.nohus.rift.repositories.ShipTreeGroups
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapConstellation
@@ -48,6 +48,7 @@ class GetOpportunityContributionAttributesUseCase(
     private val typesRepository: TypesRepository,
     private val characterDetailsRepository: CharacterDetailsRepository,
     private val locationRepository: LocationRepository,
+    private val factionsRepository: FactionsRepository,
 ) {
 
     data class OpportunityContributionAttributeType(
@@ -469,7 +470,7 @@ class GetOpportunityContributionAttributesUseCase(
     }
 
     private fun mapFaction(faction: Faction): OpportunityContributionAttribute {
-        val name = FactionNames[faction.factionId.toInt()]
+        val name = factionsRepository.getFaction(faction.factionId.toInt()) ?: ""
         return OpportunityContributionAttribute.Faction(faction.factionId.toInt(), name)
     }
 
@@ -499,7 +500,7 @@ class GetOpportunityContributionAttributesUseCase(
                 OpportunityContributionAttribute.Alliance(identity.allianceId.toInt(), name)
             }
             identity.factionId != null -> {
-                val name = FactionNames[identity.factionId.toInt()]
+                val name = factionsRepository.getFaction(identity.factionId.toInt()) ?: ""
                 OpportunityContributionAttribute.Faction(identity.factionId.toInt(), name)
             }
             else -> null

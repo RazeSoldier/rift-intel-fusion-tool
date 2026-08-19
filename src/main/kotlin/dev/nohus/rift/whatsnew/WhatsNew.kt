@@ -852,7 +852,18 @@ object WhatsNew {
                 - RIFT settings and data is now located in the easier to find Documents folder on Windows
                 """.trimIndent(),
             )
+            add(
+                "5.24.0" description """
+                -! New Feature: Character Tooltips
+                - When you hover over a character anywhere in RIFT, you will now see a tooltip popup with useful info about the character
+                - See standings, corporation titles, Factional Warfare enlistments, and age
+                - View the character's equipped Achievement Title and accumulated Achievement Score
+                - Find out how much of a threat a character is with the Security Status and Danger Rating percentage sourced from zKillboard
+                    
+                - For alliances that use the Pings feature in RIFT, the Pings window now shows how many PAPs you have
+                - Updated data and splash screen for the Cradle of War expansion
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }
-

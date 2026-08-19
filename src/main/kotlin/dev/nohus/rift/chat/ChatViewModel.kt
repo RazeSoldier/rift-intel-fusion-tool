@@ -90,11 +90,13 @@ class ChatViewModel(
         data object EveSystem : Author
     }
 
-    private val _state = MutableStateFlow(UiState(
-        displayTimezone = settings.displayTimeZone,
-        isShowingPortraits = settings.isShowingChatPortraits,
-        isShowingStandings = settings.isShowingChatStandings,
-    ))
+    private val _state = MutableStateFlow(
+        UiState(
+            displayTimezone = settings.displayTimeZone,
+            isShowingPortraits = settings.isShowingChatPortraits,
+            isShowingStandings = settings.isShowingChatStandings,
+        ),
+    )
     val state = _state.asStateFlow()
 
     init {
@@ -296,7 +298,7 @@ class ChatViewModel(
         message: ChatMessage,
         processedStub: RichChatMessage,
         characterId: Int?,
-        characterDetails: CharacterDetails?
+        characterDetails: CharacterDetails?,
     ): RichChatMessage {
         processedMessagesCache.get(message)?.let {
             return it.copy(id = processedStub.id)

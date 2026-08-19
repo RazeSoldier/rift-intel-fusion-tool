@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.AsyncAllianceLogo
 import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncTypeIcon
+import dev.nohus.rift.compose.CharacterTooltip
 import dev.nohus.rift.compose.ClickableAlliance
 import dev.nohus.rift.compose.ClickableCharacter
 import dev.nohus.rift.compose.ClickableCorporation
@@ -257,7 +258,9 @@ private fun OpportunityAttributeValuesGrid(
                     },
                     decorator = {
                         ClickableCharacter(value.id) {
-                            it()
+                            CharacterTooltip(value.character) {
+                                it()
+                            }
                         }
                     },
                 )

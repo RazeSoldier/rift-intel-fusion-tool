@@ -29,6 +29,7 @@ fun CorporationProjectProgressGauge(
         if (characterId != null) {
             RiftCircularCharacterPortrait(
                 characterId = characterId,
+                characterDetails = null,
                 name = characterName ?: "",
                 hasPadding = false,
                 size = 48.dp,

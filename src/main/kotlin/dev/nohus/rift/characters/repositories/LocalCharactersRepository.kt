@@ -5,9 +5,14 @@ import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.combine
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.network.zkillboard.ZkillboardApi
+import dev.nohus.rift.repositories.CharacterTitlesRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository
+import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroup
 import dev.nohus.rift.sso.scopes.ScopeGroups
+import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.stateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -30,30 +35,21 @@ class LocalCharactersRepository(
     private val settings: Settings,
     private val getEveCharactersSettingsUseCase: GetEveCharactersSettingsUseCase,
     private val esiApi: EsiApi,
+    private val zkillboardApi: ZkillboardApi,
+    private val characterTitlesRepository: CharacterTitlesRepository,
 ) {
 
     data class LocalCharacter(
         val characterId: Int,
         val settingsFiles: Map<String, Path>, // Launcher profile name -> File
         val scopes: List<ScopeGroup>,
-        val info: CharacterInfo?,
+        val info: CharacterDetails?,
         val isHidden: Boolean,
     ) {
         override fun toString(): String {
             return "LocalCharacter(${info?.name ?: characterId})"
         }
     }
-
-    data class CharacterInfo(
-        val name: String,
-        val characterId: Int,
-        val corporationRoles: List<String>,
-        val corporationId: Int,
-        val corporationName: String,
-        val allianceId: Int?,
-        val allianceName: String?,
-        val birthday: Instant,
-    )
 
     private val _characters = MutableStateFlow<List<LocalCharacter>>(emptyList())
     val characters = stateFlow(
@@ -146,36 +142,53 @@ class LocalCharactersRepository(
 
     private suspend fun loadEsiCharacters(characters: List<LocalCharacter>) = coroutineScope {
         val characterIds = characters.map { it.characterId }
-
         for (localCharacter in characters) {
             launch {
                 val characterInfo = combine(
-                    async {
+                    result1 = async {
                         esiApi.getCharactersId(Originator.LocalCharacters, localCharacter.characterId)
                     },
-                    async {
+                    result2 = async {
                         if (ScopeGroups.readRoles in localCharacter.scopes) {
                             esiApi.getCharactersIdRoles(Originator.LocalCharacters, localCharacter.characterId).map { it.roles }
                         } else {
                             Result.Success(emptyList())
                         }
                     },
-                ) { details, roles ->
+                    result3 = async {
+                        zkillboardApi.getCharacterStats(Originator.LocalCharacters, localCharacter.characterId).success.let {
+                            Result.Success(it)
+                        }
+                    },
+                ) { details, roles, zkillStats ->
                     val corporationId = details.corporationId
                     val allianceId = details.allianceId
                     val corporationDeferred = async { esiApi.getCorporationsId(Originator.LocalCharacters, corporationId) }
                     val allianceDeferred = if (allianceId != null) async { esiApi.getAlliancesId(Originator.LocalCharacters, allianceId) } else null
                     val corporation = corporationDeferred.await()
                     val alliance = allianceDeferred?.await()
-                    CharacterInfo(
-                        name = details.name,
+                    CharacterDetails(
                         characterId = localCharacter.characterId,
-                        corporationRoles = roles,
+                        name = details.name,
                         corporationId = corporationId,
                         corporationName = corporation.success?.name ?: "?",
+                        corporationTicker = corporation.success?.ticker ?: "?",
+                        corporationRoles = roles,
                         allianceId = allianceId,
                         allianceName = if (alliance != null) alliance.success?.name ?: "?" else null,
+                        allianceTicker = alliance?.success?.ticker,
+                        standing = 10f,
+                        standingLevel = Standing.Self,
+                        corporationTitle = details.corporationTitle,
+                        title = details.characterTitleId?.let { characterTitlesRepository.getTitle(it) },
+                        achievementScore = details.achievementScore,
+                        characterLabels = emptyList(),
+                        corporationLabels = emptyList(),
+                        allianceLabels = emptyList(),
                         birthday = details.birthday,
+                        factionId = details.factionId,
+                        securityStatus = details.securityStatus,
+                        dangerRatio = zkillStats?.dangerRatio,
                     )
                 }.success
 

@@ -327,7 +327,7 @@ private fun SkyhookIllustration(
             Image(
                 painter = painterResource(vulnerabilityState),
                 contentDescription = null,
-                modifier = Modifier.height(32.dp)
+                modifier = Modifier.height(32.dp),
             )
         }
         if (skyhook.reinforcementTimer != null) {
@@ -335,7 +335,9 @@ private fun SkyhookIllustration(
             Text(
                 text = if (reinforcedUntil.isPositive) {
                     formatDurationCompact(reinforcedUntil)
-                } else "Reinforcement ended",
+                } else {
+                    "Reinforcement ended"
+                },
                 style = RiftTheme.typography.bodyPrimary,
             )
         }

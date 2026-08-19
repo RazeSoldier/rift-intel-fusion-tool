@@ -81,11 +81,19 @@ data class CharactersIdCharacter(
     val corporationId: Int,
     @SerialName("name")
     val name: String,
-    @SerialName("title")
-    val title: String? = null,
+    @SerialName("corporation_title")
+    val corporationTitle: String? = null,
     @SerialName("birthday")
     @Serializable(with = IsoDateTimeSerializer::class)
     val birthday: Instant,
+    @SerialName("achievement_score")
+    val achievementScore: Int,
+    @SerialName("character_title_id")
+    val characterTitleId: String? = null,
+    @SerialName("faction_id")
+    val factionId: Int? = null,
+    @SerialName("security_status")
+    val securityStatus: Double? = null,
 )
 
 @Serializable

@@ -14,7 +14,7 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 @Single
 class ZkillboardApi(
     @Named("network") json: Json,
-    @Named("api") client: OkHttpClient,
+    @Named("zkill") client: OkHttpClient,
     requestExecutor: RequestExecutor,
 ) : RequestExecutor by requestExecutor {
 
@@ -28,5 +28,9 @@ class ZkillboardApi(
 
     suspend fun getRecentActivity(originator: Originator): Result<RecentActivity> {
         return execute { service.getRecentActivity(originator) }
+    }
+
+    suspend fun getCharacterStats(originator: Originator, characterId: Int): Result<ZkillCharacterStats> {
+        return execute { service.getCharacterStats(originator, characterId) }
     }
 }

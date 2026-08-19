@@ -55,6 +55,7 @@ import dev.nohus.rift.compose.AsyncCorporationLogo
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.CharacterTooltip
 import dev.nohus.rift.compose.ClickableLocation
 import dev.nohus.rift.compose.ClickableShip
 import dev.nohus.rift.compose.ContextMenuItem
@@ -379,110 +380,112 @@ private fun CharacterRow(
     onDisableCharacterClick: (characterId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
-    Column(
-        modifier = modifier
-            .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
-            .padding(Spacing.verySmall),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
+    CharacterTooltip(character.info) {
+        val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
+        Column(
+            modifier = modifier
+                .hoverBackground(pointerInteractionStateHolder = pointerInteractionStateHolder)
+                .padding(Spacing.verySmall),
         ) {
-            OnlineIndicatorBar(isOnline)
-            DynamicCharacterPortraitParallax(character.characterId, 64.dp, enterTimestamp, pointerInteractionStateHolder)
-            when (character.info) {
-                null -> {
-                    Text(
-                        text = "Could not load",
-                        style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
-                        modifier = Modifier
-                            .padding(horizontal = Spacing.medium)
-                            .weight(1f),
-                    )
-                }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                OnlineIndicatorBar(isOnline)
+                DynamicCharacterPortraitParallax(character.characterId, 64.dp, enterTimestamp, pointerInteractionStateHolder)
+                when (character.info) {
+                    null -> {
+                        Text(
+                            text = "Could not load",
+                            style = RiftTheme.typography.bodySecondary.copy(color = RiftTheme.colors.borderError),
+                            modifier = Modifier
+                                .padding(horizontal = Spacing.medium)
+                                .weight(1f),
+                        )
+                    }
 
-                else -> {
-                    Column(
-                        modifier = Modifier.padding(start = Spacing.medium),
-                    ) {
-                        RiftTooltipArea(character.info.corporationName) {
-                            AsyncCorporationLogo(
-                                corporationId = character.info.corporationId,
-                                size = 32,
-                                modifier = Modifier.size(32.dp),
-                            )
-                        }
-                        if (character.info.allianceId != null) {
-                            RiftTooltipArea(character.info.allianceName) {
-                                AsyncAllianceLogo(
-                                    allianceId = character.info.allianceId,
+                    else -> {
+                        Column(
+                            modifier = Modifier.padding(start = Spacing.medium),
+                        ) {
+                            RiftTooltipArea(character.info.corporationName) {
+                                AsyncCorporationLogo(
+                                    corporationId = character.info.corporationId,
                                     size = 32,
                                     modifier = Modifier.size(32.dp),
                                 )
                             }
+                            if (character.info.allianceId != null) {
+                                RiftTooltipArea(character.info.allianceName) {
+                                    AsyncAllianceLogo(
+                                        allianceId = character.info.allianceId,
+                                        size = 32,
+                                        modifier = Modifier.size(32.dp),
+                                    )
+                                }
+                            }
                         }
-                    }
 
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = Spacing.medium)
-                            .weight(1f),
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.width(IntrinsicSize.Max),
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = Spacing.medium)
+                                .weight(1f),
                         ) {
-                            Text(
-                                text = character.info.name,
-                                style = RiftTheme.typography.headerHighlighted,
-                                modifier = Modifier.weight(1f),
-                            )
-                            OnlineIndicatorDot(
-                                isOnline = isOnline,
-                                modifier = Modifier.padding(horizontal = Spacing.medium),
-                            )
-                            AuthenticationStatusIcon(character.authenticationStatus)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.width(IntrinsicSize.Max),
+                            ) {
+                                Text(
+                                    text = character.info.name,
+                                    style = RiftTheme.typography.headerHighlighted,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                OnlineIndicatorDot(
+                                    isOnline = isOnline,
+                                    modifier = Modifier.padding(horizontal = Spacing.medium),
+                                )
+                                AuthenticationStatusIcon(character.authenticationStatus)
+                            }
+                            LocationText(location)
+                            if (character.walletBalance != null) {
+                                Text(
+                                    text = formatIskCompact(character.walletBalance),
+                                    style = RiftTheme.typography.bodyPrimary,
+                                )
+                            }
                         }
-                        LocationText(location)
-                        if (character.walletBalance != null) {
-                            Text(
-                                text = formatIskCompact(character.walletBalance),
-                                style = RiftTheme.typography.bodyPrimary,
-                            )
+
+                        AnimatedVisibility(!isChoosingDisabledCharacters) {
+                            Location(location)
                         }
                     }
+                }
 
-                    AnimatedVisibility(!isChoosingDisabledCharacters) {
-                        Location(location)
+                AnimatedVisibility(isChoosingDisabledCharacters) {
+                    RiftTooltipArea("Disable this character") {
+                        RiftIconButton(
+                            icon = Res.drawable.buttoniconminus,
+                            onClick = { onDisableCharacterClick(character.characterId) },
+                            modifier = Modifier.padding(start = Spacing.small),
+                        )
                     }
                 }
             }
 
-            AnimatedVisibility(isChoosingDisabledCharacters) {
-                RiftTooltipArea("Disable this character") {
-                    RiftIconButton(
-                        icon = Res.drawable.buttoniconminus,
-                        onClick = { onDisableCharacterClick(character.characterId) },
-                        modifier = Modifier.padding(start = Spacing.small),
-                    )
-                }
-            }
-        }
-
-        AnimatedVisibility(!isChoosingDisabledCharacters && isShowingClones) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
-            ) {
-                for (clone in character.clones.sortedWith(
-                    compareBy(
-                        { !it.isActive },
-                        { it.station?.solarSystemId ?: it.structure?.solarSystemId },
-                        { -it.id },
-                    ),
-                )) {
-                    if (clone.isActive && clone.implants.isEmpty()) continue
-                    Clone(clone)
+            AnimatedVisibility(!isChoosingDisabledCharacters && isShowingClones) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+                ) {
+                    for (clone in character.clones.sortedWith(
+                        compareBy(
+                            { !it.isActive },
+                            { it.station?.solarSystemId ?: it.structure?.solarSystemId },
+                            { -it.id },
+                        ),
+                    )) {
+                        if (clone.isActive && clone.implants.isEmpty()) continue
+                        Clone(clone)
+                    }
                 }
             }
         }
