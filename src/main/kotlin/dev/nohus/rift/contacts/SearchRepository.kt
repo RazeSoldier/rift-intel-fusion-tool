@@ -2,11 +2,12 @@ package dev.nohus.rift.contacts
 
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
-import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.NamesRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.StationsRepository
+import dev.nohus.rift.repositories.StructuresRepository
+import dev.nohus.rift.repositories.StructuresRepository.Structure
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
@@ -25,6 +26,7 @@ class SearchRepository(
     private val typesRepository: TypesRepository,
     private val standingsRepository: StandingsRepository,
     private val characterDetailsRepository: CharacterDetailsRepository,
+    private val structuresRepository: StructuresRepository,
 ) {
 
     enum class SearchCategory(val displayName: String, val queryName: String) {
@@ -87,7 +89,7 @@ class SearchRepository(
                     put(SearchCategory.Stations, response.station.mapStationsResults())
                     if (response.structure.isNotEmpty()) {
                         val structures = response.structure.map { structureId ->
-                            async { structureId to esiApi.getUniverseStructuresId(originator, structureId, characterId) }
+                            async { structureId to structuresRepository.getStructure(originator, structureId, characterId) }
                         }.awaitAll().mapNotNull { it.first to (it.second.success ?: return@mapNotNull null) }.toMap()
                         put(SearchCategory.Structures, response.structure.mapStructuresResults(structures))
                     }
@@ -175,7 +177,7 @@ class SearchRepository(
         }.sortedBy { it.name }
     }
 
-    private fun List<Long>.mapStructuresResults(structures: Map<Long, UniverseStructuresId>): List<SearchResult> {
+    private fun List<Long>.mapStructuresResults(structures: Map<Long, Structure>): List<SearchResult> {
         return map { id ->
             val structure = structures[id]
             SearchResult(

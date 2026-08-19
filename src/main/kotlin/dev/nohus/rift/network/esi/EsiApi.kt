@@ -48,7 +48,7 @@ import dev.nohus.rift.network.esi.models.SkyhooksId
 import dev.nohus.rift.network.esi.models.SkyhooksRaidable
 import dev.nohus.rift.network.esi.models.SovereigntyHubs
 import dev.nohus.rift.network.esi.models.SovereigntyHubsId
-import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.SovereigntySystems
 import dev.nohus.rift.network.esi.models.Status
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
 import dev.nohus.rift.network.esi.models.UniverseName
@@ -328,8 +328,8 @@ class EsiApi(
         return execute { service.getFactionWarfareSystems(originator) }
     }
 
-    suspend fun getSovereigntyMap(originator: Originator): Result<List<SovereigntySystem>> {
-        return execute { service.getSovereigntyMap(originator) }
+    suspend fun getSovereigntySystems(originator: Originator): Result<SovereigntySystems> {
+        return execute { service.getSovereigntySystems(originator) }
     }
 
     suspend fun postUiAutopilotWaypoint(
@@ -712,8 +712,6 @@ class EsiApi(
     suspend fun getSkyhooksRaidable(
         originator: Originator,
     ): Result<SkyhooksRaidable> {
-        return execute {
-            service.getSkyhooksRaidable(originator, 91217127.authorization)
-        }
+        return execute { service.getSkyhooksRaidable(originator) }
     }
 }

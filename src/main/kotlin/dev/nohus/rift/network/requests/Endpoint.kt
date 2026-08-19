@@ -39,7 +39,7 @@ sealed class Endpoint(
     data object GetUniverseSystemKills : Endpoint()
     data object GetIncursions : Endpoint()
     data object GetFactionWarfareSystems : Endpoint()
-    data object GetSovereigntyMap : Endpoint()
+    data object GetSovereigntySystems : Endpoint()
     data object PostUiAutopilotWaypoint : Endpoint()
     data object GetCharactersIdAssets : Endpoint()
     data object GetCharactersIdAssetsNames : Endpoint()
@@ -95,6 +95,7 @@ sealed class Endpoint(
     data object Pushover : Endpoint()
     data object Ntfy : Endpoint()
     data object PostHog : Endpoint()
+    data object EveconomyStructures : Endpoint()
 
     // Raw requests
     data object Raw : Endpoint()

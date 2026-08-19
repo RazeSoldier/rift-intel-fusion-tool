@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -137,7 +138,7 @@ private fun StructuresWindowContent(
                             }
                         }
                     } else {
-                        EmptyState("No Skyhooks found")
+                        EmptyState("No Skyhooks found", "Add a character with the Station Manager role in a corporation with Skyhooks.")
                     }
                 }
                 StructuresTab.SovereigntyHubs -> {
@@ -150,7 +151,7 @@ private fun StructuresWindowContent(
                             }
                         }
                     } else {
-                        EmptyState("No Sovereignty Hubs found")
+                        EmptyState("No Sovereignty Hubs found", "Add a character with the Station Manager role in a corporation with Sovereignty Hubs.")
                     }
                 }
                 StructuresTab.MercenaryDens -> {
@@ -164,7 +165,7 @@ private fun StructuresWindowContent(
                             }
                         }
                     } else {
-                        EmptyState("No Mercenary Dens found")
+                        EmptyState("No Mercenary Dens found", "Deploy a Mercenary Den to see it here.")
                     }
                 }
             }
@@ -173,13 +174,23 @@ private fun StructuresWindowContent(
 }
 
 @Composable
-private fun EmptyState(text: String) {
-    Text(
-        text = text,
-        style = RiftTheme.typography.headerPrimary,
-        textAlign = TextAlign.Center,
+private fun EmptyState(text: String, description: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .padding(Spacing.large),
-    )
+    ) {
+        Text(
+            text = text,
+            style = RiftTheme.typography.headerPrimary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(Spacing.medium))
+        Text(
+            text = description,
+            style = RiftTheme.typography.bodySecondary,
+            textAlign = TextAlign.Center,
+        )
+    }
 }

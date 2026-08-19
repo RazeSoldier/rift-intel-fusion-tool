@@ -450,10 +450,10 @@ private fun DebugWindowContent(
                                     val color by animateColorAsState(targetColor.copy(alpha = 0.3f))
                                     RiftProgressBar(
                                         percentage = tokensRemaining / bucket.limit.tokens.toFloat(),
+                                        height = 20.dp,
                                         color = color,
                                         hasInitialAnimation = false,
                                         modifier = Modifier
-                                            .height(20.dp)
                                             .fillMaxWidth(),
                                     )
                                     val nextReturnIn = spentTokens.firstOrNull { it.returnTimestamp.isAfter(now) }?.returnTimestamp?.let { Duration.between(now, it) }

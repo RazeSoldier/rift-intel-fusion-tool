@@ -36,7 +36,7 @@ import dev.nohus.rift.sovupgrades.SovereigntyUpgradesTypesRepository
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesTypesRepository.SovereigntyUpgradeType
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import dev.nohus.rift.structures.PlanetResourcesRepository.PlanetResource
-import dev.nohus.rift.structures.StructuresRepository.SovereigntyHubWorkforceTransport.Import.ImportSource
+import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHubWorkforceTransport.Import.ImportSource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -58,7 +58,7 @@ import kotlin.time.Duration.Companion.minutes
 private val logger = KotlinLogging.logger {}
 
 @Single
-class StructuresRepository(
+class EquinoxStructuresRepository(
     private val esiApi: EsiApi,
     private val localCharactersRepository: LocalCharactersRepository,
     private val typesRepository: TypesRepository,

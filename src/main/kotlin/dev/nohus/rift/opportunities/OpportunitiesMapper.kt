@@ -1,7 +1,6 @@
 package dev.nohus.rift.opportunities
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
-import dev.nohus.rift.compose.text.FormattedText
 import dev.nohus.rift.compose.text.ParseEveFormattedTextUseCase
 import dev.nohus.rift.compose.text.toFormattedText
 import dev.nohus.rift.network.esi.models.Archetype
@@ -25,7 +24,6 @@ import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository.MercenaryTacticalOperation
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsTypesRepository.MercenaryTacticalOperationType
 import dev.nohus.rift.repositories.SolarSystemChipState
-import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single

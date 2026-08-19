@@ -311,4 +311,20 @@ class Settings(
     var isEquinoxMockingEnabled: Boolean
         get() = model.isEquinoxMockingEnabled
         set(value) = update { copy(isEquinoxMockingEnabled = value) }
+
+    var sentryTimestamps: List<Long>
+        get() = model.sentryTimestamps
+        set(value) = update { copy(sentryTimestamps = value) }
+
+    var forbiddenStructures: Map<Int, Set<Long>>
+        get() = model.forbiddenStructures
+        set(value) = update { copy(forbiddenStructures = value) }
+
+    var isShowingChatPortraits: Boolean
+        get() = model.isShowingChatPortraits
+        set(value) = update { copy(isShowingChatPortraits = value) }
+
+    var isShowingChatStandings: Boolean
+        get() = model.isShowingChatStandings
+        set(value) = update { copy(isShowingChatStandings = value) }
 }

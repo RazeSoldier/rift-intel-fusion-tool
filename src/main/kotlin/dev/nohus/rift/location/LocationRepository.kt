@@ -2,6 +2,7 @@ package dev.nohus.rift.location
 
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.repositories.StructuresRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import org.koin.core.annotation.Single
 
@@ -9,6 +10,7 @@ import org.koin.core.annotation.Single
 class LocationRepository(
     private val esiApi: EsiApi,
     private val characterDetailsRepository: CharacterDetailsRepository,
+    private val structuresRepository: StructuresRepository,
 ) {
 
     data class Station(
@@ -37,7 +39,7 @@ class LocationRepository(
 
     suspend fun getStructure(originator: Originator, structureId: Long?, characterId: Int, fetchOwner: Boolean = false): Structure? {
         if (structureId == null) return null
-        return esiApi.getUniverseStructuresId(originator, structureId, characterId).map {
+        return structuresRepository.getStructure(originator, structureId, characterId).map {
             val owner = it.ownerId.takeIf { fetchOwner }?.let { ownerId -> characterDetailsRepository.getCorporationDetails(originator, ownerId) }
             Structure(structureId, it.name, owner, it.typeId, it.solarSystemId)
         }.success

@@ -3,7 +3,6 @@ package dev.nohus.rift.map.systemcolor.strategies
 import androidx.compose.ui.graphics.Color
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
 import dev.nohus.rift.repositories.MapStatusRepository.SolarSystemStatus
-import dev.nohus.rift.utils.desaturate
 import java.time.Duration
 import java.time.Instant
 

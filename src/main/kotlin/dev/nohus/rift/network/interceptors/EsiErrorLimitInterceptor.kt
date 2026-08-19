@@ -1,10 +1,10 @@
 package dev.nohus.rift.network.interceptors
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.time.delay
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.koin.core.annotation.Single
@@ -25,21 +25,15 @@ class EsiErrorLimitInterceptor : Interceptor {
         mutex.withLock {
             if (errorsRemaining < 10) {
                 logger.error { "Throttling ESI requests due to being close to the error limit" }
-                delay(Duration.between(Instant.now(), resetTimestamp).toMillis())
+                delay(Duration.between(Instant.now(), resetTimestamp))
                 errorsRemaining = BASE_ERRORS_REMAINING
             }
+            // Reserve one error for this request so concurrent callers can't all proceed
+            errorsRemaining--
         }
 
         val request = chain.request()
         val response = chain.proceed(request)
-
-        response.header("warning")?.let {
-            when (it) {
-                "199" -> logger.warn { "ESI warning: There is a new version of this endpoint" }
-                "299" -> logger.warn { "ESI warning: This endpoint is deprecated" }
-                else -> logger.warn { "ESI warning: Unknown $it" }
-            }
-        }
 
         mutex.withLock {
             response.header("x-esi-error-limit-remain")?.toIntOrNull()?.let {

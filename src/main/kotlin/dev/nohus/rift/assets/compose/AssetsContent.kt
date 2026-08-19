@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
@@ -59,11 +60,13 @@ import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.EntityInteractionProvider
 import dev.nohus.rift.compose.ExpandChevron
 import dev.nohus.rift.compose.LoadingSpinner
+import dev.nohus.rift.compose.MulticolorIconType
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuArea
 import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftImageButton
+import dev.nohus.rift.compose.RiftMulticolorIcon
 import dev.nohus.rift.compose.RiftSearchField
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.ScrollbarLazyColumn
@@ -85,11 +88,14 @@ import dev.nohus.rift.generated.resources.menu_unpin
 import dev.nohus.rift.map.SecurityColors
 import dev.nohus.rift.repositories.IdRanges
 import dev.nohus.rift.settings.persistence.LocationPinStatus
+import dev.nohus.rift.utils.formatIsk
 import dev.nohus.rift.utils.formatIskCompact
+import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.formatNumberCompact
 import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.roundSecurity
 import dev.nohus.rift.utils.withColor
+import dev.nohus.rift.utils.withStyle
 import org.jetbrains.compose.resources.painterResource
 import java.text.NumberFormat
 
@@ -105,6 +111,7 @@ fun AssetsContent(
 ) {
     Column {
         Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = Spacing.medium),
         ) {
             RiftDropdownWithLabel(
@@ -122,6 +129,21 @@ fun AssetsContent(
                 },
             )
             Spacer(Modifier.weight(1f))
+            RiftTooltipArea(
+                text = """
+                    You can search assets by:
+                    - Name (e.g. "Bait Fit")
+                    - Type (e.g. "Drake")
+                    - Group (e.g. "Battlecruiser")
+                    - Category (e.g. "Ship")
+                    - Structure name (e.g. "Staging Fort")
+                    - System (e.g. "Jita")
+                    - Region (e.g. "The Forge")
+                """.trimIndent()
+            ) {
+                RiftMulticolorIcon(MulticolorIconType.Info)
+            }
+            Spacer(Modifier.width(Spacing.medium))
             RiftSearchField(
                 search = state.filters.search,
                 isCompact = false,
@@ -241,7 +263,7 @@ fun AssetsContent(
                             Text("Delayed up to 1 hour")
                         }
                         AnimatedContent(
-                            state.isLoading,
+                            state.loading.stage != null,
                             modifier = Modifier
                                 .height(36.dp)
                                 .padding(start = Spacing.medium),
@@ -532,144 +554,186 @@ private fun AssetRow(
     Column {
         val isExpanded = asset.itemId in expandedItems
         val depthOffset = 24.dp * if (asset.children.isNotEmpty()) (depth - 1) else depth
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .hoverBackground()
-                .padding(vertical = Spacing.small)
-                .padding(start = depthOffset)
-                .onClick { onClick(asset.itemId) },
+        val interactionProvider: EntityInteractionProvider = remember { koin.get() }
+        RiftContextMenuArea(
+            items = interactionProvider.getType(asset.type, singletonId = asset.itemId).contextMenuItems,
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (asset.children.isNotEmpty()) {
-                    ExpandChevron(isExpanded = isExpanded)
-                }
-                AssetIcon(asset)
-                Column(
-                    modifier = Modifier.padding(start = Spacing.medium),
-                ) {
-                    val text = buildAnnotatedString {
-                        if (asset.type.id == IdRanges.corporationOffice) {
-                            asset.name?.takeIf { it.isNotBlank() }?.let {
-                                append(it)
-                            }
-                        } else {
-                            asset.name?.takeIf { it.isNotBlank() }?.let {
-                                append("$it - ")
-                            }
-                            append(asset.type.name.trim())
-                            asset.type.volume.let { volume ->
-                                val formatted = NumberFormat.getNumberInstance().format(asset.quantity * volume)
-                                withStyle(style = SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                                    append(" - $formatted m3")
-                                }
+            RiftTooltipArea(
+                text = buildAnnotatedString {
+                    withStyle(color = RiftTheme.colors.textPrimary, fontWeight = FontWeight.Bold) {
+                        if (asset.quantity > 1) {
+                            append("${formatNumber(asset.quantity)} x ")
+                        }
+                        asset.name?.takeIf { it.isNotBlank() }?.let {
+                            append("$it - ")
+                        }
+                        appendLine(asset.type.name.trim())
+                    }
+                    withColor(RiftTheme.colors.textSecondary) {
+                        if ("Blueprint" in asset.type.name) {
+                            if (asset.isBlueprintCopy) {
+                                appendLine("Blueprint Copy")
+                            } else {
+                                appendLine("Blueprint Original")
                             }
                         }
                         if (asset.price != null) {
-                            withStyle(style = SpanStyle(color = RiftTheme.colors.textSecondary)) {
-                                append(" - ${formatIskCompact(asset.price * asset.quantity)}")
-                            }
+                            append("Est. ${formatIsk(asset.price * asset.quantity, withCents = false)}")
+                            appendLine(" (${formatIsk(asset.price, withCents = false)} per unit)")
                         }
+                        asset.type.volume.let { volume ->
+                            val formattedTotal = NumberFormat.getNumberInstance().format(asset.quantity * volume)
+                            val formattedUnit = NumberFormat.getNumberInstance().format(volume)
+                            append("$formattedTotal m³")
+                            appendLine(" ($formattedUnit m³ per unit)")
+                        }
+                        appendLine("Group: ${asset.groupName}")
+                        append("Category: ${asset.categoryName}")
                     }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .hoverBackground()
+                        .padding(vertical = Spacing.small)
+                        .padding(start = depthOffset)
+                        .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+                        .onClick { onClick(asset.itemId) },
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (depth == 1) {
-                            val text = when (asset.owner) {
-                                is AssetsRepository.AssetOwner.Character -> asset.owner.character.info?.name
-                                is AssetsRepository.AssetOwner.Corporation -> asset.owner.corporationName
-                            } ?: "Unknown Owner"
-                            RiftTooltipArea(
-                                text = text,
-                                modifier = Modifier.padding(end = Spacing.small),
-                            ) {
-                                when (asset.owner) {
-                                    is AssetsRepository.AssetOwner.Character -> {
-                                        AsyncCharacterPortrait(
-                                            characterId = asset.owner.character.characterId,
-                                            size = 32,
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .clip(CircleShape)
-                                                .border(1.dp, RiftTheme.colors.borderGrey, CircleShape),
-                                        )
+                        if (asset.children.isNotEmpty()) {
+                            ExpandChevron(isExpanded = isExpanded)
+                        }
+                        AssetIcon(asset)
+                        Column(
+                            modifier = Modifier.padding(start = Spacing.medium),
+                        ) {
+                            val text = buildAnnotatedString {
+                                if (asset.type.id == IdRanges.corporationOffice) {
+                                    asset.name?.takeIf { it.isNotBlank() }?.let {
+                                        append(it)
                                     }
-                                    is AssetsRepository.AssetOwner.Corporation -> {
-                                        AsyncCorporationLogo(
-                                            corporationId = asset.owner.corporationId,
-                                            size = 32,
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .clip(CircleShape)
-                                                .border(1.dp, RiftTheme.colors.borderGrey, CircleShape),
-                                        )
+                                } else {
+                                    asset.name?.takeIf { it.isNotBlank() }?.let {
+                                        append("$it - ")
+                                    }
+                                    append(asset.type.name.trim())
+                                    asset.type.volume.let { volume ->
+                                        val formatted = NumberFormat.getNumberInstance().format(asset.quantity * volume)
+                                        withStyle(style = SpanStyle(color = RiftTheme.colors.textSecondary)) {
+                                            append(" - $formatted m3")
+                                        }
+                                    }
+                                }
+                                if (asset.price != null) {
+                                    withStyle(style = SpanStyle(color = RiftTheme.colors.textSecondary)) {
+                                        append(" - ${formatIskCompact(asset.price * asset.quantity)}")
                                     }
                                 }
                             }
-                        }
-                        Text(
-                            text = text,
-                            style = RiftTheme.typography.bodyPrimary,
-                        )
-                    }
-                    val secondaryText = buildList {
-                        val flag = LocationFlags.getName(asset.locationFlag)
-                        if (flag != null) {
-                            add(flag)
-                        }
-                        if (asset.quantity > 1) {
-                            val formatted = NumberFormat.getIntegerInstance().format(asset.quantity)
-                            add("$formatted units")
-                        }
-                        if (asset.children.isNotEmpty()) {
-                            add("${asset.children.size} item${if (asset.children.size != 1) "s" else ""}")
-                            val volume = asset.children.map { it.quantity * (it.type.volume) }.sum()
-                            val formatted = NumberFormat.getNumberInstance().apply { maximumFractionDigits = 1 }.format(volume)
-                            add("$formatted m3")
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                if (depth == 1) {
+                                    val text = when (asset.owner) {
+                                        is AssetsRepository.AssetOwner.Character -> asset.owner.character.info?.name
+                                        is AssetsRepository.AssetOwner.Corporation -> asset.owner.corporationName
+                                    } ?: "Unknown Owner"
+                                    RiftTooltipArea(
+                                        text = text,
+                                        modifier = Modifier.padding(end = Spacing.small),
+                                    ) {
+                                        when (asset.owner) {
+                                            is AssetsRepository.AssetOwner.Character -> {
+                                                AsyncCharacterPortrait(
+                                                    characterId = asset.owner.character.characterId,
+                                                    size = 32,
+                                                    modifier = Modifier
+                                                        .size(16.dp)
+                                                        .clip(CircleShape)
+                                                        .border(1.dp, RiftTheme.colors.borderGrey, CircleShape),
+                                                )
+                                            }
+                                            is AssetsRepository.AssetOwner.Corporation -> {
+                                                AsyncCorporationLogo(
+                                                    corporationId = asset.owner.corporationId,
+                                                    size = 32,
+                                                    modifier = Modifier
+                                                        .size(16.dp)
+                                                        .clip(CircleShape)
+                                                        .border(1.dp, RiftTheme.colors.borderGrey, CircleShape),
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Text(
+                                    text = text,
+                                    style = RiftTheme.typography.bodyPrimary,
+                                )
+                            }
+                            val secondaryText = buildList {
+                                val flag = LocationFlags.getName(asset.locationFlag)
+                                if (flag != null) {
+                                    add(flag)
+                                }
+                                if (asset.quantity > 1) {
+                                    val formatted = NumberFormat.getIntegerInstance().format(asset.quantity)
+                                    add("$formatted units")
+                                }
+                                if (asset.children.isNotEmpty()) {
+                                    add("${asset.children.size} item${if (asset.children.size != 1) "s" else ""}")
+                                    val volume = asset.children.map { it.quantity * (it.type.volume) }.sum()
+                                    val formatted = NumberFormat.getNumberInstance().apply { maximumFractionDigits = 1 }.format(volume)
+                                    add("$formatted m3")
 
-                            val totalPrice = asset.children.sumOf { it.getTotalPrice() }
-                            add(formatIskCompact(totalPrice))
+                                    val totalPrice = asset.children.sumOf { it.getTotalPrice() }
+                                    add(formatIskCompact(totalPrice))
+                                }
+                            }.joinToString(" - ")
+                            if (secondaryText.isNotEmpty()) {
+                                Text(
+                                    text = secondaryText,
+                                    style = RiftTheme.typography.bodySecondary,
+                                )
+                            }
                         }
-                    }.joinToString(" - ")
-                    if (secondaryText.isNotEmpty()) {
-                        Text(
-                            text = secondaryText,
-                            style = RiftTheme.typography.bodySecondary,
-                        )
                     }
-                }
-            }
-            AnimatedVisibility(isExpanded && asset.fitting != null) {
-                if (asset.fitting != null) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-                        modifier = Modifier
-                            .padding(top = Spacing.small)
-                            .padding(start = 24.dp),
-                    ) {
-                        RiftButton(
-                            text = "Copy fit",
-                            type = ButtonType.Secondary,
-                            cornerCut = ButtonCornerCut.BottomLeft,
-                            onClick = { onFitAction(asset.fitting, FitAction.Copy) },
-                        )
-                        RiftButton(
-                            text = "Copy fit & cargo",
-                            type = ButtonType.Secondary,
-                            cornerCut = ButtonCornerCut.None,
-                            onClick = { onFitAction(asset.fitting, FitAction.CopyWithCargo) },
-                        )
-                        RiftButton(
-                            text = "View fit",
-                            cornerCut = ButtonCornerCut.BottomRight,
-                            onClick = { onFitAction(asset.fitting, FitAction.Open) },
-                        )
+                    AnimatedVisibility(isExpanded && asset.fitting != null) {
+                        if (asset.fitting != null) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                                modifier = Modifier
+                                    .padding(top = Spacing.small)
+                                    .padding(start = 24.dp),
+                            ) {
+                                RiftButton(
+                                    text = "Copy fit",
+                                    type = ButtonType.Secondary,
+                                    cornerCut = ButtonCornerCut.BottomLeft,
+                                    onClick = { onFitAction(asset.fitting, FitAction.Copy) },
+                                )
+                                RiftButton(
+                                    text = "Copy fit & cargo",
+                                    type = ButtonType.Secondary,
+                                    cornerCut = ButtonCornerCut.None,
+                                    onClick = { onFitAction(asset.fitting, FitAction.CopyWithCargo) },
+                                )
+                                RiftButton(
+                                    text = "View fit",
+                                    cornerCut = ButtonCornerCut.BottomRight,
+                                    onClick = { onFitAction(asset.fitting, FitAction.Open) },
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
+
         AnimatedVisibility(isExpanded) {
             Column {
                 asset.children.forEach { child ->
@@ -709,6 +773,7 @@ private fun AssetIcon(asset: Asset) {
         } else {
             AsyncTypeIcon(
                 type = asset.type,
+                isBlueprintCopy = asset.isBlueprintCopy,
                 modifier = Modifier.size(32.dp),
             )
         }

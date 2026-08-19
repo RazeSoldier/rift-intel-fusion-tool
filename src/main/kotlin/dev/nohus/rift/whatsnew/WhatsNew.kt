@@ -809,7 +809,42 @@ object WhatsNew {
                 - No space in your in-game window layout? Move your chat windows to a second monitor.
                 - You can open multiple Chat windows in RIFT to view multiple channels at the same time
                 """.trimIndent(),
-                )
+            )
+            add(
+                "5.20.0" description """
+                -! New Feature: Structures
+                - View all Sovereignty Hubs you manage across all characters (with the Station Manager role)
+                - Check the fuel, installed sovereignty upgrades, workforce transport configuration, vulnerability windows and more
+
+                - View all Skyhooks you manage across all characters (with the Station Manager role)
+                - See stored resources, produced power and workforce, check theft vulnerability
+                - Lost workforce due to Mercenary Dens causing Anarchy is also visible next to affected Skyhooks
+
+                - View all Mercenary Dens you own across all characters
+                - See accumulated Infomorph Decryption Keys along with Development and Anarchy levels, level progress and workforce impact
+                - Check the owner of the Skyhook the Mercenary Den is attached to
+                - View all details of generated Mercenary Tactical Operations. These are visible both from the new Structures window, a well as from the Opportunities window.
+
+                -! New Feature: Raidable Skyhooks
+                - The map can now show you Skyhooks that are or will soon be raidable. Enable in the map indicators panel if you want to see them.
+                - You can see the Ice/Lava planet type, as well as how much time is remaining to the Skyhook becoming raidable or stopping being raidable
+                
+                -! Assets improvements
+                - You can now see the precise loading progress, which is especially useful if you have lots of characters and assets
+                - Assets loading was improved to be more resilient to failures
+                - Assets in structures you don't have access to will now show the location anyway if it's a publicly known structure
+                - You can now search through assets by name, type, group, category, location, and region
+                - A new icon next to the search bar shows a handy popup explaining the advanced search
+                - All assets now show a tooltip with more detailed information about the item
+                - Blueprints are now shown with proper icons, and copies vs originals are marked differently
+                - All assets can now be right clicked for a context menu with more options
+                
+                -! Chat improvements
+                - A new option was added to hide character portraits from chat messages, to conserve space
+                - Another option was added to show a standings flag next to every message. This is especially useful when you hide the portraits.
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }
+

@@ -4,6 +4,7 @@ import dev.nohus.rift.ViewModel
 import dev.nohus.rift.assets.AssetsRepository.AssetBalance
 import dev.nohus.rift.assets.AssetsRepository.AssetOwner
 import dev.nohus.rift.assets.AssetsRepository.AssetWithLocation
+import dev.nohus.rift.assets.AssetsRepository.LoadingState
 import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.characters.repositories.ActiveCharacterRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
@@ -68,9 +69,12 @@ class AssetsViewModel(
         val owner: AssetOwner,
         val type: Type,
         val name: String?,
+        val groupName: String?,
+        val categoryName: String?,
         val quantity: Int,
         val itemId: Long,
         val locationFlag: String,
+        val isBlueprintCopy: Boolean,
         val children: List<Asset>,
         val price: Double? = null,
         val fitting: Fitting? = null,
@@ -93,9 +97,9 @@ class AssetsViewModel(
     data class UiState(
         val loadedData: Result<LoadedData>? = null,
         val filters: AssetsFilters = AssetsFilters(),
+        val loading: LoadingState = LoadingState(),
         val characters: List<LocalCharacter> = emptyList(),
         val pins: Map<Long, LocationPinStatus> = emptyMap(),
-        val isLoading: Boolean = false,
         val tab: AssetsTab = AssetsTab.Owners,
         val renameLocationDialog: RenameLocationDialog? = null,
     )
@@ -134,7 +138,7 @@ class AssetsViewModel(
         viewModelScope.launch {
             data class UpdateParams(
                 val loadedState: Result<AssetsRepository.LoadedState>?,
-                val isLoading: Boolean,
+                val loading: LoadingState,
                 val activeCharacter: Int?,
                 val characterLocations: Map<Int, CharacterLocationRepository.Location>,
                 val filters: AssetsFilters,
@@ -142,16 +146,16 @@ class AssetsViewModel(
 
             combine(
                 assetsRepository.state.map { it.loadedState },
-                assetsRepository.state.map { it.isLoading },
+                assetsRepository.state.map { it.loading },
                 activeCharacterRepository.activeCharacter,
                 characterLocationRepository.locations,
                 _state.map { it.filters },
-            ) { loadedState, isLoading, activeCharacter, characterLocations, filters ->
-                UpdateParams(loadedState, isLoading, activeCharacter, characterLocations, filters)
+            ) { loadedState, loading, activeCharacter, characterLocations, filters ->
+                UpdateParams(loadedState, loading, activeCharacter, characterLocations, filters)
             }
                 .debounce(100)
-                .collectLatest { (loadedState, isLoading, activeCharacter, characterLocations, filters) ->
-                    _state.update { it.copy(isLoading = isLoading) }
+                .collectLatest { (loadedState, loading, activeCharacter, characterLocations, filters) ->
+                    _state.update { it.copy(loading = loading) }
                     updateAssets(loadedState, activeCharacter, characterLocations, filters)
                 }
         }
@@ -276,7 +280,17 @@ class AssetsViewModel(
             filtered = filtered
                 .mapNotNull { (location, assets) ->
                     fun filterMatching(asset: Asset): Asset? {
-                        return if (search in (asset.name?.lowercase() ?: "") || search in asset.type.name.lowercase()) {
+                        val system = location.systemId?.let { solarSystemsRepository.getSystem(it) }
+                        val regionName = system?.regionId?.let { solarSystemsRepository.getRegion(it)?.name }
+                        return if (
+                            search in (asset.name?.lowercase() ?: "") ||
+                            search in asset.type.name.lowercase() ||
+                            search in (asset.groupName?.lowercase() ?: "") ||
+                            search in (asset.categoryName?.lowercase() ?: "") ||
+                            search in location.name.lowercase() ||
+                            search in (location.customName?.lowercase() ?: "") ||
+                            search in (regionName?.lowercase() ?: "")
+                        ) {
                             asset
                         } else {
                             val matchingChildren = asset.children.mapNotNull(::filterMatching)
@@ -287,6 +301,7 @@ class AssetsViewModel(
                             }
                         }
                     }
+
                     val matchingAssets = assets.mapNotNull(::filterMatching)
                     if (matchingAssets.isNotEmpty()) location to matchingAssets else null
                 }
@@ -340,9 +355,12 @@ class AssetsViewModel(
                 owner = owner,
                 type = typesRepository.getTypeOrPlaceholder(IdRanges.corporationOffice),
                 name = "Capsuleer Deliveries",
+                groupName = null,
+                categoryName = null,
                 quantity = 1,
                 itemId = 10_000_000_000_000 + index,
                 locationFlag = "CapsuleerDeliveries",
+                isBlueprintCopy = false,
                 children = assets,
             )
         }
@@ -540,9 +558,12 @@ class AssetsViewModel(
             owner = asset.owner,
             type = asset.type,
             name = asset.name,
+            groupName = typesRepository.getGroupName(asset.type.groupId),
+            categoryName = typesRepository.getCategoryName(asset.type.categoryId),
             quantity = asset.asset.quantity,
             itemId = asset.asset.itemId,
             locationFlag = asset.asset.locationFlag,
+            isBlueprintCopy = asset.asset.isBlueprintCopy == true,
             children = getAssetTree(assets, asset.asset.itemId),
             price = pricesRepository.getPrice(asset.asset.typeId)
                 .takeIf { asset.asset.isBlueprintCopy != true },

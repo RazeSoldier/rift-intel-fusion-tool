@@ -7,9 +7,7 @@ import dev.nohus.rift.repositories.PlanetsRepository
 import dev.nohus.rift.repositories.PlanetsRepository.Planet
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
-import java.time.Duration
 import java.time.Instant
-import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 

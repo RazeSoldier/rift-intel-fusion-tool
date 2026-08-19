@@ -62,8 +62,8 @@ import dev.nohus.rift.planetaryindustry.compose.AnnotatedProgressBar
 import dev.nohus.rift.planetaryindustry.compose.ExtractionAnimation
 import dev.nohus.rift.planetaryindustry.compose.NeedsAttentionAnimation
 import dev.nohus.rift.planetaryindustry.compose.TitledText
-import dev.nohus.rift.structures.StructuresRepository.Skyhook
-import dev.nohus.rift.structures.StructuresRepository.SkyhookResource
+import dev.nohus.rift.structures.EquinoxStructuresRepository.Skyhook
+import dev.nohus.rift.structures.EquinoxStructuresRepository.SkyhookResource
 import dev.nohus.rift.utils.formatDurationCompact
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.formatNumberCompact

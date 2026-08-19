@@ -76,7 +76,7 @@ import dev.nohus.rift.intel.state.IntelStateController.Dated
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.network.esi.models.IndustryActivity
-import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.SovereigntySystemClaim
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase.WormholeSize
 import dev.nohus.rift.repositories.MapStatusRepository.SolarSystemStatus
 import dev.nohus.rift.repositories.NamesRepository
@@ -394,7 +394,7 @@ private fun ColumnScope.SystemInfoTypes(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            val id = it.allianceId ?: it.factionId ?: it.corporationId
+                            val id = it.alliance?.allianceId ?: it.faction?.factionId
                             if (id != null) {
                                 SovereigntyLogo(it)
                                 val name = namesRepository.getName(id) ?: "Unknown"
@@ -542,7 +542,7 @@ private fun SystemInfoTypesIndicators(
                 MapSystemInfoType.FactionWarfare -> {}
                 MapSystemInfoType.Sovereignty -> {
                     systemStatus?.sovereignty?.let {
-                        val id = it.allianceId ?: it.factionId ?: it.corporationId
+                        val id = it.alliance?.allianceId ?: it.faction?.factionId
                         if (id != null) {
                             val name = namesRepository.getName(id) ?: "Unknown"
                             RiftTooltipArea(
@@ -751,7 +751,7 @@ private fun IndustryActivityIndex(systemStatus: SolarSystemStatus?, activity: In
 @Composable
 private fun StandingsIndicator(security: Double, systemStatus: SolarSystemStatus?) {
     val standingsRepository: StandingsRepository = koin.get()
-    val allianceId = systemStatus?.sovereignty?.allianceId
+    val allianceId = systemStatus?.sovereignty?.alliance?.allianceId
     val standing = standingsRepository.getStandingLevel(allianceId, null, null)
     val (tooltip, color) = if (security >= 0.5) {
         "High sec" to Color(0xFF71E754)
@@ -864,18 +864,18 @@ private fun SovereigntyUpgradesIndicators(upgrades: List<SovereigntyUpgrade>, is
 }
 
 @Composable
-private fun SovereigntyLogo(sovereignty: SovereigntySystem) {
+private fun SovereigntyLogo(claim: SovereigntySystemClaim) {
     val requestSize = 32
     val size = 24
-    if (sovereignty.allianceId != null) {
+    if (claim.alliance?.allianceId != null) {
         AsyncAllianceLogo(
-            allianceId = sovereignty.allianceId,
+            allianceId = claim.alliance.allianceId,
             size = requestSize,
             modifier = Modifier.size(size.dp),
         )
-    } else if (sovereignty.factionId != null || sovereignty.corporationId != null) {
+    } else if (claim.faction?.factionId != null) {
         AsyncCorporationLogo(
-            corporationId = sovereignty.factionId ?: sovereignty.corporationId,
+            corporationId = claim.faction.factionId,
             size = requestSize,
             modifier = Modifier.size(size.dp),
         )

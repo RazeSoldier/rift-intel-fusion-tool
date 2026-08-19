@@ -1,5 +1,6 @@
 package dev.nohus.rift.compose.text
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 
 class FormattedTextBuilder {
@@ -25,6 +26,11 @@ class FormattedTextBuilder {
     fun withColor(color: FormattedTextColor, block: FormattedTextBuilder.() -> Unit) {
         val text = FormattedTextBuilder().apply(block).build()
         texts += FormattedText.Formatted(text, listOf(Span.Color(SpanTarget.Full, color)))
+    }
+
+    fun withCustomColor(color: androidx.compose.ui.graphics.Color, block: FormattedTextBuilder.() -> Unit) {
+        val text = FormattedTextBuilder().apply(block).build()
+        texts += FormattedText.Formatted(text, listOf(Span.CustomColor(SpanTarget.Full, color)))
     }
 
     fun withWeight(fontWeight: FontWeight, block: FormattedTextBuilder.() -> Unit) {

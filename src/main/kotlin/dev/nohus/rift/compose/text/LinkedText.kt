@@ -1,7 +1,6 @@
 package dev.nohus.rift.compose.text
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +20,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.RiftContextMenuPopup
-import dev.nohus.rift.compose.theme.Spacing
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

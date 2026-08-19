@@ -28,7 +28,7 @@ class EveSsoRepository(
     }
 
     fun addAuthentication(authentication: EveAuthentication) {
-        logger.info { "Added authentication for character ${authentication.characterId}" }
+        logger.debug { "Added authentication for character ${authentication.characterId}" }
         authentications += authentication.characterId to authentication
         updateAuthenticatedCharacters()
     }

@@ -12,7 +12,6 @@ import dev.nohus.rift.generated.resources.mercenary_den_16px
 import dev.nohus.rift.generated.resources.mining_16px
 import dev.nohus.rift.generated.resources.navigate_forward_16px
 import dev.nohus.rift.generated.resources.pilot_or_organization_16px
-import dev.nohus.rift.generated.resources.ship_tree_group_frigate_64
 import dev.nohus.rift.generated.resources.solar_system_16px
 import dev.nohus.rift.generated.resources.spaceship_command_16px
 import dev.nohus.rift.location.LocationRepository
@@ -42,7 +41,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.DrawableResource
 import org.koin.core.annotation.Single
-import kotlin.time.measureTimedValue
 
 @Single
 class GetOpportunityContributionAttributesUseCase(

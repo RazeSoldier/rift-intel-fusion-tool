@@ -6,15 +6,14 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationState
 import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationsId
 import dev.nohus.rift.network.esi.models.OpportunityCareer
-import dev.nohus.rift.network.esi.models.OpportunityState
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsTypesRepository.MercenaryTacticalOperationType
 import dev.nohus.rift.opportunities.OpportunitiesUtils.getMatchingFilters
 import dev.nohus.rift.repositories.GetSolarSystemChipStateUseCase
 import dev.nohus.rift.repositories.SolarSystemChipLocation
 import dev.nohus.rift.sso.scopes.ScopeGroups
-import dev.nohus.rift.structures.StructuresRepository
-import dev.nohus.rift.structures.StructuresRepository.MercenaryDen
+import dev.nohus.rift.structures.EquinoxStructuresRepository
+import dev.nohus.rift.structures.EquinoxStructuresRepository.MercenaryDen
 import dev.nohus.rift.utils.mapAsync
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.async
@@ -41,7 +40,7 @@ private val logger = KotlinLogging.logger {}
 class MercenaryTacticalOperationsRepository(
     private val esiApi: EsiApi,
     private val localCharactersRepository: LocalCharactersRepository,
-    private val structuresRepository: StructuresRepository,
+    private val equinoxStructuresRepository: EquinoxStructuresRepository,
     private val mercenaryTacticalOperationsTypesRepository: MercenaryTacticalOperationsTypesRepository,
     private val mapper: OpportunitiesMapper,
     private val getSolarSystemChipStateUseCase: GetSolarSystemChipStateUseCase,
@@ -93,7 +92,7 @@ class MercenaryTacticalOperationsRepository(
             }
         }
         launch {
-            structuresRepository.structures.map { it.mercenaryDens }.collectLatest {
+            equinoxStructuresRepository.structures.map { it.mercenaryDens }.collectLatest {
                 reloadRequest.value = true
             }
         }
@@ -120,7 +119,7 @@ class MercenaryTacticalOperationsRepository(
             val characters = localCharactersRepository.characters.value
                 .filter { it.info != null }
                 .filter { ScopeGroups.readYourStructures in it.scopes }
-            val mercenaryDensById = structuresRepository.structures.value.mercenaryDens.associateBy { it.id }
+            val mercenaryDensById = equinoxStructuresRepository.structures.value.mercenaryDens.associateBy { it.id }
             val operations = characters.flatMap { character ->
                 val mtos = esiApi.getCharactersIdMercenaryTacticalOperations(Originator.Structures, character.characterId)
                 mtos.success?.operations?.mapNotNull { mto ->

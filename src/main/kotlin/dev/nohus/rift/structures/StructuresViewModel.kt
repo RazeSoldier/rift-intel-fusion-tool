@@ -1,28 +1,22 @@
 package dev.nohus.rift.structures
 
 import dev.nohus.rift.ViewModel
-import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository
 import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository.Operations
 import dev.nohus.rift.opportunities.OpportunitiesInputModel
-import dev.nohus.rift.structures.StructuresRepository.Structures
+import dev.nohus.rift.structures.EquinoxStructuresRepository.Structures
 import dev.nohus.rift.windowing.WindowManager
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
-import org.koin.core.annotation.InjectedParam
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(FlowPreview::class)
 @Factory
 class StructuresViewModel(
-    private val structuresRepository: StructuresRepository,
+    private val equinoxStructuresRepository: EquinoxStructuresRepository,
     private val mercenaryTacticalOperationsRepository: MercenaryTacticalOperationsRepository,
     private val windowManager: WindowManager,
 ) : ViewModel() {
@@ -44,7 +38,7 @@ class StructuresViewModel(
 
     init {
         viewModelScope.launch {
-            structuresRepository.structures.collect { structures ->
+            equinoxStructuresRepository.structures.collect { structures ->
                 _state.update { it.copy(structures = structures) }
             }
         }
@@ -57,7 +51,7 @@ class StructuresViewModel(
 
     fun onVisibilityChange(visible: Boolean) {
         viewModelScope.launch {
-            structuresRepository.setNeedsRealtimeUpdates(visible)
+            equinoxStructuresRepository.setNeedsRealtimeUpdates(visible)
         }
     }
 

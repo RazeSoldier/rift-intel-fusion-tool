@@ -73,7 +73,6 @@ import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Idle
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NeedsAttention
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.NotSetup
 import dev.nohus.rift.planetaryindustry.models.ColonyStatus.Producing
-import dev.nohus.rift.repositories.PlanetTypes
 import dev.nohus.rift.repositories.PlanetTypes.PlanetType
 import dev.nohus.rift.repositories.TypesRepository.Type
 import kotlinx.coroutines.delay

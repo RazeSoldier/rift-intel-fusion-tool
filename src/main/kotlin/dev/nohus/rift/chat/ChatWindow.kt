@@ -55,11 +55,13 @@ import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyColumn
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.TitleBarStyle
+import dev.nohus.rift.compose.animatedcontentfixed.AnimatedVisibility
 import dev.nohus.rift.compose.fadingRightEdge
 import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.getRelativeTime
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.keepScrolledToBottomItem
+import dev.nohus.rift.compose.text.FormattedTextColor
 import dev.nohus.rift.compose.text.LinkedText
 import dev.nohus.rift.compose.text.buildFormattedText
 import dev.nohus.rift.compose.theme.Cursors
@@ -73,8 +75,8 @@ import dev.nohus.rift.generated.resources.chat_eve_system
 import dev.nohus.rift.generated.resources.default_character
 import dev.nohus.rift.generated.resources.map_marker_pilot_person
 import dev.nohus.rift.generated.resources.window_bleedchannel
-import dev.nohus.rift.generated.resources.window_chatchannels
 import dev.nohus.rift.standings.Standing
+import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.formatTime
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -94,6 +96,18 @@ fun ChatWindow(
         title = "Chat",
         icon = Res.drawable.window_bleedchannel,
         state = windowState,
+        tuneContextMenuItems = listOf(
+            ContextMenuItem.CheckboxItem(
+                text = "Show portraits",
+                isSelected = state.isShowingPortraits,
+                onClick = { viewModel.onIsShowingPortraitsChange(!state.isShowingPortraits) },
+            ),
+            ContextMenuItem.CheckboxItem(
+                text = "Show standing icon",
+                isSelected = state.isShowingStandings,
+                onClick = { viewModel.onIsShowingStandingsChange(!state.isShowingStandings) },
+            ),
+        ),
         onCloseClick = onCloseRequest,
         titleBarStyle = TitleBarStyle.Minimal,
         titleBarContent = { height ->
@@ -199,6 +213,8 @@ private fun ChatWindowContent(
                     channel = state.selectedChannel,
                     messages = state.messages,
                     displayTimezone = state.displayTimezone,
+                    isShowingPortraits = state.isShowingPortraits,
+                    isShowingStandings = state.isShowingStandings,
                     onCopyClick = onCopyClick,
                     onCopyAllClick = onCopyAllClick,
                 )
@@ -223,6 +239,8 @@ private fun ChatChannel(
     channel: Channel,
     messages: List<RichChatMessage>,
     displayTimezone: ZoneId,
+    isShowingPortraits: Boolean,
+    isShowingStandings: Boolean,
     onCopyClick: (RichChatMessage) -> Unit,
     onCopyAllClick: () -> Unit,
 ) {
@@ -247,6 +265,8 @@ private fun ChatChannel(
                     ChatMessageItem(
                         message = message,
                         displayTimezone = displayTimezone,
+                        isShowingPortraits = isShowingPortraits,
+                        isShowingStandings = isShowingStandings,
                         onCopyClick = { onCopyClick(message) },
                         onCopyAllClick = onCopyAllClick,
                     )
@@ -351,6 +371,8 @@ private fun ChatChannel(
 private fun LazyItemScope.ChatMessageItem(
     message: RichChatMessage,
     displayTimezone: ZoneId,
+    isShowingPortraits: Boolean,
+    isShowingStandings: Boolean,
     onCopyClick: () -> Unit,
     onCopyAllClick: () -> Unit,
 ) {
@@ -368,30 +390,43 @@ private fun LazyItemScope.ChatMessageItem(
             Row(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                when (message.author) {
-                    is Author.Character -> if (message.author.characterId != null) {
-                        DynamicCharacterPortraitStandings(
-                            characterId = message.author.characterId,
-                            size = 32.dp,
-                            standingLevel = message.author.characterDetails?.standingLevel ?: Standing.Neutral,
-                            isAnimated = false,
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(Res.drawable.default_character),
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp),
-                        )
-                    }
-                    Author.EveSystem -> {
-                        Image(
-                            painter = painterResource(Res.drawable.chat_eve_system),
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp),
-                        )
+                AnimatedVisibility(isShowingPortraits) {
+                    Row {
+                        when (message.author) {
+                            is Author.Character -> if (message.author.characterId != null) {
+                                DynamicCharacterPortraitStandings(
+                                    characterId = message.author.characterId,
+                                    size = 32.dp,
+                                    standingLevel = message.author.characterDetails?.standingLevel ?: Standing.Neutral,
+                                    isAnimated = false,
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(Res.drawable.default_character),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                )
+                            }
+                            Author.EveSystem -> {
+                                Image(
+                                    painter = painterResource(Res.drawable.chat_eve_system),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                )
+                            }
+                        }
+                        Spacer(Modifier.width(Spacing.small))
                     }
                 }
-                Spacer(Modifier.width(Spacing.small))
+
+                AnimatedVisibility(isShowingStandings) {
+                    (message.author as? Author.Character)?.characterDetails?.standingLevel?.let {
+                        Row {
+                            FlagIcon(it, Modifier.padding(top = 5.dp))
+                            Spacer(Modifier.width(Spacing.small))
+                        }
+                    }
+                }
 
                 val text = buildFormattedText {
                     append("[${formatTime(message.timestamp, displayTimezone)}]")

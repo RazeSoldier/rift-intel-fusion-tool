@@ -98,6 +98,7 @@ class WalletRepository(
         val hasCorpWalletScopes: Boolean,
         val loadedJournalItems: Int = 0,
         val loadedTransactions: Int = 0,
+        val journalItemsProgress: Float = 0f,
         val isJournalLoaded: Boolean = false,
     )
 
@@ -107,6 +108,7 @@ class WalletRepository(
         val name: String,
         val loadedJournalItems: Int = 0,
         val loadedTransactions: Int = 0,
+        val journalItemsProgress: Float = 0f,
         val isJournalLoaded: Boolean = false,
     )
 
@@ -478,9 +480,9 @@ class WalletRepository(
                     val characterId = character.characterId
                     val deferredJournal = async {
                         fetchPagePaginated(
-                            onProgressUpdate = { loadedItems ->
+                            onProgressUpdate = { loadedItems, percentage ->
                                 updateLoadingCharacter(characterId) {
-                                    copy(loadedJournalItems = loadedItems)
+                                    copy(loadedJournalItems = loadedItems, journalItemsProgress = percentage)
                                 }
                             },
                         ) {
@@ -541,7 +543,7 @@ class WalletRepository(
                         launch {
                             val deferredJournal = async {
                                 fetchPagePaginated(
-                                    onProgressUpdate = { loadedItems ->
+                                    onProgressUpdate = { loadedItems, _ ->
                                         updateLoadingCorporationDivision(corporation.id, divisionId) {
                                             copy(loadedJournalItems = loadedItems)
                                         }

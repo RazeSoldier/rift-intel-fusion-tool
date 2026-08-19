@@ -31,7 +31,7 @@ import dev.nohus.rift.repositories.character.ZkillboardRecentActivityRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesHackWatcher
 import dev.nohus.rift.standings.StandingsRepository
-import dev.nohus.rift.structures.StructuresRepository
+import dev.nohus.rift.structures.EquinoxStructuresRepository
 import dev.nohus.rift.utils.ResetSparkleUpdateCheckUseCase
 import dev.nohus.rift.utils.activewindow.ActiveEveWindowRepository
 import dev.nohus.rift.utils.sound.SoundPlayer
@@ -75,7 +75,7 @@ class BackgroundProcesses(
     private val corporationProjectsRepository: CorporationProjectsRepository,
     private val freelanceJobsRepository: FreelanceJobsRepository,
     private val mercenaryTacticalOperationsRepository: MercenaryTacticalOperationsRepository,
-    private val structuresRepository: StructuresRepository,
+    private val equinoxStructuresRepository: EquinoxStructuresRepository,
     private val checkForUpdatesUseCase: CheckForUpdatesUseCase,
     private val settings: Settings,
 ) {
@@ -186,7 +186,7 @@ class BackgroundProcesses(
                 mercenaryTacticalOperationsRepository.start()
             }
             launch {
-                structuresRepository.start()
+                equinoxStructuresRepository.start()
             }
         }
     }

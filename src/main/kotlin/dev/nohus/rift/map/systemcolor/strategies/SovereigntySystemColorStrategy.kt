@@ -20,8 +20,8 @@ class SovereigntySystemColorStrategy(
 
     override fun getColor(system: Int): Color {
         val sovereignty = systemStatus[system]?.sovereignty ?: return Color.Unspecified
-        if (sovereignty.factionId != null) return entityColorRepository.getFactionColorOrNull(Originator.Map, sovereignty.factionId) ?: Color.Unspecified
-        if (sovereignty.allianceId != null) return entityColorRepository.getAllianceColorOrNull(Originator.Map, sovereignty.allianceId) ?: Color.Unspecified
+        if (sovereignty.faction != null) return entityColorRepository.getFactionColorOrNull(Originator.Map, sovereignty.faction.factionId) ?: Color.Unspecified
+        if (sovereignty.alliance != null) return entityColorRepository.getAllianceColorOrNull(Originator.Map, sovereignty.alliance.allianceId) ?: Color.Unspecified
         return Color.Unspecified
     }
 }

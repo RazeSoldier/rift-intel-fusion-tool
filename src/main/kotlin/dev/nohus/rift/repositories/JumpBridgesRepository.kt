@@ -4,9 +4,9 @@ import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.CharactersIdSearch
-import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.StructuresRepository.Structure
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.scopes.ScopeGroups
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,6 +33,7 @@ class JumpBridgesRepository(
     private val esiApi: EsiApi,
     private val localCharactersRepository: LocalCharactersRepository,
     private val solarSystemsRepository: SolarSystemsRepository,
+    private val structuresRepository: StructuresRepository,
 ) {
 
     /**
@@ -107,10 +108,10 @@ class JumpBridgesRepository(
                                 }
                                 structureIds.map { structureId ->
                                     async {
-                                        var structureResult: Result<UniverseStructuresId>? = null
+                                        var structureResult: Result<Structure>? = null
                                         repeat(3) {
                                             if (structureResult == null || structureResult.isFailure) {
-                                                structureResult = esiApi.getUniverseStructuresId(Originator.JumpBridgeSearch, structureId, characterId)
+                                                structureResult = structuresRepository.getStructure(Originator.JumpBridgeSearch, structureId, characterId)
                                             }
                                         }
                                         when (val result = structureResult) {

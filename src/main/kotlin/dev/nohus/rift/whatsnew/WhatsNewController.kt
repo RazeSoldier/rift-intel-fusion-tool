@@ -46,6 +46,16 @@ class WhatsNewController(
             "4.13.0" to {
                 localDatabase.dropOldTable()
             },
+            "5.20.0" to {
+                settings.intelMap = settings.intelMap.let {
+                    it.copy(
+                        mapTypeInfoBoxInfoTypes = it.mapTypeInfoBoxInfoTypes +
+                                (MapType.NewEden to (it.mapTypeInfoBoxInfoTypes[MapType.NewEden] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks) +
+                                (MapType.Region to (it.mapTypeInfoBoxInfoTypes[MapType.Region] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks) +
+                                (MapType.Distance to (it.mapTypeInfoBoxInfoTypes[MapType.Distance] ?: emptyList()) + MapSystemInfoType.RaidableSkyhooks),
+                    )
+                }
+            },
         )
         migrations.forEach { (version, migration) ->
             if (VersionUtils.isNewer(lastVersion, version)) {

@@ -15,7 +15,7 @@ class EsiCompatibilityInterceptor(
 
     companion object {
         const val COMPATIBILITY_DATE_KEY = "X-Compatibility-Date"
-        const val COMPATIBILITY_DATE = "2025-12-16"
+        const val COMPATIBILITY_DATE = "2026-05-19"
         const val COMPATIBILITY_DATE_EARLY_ACCESS = "2099-01-01"
     }
 
@@ -33,6 +33,6 @@ class EsiCompatibilityInterceptor(
 
     @Suppress("UnusedReceiverParameter")
     private fun Request.isEarlyAccess(): Boolean {
-        return "/skyhooks/raidable" in url.encodedPath
+        return false
     }
 }

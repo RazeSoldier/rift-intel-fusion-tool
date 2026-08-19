@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -53,9 +54,9 @@ import dev.nohus.rift.network.esi.models.SovereigntyHubPower
 import dev.nohus.rift.network.esi.models.SovereigntyHubUpgradePowerState
 import dev.nohus.rift.network.esi.models.SovereigntyHubWorkforce
 import dev.nohus.rift.structures.SovereigntyReagent
-import dev.nohus.rift.structures.StructuresRepository.SovereigntyHub
-import dev.nohus.rift.structures.StructuresRepository.SovereigntyHubReagent
-import dev.nohus.rift.structures.StructuresRepository.SovereigntyHubWorkforceTransport
+import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHub
+import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHubReagent
+import dev.nohus.rift.structures.EquinoxStructuresRepository.SovereigntyHubWorkforceTransport
 import dev.nohus.rift.utils.formatDateTime
 import dev.nohus.rift.utils.formatNumber
 import dev.nohus.rift.utils.multiplyBrightness
@@ -424,10 +425,11 @@ private fun SovereigntyHubPower(power: SovereigntyHubPower) {
         val unallocatedPower = power.available - power.allocated
         RiftProgressBar(
             percentage = power.allocated / power.available.toFloat(),
+            height = 4.dp,
             secondaryPercentage = unallocatedPower / power.available.toFloat(),
             color = EveColors.smokeBlue,
             secondaryColor = EveColors.cryoBlue,
-            modifier = Modifier.size(300.dp, 4.dp),
+            modifier = Modifier.width(300.dp),
         )
     }
 }
@@ -474,12 +476,13 @@ private fun SovereigntyHubWorkforce(
 
         RiftProgressBar(
             percentage = workforce.allocated / total.toFloat(),
+            height = 4.dp,
             secondaryPercentage = (workforce.available - workforce.allocated) / total.toFloat(),
             tertiaryPercentage = exported / total.toFloat(),
             color = EveColors.smokeBlue,
             secondaryColor = EveColors.cryoBlue,
             tertiaryColor = EveColors.copperOxideGreen,
-            modifier = Modifier.height(4.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(Spacing.mediumLarge))
 

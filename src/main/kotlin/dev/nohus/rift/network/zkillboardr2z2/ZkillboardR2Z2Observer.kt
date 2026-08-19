@@ -27,7 +27,7 @@ private val PAST_POLL_REQUEST_DELAY = Duration.ofMillis(500).toMillis()
 private val POLL_REQUEST_DELAY = Duration.ofSeconds(6).toMillis()
 private val POLL_SUCCESS_DELAY = Duration.ofMillis(100).toMillis()
 private val FAILED_REQUEST_DELAY = Duration.ofSeconds(10).toMillis()
-private val MAX_WAIT_BEFORE_SEQUENCE_RECHECK = Duration.ofSeconds(30)
+private val MAX_WAIT_BEFORE_SEQUENCE_RECHECK = Duration.ofSeconds(60)
 
 @Single
 class ZkillboardR2Z2Observer(

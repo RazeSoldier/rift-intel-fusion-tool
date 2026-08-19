@@ -19,7 +19,6 @@ import dev.nohus.rift.network.esi.models.SignatureTypeId
 import dev.nohus.rift.opportunities.GetOpportunityContributionAttributesUseCase.OpportunityContributionAttributeType
 import dev.nohus.rift.opportunities.TypeListsRepository.TypeList
 import dev.nohus.rift.repositories.SolarSystemChipState
-import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import java.time.Instant

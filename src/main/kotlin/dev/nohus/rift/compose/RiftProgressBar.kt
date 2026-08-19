@@ -5,7 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -19,27 +19,35 @@ import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import dev.nohus.rift.compose.theme.RiftTheme
 
 @Composable
 fun RiftProgressBar(
     percentage: Float,
+    height: Dp,
     secondaryPercentage: Float? = null,
     tertiaryPercentage: Float? = null,
     color: Color,
     secondaryColor: Color? = null,
     tertiaryColor: Color? = null,
     hasInitialAnimation: Boolean = true,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(
+    val density = LocalDensity.current
+    var width by remember { mutableStateOf(0.dp) }
+    Box(
         modifier = modifier
+            .height(height)
+            .onGloballyPositioned { coordinates ->
+                width = with(density) { coordinates.size.width.toDp() }
+            }
             .background(RiftTheme.colors.progressBarBackground),
     ) {
-        val width = maxWidth
-        val height = maxHeight
         var animatedPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else percentage) }
         var animatedSecondaryPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else secondaryPercentage ?: 0f) }
         var animatedTertiaryPercentage by remember { mutableStateOf(if (hasInitialAnimation) 0f else tertiaryPercentage ?: 0f) }

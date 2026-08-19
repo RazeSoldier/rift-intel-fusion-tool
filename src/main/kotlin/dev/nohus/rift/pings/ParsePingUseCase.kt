@@ -177,7 +177,7 @@ class ParsePingUseCase(
         if (system == null) { // System not found, try with system hints
             val friendlyAllianceIds = standingsRepository.getFriendlyAllianceIds()
             val friendlySystems = mapStatusRepository.status.value.mapNotNull {
-                if (it.value.sovereignty?.allianceId in friendlyAllianceIds) it.key else null
+                if (it.value.sovereignty?.alliance?.allianceId in friendlyAllianceIds) it.key else null
             }
             system = solarSystemsRepository.getFuzzySystem(textWithoutInterpunction, regionsHint = emptyList(), systemHints = friendlySystems)
         }

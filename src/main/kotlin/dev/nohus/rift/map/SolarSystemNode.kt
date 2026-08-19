@@ -215,8 +215,8 @@ class HostileOrbitPainter {
                 translate(left = -bitmapOffset.x, top = -bitmapOffset.y) {
                     drawImage(
                         image = icon.bitmap,
-                        dstSize = IntSize(icon.bitmap.width, icon.bitmap.height) * scope.density.toInt(),
-                        dstOffset = IntOffset(icon.bitmap.width * (1 - scope.density.toInt()) / 2, icon.bitmap.height * (1 - scope.density.toInt()) / 2),
+                        dstSize = IntSize(icon.bitmap.width, icon.bitmap.height),
+                        dstOffset = IntOffset((icon.bitmap.width * (1 - scope.density) / 2).toInt(), (icon.bitmap.height * (1 - scope.density) / 2).toInt()),
                     )
                 }
             }

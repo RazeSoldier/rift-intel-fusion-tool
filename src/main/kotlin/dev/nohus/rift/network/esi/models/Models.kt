@@ -312,15 +312,70 @@ enum class Contested {
 }
 
 @Serializable
+data class SovereigntySystems(
+    @SerialName("solar_systems")
+    val solarSystems: List<SovereigntySystem>,
+)
+
+@Serializable
 data class SovereigntySystem(
-    @SerialName("alliance_id")
-    val allianceId: Int? = null,
-    @SerialName("corporation_id")
-    val corporationId: Int? = null,
-    @SerialName("faction_id")
-    val factionId: Int? = null,
-    @SerialName("system_id")
+    @SerialName("solar_system_id")
     val systemId: Int,
+    @SerialName("claim")
+    val claim: SovereigntySystemClaim,
+)
+
+@Serializable
+data class SovereigntySystemClaim(
+    @SerialName("faction")
+    val faction: SovereigntySystemClaimFaction? = null,
+    @SerialName("alliance")
+    val alliance: SovereigntySystemClaimAlliance? = null,
+    @SerialName("unclaimed")
+    val unclaimed: Boolean? = null,
+)
+
+@Serializable
+data class SovereigntySystemClaimFaction(
+    @SerialName("faction_id")
+    val factionId: Int,
+)
+
+@Serializable
+data class SovereigntySystemClaimAlliance(
+    @SerialName("alliance_id")
+    val allianceId: Int,
+    @SerialName("corporation_id")
+    val corporationId: Int,
+    @SerialName("claimed_since")
+    @Serializable(with = IsoDateTimeSerializer::class)
+    val claimedSince: Instant,
+    @SerialName("development")
+    val development: SovereigntySystemClaimAllianceDevelopment,
+    @SerialName("is_capital_system")
+    val isCapitalSystem: Boolean,
+    @SerialName("sovereignty_hub")
+    val sovereigntyHub: SovereigntySystemClaimAllianceSovereigntyHub,
+)
+
+@Serializable
+data class SovereigntySystemClaimAllianceDevelopment(
+    @SerialName("activity_defense_multiplier")
+    val activityDefenseMultiplier: Double,
+    @SerialName("industrial_level")
+    val industrialLevel: Int,
+    @SerialName("military_level")
+    val militaryLevel: Int,
+    @SerialName("strategic_level")
+    val strategicLevel: Int,
+)
+
+@Serializable
+data class SovereigntySystemClaimAllianceSovereigntyHub(
+    @SerialName("id")
+    val id: Long,
+    @SerialName("vulnerability_window")
+    val vulnerabilityWindow: VulnerabilityWindow? = null,
 )
 
 @Serializable

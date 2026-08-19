@@ -1,6 +1,5 @@
 package dev.nohus.rift.repositories
 
-import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.assets.AssetsRepository
 import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.map.MapJumpRangeController
@@ -12,7 +11,7 @@ import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.esi.models.FactionWarfareSystem
 import dev.nohus.rift.network.esi.models.Incursion
 import dev.nohus.rift.network.esi.models.IndustryActivity
-import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.SovereigntySystemClaim
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase
 import dev.nohus.rift.network.evescout.GetMetaliminalStormsUseCase.Storm
 import dev.nohus.rift.network.evescout.GetPublicWormholesUseCase
@@ -73,7 +72,7 @@ class MapStatusRepository(
         val assetCount: Int?,
         val incursion: Incursion?,
         val factionWarfare: FactionWarfareSystem?,
-        val sovereignty: SovereigntySystem?,
+        val sovereignty: SovereigntySystemClaim?,
         val sovereigntyUpgrades: List<SovereigntyUpgrade>,
         val stations: List<Station>,
         val storms: List<Storm>,
@@ -91,7 +90,7 @@ class MapStatusRepository(
     private val universeSystemStatus = MutableStateFlow<Map<Int, UniverseSystemStatus>>(emptyMap())
     private val incursions = MutableStateFlow<Map<Int, Incursion>>(emptyMap())
     private val factionWarfare = MutableStateFlow<Map<Int, FactionWarfareSystem>>(emptyMap())
-    private val sovereignty = MutableStateFlow<Map<Int, SovereigntySystem>>(emptyMap())
+    private val sovereignty = MutableStateFlow<Map<Int, SovereigntySystemClaim>>(emptyMap())
     private val storms = MutableStateFlow<Map<Int, List<Storm>>>(emptyMap())
     private val wormholes = MutableStateFlow<Map<Int, List<Wormhole>>>(emptyMap())
     private val industryIndices = MutableStateFlow<Map<Int, Map<IndustryActivity, Float>>>(emptyMap())
@@ -195,10 +194,8 @@ class MapStatusRepository(
             launch {
                 loadIndustryIndices()
             }
-            if (BuildConfig.isDevEnvironment) {
-                launch {
-                    loadRaidableSkyhooks()
-                }
+            launch {
+                loadRaidableSkyhooks()
             }
         }
     }
@@ -259,14 +256,14 @@ class MapStatusRepository(
     }
 
     private suspend fun loadSovereignty() {
-        val response = esiApi.getSovereigntyMap(Originator.Map).success ?: return
-        sovereignty.value = response
-            .filter { it.factionId != null || it.allianceId != null || it.corporationId != null }
+        val response = esiApi.getSovereigntySystems(Originator.Map).success ?: return
+        sovereignty.value = response.solarSystems
+            .filter { it.claim.unclaimed != true }
             .also {
-                val ids = it.flatMap { listOfNotNull(it.factionId, it.allianceId, it.corporationId) }
+                val ids = it.flatMap { listOfNotNull(it.claim.faction?.factionId, it.claim.alliance?.allianceId, it.claim.alliance?.corporationId) }
                 namesRepository.resolveNames(Originator.Map, ids)
             }
-            .associateBy { it.systemId }
+            .associateBy({ it.systemId }, { it.claim } )
     }
 
     private suspend fun loadMetaliminalStorms() {

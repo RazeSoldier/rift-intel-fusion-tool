@@ -99,7 +99,6 @@ import dev.nohus.rift.generated.resources.checkmark_16px
 import dev.nohus.rift.generated.resources.contribution_16px
 import dev.nohus.rift.generated.resources.corporation_project_state_time_16px
 import dev.nohus.rift.generated.resources.isk
-import dev.nohus.rift.generated.resources.location_16px
 import dev.nohus.rift.generated.resources.navigate_back_16px
 import dev.nohus.rift.generated.resources.open_window_16px
 import dev.nohus.rift.generated.resources.ratio_16px
@@ -120,7 +119,6 @@ import dev.nohus.rift.opportunities.Opportunity
 import dev.nohus.rift.opportunities.OpportunityCategoryFilter
 import dev.nohus.rift.opportunities.OpportunityConfiguration
 import dev.nohus.rift.opportunities.OpportunityType
-import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.utils.formatDate
 import dev.nohus.rift.utils.formatDateTime2
 import dev.nohus.rift.utils.formatDuration

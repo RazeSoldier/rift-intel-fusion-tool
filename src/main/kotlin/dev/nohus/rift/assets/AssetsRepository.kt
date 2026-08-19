@@ -8,9 +8,10 @@ import dev.nohus.rift.network.esi.models.Asset
 import dev.nohus.rift.network.esi.models.AssetLocationType
 import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.UniverseStationsId
-import dev.nohus.rift.network.esi.models.UniverseStructuresId
 import dev.nohus.rift.network.esi.pagination.fetchPagePaginated
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.repositories.StructuresRepository
+import dev.nohus.rift.repositories.StructuresRepository.Structure
 import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.TypesRepository.Type
 import dev.nohus.rift.sso.scopes.ScopeGroups
@@ -43,11 +44,12 @@ class AssetsRepository(
     private val planetaryIndustryCommoditiesRepository: PlanetaryIndustryCommoditiesRepository,
     private val isNameableAssetUseCase: IsNameableAssetUseCase,
     private val esiApi: EsiApi,
+    private val structuresRepository: StructuresRepository,
 ) {
 
     data class State(
         val loadedState: Result<LoadedState>? = null,
-        val isLoading: Boolean = true,
+        val loading: LoadingState = LoadingState(),
     )
 
     data class LoadedState(
@@ -56,6 +58,23 @@ class AssetsRepository(
         val owners: List<AssetOwner>,
         val divisionNames: Map<Int, Map<Int, String>>,
     )
+
+    data class LoadingState(
+        val stage: LoadingStage? = null,
+        val owners: List<AssetOwner> = emptyList(),
+        val ownerProgress: Map<AssetOwner, Pair<Int, Float>> = emptyMap(),
+        val ownerNamesLoaded: Set<AssetOwner> = emptySet(),
+        val totalStationIds: Int? = null,
+        val totalStructureIds: Int? = null,
+        val loadedStationIds: Int = 0,
+        val loadedStructureIds: Int = 0,
+    )
+
+    enum class LoadingStage {
+        LoadingAssets,
+        LoadingLocations,
+        LoadingDivisionNames
+    }
 
     data class AssetBalance(
         val owner: AssetOwner,
@@ -160,7 +179,7 @@ class AssetsRepository(
 
     data class ResolvedAssetLocations(
         val stationsById: Map<Long, UniverseStationsId>,
-        val structuresById: Map<Long, UniverseStructuresId>,
+        val structuresById: Map<Long, Structure>,
         val unresolveableIds: List<Long>,
     )
 
@@ -184,8 +203,10 @@ class AssetsRepository(
                 AssetOwner.Character(it)
             }
 
-            if (characters.isEmpty() && charactersWithCorpAssetsScopes.isEmpty()) return@withContext
-            _state.update { it.copy(isLoading = true) }
+            if (characters.isEmpty() && charactersWithCorpAssetsScopes.isEmpty()) {
+                _state.update { it.copy(loading = LoadingState()) }
+                return@withContext
+            }
 
             val corporations = charactersWithCorpAssetsScopes.mapNotNull { character ->
                 val roles = character.info?.corporationRoles ?: return@mapNotNull null
@@ -198,6 +219,10 @@ class AssetsRepository(
             val assetOwners = charactersWithAssetsScopes.map {
                 AssetOwner.Character(it)
             } + corporations
+
+            _state.update { it.copy(
+                loading = LoadingState(stage = LoadingStage.LoadingAssets, owners = assetOwners))
+            }
 
             val divisionNames = async {
                 corporations.mapNotNull { corporation ->
@@ -213,11 +238,15 @@ class AssetsRepository(
             val loadedState = loadAllAssetsWithLocations(characters, corporations).map {
                 logger.debug { "Assets loaded: ${it.size}" }
                 val assetBalances = getAssetBalances(it)
-                LoadedState(it, assetBalances, assetOwners, divisionNames.await())
+                _state.update { it.copy(
+                    loading = it.loading.copy(stage = LoadingStage.LoadingDivisionNames))
+                }
+                val divisionNames = divisionNames.await()
+                LoadedState(it, assetBalances, assetOwners, divisionNames)
             }.onFailure {
                 logger.error { "Could not load assets: ${it?.cause?.message}" }
             }
-            _state.update { it.copy(loadedState = loadedState, isLoading = false) }
+            _state.update { it.copy(loadedState = loadedState, loading = LoadingState()) }
         }
     }
 
@@ -235,6 +264,9 @@ class AssetsRepository(
         val allAssets = when (val result = loadAllAssets(characters, corporations)) {
             is Result.Success -> result.data
             is Result.Failure -> return@withContext result
+        }
+        _state.update { it.copy(
+            loading = it.loading.copy(stage = LoadingStage.LoadingLocations))
         }
         val itemIds = allAssets.map { it.asset.itemId }.distinct()
         val resolvedAssetLocations = when (val result = resolveAssetLocations(allAssets, itemIds)) {
@@ -270,13 +302,28 @@ class AssetsRepository(
                     else -> {}
                 }
             }
+
+        _state.update { it.copy(
+            loading = it.loading.copy(totalStationIds = stationIds.size, totalStructureIds = structureIds.size))
+        }
+
         val stationsByIdDeferred = stationIds.map { stationId ->
-            async { stationId to esiApi.getUniverseStationsId(Originator.Assets, stationId.toInt()) }
+            async {
+                val result = esiApi.getUniverseStationsId(Originator.Assets, stationId.toInt())
+                _state.update { it.copy(
+                    loading = it.loading.copy(loadedStationIds = it.loading.loadedStationIds + 1))
+                }
+                stationId to result
+            }
         }
         val structuresByIdDeferred = structureIds.map { structureId ->
             async {
                 val characterId = allAssets.first { it.asset.locationId == structureId }.owner.character.characterId
-                structureId to esiApi.getUniverseStructuresId(Originator.Assets, structureId, characterId)
+                val result = structuresRepository.getStructure(Originator.Assets, structureId, characterId)
+                _state.update { it.copy(
+                    loading = it.loading.copy(loadedStructureIds = it.loading.loadedStructureIds + 1))
+                }
+                structureId to result
             }
         }
         val stationsById = stationsByIdDeferred.awaitAll().associate { (id, result) ->
@@ -310,11 +357,20 @@ class AssetsRepository(
     private suspend fun loadAllAssets(characters: List<AssetOwner.Character>, corporations: List<AssetOwner.Corporation>): Result<List<AssetWithOwner>> = coroutineScope {
         val characterAssetsDeferreds = characters.map { character ->
             async {
-                fetchPagePaginated {
+                fetchPagePaginated(
+                    onProgressUpdate = { assetsLoaded, percentage ->
+                        _state.update { it.copy(
+                            loading = it.loading.copy(ownerProgress = it.loading.ownerProgress + (character to (assetsLoaded to percentage))))
+                        }
+                    }
+                ) {
                     esiApi.getCharactersIdAssets(Originator.Assets, it, character.character.characterId)
                 }.map { assets ->
                     typesRepository.resolveNamesFromEsi(Originator.Assets, assets.map { it.typeId })
                     val names = getAssetNames(assets, character.character)
+                    _state.update { it.copy(
+                        loading = it.loading.copy(ownerNamesLoaded = it.loading.ownerNamesLoaded + character))
+                    }
                     assets.map { asset ->
                         AssetWithOwner(
                             asset = asset,
@@ -328,11 +384,20 @@ class AssetsRepository(
         }
         val corporationAssetsDeferreds = corporations.map { corporation ->
             async {
-                fetchPagePaginated {
+                fetchPagePaginated(
+                    onProgressUpdate = { assetsLoaded, percentage ->
+                        _state.update { it.copy(
+                            loading = it.loading.copy(ownerProgress = it.loading.ownerProgress + (corporation to (assetsLoaded to percentage))))
+                        }
+                    }
+                ) {
                     esiApi.getCorporationsIdAssets(Originator.Assets, it, corporation.character.characterId, corporation.corporationId)
                 }.map { assets ->
                     typesRepository.resolveNamesFromEsi(Originator.Assets, assets.map { it.typeId })
                     val names = getAssetNames(assets, corporation)
+                    _state.update { it.copy(
+                        loading = it.loading.copy(ownerNamesLoaded = it.loading.ownerNamesLoaded + corporation))
+                    }
                     assets.map { asset ->
                         AssetWithOwner(
                             asset = asset,
@@ -398,7 +463,7 @@ class AssetsRepository(
         itemIds: List<Long>,
         allAssets: List<AssetWithOwner>,
         stationsById: Map<Long, UniverseStationsId>,
-        structuresById: Map<Long, UniverseStructuresId>,
+        structuresById: Map<Long, Structure>,
     ): AssetLocation {
         val locationId = assetWithOwner.asset.locationId
         val locationType = getLocationType(locationId, assetWithOwner.asset.locationType, itemIds)
@@ -440,13 +505,13 @@ class AssetsRepository(
         return when {
             locationId == 2004L -> LocationType.AssetSafety
             locationType == AssetLocationType.SolarSystem -> when (locationId) {
-                in 30000000L..32000000L -> return LocationType.System
-                in 32000000L..33000000L -> return LocationType.AbyssalSystem
+                in 30000000L..32000000L -> LocationType.System
+                in 32000000L..33000000L -> LocationType.AbyssalSystem
                 else -> LocationType.System
             }
             locationType == AssetLocationType.Station -> LocationType.Station
             locationType == AssetLocationType.Item -> when {
-                locationId in itemIds -> return LocationType.Container
+                locationId in itemIds -> LocationType.Container
                 else -> LocationType.Structure
             }
             else -> LocationType.Other

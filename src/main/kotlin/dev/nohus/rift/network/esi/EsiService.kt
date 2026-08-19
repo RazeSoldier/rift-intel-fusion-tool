@@ -36,21 +36,17 @@ import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.KillmailIdHash
 import dev.nohus.rift.network.esi.models.LoyaltyPoints
 import dev.nohus.rift.network.esi.models.MarketsPrice
-import dev.nohus.rift.network.esi.models.MercenaryDen
 import dev.nohus.rift.network.esi.models.MercenaryDens
 import dev.nohus.rift.network.esi.models.MercenaryDensId
-import dev.nohus.rift.network.esi.models.MercenaryTacticalOperation
 import dev.nohus.rift.network.esi.models.MercenaryTacticalOperations
 import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationsId
 import dev.nohus.rift.network.esi.models.NewMailRequest
-import dev.nohus.rift.network.esi.models.Skyhook
 import dev.nohus.rift.network.esi.models.Skyhooks
 import dev.nohus.rift.network.esi.models.SkyhooksId
 import dev.nohus.rift.network.esi.models.SkyhooksRaidable
-import dev.nohus.rift.network.esi.models.SovereigntyHub
 import dev.nohus.rift.network.esi.models.SovereigntyHubs
 import dev.nohus.rift.network.esi.models.SovereigntyHubsId
-import dev.nohus.rift.network.esi.models.SovereigntySystem
+import dev.nohus.rift.network.esi.models.SovereigntySystems
 import dev.nohus.rift.network.esi.models.Status
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
 import dev.nohus.rift.network.esi.models.UniverseName
@@ -423,12 +419,12 @@ interface EsiService {
         @Tag originator: Originator,
     ): List<FactionWarfareSystem>
 
-    @GET("/sovereignty/map")
-    @EndpointTag(Endpoint.GetSovereigntyMap::class)
+    @GET("/sovereignty/systems")
+    @EndpointTag(Endpoint.GetSovereigntySystems::class)
     @RateLimit(RateLimitGroup.Sovereignty::class)
-    suspend fun getSovereigntyMap(
+    suspend fun getSovereigntySystems(
         @Tag originator: Originator,
-    ): List<SovereigntySystem>
+    ): SovereigntySystems
 
     @POST("/ui/autopilot/waypoint")
     @EndpointTag(Endpoint.PostUiAutopilotWaypoint::class)
@@ -828,12 +824,5 @@ interface EsiService {
     @EndpointTag(Endpoint.GetSkyhooksRaidable::class)
     suspend fun getSkyhooksRaidable(
         @Tag originator: Originator,
-    ): SkyhooksRaidable
-
-    @GET("/skyhooks/raidable")
-    @EndpointTag(Endpoint.GetSkyhooksRaidable::class)
-    suspend fun getSkyhooksRaidable(
-        @Tag originator: Originator,
-        @Tag character: Character, // TODO: EA Temporary token
     ): SkyhooksRaidable
 }

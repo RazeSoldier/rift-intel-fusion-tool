@@ -345,7 +345,6 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.IntelHostiles,
                                     MapSystemInfoType.FactionWarfare,
                                     MapSystemInfoType.RatsType,
-                                    MapSystemInfoType.RaidableSkyhooks,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeIndicatorName,
                                 selected = systemInfoTypes.indicators[settingsMapType].orEmpty(),
@@ -371,7 +370,6 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.StarColor,
                                     MapSystemInfoType.NullSecurity,
                                     MapSystemInfoType.IntelHostiles,
-                                    MapSystemInfoType.RaidableSkyhooks,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeInfoBoxName,
                                 selected = systemInfoTypes.infoBox[settingsMapType].orEmpty(),
@@ -792,8 +790,7 @@ private fun SystemColorPills(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation,
-            MapSystemInfoType.RaidableSkyhooks)
+        val colorEntries = MapSystemInfoType.entries - setOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation)
         val pills = if (isCellColor) colorEntries + null else colorEntries
         pills.filter { isExpanded || selected == it }
             .forEach { type ->

@@ -9,7 +9,6 @@ import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.rememberTrayState
 import com.formdev.flatlaf.FlatDarkLaf
-import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.tray_tray_128
@@ -130,9 +129,7 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Planetary Industry", Res.drawable.window_planets) { onButtonClick(RiftWindow.PlanetaryIndustry) })
         add(TrayMenuTextItem("Opportunities", Res.drawable.window_opportunities) { onButtonClick(RiftWindow.Opportunities) })
         add(TrayMenuTextItem("Contacts", Res.drawable.window_contacts) { onButtonClick(RiftWindow.Contacts) })
-        if (BuildConfig.isDevEnvironment) {
-            add(TrayMenuTextItem("Structures", Res.drawable.window_structures) { onButtonClick(RiftWindow.Structures) })
-        }
+        add(TrayMenuTextItem("Structures", Res.drawable.window_structures) { onButtonClick(RiftWindow.Structures) })
         add(TrayMenuTextItem("Chat", Res.drawable.window_bleedchannel) { onButtonClick(RiftWindow.Chat) })
         if (isJabberEnabled) {
             add(TrayMenuTextItem("Pings", Res.drawable.window_sovereignty) { onButtonClick(RiftWindow.Pings) })

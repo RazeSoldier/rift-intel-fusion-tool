@@ -99,6 +99,10 @@ data class SettingsModel(
         ChatWindowState,
         > = emptyMap(),
     val isEquinoxMockingEnabled: Boolean = false,
+    val sentryTimestamps: List<Long> = emptyList(),
+    val forbiddenStructures: Map<Int, Set<Long>> = emptyMap(),
+    val isShowingChatPortraits: Boolean = true,
+    val isShowingChatStandings: Boolean = false,
 )
 
 @Serializable
@@ -195,9 +199,9 @@ data class IntelMap(
         MapType.Distance to listOf(),
     ),
     val mapTypeInfoBoxInfoTypes: Map<MapType, List<MapSystemInfoType>> = mapOf(
-        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
-        MapType.Region to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
-        MapType.Distance to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.NewEden to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, RaidableSkyhooks, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.Region to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, RaidableSkyhooks, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
+        MapType.Distance to listOf(Security, Assets, Clones, Incursions, Sovereignty, SovereigntyUpgrades, RaidableSkyhooks, MetaliminalStorms, JoveObservatories, Wormholes, Colonies, Standings),
     ),
     val intelPopupTimeoutSeconds: Int = 60,
     val isFollowingCharacterAcrossLayouts: Boolean = true,

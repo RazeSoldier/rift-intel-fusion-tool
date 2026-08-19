@@ -9,7 +9,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.missing
-import dev.nohus.rift.generated.resources.missing_blueprint
 import dev.nohus.rift.generated.resources.missing_skin
 import dev.nohus.rift.repositories.TypesRepository.Type
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -51,11 +50,13 @@ fun AsyncImage(
 @Composable
 fun AsyncTypeIcon(
     type: Type?,
+    isBlueprintCopy: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     key(type) {
         AsyncTypeIcon(
             typeId = type?.id,
+            isBlueprintCopy = isBlueprintCopy,
             nameHint = type?.name,
             modifier = modifier,
         )
@@ -70,11 +71,11 @@ fun AsyncTypeIcon(
 fun AsyncTypeIcon(
     typeId: Int?,
     nameHint: String? = null,
+    isBlueprintCopy: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     if (nameHint != null) {
         val resource = when {
-            "Blueprint" in nameHint -> Res.drawable.missing_blueprint
             "SKIN" in nameHint -> Res.drawable.missing_skin
             else -> null
         }
@@ -94,8 +95,12 @@ fun AsyncTypeIcon(
         )
     }
     if (typeId != null) {
+        val variation = when {
+            nameHint != null && "Blueprint" in nameHint -> if (isBlueprintCopy) "bpc" else "bp"
+            else -> "icon"
+        }
         AsyncImage(
-            url = "https://images.evetech.net/types/$typeId/icon",
+            url = "https://images.evetech.net/types/$typeId/$variation",
             modifier = modifier,
             fallbackIcon = staticFallbackIcon,
         )

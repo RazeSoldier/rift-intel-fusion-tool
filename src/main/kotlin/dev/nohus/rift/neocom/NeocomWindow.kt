@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.compose.PointerInteractionState
 import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftWindow
@@ -43,6 +42,7 @@ import dev.nohus.rift.generated.resources.window_assets
 import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.generated.resources.window_characters
 import dev.nohus.rift.generated.resources.window_chatchannels
+import dev.nohus.rift.generated.resources.window_contacts
 import dev.nohus.rift.generated.resources.window_evemailtag
 import dev.nohus.rift.generated.resources.window_jukebox
 import dev.nohus.rift.generated.resources.window_loudspeaker_icon
@@ -95,9 +95,8 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_wallet, name = "Wallets") { viewModel.onButtonClick(RiftWindow.Wallet) })
             add(ButtonModel(icon = Res.drawable.window_planets, name = "Planetary Industry", "Planets") { viewModel.onButtonClick(RiftWindow.PlanetaryIndustry) })
             add(ButtonModel(icon = Res.drawable.window_opportunities, name = "Opportunities") { viewModel.onButtonClick(RiftWindow.Opportunities) })
-            if (BuildConfig.isDevEnvironment) {
-                add(ButtonModel(icon = Res.drawable.window_structures, name = "Structures") { viewModel.onButtonClick(RiftWindow.Structures) })
-            }
+            add(ButtonModel(icon = Res.drawable.window_contacts, name = "Contacts") { viewModel.onButtonClick(RiftWindow.Contacts) })
+            add(ButtonModel(icon = Res.drawable.window_structures, name = "Structures") { viewModel.onButtonClick(RiftWindow.Structures) })
             add(ButtonModel(icon = Res.drawable.window_bleedchannel, name = "Chat") { viewModel.onButtonClick(RiftWindow.Chat) })
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })

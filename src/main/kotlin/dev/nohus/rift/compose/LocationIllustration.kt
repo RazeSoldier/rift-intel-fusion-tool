@@ -47,7 +47,10 @@ private val connectionConstellation = Color(0xFF0000FF)
 private val connectionSystem = Color(0xFFFF0000)
 
 @Composable
-fun ConstellationIllustrationIconSmall(constellationId: Int) {
+fun ConstellationIllustrationIconSmall(
+    constellationId: Int,
+    animation: Animatable<Float, AnimationVector1D> = remember { Animatable(0f) },
+) {
     ConstellationIllustrationIcon(
         constellationId = constellationId,
         iconSize = 32.dp,
@@ -56,11 +59,15 @@ fun ConstellationIllustrationIconSmall(constellationId: Int) {
         connectionRegion = Color(0xFF3A803C),
         connectionConstellation = Color(0xFF3535A0),
         pointColor = Color(0xFFB2B2B2),
+        animation = animation,
     )
 }
 
 @Composable
-fun ConstellationIllustrationIconBig(constellationId: Int) {
+fun ConstellationIllustrationIconBig(
+    constellationId: Int,
+    animation: Animatable<Float, AnimationVector1D> = remember { Animatable(0f) },
+) {
     ConstellationIllustrationIcon(
         constellationId = constellationId,
         iconSize = 128.dp,
@@ -69,6 +76,7 @@ fun ConstellationIllustrationIconBig(constellationId: Int) {
         connectionRegion = connectionRegion,
         connectionConstellation = connectionConstellation,
         pointColor = Color(0xFFFFFFFF),
+        animation = animation,
     )
 }
 
@@ -81,8 +89,8 @@ private fun ConstellationIllustrationIcon(
     connectionRegion: Color,
     connectionConstellation: Color,
     pointColor: Color,
+    animation: Animatable<Float, AnimationVector1D>,
 ) {
-    val animation = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         animation.animateTo(1f, animationSpec = tween(2500, easing = FastOutSlowInEasing))
     }
@@ -170,7 +178,10 @@ private fun ConstellationIllustrationIcon(
 }
 
 @Composable
-fun RegionIllustrationIconSmall(regionId: Int) {
+fun RegionIllustrationIconSmall(
+    regionId: Int,
+    animation: Animatable<Float, AnimationVector1D> = remember { Animatable(0f) },
+) {
     RegionIllustrationIcon(
         regionId = regionId,
         iconSize = 32.dp,
@@ -178,11 +189,15 @@ fun RegionIllustrationIconSmall(regionId: Int) {
         connectionRegion = Color(0xFF3A803C),
         connectionConstellation = Color(0xFF3535A0),
         pointColor = Color(0xFFB2B2B2),
+        animation = animation,
     )
 }
 
 @Composable
-fun RegionIllustrationIconBig(regionId: Int) {
+fun RegionIllustrationIconBig(
+    regionId: Int,
+    animation: Animatable<Float, AnimationVector1D> = remember { Animatable(0f) },
+) {
     RegionIllustrationIcon(
         regionId = regionId,
         iconSize = 128.dp,
@@ -190,6 +205,7 @@ fun RegionIllustrationIconBig(regionId: Int) {
         connectionRegion = connectionRegion,
         connectionConstellation = connectionConstellation,
         pointColor = Color(0xFFFFFFFF),
+        animation = animation,
     )
 }
 
@@ -201,8 +217,8 @@ private fun RegionIllustrationIcon(
     connectionRegion: Color,
     connectionConstellation: Color,
     pointColor: Color,
+    animation: Animatable<Float, AnimationVector1D>,
 ) {
-    val animation = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         animation.animateTo(1f, animationSpec = tween(2500, easing = FastOutSlowInEasing))
     }

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,11 +28,11 @@ import dev.nohus.rift.assets.AssetsViewModel.FitAction
 import dev.nohus.rift.assets.AssetsViewModel.UiState
 import dev.nohus.rift.assets.FittingController.Fitting
 import dev.nohus.rift.assets.compose.AssetsContent
+import dev.nohus.rift.assets.compose.AssetsLoadingProgress
 import dev.nohus.rift.assets.compose.OwnersContent
 import dev.nohus.rift.assets.compose.RenameLocationDialog
 import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.LoadingSpinner
-import dev.nohus.rift.compose.LoadingSpinnerAmbient
 import dev.nohus.rift.compose.OnVisibilityChange
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftTabBar
@@ -120,7 +119,7 @@ private fun ToolbarRow(
             modifier = Modifier.weight(1f),
         )
 
-        AnimatedVisibility(state.isLoading && state.loadedData is Result.Success) {
+        AnimatedVisibility(state.loading.stage != null && state.loadedData is Result.Success) {
             LoadingSpinner(modifier = Modifier.size(36.dp))
         }
     }
@@ -145,18 +144,8 @@ private fun AssetsWindowContent(
                 .background(RiftTheme.colors.borderGreyLight),
         )
 
-        if (state.isLoading && state.loadedData !is Result.Success) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize().padding(Spacing.large),
-            ) {
-                LoadingSpinnerAmbient()
-                Text(
-                    text = "Loading assets…",
-                    style = RiftTheme.typography.headlinePrimary,
-                )
-            }
+        if (state.loading.stage != null && state.loadedData !is Result.Success) {
+            AssetsLoadingProgress(state.loading, state.loading.stage)
         } else {
             when (val resource = state.loadedData) {
                 is Result.Failure -> {

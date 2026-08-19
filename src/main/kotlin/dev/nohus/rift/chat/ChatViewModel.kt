@@ -64,7 +64,9 @@ class ChatViewModel(
         val characters: List<LocalCharacter> = emptyList(),
         val lastMessageTimestamp: Map<Channel, Instant> = emptyMap(),
         val lastViewedTimestamp: Map<Channel, Instant> = emptyMap(),
-        val displayTimezone: ZoneId = ZoneId.systemDefault(),
+        val displayTimezone: ZoneId,
+        val isShowingPortraits: Boolean,
+        val isShowingStandings: Boolean,
     )
 
     data class RichChatMessage(
@@ -82,7 +84,11 @@ class ChatViewModel(
         data object EveSystem : Author
     }
 
-    private val _state = MutableStateFlow(UiState())
+    private val _state = MutableStateFlow(UiState(
+        displayTimezone = settings.displayTimeZone,
+        isShowingPortraits = settings.isShowingChatPortraits,
+        isShowingStandings = settings.isShowingChatStandings,
+    ))
     val state = _state.asStateFlow()
 
     init {
@@ -118,10 +124,12 @@ class ChatViewModel(
             }
         }
         viewModelScope.launch {
-            settings.updateFlow.map { it.isDisplayEveTime }.collect {
+            settings.updateFlow.map { listOf(it.isDisplayEveTime, it.isShowingChatPortraits, it.isShowingChatStandings) }.collect {
                 _state.update {
                     it.copy(
                         displayTimezone = settings.displayTimeZone,
+                        isShowingPortraits = settings.isShowingChatPortraits,
+                        isShowingStandings = settings.isShowingChatStandings,
                     )
                 }
             }
@@ -209,6 +217,14 @@ class ChatViewModel(
     fun onCopyAllClick() {
         val messages = _state.value.messages
         Clipboard.copy(messages.joinToString("\n") { getCopyText(it) })
+    }
+
+    fun onIsShowingPortraitsChange(show: Boolean) {
+        settings.isShowingChatPortraits = show
+    }
+
+    fun onIsShowingStandingsChange(show: Boolean) {
+        settings.isShowingChatStandings = show
     }
 
     private fun getCopyText(message: RichChatMessage): String {
