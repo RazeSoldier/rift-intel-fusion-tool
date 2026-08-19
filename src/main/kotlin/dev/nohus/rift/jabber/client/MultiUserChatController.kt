@@ -159,6 +159,7 @@ class MultiUserChatController(
                 chat = chat.room.localpartOrNull?.toString() ?: "",
                 sender = sender.toString(),
                 message = body,
+                isDirectMessage = false,
             )
         }
 

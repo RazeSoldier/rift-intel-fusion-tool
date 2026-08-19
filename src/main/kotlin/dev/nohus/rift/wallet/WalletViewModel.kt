@@ -43,7 +43,6 @@ class WalletViewModel(
 
     data class UiState(
         val loadedData: Result<LoadedData>? = null,
-        val filters: WalletFilters = WalletFilters(),
         val availableWalletFilters: AvailableWalletFilters = AvailableWalletFilters(),
         val loading: LoadingState = LoadingState(),
         val isProcessing: Boolean = false,
@@ -51,6 +50,7 @@ class WalletViewModel(
         val insightsTab: InsightsTab = InsightsTab.IncomeByParty,
         val availableTimestamps: List<Duration> = emptyList(),
 
+        val filters: WalletFilters,
         val displayTimezone: ZoneId,
         val showCents: Boolean,
     )
@@ -138,6 +138,7 @@ class WalletViewModel(
 
     private val _state = MutableStateFlow(
         UiState(
+            filters = WalletFilters(timeSpan = settings.walletTimeSpan ?: Duration.ZERO),
             displayTimezone = settings.displayTimeZone,
             showCents = settings.isShowIskCents,
         ),
@@ -191,6 +192,9 @@ class WalletViewModel(
     }
 
     fun onFiltersUpdate(filters: WalletFilters) {
+        if (filters.timeSpan != _state.value.filters.timeSpan) {
+            settings.walletTimeSpan = filters.timeSpan
+        }
         _state.update { it.copy(filters = filters) }
         updateJournalsFlow.scopedEmit(Unit)
     }

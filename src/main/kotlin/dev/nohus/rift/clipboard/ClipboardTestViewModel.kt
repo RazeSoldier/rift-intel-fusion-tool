@@ -1,6 +1,7 @@
 package dev.nohus.rift.clipboard
 
 import dev.nohus.rift.ViewModel
+import dev.nohus.rift.map.markers.MapMarkersParser
 import dev.nohus.rift.settings.JumpBridgesParser
 import dev.nohus.rift.settings.SovereigntyUpgradesParser
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,7 @@ class ClipboardTestViewModel(
     private val clipboard: Clipboard,
     private val jumpBridgesParser: JumpBridgesParser,
     private val sovereigntyUpgradesParser: SovereigntyUpgradesParser,
+    private val mapMarkersParser: MapMarkersParser,
 ) : ViewModel() {
 
     data class UiState(
@@ -21,11 +23,13 @@ class ClipboardTestViewModel(
         val text: String = "",
         val jumpBridgesResult: JumpBridgesParser.ParsingResult? = null,
         val sovereigntyUpgradesResult: SovereigntyUpgradesParser.ParsingResult? = null,
+        val mapMarkersResult: MapMarkersParser.ParsingResult? = null,
     )
 
     enum class ClipboardImportType {
         JumpBridges,
         SovereigntyUpgrades,
+        MapMarkers,
     }
 
     private val _state = MutableStateFlow(UiState())
@@ -47,9 +51,8 @@ class ClipboardTestViewModel(
     }
 
     private suspend fun parse() {
-        val text = clipboard.state.value
-        _state.update { it.copy(text = text ?: "") }
-        if (text == null) return
+        val text = clipboard.state.value.orEmpty()
+        _state.update { it.copy(text = text) }
 
         when (_state.value.type) {
             ClipboardImportType.JumpBridges -> {
@@ -59,6 +62,10 @@ class ClipboardTestViewModel(
             ClipboardImportType.SovereigntyUpgrades -> {
                 val result = sovereigntyUpgradesParser.parseResult(text)
                 _state.update { it.copy(sovereigntyUpgradesResult = result) }
+            }
+            ClipboardImportType.MapMarkers -> {
+                val result = mapMarkersParser.parse(text)
+                _state.update { it.copy(mapMarkersResult = result) }
             }
             null -> {}
         }

@@ -2,6 +2,7 @@ package dev.nohus.rift.map
 
 import dev.nohus.rift.DataEvent
 import dev.nohus.rift.repositories.SolarSystemsRepository
+import dev.nohus.rift.settings.persistence.MapOpenedTab
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -47,6 +48,7 @@ class MapExternalControl(
      * used when there are no map windows open, and so the first opened window should handle it.
      */
     sealed class MapExternalControlEvent(open val windowUuid: UUID?) {
+        data class FocusSystem(override val windowUuid: UUID, val solarSystemId: Int) : MapExternalControlEvent(windowUuid)
         data class ShowSystemOnNewEdenMap(override val windowUuid: UUID?, val solarSystemId: Int) : MapExternalControlEvent(windowUuid)
         data class ShowSystemOnRegionMap(override val windowUuid: UUID?, val solarSystemId: Int) : MapExternalControlEvent(windowUuid)
     }
@@ -64,6 +66,10 @@ class MapExternalControl(
     }
 
     fun showSystemOnMap(solarSystemId: Int) {
+        getMapContainingSystem(solarSystemId)?.let { mapWindow ->
+            focusSystem(mapWindow, solarSystemId)
+            return
+        }
         if (settings.intelMap.isPreferringRegionMaps) {
             showSystemOnRegionMap(solarSystemId)
         } else {
@@ -95,6 +101,21 @@ class MapExternalControl(
         if (mapWindow == null) windowManager.onWindowOpen(RiftWindow.Map)
         scope.launch {
             _event.emit(DataEvent(MapExternalControlEvent.ShowSystemOnRegionMap(mapWindow, solarSystemId)))
+        }
+    }
+
+    private fun getMapContainingSystem(solarSystemId: Int): UUID? {
+        val regionId = solarSystemsRepository.getSystem(solarSystemId)?.regionId ?: return null
+        return _openedRegions.value.entries.firstOrNull { (windowUuid, regionIds) ->
+            regionId in regionIds ||
+                solarSystemsRepository.isKnownSpace(solarSystemId) &&
+                settings.intelMap.openedTabs2[windowUuid] is MapOpenedTab.ClusterSystemsMap
+        }?.key
+    }
+
+    private fun focusSystem(mapWindow: UUID, solarSystemId: Int) {
+        scope.launch {
+            _event.emit(DataEvent(MapExternalControlEvent.FocusSystem(mapWindow, solarSystemId)))
         }
     }
 }

@@ -72,6 +72,7 @@ class JabberViewModel(
     val state = _state.asStateFlow()
 
     private var lastReadPerChat: MutableMap<EntityBareJid, Instant> = mutableMapOf()
+    private var pendingInputModel: JabberInputModel? = inputModel.takeUnless { it == JabberInputModel.None }
 
     init {
         viewModelScope.launch {
@@ -91,6 +92,7 @@ class JabberViewModel(
                         )
                     }
                 }
+                handlePendingInputModel(jabberState)
             }
         }
         viewModelScope.launch {
@@ -104,6 +106,7 @@ class JabberViewModel(
             }
             is JabberAccountResult.JabberAccount -> if (jabberClient.state.value.isConnected) {
                 setLoggedInState(jabberClient.state.value)
+                handlePendingInputModel(jabberClient.state.value)
             } else {
                 _state.update { UiState.Connecting }
             }
@@ -320,6 +323,28 @@ class JabberViewModel(
             lastMessageTimestamp > lastReadTimestamp
         }.map { it.key.room }
         return unreadUserChats + unreadMultiUserChats
+    }
+
+    private fun handlePendingInputModel(jabberState: JabberClient.JabberState) {
+        if (_state.value !is UiState.LoggedIn) return
+        when (val inputModel = pendingInputModel) {
+            is JabberInputModel.Channel -> {
+                val chat = jabberState.multiUserChats.firstOrNull {
+                    it.room.localpartOrNull?.toString() == inputModel.channel
+                } ?: return
+                pendingInputModel = null
+                jabberClient.openChatRoom(chat)
+                updateSelectedTab(TabModel.MultiUserChat(chat.room))
+            }
+            is JabberInputModel.DirectMessage -> {
+                val chat = jabberState.userChats.firstOrNull {
+                    it.chat.xmppAddressOfChatPartner.localpartOrNull?.toString() == inputModel.user
+                } ?: return
+                pendingInputModel = null
+                updateSelectedTab(TabModel.UserChat(chat))
+            }
+            JabberInputModel.None, null -> {}
+        }
     }
 
     private fun updateSelectedTab(tab: TabModel) {

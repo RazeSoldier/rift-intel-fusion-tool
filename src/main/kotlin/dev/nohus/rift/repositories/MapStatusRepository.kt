@@ -2,6 +2,10 @@ package dev.nohus.rift.repositories
 
 import dev.nohus.rift.assets.AssetsRepository
 import dev.nohus.rift.clones.ClonesRepository
+import dev.nohus.rift.map.AssetSafetyInfo
+import dev.nohus.rift.map.GetAssetSafetyInfoUseCase
+import dev.nohus.rift.map.MapAnsiblexZonesController
+import dev.nohus.rift.map.MapAnsiblexZonesController.AnsiblexZone
 import dev.nohus.rift.map.MapJumpRangeController
 import dev.nohus.rift.map.MapJumpRangeController.SystemDistance
 import dev.nohus.rift.map.MapPlanetsController
@@ -34,7 +38,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+import kotlin.system.measureTimeMillis
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.measureTimedValue
 
 @Single
 class MapStatusRepository(
@@ -44,6 +50,7 @@ class MapStatusRepository(
     private val namesRepository: NamesRepository,
     private val getMetaliminalStormsUseCase: GetMetaliminalStormsUseCase,
     private val getPublicWormholesUseCase: GetPublicWormholesUseCase,
+    private val mapAnsiblexZonesController: MapAnsiblexZonesController,
     private val mapJumpRangeController: MapJumpRangeController,
     private val mapPlanetsController: MapPlanetsController,
     private val mapSovereigntyUpgradesController: MapSovereigntyUpgradesController,
@@ -53,6 +60,7 @@ class MapStatusRepository(
     private val solarSystemsRepository: SolarSystemsRepository,
     private val mapMarkersRepository: MapMarkersRepository,
     private val raidableSkyhooksRepository: RaidableSkyhooksRepository,
+    private val getAssetSafetyInfoUseCase: GetAssetSafetyInfoUseCase,
 ) {
 
     private data class UniverseSystemStatus(
@@ -70,6 +78,7 @@ class MapStatusRepository(
         val podKills: Int?,
         val shipKills: Int?,
         val assetCount: Int?,
+        val assetSafety: AssetSafetyInfo?,
         val incursion: Incursion?,
         val factionWarfare: FactionWarfareSystem?,
         val sovereignty: SovereigntySystemClaim?,
@@ -79,6 +88,7 @@ class MapStatusRepository(
         val wormholes: List<Wormhole>,
         val industryIndices: Map<IndustryActivity, Float>,
         val distance: SystemDistance?,
+        val ansiblexZone: AnsiblexZone?,
         val planets: List<Planet>,
         val colonies: Int,
         val clones: Map<Int, Int>, // Character ID -> Count
@@ -99,6 +109,7 @@ class MapStatusRepository(
     val status = _status.asStateFlow()
 
     suspend fun start() = coroutineScope {
+        val assetSafetyInfo = getAssetSafetyInfoUseCase()
         launch {
             while (true) {
                 load()
@@ -117,17 +128,19 @@ class MapStatusRepository(
                 industryIndices,
                 assetsRepository.state,
                 mapJumpRangeController.state.map { it.systemDistances },
+                mapAnsiblexZonesController.state.map { it.systemZones },
                 mapPlanetsController.state,
                 planetaryIndustryRepository.colonies,
                 clonesRepository.clones,
                 mapMarkersRepository.markers,
                 raidableSkyhooks,
-            ) { universe, incursions, factionWarfare, sovereignty, sovereigntyUpgrades, storms, wormholes, industryIndices, assets, distances, planets, colonies, clones, markers, raidableSkyhooks ->
+            ) { universe, incursions, factionWarfare, sovereignty, sovereigntyUpgrades, storms, wormholes, industryIndices, assets, distances, ansiblexZones, planets, colonies, clones, markers, raidableSkyhooks ->
                 val assetsPerSystem = getAssetCountPerSystem(assets)
                 val stationsPerSystem = stationsRepository.getStations()
                 val systems = (
                     universe.keys + incursions.keys + factionWarfare.keys + sovereignty.keys + storms.keys +
-                        industryIndices.keys + assetsPerSystem.keys + stationsPerSystem.keys + distances.keys + markers.keys
+                        industryIndices.keys + assetsPerSystem.keys + stationsPerSystem.keys + distances.keys +
+                            ansiblexZones.keys + markers.keys + assetSafetyInfo.keys
                     ).distinct()
                 val clones = clones.entries.flatMap { (characterId, clones) ->
                     clones.mapNotNull { clone ->
@@ -148,6 +161,7 @@ class MapStatusRepository(
                         podKills = universe[systemId]?.podKills,
                         shipKills = universe[systemId]?.shipKills,
                         assetCount = assetsPerSystem[systemId] ?: 0,
+                        assetSafety = assetSafetyInfo[systemId],
                         incursion = incursions[systemId],
                         factionWarfare = factionWarfare[systemId],
                         sovereignty = sovereignty[systemId],
@@ -157,6 +171,7 @@ class MapStatusRepository(
                         wormholes = wormholes[systemId] ?: emptyList(),
                         industryIndices = industryIndices[systemId] ?: emptyMap(),
                         distance = distances[systemId],
+                        ansiblexZone = ansiblexZones[systemId],
                         planets = (planets.planets[systemId] ?: emptyList()).filter { it.type in planets.selectedTypes },
                         colonies = colonies.success?.count { it.value.colony.system.id == systemId } ?: 0,
                         clones = clones[systemId] ?: emptyMap(),
@@ -293,7 +308,7 @@ class MapStatusRepository(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> combine(
+    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, R> combine(
         flow: Flow<T1>,
         flow2: Flow<T2>,
         flow3: Flow<T3>,
@@ -309,8 +324,9 @@ class MapStatusRepository(
         flow13: Flow<T13>,
         flow14: Flow<T14>,
         flow15: Flow<T15>,
-        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) -> R,
-    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11, flow12, flow13, flow14, flow15) { args: Array<*> ->
+        flow16: Flow<T16>,
+        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16) -> R,
+    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11, flow12, flow13, flow14, flow15, flow16) { args: Array<*> ->
         transform(
             args[0] as T1,
             args[1] as T2,
@@ -327,6 +343,7 @@ class MapStatusRepository(
             args[12] as T13,
             args[13] as T14,
             args[14] as T15,
+            args[15] as T16,
         )
     }
 }

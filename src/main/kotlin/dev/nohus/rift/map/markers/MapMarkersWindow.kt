@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +40,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowScope
+import androidx.compose.ui.window.rememberWindowState
 import dev.nohus.rift.alerts.creategroup.CreateGroupDialog
 import dev.nohus.rift.compose.ButtonCornerCut
 import dev.nohus.rift.compose.ButtonType
@@ -47,6 +50,8 @@ import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftAutocompleteTextField
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftCheckbox
+import dev.nohus.rift.compose.RiftCheckboxWithLabel
+import dev.nohus.rift.compose.RiftDialog
 import dev.nohus.rift.compose.RiftDropdownWithLabel
 import dev.nohus.rift.compose.RiftImageButton
 import dev.nohus.rift.compose.RiftMessageDialog
@@ -112,6 +117,8 @@ fun MapMarkersWindow(
             onGroupRenameClick = viewModel::onGroupRenameClick,
             onGroupDeleteClick = viewModel::onGroupDeleteClick,
             onGroupToggleMarkers = viewModel::onGroupToggleMarkers,
+            onImportClick = viewModel::onImportClick,
+            onExportClick = viewModel::onExportClick,
         )
 
         val isCreateGroupDialogOpen = state.isCreateGroupDialogOpen
@@ -122,6 +129,17 @@ fun MapMarkersWindow(
                 description = "Groups allow you to organize your markers.",
                 onDismiss = viewModel::onCloseCreateGroup,
                 onConfirmClick = viewModel::onCreateGroupConfirm,
+            )
+        }
+
+        state.exportGroups?.let { selectedGroups ->
+            ExportMarkersDialog(
+                groups = (state.markers.map { it.group } + state.groups).toSet(),
+                selectedGroups = selectedGroups,
+                parentWindowState = windowState,
+                onGroupToggle = viewModel::onExportGroupToggle,
+                onDismiss = viewModel::onExportCancel,
+                onExportClick = viewModel::onExportConfirm,
             )
         }
 
@@ -154,6 +172,8 @@ private fun MapMarkersWindowContent(
     onGroupRenameClick: (String) -> Unit,
     onGroupDeleteClick: (String) -> Unit,
     onGroupToggleMarkers: (String?) -> Unit,
+    onImportClick: () -> Unit,
+    onExportClick: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -282,6 +302,19 @@ private fun MapMarkersWindowContent(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             Spacer(Modifier.weight(1f))
+            RiftButton(
+                text = "Import",
+                type = ButtonType.Secondary,
+                cornerCut = ButtonCornerCut.None,
+                onClick = onImportClick,
+            )
+            RiftButton(
+                text = "Export",
+                type = ButtonType.Secondary,
+                cornerCut = ButtonCornerCut.None,
+                isEnabled = state.markers.isNotEmpty(),
+                onClick = onExportClick,
+            )
             if (state.markers.isNotEmpty()) {
                 RiftButton(
                     text = "Create group",
@@ -391,6 +424,69 @@ private fun MapMarkersWindowContent(
                         }
                     }
                 }
+        }
+    }
+}
+
+@Composable
+private fun WindowScope.ExportMarkersDialog(
+    groups: Set<String?>,
+    selectedGroups: Set<String?>,
+    parentWindowState: RiftWindowState,
+    onGroupToggle: (String?, Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onExportClick: () -> Unit,
+) {
+    RiftDialog(
+        title = "Export map markers",
+        icon = Res.drawable.window_locations,
+        parentState = parentWindowState,
+        state = rememberWindowState(width = 360.dp, height = 400.dp),
+        onCloseClick = onDismiss,
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "Choose which marker groups to export:",
+                style = RiftTheme.typography.bodyPrimary,
+            )
+            ScrollbarLazyColumn(
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+                contentPadding = PaddingValues(Spacing.medium),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .border(1.dp, RiftTheme.colors.borderGrey),
+                scrollbarModifier = Modifier.padding(vertical = Spacing.small),
+            ) {
+                items(groups.sortedWith(compareBy({ it != null }, { it }))) { group ->
+                    RiftCheckboxWithLabel(
+                        label = group ?: "Default",
+                        isChecked = group in selectedGroups,
+                        onCheckedChange = { onGroupToggle(group, it) },
+                    )
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                RiftButton(
+                    text = "Cancel",
+                    type = ButtonType.Secondary,
+                    cornerCut = ButtonCornerCut.BottomLeft,
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f),
+                )
+                RiftButton(
+                    text = "Export",
+                    isEnabled = selectedGroups.isNotEmpty(),
+                    onClick = onExportClick,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }

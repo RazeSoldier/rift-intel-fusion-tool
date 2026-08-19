@@ -16,6 +16,7 @@ import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase
 import dev.nohus.rift.location.GetOnlineCharactersLocationUseCase.OnlineCharacterLocation
 import dev.nohus.rift.map.DistanceMapController.DistanceMapState
+import dev.nohus.rift.map.MapAnsiblexZonesController.MapAnsiblexZonesState
 import dev.nohus.rift.map.MapExternalControl.MapExternalControlEvent
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
@@ -79,6 +80,7 @@ class MapViewModel(
     private val jumpBridgesRepository: JumpBridgesRepository,
     private val autopilotController: AutopilotController,
     private val mapStatusRepository: MapStatusRepository,
+    private val mapAnsiblexZonesController: MapAnsiblexZonesController,
     private val mapJumpRangeController: MapJumpRangeController,
     private val mapPlanetsController: MapPlanetsController,
     private val mapSovereigntyUpgradesController: MapSovereigntyUpgradesController,
@@ -134,6 +136,7 @@ class MapViewModel(
         val selectedTab: Int,
         val search: String?,
         val systemInfoTypes: SystemInfoTypes,
+        val mapAnsiblexZonesState: MapAnsiblexZonesState,
         val mapJumpRangeState: MapJumpRangeState,
         val mapPlanetsState: MapPlanetsState,
         val mapSovereigntyUpgradesState: MapSovereigntyUpgradesState,
@@ -159,6 +162,7 @@ class MapViewModel(
             selectedTab = 0,
             search = null,
             systemInfoTypes = getColorModes(),
+            mapAnsiblexZonesState = mapAnsiblexZonesController.state.value,
             mapJumpRangeState = mapJumpRangeController.state.value,
             mapPlanetsState = mapPlanetsController.state.value,
             mapSovereigntyUpgradesState = MapSovereigntyUpgradesState(),
@@ -188,6 +192,9 @@ class MapViewModel(
         }
         viewModelScope.launch {
             mapStatusRepository.status.collect { status -> updateMapState { copy(systemStatus = status) } }
+        }
+        viewModelScope.launch {
+            mapAnsiblexZonesController.state.collect { state -> _state.update { it.copy(mapAnsiblexZonesState = state) } }
         }
         viewModelScope.launch {
             mapJumpRangeController.state.collect { state -> _state.update { it.copy(mapJumpRangeState = state) } }
@@ -238,6 +245,11 @@ class MapViewModel(
                 if (it?.value?.let { event -> event.windowUuid == windowUuid || event.windowUuid == null } == true) {
                     delay(50) // If this event comes from a context menu, let the menu disappear
                     when (val event = it.get()) {
+                        is MapExternalControlEvent.FocusSystem -> {
+                            if (event.solarSystemId in _state.value.layout) {
+                                updateMapState { copy(centeredSystem = DataEvent(event.solarSystemId)) }
+                            }
+                        }
                         is MapExternalControlEvent.ShowSystemOnNewEdenMap -> {
                             showSystemOnNewEdenMap(event.solarSystemId)
                         }
@@ -440,6 +452,10 @@ class MapViewModel(
 
     fun onJumpRangeTargetUpdate(target: String) {
         mapJumpRangeController.onTargetUpdate(target)
+    }
+
+    fun onAnsiblexCapitalSystemUpdate(system: String) {
+        mapAnsiblexZonesController.onCapitalSystemUpdate(system)
     }
 
     fun onJumpRangeDistanceUpdate(distanceLy: Double) {

@@ -20,6 +20,7 @@ import dev.nohus.rift.charactersettings.io.WriteEveSettingsUseCase
 import dev.nohus.rift.charactersettings.io.WriteEveSettingsUseCase.AccountSection
 import dev.nohus.rift.charactersettings.io.WriteEveSettingsUseCase.CharacterSection
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.directories.IsEveSharedCacheDirectoryValidUseCase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,6 +54,7 @@ class CharacterSettingsViewModel(
     private val settings: Settings,
     private val getEveSettingsBackupsUseCase: GetEveSettingsBackupsUseCase,
     private val categorizeWindowUseCase: CategorizeWindowUseCase,
+    private val isEveSharedCacheDirectoryValidUseCase: IsEveSharedCacheDirectoryValidUseCase,
 ) : ViewModel() {
 
     data class CharacterItem(
@@ -79,7 +81,6 @@ class CharacterSettingsViewModel(
         val selectedProfiles: Map<Int, String> = emptyMap(),
         val settings: Map<Int, CharacterSettings> = emptyMap(),
         val changedSettings: Map<Int, CharacterSettings> = emptyMap(),
-        val windowLayerOrders: Map<Int, List<String>> = emptyMap(),
         val copying: CopyingState = CopyingState.SelectingSource,
         val isOnline: Boolean,
         val dialogMessage: DialogMessage? = null,
@@ -88,6 +89,7 @@ class CharacterSettingsViewModel(
         val isWatchlistCharacterLookupComplete: Boolean = false,
         val backupDialogCharacterId: Int? = null,
         val deleteBackupDialogCharacterId: Int? = null,
+        val isSharedCacheMissing: Boolean = false,
     ) {
         val displayedSettings: Map<Int, CharacterSettings> get() = settings + changedSettings
         fun hasChanges(characterId: Int): Boolean = characterId in changedSettings
@@ -209,7 +211,8 @@ class CharacterSettingsViewModel(
                                 accountSettings = readAccountSettingsUseCase(accountSettingsFile)
                             )
                             character.settingsId to characterSettings
-                        }
+                        },
+                        isSharedCacheMissing = !isEveSharedCacheDirectoryValidUseCase(settings.eveSharedCacheDirectory),
                     )
                 }
             }.collect()
@@ -284,7 +287,6 @@ class CharacterSettingsViewModel(
         _state.update {
             it.copy(
                 changedSettings = it.changedSettings - characterId,
-                windowLayerOrders = it.windowLayerOrders - characterId,
             )
         }
         selectedProfiles.update { it + (characterId to profile) }
@@ -449,6 +451,7 @@ class CharacterSettingsViewModel(
             windowStacks = sourceCharacter.windowStacks.takeIf { CopySetting.WindowLayout in selectedSettings } ?: targetCharacter.windowStacks,
             windowSizesAndPositions = sourceCharacter.windowSizesAndPositions.takeIf { CopySetting.WindowLayout in selectedSettings } ?: targetCharacter.windowSizesAndPositions,
             screenResolution = sourceCharacter.screenResolution.takeIf { CopySetting.WindowLayout in selectedSettings } ?: targetCharacter.screenResolution,
+            uiScale = if (CopySetting.WindowLayout in selectedSettings) sourceCharacter.uiScale else targetCharacter.uiScale,
             neocomWidthPx = sourceCharacter.neocomWidthPx.takeIf { CopySetting.WindowLayout in selectedSettings } ?: targetCharacter.neocomWidthPx,
             shipUiLeftOffsetPx = sourceCharacter.shipUiLeftOffsetPx.takeIf { CopySetting.WindowLayout in selectedSettings } ?: targetCharacter.shipUiLeftOffsetPx,
             rawOpenWindows = sourceCharacter.rawOpenWindows.takeIf { CopySetting.WindowLayout in selectedSettings } ?: targetCharacter.rawOpenWindows,
@@ -545,7 +548,6 @@ class CharacterSettingsViewModel(
                     it.selectedCharacterId
                 },
                 changedSettings = if (success) it.changedSettings - settingsId else it.changedSettings,
-                windowLayerOrders = if (success) it.windowLayerOrders - settingsId else it.windowLayerOrders,
                 deleteBackupDialogCharacterId = null,
                 dialogMessage = DialogMessage(
                     title = if (success) "Backup deleted" else "Deleting failed",
@@ -683,45 +685,32 @@ class CharacterSettingsViewModel(
         it.copy(neocomWidthPx = width)
     }
 
-    fun onWindowBoundsChanged(window: String, x: Int, y: Int, width: Int, height: Int) {
+    fun onWindowBoundsChanged(
+        window: String,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        screenResolution: Pair<Int, Int>,
+    ) {
         val characterId = state.value.selectedCharacterId ?: return
         _state.update { state ->
             val currentSettings = state.displayedSettings[characterId] ?: return@update state
             val characterSettings = currentSettings.characterSettings ?: return@update state
             val position = characterSettings.windowSizesAndPositions[window] ?: return@update state
-            if (position.size < 4) return@update state
+            if (position.size < 6) return@update state
 
             val updatedPositions = characterSettings.windowSizesAndPositions + (window to position.toMutableList().also {
                 it[0] = x
                 it[1] = y
                 it[2] = width
                 it[3] = height
+                it[4] = screenResolution.first
+                it[5] = screenResolution.second
             })
             state.copy(changedSettings = state.changedSettings + (characterId to currentSettings.copy(
                 characterSettings = characterSettings.copy(windowSizesAndPositions = updatedPositions),
             )))
-        }
-    }
-
-    fun onWindowDragStarted(window: String) {
-        val characterId = state.value.selectedCharacterId ?: return
-        _state.update { state ->
-            val currentSettings = state.displayedSettings[characterId] ?: return@update state
-            val characterSettings = currentSettings.characterSettings ?: return@update state
-            val bounds = characterSettings.windowSizesAndPositions[window] ?: return@update state
-            val currentLayerOrder = state.windowLayerOrders[characterId]
-                ?: characterSettings.windowSizesAndPositions.keys.toList()
-            val updatedLayerOrder = (currentLayerOrder.filter { it != window } + window)
-            val reorderedBounds = linkedMapOf<String, List<Int>>().apply {
-                putAll(characterSettings.windowSizesAndPositions.filterKeys { it != window })
-                put(window, bounds)
-            }
-            state.copy(
-                changedSettings = state.changedSettings + (characterId to currentSettings.copy(
-                    characterSettings = characterSettings.copy(windowSizesAndPositions = reorderedBounds),
-                )),
-                windowLayerOrders = state.windowLayerOrders + (characterId to updatedLayerOrder),
-            )
         }
     }
 
@@ -756,18 +745,18 @@ class CharacterSettingsViewModel(
         }
     }
 
-    fun onWindowOpened(window: String) {
+    fun onWindowOpened(window: String, screenResolution: Pair<Int, Int>) {
         val characterId = state.value.selectedCharacterId ?: return
         _state.update { state ->
             val currentSettings = state.displayedSettings[characterId] ?: return@update state
             val characterSettings = currentSettings.characterSettings ?: return@update state
             val defaultBounds = listOf(
-                characterSettings.screenResolution.first / 4,
-                characterSettings.screenResolution.second / 4,
-                characterSettings.screenResolution.first / 3,
-                characterSettings.screenResolution.second / 3,
-                characterSettings.screenResolution.first,
-                characterSettings.screenResolution.second,
+                screenResolution.first / 4,
+                screenResolution.second / 4,
+                screenResolution.first / 3,
+                screenResolution.second / 3,
+                screenResolution.first,
+                screenResolution.second,
             )
             state.copy(changedSettings = state.changedSettings + (characterId to currentSettings.copy(
                 characterSettings = characterSettings.copy(
@@ -833,7 +822,6 @@ class CharacterSettingsViewModel(
         _state.update {
             it.copy(
                 changedSettings = it.changedSettings - characterId,
-                windowLayerOrders = it.windowLayerOrders - characterId,
             )
         }
     }

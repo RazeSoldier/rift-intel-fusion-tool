@@ -22,6 +22,7 @@ class GetEveSharedCacheDirectoryUseCase(
             }
             OperatingSystem.Windows -> listOfNotNull(
                 settings.eveSettingsDirectory?.root?.resolve("CCP/EVE Online"),
+                settings.eveSettingsDirectory?.root?.resolve("CCP/EVE"),
             )
             OperatingSystem.MacOs -> {
                 val home = operatingSystemDirectories.getUserDirectory()

@@ -12,7 +12,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.koin.core.annotation.Single
 import java.nio.file.Path
@@ -20,7 +19,9 @@ import java.nio.file.Path
 private val logger = KotlinLogging.logger {}
 
 @Single
-class ReadCharacterSettingsUseCase {
+class ReadCharacterSettingsUseCase(
+    private val readEveProfileResolutionUseCase: ReadEveProfileResolutionUseCase,
+) {
 
     data class CharacterSettings(
         val openWindows: List<String>,
@@ -28,6 +29,7 @@ class ReadCharacterSettingsUseCase {
         val windowStacks: List<Pair<String, String?>>,
         val windowSizesAndPositions: Map<String, List<Int>>,
         val screenResolution: Pair<Int, Int>,
+        val uiScale: Double?,
         val joinedChatChannels: Map<String, String>,
         val neocomWidthPx: Int,
         val neocomIconColors: Map<String, Int>,
@@ -87,7 +89,8 @@ class ReadCharacterSettingsUseCase {
             }
             .associate { it.first to it.second }
         val shipUiLeftOffset = windows?.tupleValue("bytes:shipuialignleftoffset")?.jsonPrimitive?.floatOrNull ?: 0f
-        val resolution = windowSizesAndPositions.entries.firstOrNull()?.value?.takeLast(2)?.let { it[0] to it[1] } ?: run {
+        val profileDisplaySettings = readEveProfileResolutionUseCase(settingsFile.parent)
+        val resolution = profileDisplaySettings?.layoutResolution ?: inferResolution(windowSizesAndPositions) ?: run {
             logger.error { "No screen resolution found for $settingsFile" }
             return null
         }
@@ -114,7 +117,6 @@ class ReadCharacterSettingsUseCase {
         val neocomButtons = getNeocomButtons(neocomButtonsArray, neocomButtonColors)
 
         val neocomWidthPx = ui.tupleValue("bytes:neocomWidth")?.jsonPrimitive?.intOrNull ?: 48
-        // Side "snap gap" is 17px
 
         val rawWatchlistColors = ui.tupleValue("bytes:fleet_watchlistcolors") as? JsonObject ?: JsonObject(emptyMap())
         val parsedWatchlistColors = rawWatchlistColors.entries.mapNotNull { entry ->
@@ -141,6 +143,7 @@ class ReadCharacterSettingsUseCase {
             windowStacks = windowStacks,
             windowSizesAndPositions = windowSizesAndPositions,
             screenResolution = resolution,
+            uiScale = profileDisplaySettings?.uiScale,
             joinedChatChannels = joinedChatChannels,
             neocomWidthPx = neocomWidthPx,
             neocomIconColors = neocomButtonColors,
@@ -175,6 +178,22 @@ class ReadCharacterSettingsUseCase {
                 children = children,
             )
         }
+    }
+
+    private fun inferResolution(windowSizesAndPositions: Map<String, List<Int>>): Pair<Int, Int>? {
+        return windowSizesAndPositions.values
+            .mapNotNull { bounds ->
+                bounds.takeLast(2)
+                    .takeIf { (width, height) -> width > 0 && height > 0 }
+                    ?.let { (width, height) -> width to height }
+            }
+            .groupingBy { it }
+            .eachCount()
+            .maxWithOrNull(
+                compareBy<Map.Entry<Pair<Int, Int>, Int>> { it.value }
+                    .thenBy { it.key.first.toLong() * it.key.second }
+            )
+            ?.key
     }
 
     private fun parseNeocomButton(element: JsonElement): RawNeocomButton? {

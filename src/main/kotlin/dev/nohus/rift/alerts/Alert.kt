@@ -343,6 +343,10 @@ sealed interface AlertAction {
     data object ShowPing : AlertAction
 
     @Serializable
+    @SerialName("ShowJabberMessage")
+    data object ShowJabberMessage : AlertAction
+
+    @Serializable
     @SerialName("ShowColonies")
     data object ShowColonies : AlertAction
 }

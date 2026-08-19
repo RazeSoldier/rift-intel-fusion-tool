@@ -90,6 +90,7 @@ import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
 import java.time.ZoneId
+import kotlin.math.roundToInt
 
 @Composable
 fun CharacterSettingsWindow(
@@ -125,7 +126,6 @@ fun CharacterSettingsWindow(
             onNeocomButtonRemoved = viewModel::onNeocomButtonRemoved,
             onNeocomWidthChanged = viewModel::onNeocomWidthChanged,
             onWindowBoundsChanged = viewModel::onWindowBoundsChanged,
-            onWindowDragStarted = viewModel::onWindowDragStarted,
             onWindowMinimizedChanged = viewModel::onWindowMinimizedChanged,
             onWindowOpened = viewModel::onWindowOpened,
             onWindowClosed = viewModel::onWindowClosed,
@@ -190,10 +190,9 @@ private fun WindowScope.CharacterSettingsWindowContent(
     onNeocomButtonAdded: (String) -> Unit,
     onNeocomButtonRemoved: (String) -> Unit,
     onNeocomWidthChanged: (Int) -> Unit,
-    onWindowBoundsChanged: (String, Int, Int, Int, Int) -> Unit,
-    onWindowDragStarted: (String) -> Unit,
+    onWindowBoundsChanged: (String, Int, Int, Int, Int, Pair<Int, Int>) -> Unit,
     onWindowMinimizedChanged: (String) -> Unit,
-    onWindowOpened: (String) -> Unit,
+    onWindowOpened: (String, Pair<Int, Int>) -> Unit,
     onWindowClosed: (String) -> Unit,
     onShipUiOffsetChanged: (Float) -> Unit,
     onShipUiVerticalPositionChanged: () -> Unit,
@@ -238,7 +237,6 @@ private fun WindowScope.CharacterSettingsWindowContent(
                         onNeocomButtonRemoved = onNeocomButtonRemoved,
                         onNeocomWidthChanged = onNeocomWidthChanged,
                         onWindowBoundsChanged = onWindowBoundsChanged,
-                        onWindowDragStarted = onWindowDragStarted,
                         onWindowMinimizedChanged = onWindowMinimizedChanged,
                         onWindowOpened = onWindowOpened,
                         onWindowClosed = onWindowClosed,
@@ -390,10 +388,9 @@ private fun WindowScope.CharacterPage(
     onNeocomButtonAdded: (String) -> Unit,
     onNeocomButtonRemoved: (String) -> Unit,
     onNeocomWidthChanged: (Int) -> Unit,
-    onWindowBoundsChanged: (String, Int, Int, Int, Int) -> Unit,
-    onWindowDragStarted: (String) -> Unit,
+    onWindowBoundsChanged: (String, Int, Int, Int, Int, Pair<Int, Int>) -> Unit,
     onWindowMinimizedChanged: (String) -> Unit,
-    onWindowOpened: (String) -> Unit,
+    onWindowOpened: (String, Pair<Int, Int>) -> Unit,
     onWindowClosed: (String) -> Unit,
     onShipUiOffsetChanged: (Float) -> Unit,
     onShipUiVerticalPositionChanged: () -> Unit,
@@ -421,6 +418,12 @@ private fun WindowScope.CharacterPage(
             state.characters.count { it.backupName == null && it.accountId == character.accountId } > 3
         ) {
             RiftWarningBanner("This account has more than 3 characters assigned, which is not possible. Correct the assignment.")
+        }
+        if (character.accountId == null) {
+            RiftWarningBanner("This character is not associated with an account. Assign below or log in directly to the character (without going through character selection) to automatically assign.")
+        }
+        if (state.isSharedCacheMissing) {
+            RiftWarningBanner("Your EVE shared cache directory is not set in RIFT settings, some previews won't work.")
         }
 
         val profiles = if (character.backupName != null) character.settingsFiles.keys.sorted() else state.profiles
@@ -483,11 +486,73 @@ private fun WindowScope.CharacterPage(
                 var isShowingFleet by remember { mutableStateOf(true) }
                 var isShowingDrones by remember { mutableStateOf(true) }
                 var isShowingMinimized by remember { mutableStateOf(false) }
+                val defaultScreenResolution = characterSettings?.screenResolution
+                val defaultUiScale = characterSettings?.uiScale ?: 1.0
+                var selectedUiScale by remember(character.settingsId, selectedProfile, defaultUiScale) {
+                    mutableStateOf(defaultUiScale)
+                }
+                val uiScales = remember(defaultUiScale) {
+                    (EVE_UI_SCALES + defaultUiScale).distinct().sorted()
+                }
+                var selectedScreenResolution by remember(character.settingsId, selectedProfile, defaultScreenResolution) {
+                    mutableStateOf(defaultScreenResolution)
+                }
+                val screenResolutions = remember(characterSettings?.windowSizesAndPositions, selectedScreenResolution) {
+                    val savedResolutions = characterSettings?.windowSizesAndPositions?.values.orEmpty()
+                        .mapNotNull { bounds ->
+                            bounds.takeLast(2)
+                                .takeIf { (width, height) -> width > 0 && height > 0 }
+                                ?.let { (width, height) -> width to height }
+                        }
+                        .groupingBy { it }
+                        .eachCount()
+                        .entries
+                        .sortedWith(
+                            compareByDescending<Map.Entry<Pair<Int, Int>, Int>> { it.value }
+                                .thenByDescending { it.key.first.toLong() * it.key.second }
+                        )
+                        .map { it.key }
+                    (savedResolutions + listOfNotNull(selectedScreenResolution)).distinct()
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
                 ) {
                     ShipStateToggle(shipState, onChange = { shipState = it })
+                    RiftTooltipArea("The UI scale you use in-game.\nOnly affects the resolution selector on the right.") {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
+                        ) {
+                            Text(
+                                text = "UI scale:",
+                                style = RiftTheme.typography.bodyPrimary,
+                            )
+                            RiftDropdown(
+                                items = uiScales,
+                                selectedItem = selectedUiScale,
+                                onItemSelected = { selectedUiScale = it },
+                                getItemName = { "${(it * 100).roundToInt()}%" },
+                            )
+                        }
+                    }
+                    selectedScreenResolution?.let { resolution ->
+                        Text(
+                            text = "Resolution:",
+                            style = RiftTheme.typography.bodyPrimary,
+                        )
+                        RiftDropdown(
+                            items = screenResolutions,
+                            selectedItem = resolution,
+                            onItemSelected = { selectedScreenResolution = it },
+                            getItemName = { item ->
+                                val (width, height) = item
+                                val displayWidth = (width * selectedUiScale).roundToInt()
+                                val displayHeight = (height * selectedUiScale).roundToInt()
+                                "$displayWidth × $displayHeight"
+                            },
+                        )
+                    }
                     Text(
                         text = "Show:",
                         style = RiftTheme.typography.bodyPrimary
@@ -533,7 +598,11 @@ private fun WindowScope.CharacterPage(
                                             )
                                         }
                                     },
-                                    onClick = { onWindowOpened(windowId) },
+                                    onClick = {
+                                        selectedScreenResolution?.let { resolution ->
+                                            onWindowOpened(windowId, resolution)
+                                        }
+                                    },
                                 )
                             },
                         acceptsLeftClick = true,
@@ -548,14 +617,13 @@ private fun WindowScope.CharacterPage(
                 WindowLayoutPreview(
                     selectedProfile = selectedProfile,
                     settings = characterSettings,
+                    screenResolution = selectedScreenResolution,
                     shipState = shipState,
                     isShowingFleet = isShowingFleet,
                     isShowingDrones = isShowingDrones,
                     isShowingMinimized = isShowingMinimized,
                     accountSettings = accountSettings,
-                    windowLayerOrder = state.windowLayerOrders[character.settingsId].orEmpty(),
                     onWindowBoundsChanged = onWindowBoundsChanged,
-                    onWindowDragStarted = onWindowDragStarted,
                     onWindowMinimizedChanged = onWindowMinimizedChanged,
                     onWindowClosed = onWindowClosed,
                     onShipUiOffsetChanged = onShipUiOffsetChanged,
@@ -694,6 +762,7 @@ private const val TAB_WATCHLIST = 2
 private const val TAB_CHAT_CHANNELS = 3
 private const val TAB_PROBE_FORMATIONS = 4
 private val NEOCOM_WIDTH_RANGE = 24..72
+private val EVE_UI_SCALES = listOf(0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0)
 
 private fun List<NeocomButton>.getNeocomButtonIds(): Set<String> {
     return flatMapTo(mutableSetOf()) { button -> setOf(button.id) + button.children.getNeocomButtonIds() }
@@ -746,10 +815,6 @@ private fun AccountAssignmentControls(
                     )
                 }
             } else if (character.accountId == null) {
-                Text(
-                    text = "This character is not associated with an account. Assign below or log in to the character to automatically assign.",
-                    style = RiftTheme.typography.bodyPrimary
-                )
                 RiftButton(
                     text = "Assign account",
                     type = ButtonType.Secondary,

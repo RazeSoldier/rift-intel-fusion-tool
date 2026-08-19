@@ -3,10 +3,12 @@ package dev.nohus.rift.map
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.repositories.IdRanges
+import dev.nohus.rift.repositories.METERS_IN_LIGHT_YEAR
 import dev.nohus.rift.repositories.RatsRepository
 import dev.nohus.rift.repositories.RatsRepository.RatType.TriglavianCollective
 import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
+import dev.nohus.rift.repositories.distanceTo
 import dev.nohus.rift.settings.persistence.JumpRange
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.utils.roundSecurity
@@ -16,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
-import kotlin.math.sqrt
 
 @Single
 class MapJumpRangeController(
@@ -29,7 +30,7 @@ class MapJumpRangeController(
 
     data class MapJumpRangeState(
         val target: MapJumpRangeTarget? = null,
-        val distanceLy: Double = 5.0,
+        val distanceLy: Double = 6.0,
         val systemDistances: Map<Int, SystemDistance> = emptyMap(),
     )
 
@@ -128,23 +129,15 @@ class MapJumpRangeController(
             _state.update { it.copy(systemDistances = emptyMap()) }
             return
         }
-        val lightYear = 9460000000000000.0
         val maxDistance = _state.value.distanceLy
         val systemDistances = solarSystemsRepository.getSystems()
             .filter { it.id == systemId || isSystemValidJumpTarget(it) }
             .associate {
-                val distance = fromSystem.distanceTo(it) / lightYear
+                val distance = fromSystem.distanceTo(it) / METERS_IN_LIGHT_YEAR
                 val isInRange = distance <= maxDistance
                 it.id to SystemDistance(distance, isInRange)
             }
         _state.update { it.copy(systemDistances = systemDistances) }
-    }
-
-    private fun MapSolarSystem.distanceTo(other: MapSolarSystem): Double {
-        val xDiff = other.x - x
-        val yDiff = other.y - y
-        val zDiff = other.z - z
-        return sqrt(xDiff * xDiff + yDiff * yDiff + zDiff * zDiff)
     }
 
     private fun isSystemValidJumpTarget(system: MapSolarSystem): Boolean {

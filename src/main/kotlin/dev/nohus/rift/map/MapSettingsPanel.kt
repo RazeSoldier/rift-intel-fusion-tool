@@ -52,6 +52,7 @@ import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.backicon
 import dev.nohus.rift.generated.resources.expand_more_16px
 import dev.nohus.rift.map.DistanceMapController.DistanceMapState
+import dev.nohus.rift.map.MapAnsiblexZonesController.MapAnsiblexZonesState
 import dev.nohus.rift.map.MapJumpRangeController.MapJumpRangeState
 import dev.nohus.rift.map.MapLayoutRepository.Layout
 import dev.nohus.rift.map.MapPlanetsController.MapPlanetsState
@@ -61,6 +62,7 @@ import dev.nohus.rift.map.MapViewModel.MapType.ClusterSystemsMap
 import dev.nohus.rift.map.MapViewModel.MapType.DistanceMap
 import dev.nohus.rift.map.MapViewModel.MapType.RegionMap
 import dev.nohus.rift.map.MapViewModel.SystemInfoTypes
+import dev.nohus.rift.map.PanelState.AnsiblexZones
 import dev.nohus.rift.map.PanelState.CellColor
 import dev.nohus.rift.map.PanelState.Collapsed
 import dev.nohus.rift.map.PanelState.DistanceMapCenter
@@ -89,6 +91,7 @@ enum class PanelState {
     CellColor,
     Indicators,
     InfoBox,
+    AnsiblexZones,
     JumpRange,
     Planets,
     SovereigntyUpgrades,
@@ -96,6 +99,7 @@ enum class PanelState {
 }
 
 private val editableInfoTypes = mapOf(
+    MapSystemInfoType.AnsiblexZones to AnsiblexZones,
     MapSystemInfoType.JumpRange to JumpRange,
     MapSystemInfoType.Planets to Planets,
     MapSystemInfoType.SovereigntyUpgrades to SovereigntyUpgrades,
@@ -107,6 +111,7 @@ fun MapSettingsPanel(
     hazeState: HazeState,
     mapType: MapType,
     systemInfoTypes: SystemInfoTypes,
+    mapAnsiblexZonesState: MapAnsiblexZonesState,
     mapJumpRangeState: MapJumpRangeState,
     mapPlanetsState: MapPlanetsState,
     mapSovereigntyUpgradesState: MapSovereigntyUpgradesState,
@@ -118,6 +123,7 @@ fun MapSettingsPanel(
     onCellColorHover: (SettingsMapType, MapSystemInfoType?, Boolean) -> Unit,
     onIndicatorChange: (SettingsMapType, MapSystemInfoType) -> Unit,
     onInfoBoxChange: (SettingsMapType, MapSystemInfoType) -> Unit,
+    onAnsiblexCapitalSystemUpdate: (String) -> Unit,
     onJumpRangeTargetUpdate: (String) -> Unit,
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
@@ -397,6 +403,13 @@ fun MapSettingsPanel(
                             onJumpRangeDistanceUpdate = onJumpRangeDistanceUpdate,
                         )
                     }
+                    AnsiblexZones -> {
+                        AnsiblexZonesPanel(
+                            state = mapAnsiblexZonesState,
+                            onBack = { panelState = previousPanelState },
+                            onCapitalSystemUpdate = onAnsiblexCapitalSystemUpdate,
+                        )
+                    }
                     Planets -> {
                         PlanetsPanel(
                             mapPlanetsState = mapPlanetsState,
@@ -425,6 +438,64 @@ fun MapSettingsPanel(
         Box(
             modifier = Modifier.fillMaxWidth().height(1.dp).background(RiftTheme.colors.borderGrey),
         )
+    }
+}
+
+@Composable
+private fun AnsiblexZonesPanel(
+    state: MapAnsiblexZonesState,
+    onBack: () -> Unit,
+    onCapitalSystemUpdate: (String) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.medium),
+        modifier = Modifier.padding(Spacing.medium),
+    ) {
+        SettingsPanelTitle(
+            title = "Ansiblex zones",
+            onBack = onBack,
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.heightIn(min = 36.dp),
+        ) {
+            val solarSystemsRepository: SolarSystemsRepository = remember { koin.get() }
+            var capitalSystemText by remember { mutableStateOf("") }
+
+            val suggestions by derivedStateOf {
+                solarSystemsRepository.getSystems()
+                    .map { it.name }
+                    .filter { it.lowercase().startsWith(capitalSystemText.lowercase()) }
+                    .filter { it.lowercase() != capitalSystemText.lowercase() }
+            }
+
+            LaunchedEffect(state.capitalSystem) {
+                state.capitalSystem?.let { capitalSystemText = it.name }
+            }
+
+            Text(
+                text = "Capital:",
+                style = RiftTheme.typography.bodyPrimary,
+                modifier = Modifier.padding(end = Spacing.small),
+            )
+            RiftAutocompleteTextField(
+                text = capitalSystemText,
+                suggestions = suggestions.take(5),
+                placeholder = "System",
+                onTextChanged = {
+                    capitalSystemText = it
+                    onCapitalSystemUpdate(it)
+                },
+                modifier = Modifier.width(150.dp),
+            )
+            AnimatedVisibility(capitalSystemText.isNotBlank()) {
+                RequirementIcon(
+                    isFulfilled = state.capitalSystem != null,
+                    fulfilledTooltip = "Valid system",
+                    notFulfilledTooltip = "No such system",
+                )
+            }
+        }
     }
 }
 
@@ -867,6 +938,7 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.Kills -> "Kills" to "Colored according to the\nnumber of ship and pod kills in the last hour"
         MapSystemInfoType.NpcKills -> "NPC Kills" to "Colored according to the\nnumber of NPCs killed in the last hour"
         MapSystemInfoType.Assets -> "Assets" to "Colored according to the\nnumber of owned assets located here"
+        MapSystemInfoType.AssetSafety -> "Asset Safety" to "Colored according to the\nnumber of systems targeting this system for Asset Safety"
         MapSystemInfoType.Incursions -> "Incursions" to "Colored according to the\nincursion status"
         MapSystemInfoType.Stations -> "Stations" to "Colored according to the\nnumber of stations"
         MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Colored according to the\nfaction warfare occupier"
@@ -874,6 +946,7 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Colored according to the\ninstalled sovereignty upgrades"
         MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Colored when\na Skyhook is or will shortly be raidable"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Colored according to the\npresence of metaliminal storms"
+        MapSystemInfoType.AnsiblexZones -> "Ansiblex Zones" to "Colored according to the\nAnsiblex cost zone"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Colored according to\njump range"
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for colors")
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Colored when a\nJove Observatory is present"
@@ -909,6 +982,7 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.Kills -> "Kills" to "Number of ship and pod kills in the last hour"
         MapSystemInfoType.NpcKills -> "NPC Kills" to "Number of NPCs killed in the last hour"
         MapSystemInfoType.Assets -> "Assets" to "Number of owned assets located here"
+        MapSystemInfoType.AssetSafety -> "Asset Safety" to "Asset Safety destination and number of systems targeting this system"
         MapSystemInfoType.Incursions -> "Incursions" to "Indicator for systems with an incursion"
         MapSystemInfoType.Stations -> "Stations" to "Number of stations"
         MapSystemInfoType.FactionWarfare -> "" to ""
@@ -916,6 +990,7 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Indicators for installed sovereignty upgrades"
         MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Indicators for raidable Skyhooks"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Indicator for systems with a storm"
+        MapSystemInfoType.AnsiblexZones -> "Ansiblex Zones" to "Ansiblex cost zone based on distance from the alliance capital"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Indicator for systems in jump range"
         MapSystemInfoType.Planets -> "Planets" to "Indicators for planets"
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Indicators for Jove Observatories"
@@ -951,6 +1026,7 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.Kills -> "Kills" to "Number of ship and pod kills in the last hour"
         MapSystemInfoType.NpcKills -> "NPC Kills" to "Number of NPCs killed in the last hour"
         MapSystemInfoType.Assets -> "Assets" to "Number of owned assets located here"
+        MapSystemInfoType.AssetSafety -> "Asset Safety" to "Asset Safety destination and number of systems targeting this system"
         MapSystemInfoType.Incursions -> "Incursions" to "Incursion status"
         MapSystemInfoType.Stations -> "Stations" to "Number of stations"
         MapSystemInfoType.FactionWarfare -> "Faction Warfare" to "Faction warfare details"
@@ -958,6 +1034,7 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.SovereigntyUpgrades -> "Sovereignty Upgrades" to "Installed sovereignty upgrades"
         MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Raidable Skyhooks information and timers"
         MapSystemInfoType.MetaliminalStorms -> "Metaliminal Storms" to "Metaliminal storm type"
+        MapSystemInfoType.AnsiblexZones -> "Ansiblex Zones" to "Ansiblex cost zone based on distance from the alliance capital"
         MapSystemInfoType.JumpRange -> "Jump Range" to "Jump distance to system"
         MapSystemInfoType.Planets -> "Planets" to "Planets information"
         MapSystemInfoType.JoveObservatories -> "Jove Observatories" to "Jove Observatory presence information"

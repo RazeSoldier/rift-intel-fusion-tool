@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.annotation.Single
 import java.nio.file.Path
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
@@ -182,6 +183,10 @@ class Settings(
         get() = model.jumpRange
         set(value) = update { copy(jumpRange = value) }
 
+    var ansiblexCapitalSystemId: Int?
+        get() = model.ansiblexCapitalSystemId
+        set(value) = update { copy(ansiblexCapitalSystemId = value) }
+
     var selectedPlanetTypes: List<Int>
         get() = model.selectedPlanetTypes
         set(value) = update { copy(selectedPlanetTypes = value) }
@@ -308,6 +313,10 @@ class Settings(
     var corpWalletDivisionNames: Map<Int, Map<Int, String>>
         get() = model.corpWalletDivisionNames
         set(value) = update { copy(corpWalletDivisionNames = value) }
+
+    var walletTimeSpan: Duration?
+        get() = model.walletTimeSpanSeconds?.let { Duration.ofSeconds(it) }
+        set(value) = update { copy(walletTimeSpanSeconds = value?.seconds) }
 
     var newVersionSeenTimestamp: Instant?
         get() = model.newVersionSeenTimestamp?.let { Instant.ofEpochMilli(it) }

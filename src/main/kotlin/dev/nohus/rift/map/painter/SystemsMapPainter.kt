@@ -35,6 +35,7 @@ import dev.nohus.rift.map.MapViewModel.VoronoiLayout
 import dev.nohus.rift.map.SOLAR_SYSTEM_NODE_BACKGROUND_CIRCLE_MAX_SCALE
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
 import dev.nohus.rift.repositories.IdRanges
+import dev.nohus.rift.repositories.METERS_IN_LIGHT_YEAR
 import dev.nohus.rift.repositories.MapGateConnectionsRepository
 import dev.nohus.rift.repositories.MapGateConnectionsRepository.GateConnection
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapRegion
@@ -227,8 +228,7 @@ class SystemsMapPainter(
         scale: Float,
     ) {
         val position = if (is2D) {
-            val lightYear = 9460000000000000.0
-            val maxZoomOffset = 4 * lightYear
+            val maxZoomOffset = 4 * METERS_IN_LIGHT_YEAR
             val zoomOffsetPercent = (scale / 10.0).coerceIn(0.0..1.0)
             val zoomOffset = maxZoomOffset * zoomOffsetPercent
             // The offset makes the region labels move above the regions when zooming out

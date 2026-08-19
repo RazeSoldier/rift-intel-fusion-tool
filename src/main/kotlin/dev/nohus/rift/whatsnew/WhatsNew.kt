@@ -938,6 +938,23 @@ object WhatsNew {
                 - In text intel notifications (e.g. mobile push or system notifications), your reference character is now visible next to the distance
                 """.trimIndent(),
             )
+            add(
+                "5.29.0" description """
+                -! New Feature: Map Markers Import/Export
+                - You can now export your Map Markers - either all or choose which marker groups you want to export
+                - The exported data is simple text that can be edited freely, pasted into a spreadsheet for management, or shared with other players
+                - Import markers back into RIFT with one click
+
+                -! New Map Indicators
+                - "Asset Safety" indicators will show you where Asset Safety is going to move assets to from any system, and how many other systems have a given system as it's Asset Safety target
+                - "Ansiblex Zone" indicators will show you the upcoming Ansiblex cost zones from a selected capital system, as well as color by zones if enabled
+
+                - The Probe Formations editor now has a unit selector (AU/km) for precise positioning
+                - The Window Layout editor now has a UI scale dropdown to more easily match the preview to what you see in-game
+                - The selected time span in the Wallet window is now remembered across restarts
+                - New alert action for showing received Jabber messages. When setting up an alert for a Jabber message (DM or channel), you can choose to automatically open the Jabber window to see the received message.
+                """.trimIndent()
+            )
         }.reversed()
     }
 }

@@ -7,6 +7,7 @@ import dev.nohus.rift.alerts.AlertsTriggerController.AlertLocationMatch
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogAction
 import dev.nohus.rift.intel.state.SystemEntity
+import dev.nohus.rift.jabber.JabberInputModel
 import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.notifications.NotificationsController
@@ -139,7 +140,14 @@ class AlertsActionController(
         }
     }
 
-    fun triggerJabberMessageAlert(alert: Alert, chat: String, sender: String, message: String, highlight: String?) {
+    fun triggerJabberMessageAlert(
+        alert: Alert,
+        chat: String,
+        sender: String,
+        message: String,
+        highlight: String?,
+        isDirectMessage: Boolean,
+    ) {
         scope.launch {
             val title = "Jabber message in $chat"
             val notification = Notification.JabberMessageNotification(
@@ -148,7 +156,12 @@ class AlertsActionController(
                 highlight = highlight,
                 sender = sender,
             )
-            triggerAlert(alert, notification, title, message)
+            val inputModel = if (isDirectMessage) {
+                JabberInputModel.DirectMessage(user = sender)
+            } else {
+                JabberInputModel.Channel(channel = chat)
+            }
+            triggerAlert(alert, notification, title, message, jabberInputModel = inputModel)
         }
     }
 
@@ -254,7 +267,14 @@ class AlertsActionController(
         triggerAlert(alert, notification, title, systemMessage)
     }
 
-    private fun triggerAlert(alert: Alert, notification: Notification?, title: String, message: String, iconUrl: String? = null) {
+    private fun triggerAlert(
+        alert: Alert,
+        notification: Notification?,
+        title: String,
+        message: String,
+        iconUrl: String? = null,
+        jabberInputModel: JabberInputModel? = null,
+    ) {
         alert.actions.forEach { action ->
             when (action) {
                 AlertAction.RiftNotification -> if (notification != null) sendRiftNotification(notification)
@@ -272,6 +292,9 @@ class AlertsActionController(
                     }
                 }
                 AlertAction.ShowPing -> windowManager.onWindowOpen(WindowManager.RiftWindow.Pings)
+                AlertAction.ShowJabberMessage -> jabberInputModel?.let {
+                    windowManager.onWindowOpen(WindowManager.RiftWindow.Jabber, inputModel = it)
+                }
                 AlertAction.ShowColonies -> windowManager.onWindowOpen(WindowManager.RiftWindow.PlanetaryIndustry)
             }
         }

@@ -973,6 +973,7 @@ private fun getAlertText(
                     is AlertAction.Sound -> "play sound \"${sounds.firstOrNull { it.id == action.id }?.name ?: "?"}\""
                     is AlertAction.CustomSound -> "play sound ${Path.of(action.path).nameWithoutExtension}"
                     AlertAction.ShowPing -> "show the ping"
+                    AlertAction.ShowJabberMessage -> "show the message"
                     AlertAction.ShowColonies -> "show colonies"
                 }
             }

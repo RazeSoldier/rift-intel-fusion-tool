@@ -315,11 +315,7 @@ class CategorizeWindowUseCase {
                 else if (window.startsWith("bytes:calendarNewEventWnd_")) EveWindow("New Calendar Event")
                 else if (children.isNotEmpty()) categorizeStack(children, joinedChatChannels)
                 else if (window.startsWith("bytes:") && window.substringAfter(":").toIntOrNull() != null) EveWindow("Dynamic")
-                else EveWindow(window, isUnknown = true).also {
-                    if (BuildConfig.isDevEnvironment) {
-                        logger.info { "Unknown window $window" }
-                    }
-                }
+                else EveWindow(window, isUnknown = true)
             }
         }
     }

@@ -131,6 +131,7 @@ class UserChatController(
             chat = chat.xmppAddressOfChatPartner.localpartOrNull?.toString() ?: "",
             sender = sender ?: "",
             message = message.body,
+            isDirectMessage = true,
         )
 
         val timestamp = DelayInformationManager.getDelayTimestamp(message)?.toInstant() ?: Instant.now()

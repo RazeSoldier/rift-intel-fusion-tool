@@ -427,6 +427,7 @@ class CreateAlertQuestions(
     val ALERT_ACTION_PLAY_SOUND = FormChoiceItem(id = id++, text = "Play sound")
     val ALERT_ACTION_SHOW_COLONIES = FormChoiceItem(id = id++, text = "Show colonies", description = "Open the Planetary Industry window")
     val ALERT_ACTION_SHOW_PING = FormChoiceItem(id = id++, text = "Show the ping", description = "Open the Pings window")
+    val ALERT_ACTION_SHOW_JABBER_MESSAGE = FormChoiceItem(id = id++, text = "Show the message", description = "Open the chat in the Jabber window")
     val ALERT_ACTION_QUESTION = MultipleChoiceQuestion(
         title = "When this alert is triggered:",
         items = listOf(
@@ -454,6 +455,18 @@ class CreateAlertQuestions(
         title = "When this alert is triggered:",
         items = listOf(
             ALERT_ACTION_SHOW_PING,
+            ALERT_ACTION_PUSH_NOTIFICATION,
+            ALERT_ACTION_PLAY_SOUND,
+        ),
+    )
+
+    // Alert action (Jabber message version)
+    val ALERT_ACTION_JABBER_MESSAGE_QUESTION = MultipleChoiceQuestion(
+        title = "When this alert is triggered:",
+        items = listOf(
+            ALERT_ACTION_SHOW_JABBER_MESSAGE,
+            ALERT_ACTION_RIFT_NOTIFICATION,
+            ALERT_ACTION_SYSTEM_NOTIFICATION,
             ALERT_ACTION_PUSH_NOTIFICATION,
             ALERT_ACTION_PLAY_SOUND,
         ),

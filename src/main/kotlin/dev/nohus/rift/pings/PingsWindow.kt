@@ -222,7 +222,7 @@ private fun PingsWindowContent(
         }
 
         val scrollState = rememberScrollState()
-        LaunchedEffect(state.pings) {
+        LaunchedEffect(state.pings, scrollState.maxValue) {
             scrollState.animateScrollTo(scrollState.maxValue)
         }
         ScrollbarColumn(

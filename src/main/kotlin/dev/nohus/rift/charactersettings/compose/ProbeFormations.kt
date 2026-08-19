@@ -497,6 +497,7 @@ private fun ProbeValuesEditor(
 ) {
     val index = selectedProbeIndex.coerceIn(probes.indices)
     val probe = probes[index]
+    var distanceUnit by remember { mutableStateOf(DistanceUnit.Au) }
     Column(
         verticalArrangement = Arrangement.spacedBy(Spacing.small),
         modifier = modifier,
@@ -530,9 +531,17 @@ private fun ProbeValuesEditor(
                     onClick = onProbeAdded,
                 )
             }
-            CoordinateField("X", Color.Red, probe.x, { probe.copy(x = it) }, onChanged = { onProbeChanged(index, it) }, Modifier.weight(1f))
-            CoordinateField("Y", Color.Green, probe.y, { probe.copy(y = it) }, onChanged = { onProbeChanged(index, it) }, Modifier.weight(1f))
-            CoordinateField("Z", Color.Blue, probe.z, { probe.copy(z = it) }, onChanged = { onProbeChanged(index, it) }, Modifier.weight(1f))
+            CoordinateField("X", Color.Red, probe.x, distanceUnit, { probe.copy(x = it) }, onChanged = { onProbeChanged(index, it) }, Modifier.weight(1f))
+            CoordinateField("Y", Color.Green, probe.y, distanceUnit, { probe.copy(y = it) }, onChanged = { onProbeChanged(index, it) }, Modifier.weight(1f))
+            CoordinateField("Z", Color.Blue, probe.z, distanceUnit, { probe.copy(z = it) }, onChanged = { onProbeChanged(index, it) }, Modifier.weight(1f))
+            LabeledDropdown(
+                label = "Unit",
+                items = DistanceUnit.entries,
+                selectedItem = distanceUnit,
+                onItemSelected = { distanceUnit = it },
+                getItemName = { it.label },
+                modifier = Modifier.width(60.dp),
+            )
             val selectedRadius = ProbeRadius.entries.minBy { abs(it.au * ASTRONOMICAL_UNIT - probe.scanRadius) }
             LabeledDropdown(
                 label = "Radius",
@@ -614,28 +623,34 @@ private fun CoordinateField(
     label: String,
     labelColor: Color,
     value: Double,
+    distanceUnit: DistanceUnit,
     update: (Double) -> Probe,
     onChanged: (Probe) -> Unit,
     modifier: Modifier,
 ) {
-    var text by remember { mutableStateOf(formatAu(value)) }
+    var text by remember { mutableStateOf(formatDistance(value, distanceUnit)) }
     var isFocused by remember { mutableStateOf(false) }
-    LaunchedEffect(value, isFocused) {
-        if (!isFocused) text = formatAu(value)
+    LaunchedEffect(value, distanceUnit, isFocused) {
+        if (!isFocused) text = formatDistance(value, distanceUnit)
     }
     Column(modifier) {
-        Text("$label (AU)", color = labelColor, style = RiftTheme.typography.detailSecondary.copy(fontWeight = FontWeight.Bold))
+        Text("$label (${distanceUnit.label})", color = labelColor, style = RiftTheme.typography.detailSecondary.copy(fontWeight = FontWeight.Bold))
         RiftTextField(
             text = text,
             onTextChanged = { newText ->
                 text = newText
-                newText.toDoubleOrNull()?.let { onChanged(update(it * ASTRONOMICAL_UNIT)) }
+                newText.toDoubleOrNull()?.let { onChanged(update(it * distanceUnit.metersPerUnit)) }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { isFocused = it.isFocused },
         )
     }
+}
+
+private enum class DistanceUnit(val label: String, val metersPerUnit: Double, val decimalPlaces: Int) {
+    Au("AU", ASTRONOMICAL_UNIT, 5),
+    Kilometers("km", 1_000.0, 3),
 }
 
 private enum class ProbeRadius(val au: Double, val label: String) {
@@ -658,6 +673,8 @@ private val averageProbePositionColor = Color(0xFFFFB74D)
 private val distanceCircleRadii = listOf(2.0, 8.0, 16.0, 32.0).map { it * ASTRONOMICAL_UNIT }
 
 private fun formatAu(value: Double): String = String.format(Locale.US, "%.4f", value / ASTRONOMICAL_UNIT)
+private fun formatDistance(value: Double, unit: DistanceUnit): String =
+    String.format(Locale.US, "%.${unit.decimalPlaces}f", value / unit.metersPerUnit)
 
 private fun getVisibleDistanceCircleRadii(requiredDistance: Double): List<Double> {
     val coveringCircleIndex = distanceCircleRadii.indexOfFirst { it >= requiredDistance }

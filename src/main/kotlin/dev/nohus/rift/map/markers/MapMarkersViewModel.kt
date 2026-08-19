@@ -2,6 +2,7 @@ package dev.nohus.rift.map.markers
 
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.alerts.creategroup.CreateGroupInputModel
+import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.generated.resources.Res
@@ -14,6 +15,7 @@ import dev.nohus.rift.repositories.SolarSystemsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.settings.persistence.MapMarker
 import dev.nohus.rift.settings.persistence.Settings
+import dev.nohus.rift.utils.plural
 import dev.nohus.rift.utils.toggle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +32,8 @@ class MapMarkersViewModel(
     private val settings: Settings,
     private val solarSystemsRepository: SolarSystemsRepository,
     private val mapExternalControl: MapExternalControl,
+    private val clipboard: Clipboard,
+    private val mapMarkersParser: MapMarkersParser,
 ) : ViewModel() {
 
     data class UiState(
@@ -40,6 +44,7 @@ class MapMarkersViewModel(
         val collapsedGroups: Set<String?> = emptySet(),
         val expandedMarker: UUID? = null,
         val isCreateGroupDialogOpen: CreateGroupInputModel? = null,
+        val exportGroups: Set<String?>? = null,
         val dialog: DialogMessage? = null,
     )
 
@@ -181,6 +186,98 @@ class MapMarkersViewModel(
         val hasEnabledMarkers = settings.mapMarkers.any { it.group == group && it.isEnabled }
         settings.mapMarkers = settings.mapMarkers.map {
             if (it.group == group) it.copy(isEnabled = !hasEnabledMarkers) else it
+        }
+    }
+
+    fun onExportClick() {
+        val groups = (_state.value.markers.map { it.group } + _state.value.groups).toSet()
+        _state.update { it.copy(exportGroups = groups) }
+    }
+
+    fun onExportGroupToggle(group: String?, isSelected: Boolean) {
+        _state.update {
+            val exportGroups = it.exportGroups ?: return@update it
+            it.copy(exportGroups = if (isSelected) exportGroups + group else exportGroups - group)
+        }
+    }
+
+    fun onExportCancel() {
+        _state.update { it.copy(exportGroups = null) }
+    }
+
+    fun onExportConfirm() {
+        val exportGroups = _state.value.exportGroups ?: return
+        val markers = _state.value.markers.filter { it.group in exportGroups }
+        Clipboard.copy(mapMarkersParser.format(markers))
+        _state.update {
+            it.copy(
+                exportGroups = null,
+                dialog = DialogMessage(
+                    title = "Export successful",
+                    message = "Map markers copied to clipboard.",
+                    type = MessageDialogType.Info,
+                ),
+            )
+        }
+    }
+
+    fun onImportClick() {
+        viewModelScope.launch {
+            val result = clipboard.state.value?.let(mapMarkersParser::parse) ?: MapMarkersParser.ParsingResult.Empty
+            val importedMarkers = (result as? MapMarkersParser.ParsingResult.Parsed)?.markers.orEmpty()
+            if (importedMarkers.isEmpty()) {
+                _state.update {
+                    it.copy(
+                        dialog = DialogMessage(
+                            title = "No markers found",
+                            message = "The clipboard does not contain any valid map markers.",
+                            type = MessageDialogType.Warning,
+                        ),
+                    )
+                }
+                return@launch
+            }
+
+            val existingMarkers = settings.mapMarkers
+            val uniqueMarkers = importedMarkers.distinct().filterNot { marker ->
+                existingMarkers.any { existing ->
+                    existing.systemId == marker.systemId &&
+                        existing.label == marker.label &&
+                        existing.color == marker.color &&
+                        existing.icon == marker.icon &&
+                        existing.isPinned == marker.isPinned &&
+                        existing.group == marker.group
+                }
+            }
+            val duplicateCount = importedMarkers.size - uniqueMarkers.size
+            val markers = uniqueMarkers.map { marker ->
+                MapMarker(
+                    id = UUID.randomUUID(),
+                    systemId = marker.systemId,
+                    label = marker.label,
+                    color = marker.color,
+                    icon = marker.icon,
+                    isEnabled = true,
+                    isPinned = marker.isPinned,
+                    group = marker.group,
+                )
+            }
+            settings.mapMarkerGroups += markers.mapNotNull { it.group }
+            settings.mapMarkers += markers
+            val duplicateMessage = when (duplicateCount) {
+                0 -> ""
+                1 -> " 1 identical marker was skipped."
+                else -> " $duplicateCount identical markers were skipped."
+            }
+            _state.update {
+                it.copy(
+                    dialog = DialogMessage(
+                        title = "Import complete",
+                        message = "${markers.size} map marker${markers.size.plural} imported from clipboard.$duplicateMessage",
+                        type = MessageDialogType.Info,
+                    ),
+                )
+            }
         }
     }
 

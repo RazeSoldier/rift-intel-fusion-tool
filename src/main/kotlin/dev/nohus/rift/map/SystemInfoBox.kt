@@ -57,6 +57,8 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.indicator_asset_safety_source
+import dev.nohus.rift.generated.resources.indicator_asset_safety_target
 import dev.nohus.rift.generated.resources.indicator_assets
 import dev.nohus.rift.generated.resources.indicator_asteroid_belt
 import dev.nohus.rift.generated.resources.indicator_clones
@@ -66,6 +68,7 @@ import dev.nohus.rift.generated.resources.indicator_incursion
 import dev.nohus.rift.generated.resources.indicator_jove
 import dev.nohus.rift.generated.resources.indicator_jump_drive
 import dev.nohus.rift.generated.resources.indicator_jump_drive_no
+import dev.nohus.rift.generated.resources.indicator_jump_gate
 import dev.nohus.rift.generated.resources.indicator_jumps
 import dev.nohus.rift.generated.resources.indicator_kills
 import dev.nohus.rift.generated.resources.indicator_npc_kills
@@ -291,6 +294,7 @@ private fun ColumnScope.SystemInfoTypes(
                         val assets = systemStatus?.assetCount?.takeIf { it > 0 }?.toString()
                         InfoTypeIndicator(assets, Res.drawable.indicator_assets, "Assets: $assets")
                     }
+                    MapSystemInfoType.AssetSafety -> {} // In column
                     MapSystemInfoType.Incursions -> {} // In column
                     MapSystemInfoType.Stations -> {
                         val stations = systemStatus?.stations?.size?.takeIf { it > 0 }?.toString()
@@ -301,6 +305,15 @@ private fun ColumnScope.SystemInfoTypes(
                     MapSystemInfoType.SovereigntyUpgrades -> {} // In column
                     MapSystemInfoType.RaidableSkyhooks -> {} // In column
                     MapSystemInfoType.MetaliminalStorms -> {} // In column
+                    MapSystemInfoType.AnsiblexZones -> {
+                        systemStatus?.ansiblexZone?.let { zone ->
+                            InfoTypeIndicator(
+                                text = zone.displayName,
+                                icon = Res.drawable.indicator_jump_gate,
+                                tooltip = "Ansiblex cost zone",
+                            )
+                        }
+                    }
                     MapSystemInfoType.Planets -> {} // In column
                     MapSystemInfoType.JoveObservatories -> {
                         InfoTypeIndicator("".takeIf { system.hasJoveObservatory }, Res.drawable.indicator_jove, "Jove Observatory")
@@ -360,6 +373,9 @@ private fun ColumnScope.SystemInfoTypes(
                 MapSystemInfoType.Kills -> {} // In icon row
                 MapSystemInfoType.NpcKills -> {} // In icon row
                 MapSystemInfoType.Assets -> {} // In icon row
+                MapSystemInfoType.AssetSafety -> {
+                    AssetSafetyIndicators(system, systemStatus, isShowingDetail = true)
+                }
                 MapSystemInfoType.Incursions -> {
                     systemStatus?.incursion?.let { incursion ->
                         Text(
@@ -425,6 +441,7 @@ private fun ColumnScope.SystemInfoTypes(
                         }
                     }
                 }
+                MapSystemInfoType.AnsiblexZones -> {} // In indicator row
                 MapSystemInfoType.JumpRange -> {} // In icon row
                 MapSystemInfoType.Planets -> {
                     systemStatus?.planets?.let {
@@ -531,6 +548,9 @@ private fun SystemInfoTypesIndicators(
                     val assets = systemStatus?.assetCount?.takeIf { it > 0 }?.toString()
                     InfoTypeIndicator(assets, Res.drawable.indicator_assets)
                 }
+                MapSystemInfoType.AssetSafety -> {
+                    AssetSafetyIndicators(system, systemStatus, isShowingDetail = false)
+                }
                 MapSystemInfoType.Incursions -> {
                     systemStatus?.incursion?.let {
                         InfoTypeIndicator("", Res.drawable.indicator_incursion)
@@ -572,6 +592,15 @@ private fun SystemInfoTypesIndicators(
                                     appendLine("Storm: ${storm.strength.name} ${storm.type.name}")
                                 }
                             }.trim(),
+                        )
+                    }
+                }
+                MapSystemInfoType.AnsiblexZones -> {
+                    systemStatus?.ansiblexZone?.let { zone ->
+                        InfoTypeIndicator(
+                            text = zone.displayName,
+                            icon = Res.drawable.indicator_jump_gate,
+                            tooltip = "Ansiblex cost zone",
                         )
                     }
                 }
@@ -884,17 +913,50 @@ private fun SovereigntyLogo(claim: SovereigntySystemClaim) {
 }
 
 @Composable
+private fun AssetSafetyIndicators(
+    system: MapSolarSystem,
+    systemStatus: SolarSystemStatus?,
+    isShowingDetail: Boolean,
+) {
+    val assetSafety = systemStatus?.assetSafety ?: return
+    val mapExternalControl: MapExternalControl = remember { koin.get() }
+    InfoTypeIndicator(
+        text = assetSafety.targetSystemName,
+        icon = Res.drawable.indicator_asset_safety_target,
+        tooltip = "Asset Safety destination: ${assetSafety.targetSystemName}",
+        onClick = { mapExternalControl.showSystemOnMap(assetSafety.targetSystemId) },
+    )
+    assetSafety.sourceSystemCount.takeIf { it > 0 }?.let { sourceSystemCount ->
+        InfoTypeIndicator(
+            text = if (isShowingDetail) {
+                "$sourceSystemCount source system${sourceSystemCount.plural}"
+            } else {
+                sourceSystemCount.toString()
+            },
+            icon = Res.drawable.indicator_asset_safety_source,
+            tooltip = "${system.name} is the Asset Safety destination for $sourceSystemCount other system${sourceSystemCount.plural}",
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
 private fun InfoTypeIndicator(
     text: String?,
     icon: DrawableResource,
     tooltip: String? = null,
     tint: Color? = null,
+    onClick: (() -> Unit)? = null,
 ) {
     if (text == null) return
     val content = movableContentOf {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+            modifier = Modifier.modifyIf(onClick != null) {
+                pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
+                    .onClick { onClick?.invoke() }
+            },
         ) {
             Image(
                 painter = painterResource(icon),

@@ -107,6 +107,8 @@ import dev.nohus.rift.map.painter.MapPainter
 import dev.nohus.rift.map.painter.RegionsMapPainter
 import dev.nohus.rift.map.painter.SystemsMapPainter
 import dev.nohus.rift.map.systemcolor.SystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.AnsiblexZonesSystemColorStrategy
+import dev.nohus.rift.map.systemcolor.strategies.AssetSafetySystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.AssetsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.AsteroidBeltsSystemColorStrategy
 import dev.nohus.rift.map.systemcolor.strategies.ClonesSystemColorStrategy
@@ -187,6 +189,7 @@ fun MapWindow(
             onCellColorHover = viewModel::onCellColorHover,
             onIndicatorChange = viewModel::onIndicatorChange,
             onInfoBoxChange = viewModel::onInfoBoxChange,
+            onAnsiblexCapitalSystemUpdate = viewModel::onAnsiblexCapitalSystemUpdate,
             onJumpRangeTargetUpdate = viewModel::onJumpRangeTargetUpdate,
             onJumpRangeDistanceUpdate = viewModel::onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = viewModel::onPlanetTypesUpdate,
@@ -221,6 +224,7 @@ private fun MapWindowContent(
     onCellColorHover: (SettingsMapType, MapSystemInfoType?, Boolean) -> Unit,
     onIndicatorChange: (SettingsMapType, MapSystemInfoType) -> Unit,
     onInfoBoxChange: (SettingsMapType, MapSystemInfoType) -> Unit,
+    onAnsiblexCapitalSystemUpdate: (String) -> Unit,
     onJumpRangeTargetUpdate: (String) -> Unit,
     onJumpRangeDistanceUpdate: (Double) -> Unit,
     onPlanetTypesUpdate: (List<PlanetType>) -> Unit,
@@ -260,6 +264,7 @@ private fun MapWindowContent(
             hazeState = hazeState,
             mapType = state.mapType,
             systemInfoTypes = state.systemInfoTypes,
+            mapAnsiblexZonesState = state.mapAnsiblexZonesState,
             mapJumpRangeState = state.mapJumpRangeState,
             mapPlanetsState = state.mapPlanetsState,
             mapSovereigntyUpgradesState = state.mapSovereigntyUpgradesState,
@@ -271,6 +276,7 @@ private fun MapWindowContent(
             onCellColorHover = onCellColorHover,
             onIndicatorChange = onIndicatorChange,
             onInfoBoxChange = onInfoBoxChange,
+            onAnsiblexCapitalSystemUpdate = onAnsiblexCapitalSystemUpdate,
             onJumpRangeTargetUpdate = onJumpRangeTargetUpdate,
             onJumpRangeDistanceUpdate = onJumpRangeDistanceUpdate,
             onPlanetTypesUpdate = onPlanetTypesUpdate,
@@ -449,6 +455,7 @@ private fun Map(
             kills = KillsSystemColorStrategy(state.mapState.systemStatus),
             npcKills = NpcKillsSystemColorStrategy(state.mapState.systemStatus),
             assets = AssetsSystemColorStrategy(state.mapState.systemStatus),
+            assetSafety = AssetSafetySystemColorStrategy(state.mapState.systemStatus),
             incursions = IncursionsSystemColorStrategy(state.mapState.systemStatus),
             stations = StationsSystemColorStrategy(state.mapState.systemStatus),
             factionWarfare = FactionWarfareSystemColorStrategy(state.mapState.systemStatus),
@@ -457,6 +464,7 @@ private fun Map(
             raidableSkyhooks = RaidableSkyhooksColorStrategy(state.mapState.systemStatus),
             storms = MetaliminalStormsSystemColorStrategy(state.mapState.systemStatus),
             wormholes = WormholesSystemColorStrategy(state.mapState.systemStatus),
+            ansiblexZones = AnsiblexZonesSystemColorStrategy(state.mapState.systemStatus),
             jumpRange = JumpRangeSystemColorStrategy(state.mapState.systemStatus),
             colonies = ColoniesSystemColorStrategy(state.mapState.systemStatus),
             clones = ClonesSystemColorStrategy(state.mapState.systemStatus),
@@ -704,6 +712,7 @@ data class SystemStatusColorStrategies(
     val kills: KillsSystemColorStrategy,
     val npcKills: NpcKillsSystemColorStrategy,
     val assets: AssetsSystemColorStrategy,
+    val assetSafety: AssetSafetySystemColorStrategy,
     val incursions: IncursionsSystemColorStrategy,
     val stations: StationsSystemColorStrategy,
     val factionWarfare: FactionWarfareSystemColorStrategy,
@@ -712,6 +721,7 @@ data class SystemStatusColorStrategies(
     val raidableSkyhooks: RaidableSkyhooksColorStrategy,
     val storms: MetaliminalStormsSystemColorStrategy,
     val wormholes: WormholesSystemColorStrategy,
+    val ansiblexZones: AnsiblexZonesSystemColorStrategy,
     val jumpRange: JumpRangeSystemColorStrategy,
     val colonies: ColoniesSystemColorStrategy,
     val clones: ClonesSystemColorStrategy,
@@ -746,6 +756,7 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.Kills -> systemStatusColorStrategies.kills
         MapSystemInfoType.NpcKills -> systemStatusColorStrategies.npcKills
         MapSystemInfoType.Assets -> systemStatusColorStrategies.assets
+        MapSystemInfoType.AssetSafety -> systemStatusColorStrategies.assetSafety
         MapSystemInfoType.Incursions -> systemStatusColorStrategies.incursions
         MapSystemInfoType.Stations -> systemStatusColorStrategies.stations
         MapSystemInfoType.FactionWarfare -> systemStatusColorStrategies.factionWarfare
@@ -753,6 +764,7 @@ fun getSolarSystemColorStrategy(
         MapSystemInfoType.SovereigntyUpgrades -> systemStatusColorStrategies.sovereigntyUpgrades
         MapSystemInfoType.RaidableSkyhooks -> systemStatusColorStrategies.raidableSkyhooks
         MapSystemInfoType.MetaliminalStorms -> systemStatusColorStrategies.storms
+        MapSystemInfoType.AnsiblexZones -> systemStatusColorStrategies.ansiblexZones
         MapSystemInfoType.JumpRange -> systemStatusColorStrategies.jumpRange
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for coloring")
         MapSystemInfoType.JoveObservatories -> koin.get<JoveObservatorySystemColorStrategy>()

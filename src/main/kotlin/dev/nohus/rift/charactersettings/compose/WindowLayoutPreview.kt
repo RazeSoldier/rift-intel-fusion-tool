@@ -9,16 +9,16 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -59,6 +59,7 @@ import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import dev.nohus.rift.charactersettings.CategorizeWindowUseCase
+import dev.nohus.rift.charactersettings.getEveReopenedWindowLayerOrder
 import dev.nohus.rift.charactersettings.io.ReadAccountSettingsUseCase
 import dev.nohus.rift.charactersettings.io.ReadCharacterSettingsUseCase.CharacterSettings
 import dev.nohus.rift.compose.ContextMenuItem
@@ -74,6 +75,7 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.arrow_down_16px
 import dev.nohus.rift.generated.resources.arrow_up_16px
+import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.generated.resources.layout_preview_background_space
 import dev.nohus.rift.generated.resources.layout_preview_background_station
 import dev.nohus.rift.generated.resources.layout_preview_background_structure
@@ -83,7 +85,6 @@ import dev.nohus.rift.generated.resources.layout_preview_target_outercircle
 import dev.nohus.rift.generated.resources.layout_preview_target_spincorners
 import dev.nohus.rift.generated.resources.layout_preview_target_targetbackground
 import dev.nohus.rift.generated.resources.layout_preview_top_left
-import dev.nohus.rift.generated.resources.editplanicon
 import dev.nohus.rift.utils.HsbColor
 import dev.nohus.rift.utils.toColor
 import org.jetbrains.compose.resources.painterResource
@@ -96,14 +97,13 @@ import kotlin.math.roundToInt
 fun WindowLayoutPreview(
     selectedProfile: String?,
     settings: CharacterSettings?,
+    screenResolution: Pair<Int, Int>?,
     shipState: ShipState,
     isShowingFleet: Boolean,
     isShowingDrones: Boolean,
     isShowingMinimized: Boolean,
     accountSettings: ReadAccountSettingsUseCase.AccountSettings?,
-    windowLayerOrder: List<String>,
-    onWindowBoundsChanged: (String, Int, Int, Int, Int) -> Unit,
-    onWindowDragStarted: (String) -> Unit,
+    onWindowBoundsChanged: (String, Int, Int, Int, Int, Pair<Int, Int>) -> Unit,
     onWindowMinimizedChanged: (String) -> Unit,
     onWindowClosed: (String) -> Unit,
     onShipUiOffsetChanged: (Float) -> Unit,
@@ -123,16 +123,22 @@ fun WindowLayoutPreview(
             )
         } else {
             if (settings != null) {
+                val previewResolution = screenResolution ?: settings.screenResolution
+                val displayedWindowBounds = remember(settings.windowSizesAndPositions, previewResolution) {
+                    settings.windowSizesAndPositions.mapValues { (_, bounds) ->
+                        adaptWindowBoundsToResolution(bounds, previewResolution)
+                    }
+                }
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
                         .clipToBounds()
                 ) {
-                    val widthRatio = settings.screenResolution.first / this@BoxWithConstraints.maxWidth.value // How many width layout px fit into 1.dp
-                    val heightRatio = settings.screenResolution.second / this@BoxWithConstraints.maxHeight.value // How many height layout px fit into 1.dp
+                    val widthRatio = previewResolution.first / this@BoxWithConstraints.maxWidth.value // How many width layout px fit into 1.dp
+                    val heightRatio = previewResolution.second / this@BoxWithConstraints.maxHeight.value // How many height layout px fit into 1.dp
                     val ratio = maxOf(widthRatio, heightRatio) // How many layout px fit into 1.dp
-                    val screenWidth = (settings.screenResolution.first / ratio).dp
-                    val screenHeight = (settings.screenResolution.second / ratio).dp
+                    val screenWidth = (previewResolution.first / ratio).dp
+                    val screenHeight = (previewResolution.second / ratio).dp
                     val neocomWidth = (settings.neocomWidthPx / ratio).dp
                     val hazeState = rememberHazeState()
                     val density = LocalDensity.current
@@ -388,10 +394,10 @@ fun WindowLayoutPreview(
                     // Windows
                     val categorizeWindowUseCase: CategorizeWindowUseCase = remember { koin.get() }
                     val visibleWindows = settings.windowSizesAndPositions.keys.filterTo(mutableSetOf()) { window ->
-                        val isOpen = window in settings.openWindows
                         val isMinimized = window in settings.minimizedWindows
                         val parentStack = settings.windowStacks.firstOrNull { it.first == window }?.second
                         val childrenWindows = settings.windowStacks.filter { it.second == window }.map { it.first }
+                        val isOpen = isWindowOrStackOpen(window, childrenWindows, settings.openWindows)
                         val eveWindow = categorizeWindowUseCase(window, childrenWindows, settings.joinedChatChannels)
                         parentStack == null && eveWindow.isVisible(
                             isOpen = isOpen,
@@ -402,23 +408,25 @@ fun WindowLayoutPreview(
                             isShowingDrones = isShowingDrones,
                         )
                     }
-                    val windowsInLayerOrder = (windowLayerOrder.filter { it in settings.windowSizesAndPositions } +
-                        settings.windowSizesAndPositions.keys.filter { it !in windowLayerOrder })
-                    val windowZIndices = windowsInLayerOrder.withIndex().associate { (index, window) -> window to index.toFloat() }
+                    val windowZIndices = getEveReopenedWindowLayerOrder(settings)
+                        .withIndex()
+                        .associate { (index, window) -> window to index.toFloat() }
                     val currentWindowBounds by rememberUpdatedState(
-                        settings.windowSizesAndPositions
+                        displayedWindowBounds
                             .filterKeys { it in visibleWindows }
-                            .mapValues { (_, value) -> WindowBounds(value[0], value[1], value[2], value[3]) }
                     )
-                    settings.windowSizesAndPositions.forEach { (window, value) ->
+                    displayedWindowBounds.forEach { (window, bounds) ->
                         key(window) {
-                            val isOpen = window in settings.openWindows
                             val isMinimized = window in settings.minimizedWindows
                             val parentStack = settings.windowStacks.firstOrNull { it.first == window }?.second
                             if (parentStack == null) {
                                 val childrenWindows = settings.windowStacks.filter { it.second == window }.map { it.first }
-                                val (x, y, width, height) = value
-                                val (xDp, yDp, widthDp, heightDp) = value.map { (it / ratio).dp }
+                                val isOpen = isWindowOrStackOpen(window, childrenWindows, settings.openWindows)
+                                val (x, y, width, height) = bounds
+                                val xDp = (x / ratio).dp
+                                val yDp = (y / ratio).dp
+                                val widthDp = (width / ratio).dp
+                                val heightDp = (height / ratio).dp
 
                             val eveWindow = categorizeWindowUseCase(window, childrenWindows, settings.joinedChatChannels)
                             val isVisible = eveWindow.isVisible(
@@ -435,7 +443,6 @@ fun WindowLayoutPreview(
                                 val currentBounds by rememberUpdatedState(WindowBounds(x, y, width, height))
                                 var dragStartBounds by remember(window) { mutableStateOf<WindowBounds?>(null) }
                                 var dragAmount by remember(window) { mutableStateOf(Offset.Zero) }
-                                var hasDragged by remember(window) { mutableStateOf(false) }
                                 var isEditMenuOpen by remember(window) { mutableStateOf(false) }
                                 val windowPointerInteraction = rememberPointerInteractionStateHolder()
                                 val borderColor = RiftTheme.colors.borderPrimaryDark
@@ -446,11 +453,18 @@ fun WindowLayoutPreview(
                                         deltaY = deltaY,
                                         edges = edges,
                                         otherWindows = currentWindowBounds.filterKeys { it != window }.values,
-                                        screenWidth = settings.screenResolution.first,
-                                        screenHeight = settings.screenResolution.second,
+                                        screenWidth = previewResolution.first,
+                                        screenHeight = previewResolution.second,
                                         leftInset = settings.neocomWidthPx + SCREEN_EDGE_INSET_PX,
                                     )
-                                    onWindowBoundsChanged(window, resized.x, resized.y, resized.width, resized.height)
+                                    onWindowBoundsChanged(
+                                        window,
+                                        resized.x,
+                                        resized.y,
+                                        resized.width,
+                                        resized.height,
+                                        previewResolution,
+                                    )
                                 }
                                 Box(
                                     modifier = Modifier
@@ -458,7 +472,7 @@ fun WindowLayoutPreview(
                                         .zIndex(windowZIndices.getValue(window))
                                         .pointerInteraction(windowPointerInteraction)
                                         .pointerHoverIcon(PointerIcon(Cursors.move))
-                                        .pointerInput(window, ratio) {
+                                        .pointerInput(window, ratio, previewResolution) {
                                             detectDragGestures(
                                                 onDragStart = { pointerPosition ->
                                                     val handleSize = with(density) { 8.dp.toPx() }
@@ -470,7 +484,6 @@ fun WindowLayoutPreview(
                                                         pointerPosition.y >= windowHeight - handleSize
                                                     dragStartBounds = currentBounds.takeUnless { isOnResizeHandle }
                                                     dragAmount = Offset.Zero
-                                                    hasDragged = false
                                                 },
                                                 onDragEnd = { dragStartBounds = null },
                                                 onDragCancel = { dragStartBounds = null },
@@ -478,26 +491,22 @@ fun WindowLayoutPreview(
                                                     val startBounds = dragStartBounds
                                                     if (startBounds != null) {
                                                         change.consume()
-                                                        if (!hasDragged) {
-                                                            hasDragged = true
-                                                            onWindowDragStarted(window)
-                                                        }
                                                         dragAmount += amount
                                                         val deltaX = (dragAmount.x / density.density * ratio).roundToInt()
                                                         val deltaY = (dragAmount.y / density.density * ratio).roundToInt()
                                                         val rawX = (startBounds.x + deltaX).coerceIn(
                                                             -startBounds.width / 2,
-                                                            settings.screenResolution.first - startBounds.width / 2,
+                                                            previewResolution.first - startBounds.width / 2,
                                                         )
                                                         val rawY = (startBounds.y + deltaY).coerceIn(
                                                             -startBounds.height / 2,
-                                                            settings.screenResolution.second - startBounds.height / 2,
+                                                            previewResolution.second - startBounds.height / 2,
                                                         )
                                                         val snappedBounds = snapWindowBounds(
                                                             bounds = startBounds.copy(x = rawX, y = rawY),
                                                             otherWindows = currentWindowBounds.filterKeys { it != window }.values,
-                                                            screenWidth = settings.screenResolution.first,
-                                                            screenHeight = settings.screenResolution.second,
+                                                            screenWidth = previewResolution.first,
+                                                            screenHeight = previewResolution.second,
                                                             leftInset = settings.neocomWidthPx + SCREEN_EDGE_INSET_PX,
                                                         )
                                                         onWindowBoundsChanged(
@@ -506,6 +515,7 @@ fun WindowLayoutPreview(
                                                             snappedBounds.y,
                                                             startBounds.width,
                                                             startBounds.height,
+                                                            previewResolution,
                                                         )
                                                     }
                                                 },
@@ -670,9 +680,64 @@ fun WindowLayoutPreview(
 
 private const val MIN_WINDOW_SIZE_PX = 50
 private const val WINDOW_SNAP_DISTANCE_PX = 10
-private const val SCREEN_EDGE_INSET_PX = 17
+private const val SCREEN_EDGE_INSET_PX = 16
 
 private data class WindowBounds(val x: Int, val y: Int, val width: Int, val height: Int)
+
+private fun adaptWindowBoundsToResolution(
+    savedBounds: List<Int>,
+    targetResolution: Pair<Int, Int>,
+): WindowBounds {
+    val savedX = savedBounds[0]
+    val savedY = savedBounds[1]
+    val savedWidth = savedBounds[2]
+    val savedHeight = savedBounds[3]
+    val sourceWidth = savedBounds[4]
+    val sourceHeight = savedBounds[5]
+    val targetWidth = targetResolution.first
+    val targetHeight = targetResolution.second
+
+    var x = savedX
+    if (sourceWidth > 0 && sourceWidth != targetWidth) {
+        x = when {
+            savedX + savedWidth == sourceWidth || savedX + savedWidth == sourceWidth - SCREEN_EDGE_INSET_PX -> {
+                savedX + targetWidth - sourceWidth
+            }
+            savedX !in listOf(0, SCREEN_EDGE_INSET_PX) -> {
+                val oldCenterX = Math.floorDiv(sourceWidth - savedWidth, 2)
+                val xPortion = oldCenterX / sourceWidth.toDouble()
+                val newCenterX = (xPortion * targetWidth).toInt()
+                savedX + newCenterX - oldCenterX
+            }
+            else -> savedX
+        }
+    }
+
+    var y = savedY
+    if (sourceHeight > 0 && sourceHeight != targetHeight) {
+        y = when {
+            savedY in listOf(0, SCREEN_EDGE_INSET_PX) -> savedY
+            savedY + savedHeight == sourceHeight || savedY + savedHeight == sourceHeight - SCREEN_EDGE_INSET_PX -> {
+                savedY + targetHeight - sourceHeight
+            }
+            else -> {
+                val oldCenterY = Math.floorDiv(sourceHeight - savedHeight, 2)
+                val yPortion = oldCenterY / sourceHeight.toDouble()
+                val newCenterY = (yPortion * targetHeight).toInt()
+                savedY + newCenterY - oldCenterY
+            }
+        }
+    }
+
+    val width = savedWidth.coerceIn(0, targetWidth)
+    val height = savedHeight.coerceIn(0, targetHeight)
+    return WindowBounds(
+        x = x.coerceIn(0, targetWidth - width),
+        y = y.coerceIn(0, targetHeight - height),
+        width = width,
+        height = height,
+    )
+}
 
 private data class ResizeEdges(
     val left: Boolean = false,
@@ -988,6 +1053,18 @@ private fun CategorizeWindowUseCase.EveWindow.isAvailable(state: ShipState): Boo
     ShipState.InSpace -> inSpace
     ShipState.DockedStation -> inStation
     ShipState.DockedStructure -> inStructure
+}
+
+private fun isWindowOrStackOpen(
+    window: String,
+    childrenWindows: List<String>,
+    openWindows: List<String>,
+): Boolean {
+    return if (childrenWindows.isEmpty()) {
+        window in openWindows
+    } else {
+        childrenWindows.any { it in openWindows }
+    }
 }
 
 private fun CategorizeWindowUseCase.EveWindow.isVisible(

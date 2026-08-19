@@ -32,6 +32,7 @@ import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.window_clipboard
+import dev.nohus.rift.map.markers.MapMarkersParser
 import dev.nohus.rift.settings.JumpBridgesParser
 import dev.nohus.rift.settings.SovereigntyUpgradesParser
 import dev.nohus.rift.viewModel
@@ -77,8 +78,14 @@ private fun ClipboardTestWindowContent(
             RiftToggleButton(
                 text = "Sovereignty Upgrades",
                 isSelected = state.type == ClipboardImportType.SovereigntyUpgrades,
-                type = ToggleButtonType.Right,
+                type = ToggleButtonType.Middle,
                 onClick = { viewModel.onImportTypeChange(ClipboardImportType.SovereigntyUpgrades) },
+            )
+            RiftToggleButton(
+                text = "Map Markers",
+                isSelected = state.type == ClipboardImportType.MapMarkers,
+                type = ToggleButtonType.Right,
+                onClick = { viewModel.onImportTypeChange(ClipboardImportType.MapMarkers) },
             )
         }
 
@@ -97,10 +104,56 @@ private fun ClipboardTestWindowContent(
                 ClipboardImportType.SovereigntyUpgrades -> {
                     SovereigntyUpgradesContent(state)
                 }
+                ClipboardImportType.MapMarkers -> {
+                    MapMarkersContent(state)
+                }
                 null -> {
                     EmptyState("Choose what are you trying to import above")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun MapMarkersContent(state: UiState) {
+    when (val result = state.mapMarkersResult) {
+        MapMarkersParser.ParsingResult.Empty, null -> {
+            EmptyState("Your clipboard is empty.\nCopy a list of map markers.")
+        }
+        is MapMarkersParser.ParsingResult.Parsed -> {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.verySmall),
+            ) {
+                if (result.markers.isEmpty()) {
+                    WarningState("Your clipboard doesn't contain any valid map markers.")
+                } else {
+                    SuccessState("You copied a valid list containing ${result.markers.size} map marker${if (result.markers.size == 1) "" else "s"}.\nYou can import them in Map Markers.")
+                }
+                result.lines.forEach { line ->
+                    MapMarkerParsedLine(line)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MapMarkerParsedLine(line: MapMarkersParser.ParsedLine) {
+    when (line) {
+        is MapMarkersParser.ParsedLine.Marker -> {
+            ParsedLine(
+                icon = MulticolorIconType.Check,
+                description = "This line is correct and contains a marker for ${line.marker.systemName}",
+                line = line.text,
+            )
+        }
+        is MapMarkersParser.ParsedLine.Invalid -> {
+            ParsedLine(
+                icon = MulticolorIconType.Warning,
+                description = "This line is invalid: ${line.reason}",
+                line = line.text,
+            )
         }
     }
 }

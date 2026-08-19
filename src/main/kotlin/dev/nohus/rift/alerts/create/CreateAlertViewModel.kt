@@ -385,6 +385,7 @@ class CreateAlertViewModel(
         if (inputModel == CreateAlertInputModel.New || inputModel is CreateAlertInputModel.EditAction) {
             val alertActionQuestion = when (ALERT_TRIGGER_QUESTION.answer?.id) {
                 ALERT_TRIGGER_JABBER_PING.id -> ALERT_ACTION_JABBER_PING_QUESTION
+                ALERT_TRIGGER_JABBER_MESSAGE.id -> ALERT_ACTION_JABBER_MESSAGE_QUESTION
                 ALERT_TRIGGER_PLANETARY_INDUSTRY.id -> ALERT_ACTION_PLANETARY_INDUSTRY_QUESTION
                 else -> ALERT_ACTION_QUESTION
             }
@@ -665,6 +666,7 @@ class CreateAlertViewModel(
             if (inputModel == CreateAlertInputModel.New || inputModel is CreateAlertInputModel.EditAction) {
                 val alertActionQuestion = when (ALERT_TRIGGER_QUESTION.answer?.id) {
                     ALERT_TRIGGER_JABBER_PING.id -> ALERT_ACTION_JABBER_PING_QUESTION
+                    ALERT_TRIGGER_JABBER_MESSAGE.id -> ALERT_ACTION_JABBER_MESSAGE_QUESTION
                     ALERT_TRIGGER_PLANETARY_INDUSTRY.id -> ALERT_ACTION_PLANETARY_INDUSTRY_QUESTION
                     else -> ALERT_ACTION_QUESTION
                 }
@@ -682,6 +684,7 @@ class CreateAlertViewModel(
                                 }
                             }
                             ALERT_ACTION_SHOW_PING.id -> AlertAction.ShowPing
+                            ALERT_ACTION_SHOW_JABBER_MESSAGE.id -> AlertAction.ShowJabberMessage
                             ALERT_ACTION_SHOW_COLONIES.id -> AlertAction.ShowColonies
                             else -> throw IllegalStateException()
                         }

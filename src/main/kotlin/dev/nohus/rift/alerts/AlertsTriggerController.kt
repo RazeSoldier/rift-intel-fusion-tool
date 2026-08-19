@@ -283,13 +283,13 @@ class AlertsTriggerController(
         }
     }
 
-    fun onNewJabberMessage(chat: String, sender: String, message: String) {
+    fun onNewJabberMessage(chat: String, sender: String, message: String, isDirectMessage: Boolean) {
         enabledAlerts.forEach { alert ->
             if (alert.trigger is JabberMessage) {
                 val isChannelMatching = when (val channel = alert.trigger.channel) {
                     JabberMessageChannel.Any -> true
                     is JabberMessageChannel.Channel -> channel.name == chat
-                    JabberMessageChannel.DirectMessage -> chat == sender
+                    JabberMessageChannel.DirectMessage -> isDirectMessage
                 }
                 if (isChannelMatching) {
                     val triggerSender = alert.trigger.sender
@@ -308,7 +308,7 @@ class AlertsTriggerController(
 
                         if (isMessageMatching) {
                             withCooldown(alert) {
-                                alertsActionController.triggerJabberMessageAlert(alert, chat, sender, message, match)
+                                alertsActionController.triggerJabberMessageAlert(alert, chat, sender, message, match, isDirectMessage)
                             }
                         }
                     }
