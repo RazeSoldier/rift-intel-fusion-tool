@@ -78,6 +78,7 @@ fun RiftIconButton(
     icon: DrawableResource,
     type: ButtonType = ButtonType.Primary,
     cornerCut: ButtonCornerCut = ButtonCornerCut.BottomRight,
+    isEnabled: Boolean = true,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -94,6 +95,7 @@ fun RiftIconButton(
         },
         type = type,
         cornerCut = cornerCut,
+        isEnabled = isEnabled,
         modifier = modifier,
         onClick = onClick,
     )

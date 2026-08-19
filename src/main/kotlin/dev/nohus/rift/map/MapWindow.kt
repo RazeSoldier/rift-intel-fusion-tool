@@ -66,8 +66,8 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 import dev.nohus.rift.EventEffect
 import dev.nohus.rift.compose.EntityInteractionProvider
 import dev.nohus.rift.compose.KeyName
@@ -233,7 +233,7 @@ private fun MapWindowContent(
     onToggle2dLayoutClick: () -> Unit,
 ) {
     Box {
-        val hazeState = remember { HazeState() }
+        val hazeState = rememberHazeState()
         AnimatedContentFixed(
             targetState = state,
             contentKey = { it.mapType },
@@ -241,7 +241,7 @@ private fun MapWindowContent(
             modifier = Modifier
                 .background(RiftTheme.colors.mapBackground)
                 .border(1.dp, RiftTheme.colors.borderGrey)
-                .haze(hazeState),
+                .hazeSource(state = hazeState),
         ) { state ->
             Map(
                 state = state,

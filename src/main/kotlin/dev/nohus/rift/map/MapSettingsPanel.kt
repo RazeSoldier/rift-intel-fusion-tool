@@ -29,11 +29,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
+import dev.chrisbanes.haze.blur.blurEffect
+import dev.chrisbanes.haze.hazeEffect
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.compose.AsyncTypeIcon
 import dev.nohus.rift.compose.RequirementIcon
@@ -135,6 +137,7 @@ fun MapSettingsPanel(
     ) {
         var previousPanelState: PanelState by remember { mutableStateOf(Collapsed) }
         var panelState: PanelState by remember { mutableStateOf(Collapsed) }
+        val backgroundColor = RiftTheme.colors.backgroundPrimaryDark
         ScrollbarColumn(
             verticalArrangement = Arrangement.spacedBy(Spacing.small),
             isScrollbarConditional = true,
@@ -147,7 +150,12 @@ fun MapSettingsPanel(
                 .onPointerEvent(PointerEventType.Exit) {
                     if (panelState == Expanded) panelState = Collapsed
                 }
-                .hazeChild(hazeState),
+                .hazeEffect(hazeState) {
+                    blurEffect {
+                        this.backgroundColor = backgroundColor
+                        blurRadius = 16.dp
+                    }
+                },
         ) {
             AnimatedContent(targetState = panelState) { state ->
                 when (state) {

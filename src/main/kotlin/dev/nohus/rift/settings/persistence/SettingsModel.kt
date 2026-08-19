@@ -27,7 +27,9 @@ import java.util.UUID
 @Serializable
 data class SettingsModel(
     val eveLogsDirectory: String? = null,
+    val launcherLogsDirectory: String? = null,
     val eveSettingsDirectory: String? = null,
+    val eveSharedCacheDirectory: String? = null,
     val intelMap: IntelMap = IntelMap(),
     val authenticatedCharacters: Map<Int, SsoAuthentication> = emptyMap(),
     val intelChannels: List<IntelChannel> = emptyList(),

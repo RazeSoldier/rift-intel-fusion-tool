@@ -1,6 +1,6 @@
 package dev.nohus.rift.characters.repositories
 
-import dev.nohus.rift.charactersettings.AccountAssociationsRepository
+import dev.nohus.rift.charactersettings.io.AccountAssociationsRepository
 import dev.nohus.rift.network.esi.EsiApi
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.sso.scopes.ScopeGroups

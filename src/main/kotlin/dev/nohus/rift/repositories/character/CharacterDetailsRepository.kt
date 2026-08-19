@@ -72,7 +72,7 @@ class CharacterDetailsRepository(
     )
 
     // TODO: Check if batch version can be applied anywhere else
-    suspend fun getCharacterDetails(originator: Originator, characterIds: List<Int>): Map<Int, CharacterDetails?> = coroutineScope {
+    suspend fun getCharacterDetails(originator: Originator, characterIds: Collection<Int>): Map<Int, CharacterDetails?> = coroutineScope {
         val distinct = characterIds.distinct()
         distinct.map {
             async {

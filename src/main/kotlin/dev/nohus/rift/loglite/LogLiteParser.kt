@@ -1,6 +1,5 @@
 package dev.nohus.rift.loglite
 
-import dev.nohus.rift.charactersettings.AccountAssociationsRepository
 import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.loglite.LogLiteAction.AccountId
 import dev.nohus.rift.loglite.LogLiteAction.AutopilotPath
@@ -12,7 +11,6 @@ import org.koin.core.annotation.Single
 @Single
 class LogLiteParser(
     private val logLiteRepository: LogLiteRepository,
-    private val accountAssociationsRepository: AccountAssociationsRepository,
     private val autopilotController: AutopilotController,
 ) {
 
@@ -27,7 +25,6 @@ class LogLiteParser(
     private fun handleMessage(logMessage: LogMessage) {
         val action = parseMessage(logMessage) ?: return
         val clientAction = ClientLogLiteAction(action, logMessage.client)
-        accountAssociationsRepository.onLogLiteAction(clientAction)
         autopilotController.onLogLiteAction(clientAction)
     }
 

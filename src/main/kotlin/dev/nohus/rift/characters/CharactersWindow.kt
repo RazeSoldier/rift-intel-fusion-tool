@@ -328,7 +328,7 @@ private fun TopRow(
                             text = "Copy Eve settings\n(window positions, overview, etc.)\nbetween selected characters.",
                         ) {
                             RiftButton(
-                                text = "Copy settings",
+                                text = "Manage EVE settings",
                                 onClick = onCopySettingsClick,
                             )
                         }

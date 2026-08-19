@@ -229,7 +229,6 @@ class WindowManager(
         RiftWindow.ConfigurationPackReminder,
         RiftWindow.WhatsNew,
         RiftWindow.StartupWarning,
-        RiftWindow.CharacterSettings,
         RiftWindow.InfoDialog,
         RiftWindow.PostKillmail,
     )
@@ -447,7 +446,7 @@ class WindowManager(
             RiftWindow.StartupWarning -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Push -> WindowSizing(defaultSize = (350 to 445), minimumSize = 350 to 445)
             RiftWindow.Contacts -> WindowSizing(defaultSize = saved ?: (650 to 600), minimumSize = 650 to 600)
-            RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (420 to 500), minimumSize = 400 to 300)
+            RiftWindow.CharacterSettings -> WindowSizing(defaultSize = (1400 to 900), minimumSize = 1400 to 900)
             RiftWindow.Jukebox -> WindowSizing(defaultSize = saved ?: (650 to 500), minimumSize = 650 to 500)
             RiftWindow.JukeboxCollapsed -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.CorporationProjects -> WindowSizing(defaultSize = saved ?: (800 to 900), minimumSize = 540 to 700)

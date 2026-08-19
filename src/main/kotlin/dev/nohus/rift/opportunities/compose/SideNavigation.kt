@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.onClick
 import androidx.compose.material.Text
@@ -34,6 +35,9 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.LoadingSpinner
+import dev.nohus.rift.compose.RiftSideNavigation
+import dev.nohus.rift.compose.RiftSideNavigationHeader
+import dev.nohus.rift.compose.RiftSideNavigationItem
 import dev.nohus.rift.compose.RiftToggleButton
 import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftVerticalGlowLine
@@ -63,204 +67,89 @@ fun SideNavigation(
     onLifecycleFilterChange: (OpportunityLifecycleFilter) -> Unit,
     onClick: (OpportunityCategoryFilter?) -> Unit,
 ) {
-    val activeWindowTransition = updateTransition(LocalWindowInfo.current.isWindowFocused)
-    val colorWindowTransitionSpec = getActiveWindowTransitionSpec<Color>()
-    val color by activeWindowTransition.animateColor(colorWindowTransitionSpec) {
-        if (it) Color.White.copy(alpha = 0.05f) else Color.White.copy(alpha = 0.025f)
-    }
-
-    Column(
-        modifier = Modifier
-            .background(color)
-            .width(240.dp)
-            .fillMaxHeight(),
+    RiftSideNavigation(
+        footer = {
+            LoadingFooter(isLoading = state.isLoading)
+        }
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .padding(start = 8.dp),
-        ) {
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-                    modifier = Modifier.padding(end = 8.dp, top = 8.dp),
-                ) {
-                    RiftToggleButton(
-                        text = "Current",
-                        isSelected = state.lifecycleFilter == OpportunityLifecycleFilter.Active,
-                        type = ToggleButtonType.Left,
-                        onClick = { onLifecycleFilterChange(OpportunityLifecycleFilter.Active) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    RiftToggleButton(
-                        text = "History",
-                        isSelected = state.lifecycleFilter == OpportunityLifecycleFilter.History,
-                        type = ToggleButtonType.Right,
-                        onClick = { onLifecycleFilterChange(OpportunityLifecycleFilter.History) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-
-            val allFilters = OpportunityCategoryFilter::class.sealedSubclasses.map { it.objectInstance!! }
-            val primaryFilter = if (state.participatingFilter) null else state.primaryFilter
-
-            item {
-                Header("Features")
-            }
-            item {
-                Item(
-                    text = "All",
-                    count = state.categoryFilters.opportunityCount[null] ?: 0,
-                    icon = Res.drawable.house_16px,
-                    isSelected = primaryFilter == null,
-                    onClick = { onClick(null) },
-                    modifier = Modifier.animateItem(),
+        item {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
+                modifier = Modifier.padding(end = 8.dp, top = 8.dp),
+            ) {
+                RiftToggleButton(
+                    text = "Current",
+                    isSelected = state.lifecycleFilter == OpportunityLifecycleFilter.Active,
+                    type = ToggleButtonType.Left,
+                    onClick = { onLifecycleFilterChange(OpportunityLifecycleFilter.Active) },
+                    modifier = Modifier.weight(1f),
+                )
+                RiftToggleButton(
+                    text = "History",
+                    isSelected = state.lifecycleFilter == OpportunityLifecycleFilter.History,
+                    type = ToggleButtonType.Right,
+                    onClick = { onLifecycleFilterChange(OpportunityLifecycleFilter.History) },
+                    modifier = Modifier.weight(1f),
                 )
             }
-            val features = allFilters.filter { it.type == OpportunityCategoryFilterType.Feature }
-            items(features, key = { it }) {
-                Item(state.categoryFilters, primaryFilter, it, onClick, Modifier.animateItem())
-            }
-
-            item {
-                Header("Career Paths")
-            }
-            val careerPaths = allFilters.filter { it.type == OpportunityCategoryFilterType.CareerPath }
-            items(careerPaths, key = { it }) {
-                Item(state.categoryFilters, primaryFilter, it, onClick, Modifier.animateItem())
-            }
-
-            item {
-                Header("Other Tags")
-            }
-            val activities = allFilters
-                .filter { it.type == OpportunityCategoryFilterType.Activity }
-                .filter { (state.categoryFilters.opportunityCount[it] ?: 0) > 0 || it == state.primaryFilter }
-            items(activities, key = { it }) {
-                Item(state.categoryFilters, primaryFilter, it, onClick, Modifier.animateItem())
-            }
         }
-        Spacer(Modifier.weight(1f))
-        LoadingFooter(isLoading = state.isLoading)
+
+        val allFilters = OpportunityCategoryFilter::class.sealedSubclasses.map { it.objectInstance!! }
+        val primaryFilter = if (state.participatingFilter) null else state.primaryFilter
+
+        item {
+            RiftSideNavigationHeader("Features")
+        }
+        item {
+            RiftSideNavigationItem(
+                text = "All",
+                count = state.categoryFilters.opportunityCount[null] ?: 0,
+                icon = Res.drawable.house_16px,
+                isSelected = primaryFilter == null,
+                onClick = { onClick(null) },
+            )
+        }
+        val features = allFilters.filter { it.type == OpportunityCategoryFilterType.Feature }
+        items(features, key = { it }) {
+            Item(state.categoryFilters, primaryFilter, it, onClick)
+        }
+
+        item {
+            RiftSideNavigationHeader("Career Paths")
+        }
+        val careerPaths = allFilters.filter { it.type == OpportunityCategoryFilterType.CareerPath }
+        items(careerPaths, key = { it }) {
+            Item(state.categoryFilters, primaryFilter, it, onClick)
+        }
+
+        item {
+            RiftSideNavigationHeader("Other Tags")
+        }
+        val activities = allFilters
+            .filter { it.type == OpportunityCategoryFilterType.Activity }
+            .filter { (state.categoryFilters.opportunityCount[it] ?: 0) > 0 || it == state.primaryFilter }
+        items(activities, key = { it }) {
+            Item(state.categoryFilters, primaryFilter, it, onClick)
+        }
     }
 }
 
 @Composable
-private fun Header(text: String) {
-    Text(
-        text = text,
-        style = RiftTheme.typography.detailSecondary,
-        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 8.dp, end = 8.dp),
-    )
-}
-
-@Composable
-private fun Item(
+private fun LazyItemScope.Item(
     categoryFilters: OpportunitiesViewModel.CategoryFilters,
     primaryFilter: OpportunityCategoryFilter?,
     filter: OpportunityCategoryFilter,
     onClick: (OpportunityCategoryFilter) -> Unit,
-    modifier: Modifier,
 ) {
     val showIcon = filter.type in listOf(OpportunityCategoryFilterType.Feature, OpportunityCategoryFilterType.CareerPath)
-    Item(
+    val isSelected = primaryFilter == filter
+    RiftSideNavigationItem(
         text = filter.name,
         count = categoryFilters.opportunityCount[filter] ?: 0,
-        icon = filter.icon.takeIf { showIcon },
-        isSelected = primaryFilter == filter,
+        icon = filter.icon.takeIf { showIcon } ?: Res.drawable.contact_tag.takeIf { isSelected },
+        isSelected = isSelected,
         onClick = { onClick(filter) },
-        modifier = modifier,
     )
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun Item(
-    text: String,
-    count: Int,
-    icon: DrawableResource?,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier,
-) {
-    val isEnabled = count > 0
-    val pointerInteractionStateHolder = rememberPointerInteractionStateHolder()
-    Box(
-        modifier = modifier
-            .onClick { onClick() }
-            .pointerHoverIcon(PointerIcon(Cursors.pointerInteractive))
-            .pointerInteraction(pointerInteractionStateHolder)
-            .height(IntrinsicSize.Min)
-            .hoverBackground(
-                pressColor = RiftTheme.colors.backgroundPrimary,
-                pointerInteractionStateHolder = pointerInteractionStateHolder,
-                isSelected = isSelected,
-            ),
-    ) {
-        val activeWindowTransition = updateTransition(LocalWindowInfo.current.isWindowFocused)
-        val colorWindowTransitionSpec = getActiveWindowTransitionSpec<Color>()
-        val glowLineColor by activeWindowTransition.animateColor(colorWindowTransitionSpec) {
-            if (it) RiftTheme.colors.borderPrimaryLight else RiftTheme.colors.textPrimary
-        }
-        if (isSelected) {
-            RiftVerticalGlowLine(pointerInteractionStateHolder, glowLineColor, Side.Left, isSelected = LocalWindowInfo.current.isWindowFocused)
-        }
-
-        val color = when {
-            isSelected && isEnabled -> RiftTheme.colors.textHighlighted
-            isEnabled -> RiftTheme.colors.textPrimary
-            else -> RiftTheme.colors.textDisabled
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(32.dp)
-                .padding(top = 4.dp, bottom = 4.dp, start = 8.dp, end = 16.dp),
-        ) {
-            if (icon != null) {
-                Image(
-                    painter = painterResource(icon),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(color),
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(16.dp),
-                )
-            } else if (isSelected) {
-                Image(
-                    painter = painterResource(Res.drawable.contact_tag),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(color),
-                    modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(16.dp),
-                )
-            }
-            Text(
-                text = text,
-                style = RiftTheme.typography.bodyPrimary.copy(color = color),
-                maxLines = 1,
-                overflow = TextOverflow.Visible,
-                softWrap = false,
-                modifier = Modifier
-                    .padding(end = Spacing.medium)
-                    .fadingRightEdge()
-                    .padding(start = 8.dp)
-                    .weight(1f),
-            )
-            if (isEnabled) {
-                Text(
-                    text = "$count",
-                    style = when {
-                        isSelected -> RiftTheme.typography.bodyHighlighted
-                        else -> RiftTheme.typography.bodySecondary
-                    },
-                )
-            }
-        }
-    }
 }
 
 @Composable

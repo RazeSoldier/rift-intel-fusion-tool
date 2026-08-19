@@ -1,6 +1,7 @@
 package dev.nohus.rift.compose
 
 import dev.nohus.rift.assets.AssetsExternalControl
+import dev.nohus.rift.assets.IsDockableTypeUseCase
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.contacts.ContactsExternalControl
 import dev.nohus.rift.contacts.ContactsRepository
@@ -36,6 +37,7 @@ class EntityInteractionProvider(
     val settings: Settings,
     val mapStatusRepository: MapStatusRepository,
     val assetsExternalControl: AssetsExternalControl,
+    val isDockableTypeUseCase: IsDockableTypeUseCase,
 ) {
 
     data class Interaction(
@@ -158,6 +160,7 @@ class EntityInteractionProvider(
     fun getType(
         type: Type,
         singletonId: Long? = null,
+        systemId: Int? = null,
     ): Interaction {
         val contextMenuItems = buildList {
             add(
@@ -168,6 +171,18 @@ class EntityInteractionProvider(
                 ),
             )
             add(ContextMenuItem.DividerItem)
+            if (singletonId != null && systemId != null && isDockableTypeUseCase(type)) {
+                add(
+                    ContextMenuItem.TextItem(
+                        text = "Set Destination",
+                        iconResource = Res.drawable.menu_set_destination,
+                        onClick = {
+                            autopilotController.setDestination(singletonId, systemId)
+                        },
+                    ),
+                )
+                add(ContextMenuItem.DividerItem)
+            }
             addAll(externalServiceRepository.getTypeMenuItems(type))
         }
         return Interaction(

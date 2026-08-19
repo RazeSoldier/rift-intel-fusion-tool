@@ -3,12 +3,15 @@ package dev.nohus.rift.settings
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.files.DetectEveSettingsDirectoryUseCase
 import dev.nohus.rift.characters.files.GetEveCharactersSettingsUseCase
+import dev.nohus.rift.charactersettings.io.AccountAssociationsRepository
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.compose.DialogMessage
 import dev.nohus.rift.compose.MessageDialogType
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.JumpBridgesReference
 import dev.nohus.rift.configurationpack.ConfigurationPackRepository.SuggestedIntelChannels
+import dev.nohus.rift.launcher.DetectLauncherLogsDirectoryUseCase
+import dev.nohus.rift.launcher.GetLauncherLogsUseCase
 import dev.nohus.rift.logs.DetectLogsDirectoryUseCase
 import dev.nohus.rift.logs.GetChatLogsDirectoryUseCase
 import dev.nohus.rift.logs.MatchChatLogFilenameUseCase
@@ -29,6 +32,8 @@ import dev.nohus.rift.settings.persistence.KillmailPosting
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesRepository
 import dev.nohus.rift.utils.Pos
+import dev.nohus.rift.utils.directories.DetectEveSharedCacheDirectoryUseCase
+import dev.nohus.rift.utils.directories.IsEveSharedCacheDirectoryValidUseCase
 import dev.nohus.rift.utils.openFileManager
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
@@ -57,10 +62,14 @@ class SettingsViewModel(
     @InjectedParam private val inputModel: SettingsInputModel,
     private val settings: Settings,
     private val detectLogsDirectoryUseCase: DetectLogsDirectoryUseCase,
+    private val detectLauncherLogsDirectoryUseCase: DetectLauncherLogsDirectoryUseCase,
     private val detectEveSettingsDirectoryUseCase: DetectEveSettingsDirectoryUseCase,
+    private val detectEveSharedCacheDirectoryUseCase: DetectEveSharedCacheDirectoryUseCase,
     private val getChatLogsDirectoryUseCase: GetChatLogsDirectoryUseCase,
     private val matchChatLogFilenameUseCase: MatchChatLogFilenameUseCase,
     private val getEveCharactersSettingsUseCase: GetEveCharactersSettingsUseCase,
+    private val getLauncherLogsUseCase: GetLauncherLogsUseCase,
+    private val isEveSharedCacheDirectoryValidUseCase: IsEveSharedCacheDirectoryValidUseCase,
     private val configurationPackRepository: ConfigurationPackRepository,
     solarSystemsRepository: SolarSystemsRepository,
     private val windowManager: WindowManager,
@@ -70,6 +79,7 @@ class SettingsViewModel(
     private val sovereigntyUpgradesParser: SovereigntyUpgradesParser,
     private val sovereigntyUpgradesRepository: SovereigntyUpgradesRepository,
     private val getStorageStatsUseCase: GetStorageStatsUseCase,
+    private val accountAssociationsRepository: AccountAssociationsRepository,
 ) : ViewModel() {
 
     data class UiState(
@@ -83,8 +93,12 @@ class SettingsViewModel(
         val intelExpireSeconds: Int,
         val logsDirectory: String,
         val isLogsDirectoryValid: Boolean,
+        val launcherLogsDirectory: String,
+        val isLauncherLogsDirectoryValid: Boolean,
         val settingsDirectory: String,
         val isSettingsDirectoryValid: Boolean,
+        val sharedCacheDirectory: String,
+        val isSharedCacheDirectoryValid: Boolean,
         val isDisplayEveTime: Boolean,
         val isShowSetupWizardOnNextStartEnabled: Boolean,
         val isRememberOpenWindows: Boolean,
@@ -162,8 +176,12 @@ class SettingsViewModel(
             intelExpireSeconds = settings.intelExpireSeconds,
             logsDirectory = settings.eveLogsDirectory?.pathString ?: "",
             isLogsDirectoryValid = getChatLogsDirectoryUseCase(settings.eveLogsDirectory) != null,
+            launcherLogsDirectory = settings.launcherLogsDirectory?.pathString ?: "",
+            isLauncherLogsDirectoryValid = getLauncherLogsUseCase(settings.launcherLogsDirectory).isNotEmpty(),
             settingsDirectory = settings.eveSettingsDirectory?.pathString ?: "",
             isSettingsDirectoryValid = getEveCharactersSettingsUseCase(settings.eveSettingsDirectory).isNotEmpty(),
+            sharedCacheDirectory = settings.eveSharedCacheDirectory?.pathString ?: "",
+            isSharedCacheDirectoryValid = isEveSharedCacheDirectoryValidUseCase(settings.eveSharedCacheDirectory),
             isDisplayEveTime = settings.isDisplayEveTime,
             isShowSetupWizardOnNextStartEnabled = settings.isShowSetupWizardOnNextStart,
             isRememberOpenWindows = settings.isRememberOpenWindows,
@@ -253,6 +271,24 @@ class SettingsViewModel(
                         it.copy(
                             settingsDirectory = settingsDirectory?.pathString ?: "",
                             isSettingsDirectoryValid = getEveCharactersSettingsUseCase(settingsDirectory).isNotEmpty(),
+                        )
+                    }
+                }
+                val launcherLogsDirectory = settings.launcherLogsDirectory
+                if (launcherLogsDirectory?.pathString != _state.value.launcherLogsDirectory) {
+                    _state.update {
+                        it.copy(
+                            launcherLogsDirectory = launcherLogsDirectory?.pathString ?: "",
+                            isLauncherLogsDirectoryValid = getLauncherLogsUseCase(launcherLogsDirectory).isNotEmpty(),
+                        )
+                    }
+                }
+                val sharedCacheDirectory = settings.eveSharedCacheDirectory
+                if (sharedCacheDirectory?.pathString != _state.value.sharedCacheDirectory) {
+                    _state.update {
+                        it.copy(
+                            sharedCacheDirectory = sharedCacheDirectory?.pathString ?: "",
+                            isSharedCacheDirectoryValid = isEveSharedCacheDirectoryValidUseCase(sharedCacheDirectory),
                         )
                     }
                 }
@@ -357,6 +393,31 @@ class SettingsViewModel(
         }
     }
 
+    fun onLauncherLogsDirectoryChanged(text: String) {
+        val directory = try {
+            Path.of(text)
+        } catch (_: InvalidPathException) {
+            null
+        }
+        settings.launcherLogsDirectory = directory
+        _state.update {
+            it.copy(
+                launcherLogsDirectory = text,
+                isLauncherLogsDirectoryValid = getLauncherLogsUseCase(directory).isNotEmpty(),
+            )
+        }
+        accountAssociationsRepository.onLauncherLogsDirectoryChanged()
+    }
+
+    fun onDetectLauncherLogsDirectoryClick() {
+        val directory = detectLauncherLogsDirectoryUseCase()
+        if (directory == null) {
+            val title = "Cannot find launcher logs"
+            val message = "Cannot find your EVE Launcher logs directory.\nPlease enter it manually."
+            _state.update { it.copy(dialogMessage = DialogMessage(title, message, MessageDialogType.Warning)) }
+        }
+    }
+
     fun onSettingsDirectoryChanged(text: String) {
         val directory = try {
             Path.of(text)
@@ -378,6 +439,31 @@ class SettingsViewModel(
             val title = "Cannot find installation"
             val message =
                 "Cannot find your EVE Online settings directory.\nPlease enter a path ending in \"CCP/EVE/[..]_tq_tranquility\" manually."
+            _state.update { it.copy(dialogMessage = DialogMessage(title, message, MessageDialogType.Warning)) }
+        }
+    }
+
+    fun onSharedCacheDirectoryChanged(text: String) {
+        val directory = try {
+            Path.of(text)
+        } catch (_: InvalidPathException) {
+            null
+        }
+        settings.eveSharedCacheDirectory = directory
+        _state.update {
+            it.copy(
+                sharedCacheDirectory = text,
+                isSharedCacheDirectoryValid = isEveSharedCacheDirectoryValidUseCase(directory),
+            )
+        }
+    }
+
+    fun onDetectSharedCacheDirectoryClick() {
+        val directory = detectEveSharedCacheDirectoryUseCase()
+        if (directory == null) {
+            val title = "Cannot find shared cache"
+            val message =
+                "Cannot find your EVE Online shared cache directory.\nPlease select the directory containing \"ResFiles\" manually."
             _state.update { it.copy(dialogMessage = DialogMessage(title, message, MessageDialogType.Warning)) }
         }
     }

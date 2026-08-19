@@ -8,20 +8,27 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import dev.nohus.rift.compose.theme.EveColors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 
 @Composable
-fun KeyName(name: String, key: String) {
+fun KeyName(
+    name: String,
+    key: String,
+    suffix: String = "",
+    style: TextStyle = RiftTheme.typography.bodyPrimary,
+    modifier: Modifier = Modifier.padding(Spacing.large),
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(Spacing.large),
+        modifier = modifier,
     ) {
         Text(
             text = name,
-            style = RiftTheme.typography.bodyPrimary,
+            style = style,
         )
         Box(
             modifier = Modifier
@@ -31,7 +38,17 @@ fun KeyName(name: String, key: String) {
         ) {
             Text(
                 text = key,
-                style = RiftTheme.typography.bodySecondary.copy(fontWeight = FontWeight.Bold),
+                style = style.copy(
+                    color = RiftTheme.typography.bodySecondary.color,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+        }
+        if (suffix.isNotEmpty()) {
+            Text(
+                text = suffix,
+                style = style,
+                modifier = Modifier.padding(start = Spacing.medium),
             )
         }
     }

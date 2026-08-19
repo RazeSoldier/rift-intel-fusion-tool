@@ -574,6 +574,7 @@ private fun LocationHeader(
                             asset = asset,
                             expandedItems = expandedItems,
                             depth = depth + 1,
+                            systemId = location.systemId,
                             onClick = onItemClick,
                             onFitAction = onFitAction,
                         )
@@ -590,6 +591,7 @@ private fun AssetRow(
     asset: Asset,
     expandedItems: Set<Long>,
     depth: Int,
+    systemId: Int?,
     onClick: (Long) -> Unit,
     onFitAction: (Fitting, FitAction) -> Unit,
 ) {
@@ -598,7 +600,7 @@ private fun AssetRow(
         val depthOffset = 24.dp * if (asset.children.isNotEmpty()) (depth - 1) else depth
         val interactionProvider: EntityInteractionProvider = remember { koin.get() }
         RiftContextMenuArea(
-            items = interactionProvider.getType(asset.type, singletonId = asset.itemId).contextMenuItems,
+            items = interactionProvider.getType(asset.type, singletonId = asset.itemId, systemId = systemId).contextMenuItems,
         ) {
             RiftTooltipArea(
                 text = buildAnnotatedString {
@@ -783,6 +785,7 @@ private fun AssetRow(
                         asset = child,
                         expandedItems = expandedItems,
                         depth = depth + 1,
+                        systemId = systemId,
                         onClick = onClick,
                         onFitAction = onFitAction,
                     )

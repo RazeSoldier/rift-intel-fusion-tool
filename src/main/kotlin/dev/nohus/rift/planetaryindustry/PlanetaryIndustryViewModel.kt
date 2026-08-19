@@ -2,7 +2,7 @@ package dev.nohus.rift.planetaryindustry
 
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
-import dev.nohus.rift.charactersettings.AccountAssociationsRepository
+import dev.nohus.rift.charactersettings.io.AccountAssociationsRepository
 import dev.nohus.rift.clipboard.Clipboard
 import dev.nohus.rift.network.AsyncResource
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository.ColonyItem

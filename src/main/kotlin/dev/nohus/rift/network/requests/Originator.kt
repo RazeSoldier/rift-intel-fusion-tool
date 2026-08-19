@@ -9,6 +9,7 @@ import dev.nohus.rift.compose.theme.EveColors
 sealed class Originator(val name: String, val color: Color) {
     data object Assets : Originator("Assets", EveColors.burnishedGold)
     data object LocalCharacters : Originator("Character Tracking", EveColors.primaryBlue)
+    data object CharacterSettingsManagement : Originator("Character Settings Management", EveColors.primaryBlue)
     data object Clones : Originator("Clones", EveColors.smokeBlue)
     data object Contacts : Originator("Contacts", EveColors.ultramarineBlue)
     data object CorporationProjects : Originator("Corporation Projects", EveColors.airTurquoise)

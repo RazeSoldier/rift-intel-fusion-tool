@@ -30,6 +30,7 @@ import dev.nohus.rift.utils.toRegexOrNull
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.time.Duration
@@ -540,7 +541,7 @@ class AlertsTriggerController(
 
     sealed interface AlertLocationMatch {
         data class System(val system: MapSolarSystem, val distance: Int) : AlertLocationMatch
-        data class Character(val characterId: Int, val distance: Int) : AlertLocationMatch
+        data class Character(val characterId: Int, val characterName: String?, val distance: Int) : AlertLocationMatch
     }
 
     private fun getMatchingAlertLocation(location: IntelReportLocation, reportSystemId: Int): AlertLocationMatch? {
@@ -555,7 +556,8 @@ class AlertsTriggerController(
                 onlineCharactersRepository.onlineCharacters.value.firstNotNullOfOrNull { characterId ->
                     if (location.onlyUndocked && !characterLocationRepository.isUndocked(characterId)) return@firstNotNullOfOrNull null
                     isCharacterWithinDistance(characterId, reportSystemId, location.jumpsRange)?.let {
-                        AlertLocationMatch.Character(characterId, it)
+                        val characterName = localCharactersRepository.characters.value.firstOrNull { it.characterId == characterId }?.info?.name
+                        AlertLocationMatch.Character(characterId, characterName, it)
                     }
                 }
             }
@@ -565,7 +567,8 @@ class AlertsTriggerController(
                     (!location.onlyUndocked || characterLocationRepository.isUndocked(location.characterId))
                 ) {
                     isCharacterWithinDistance(location.characterId, reportSystemId, location.jumpsRange)?.let {
-                        AlertLocationMatch.Character(location.characterId, it)
+                        val characterName = localCharactersRepository.characters.value.firstOrNull { it.characterId == location.characterId }?.info?.name
+                        AlertLocationMatch.Character(location.characterId, characterName, it)
                     }
                 } else {
                     null

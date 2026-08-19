@@ -815,19 +815,12 @@ private fun EveInstallationSection(
     viewModel: SettingsViewModel,
 ) {
     SectionTitle("EVE Installation")
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "EVE Online logs directory",
-            style = RiftTheme.typography.bodyPrimary,
-        )
-        RequirementIcon(
-            isFulfilled = state.isLogsDirectoryValid,
-            fulfilledTooltip = "Logs directory valid",
-            notFulfilledTooltip = if (state.logsDirectory.isBlank()) "No logs directory" else "Invalid logs directory",
-        )
-    }
+
+    Text(
+        text = "EVE Online logs directory",
+        style = RiftTheme.typography.detailPrimary,
+        modifier = Modifier.padding(top = Spacing.medium, bottom = Spacing.verySmall)
+    )
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -840,6 +833,11 @@ private fun EveInstallationSection(
                 viewModel.onLogsDirectoryChanged(it)
             },
             modifier = Modifier.weight(1f),
+        )
+        RequirementIcon(
+            isFulfilled = state.isLogsDirectoryValid,
+            fulfilledTooltip = "Logs directory valid",
+            notFulfilledTooltip = if (state.logsDirectory.isBlank()) "No logs directory" else "Invalid logs directory",
         )
         RiftFileChooserButton(
             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY,
@@ -859,19 +857,11 @@ private fun EveInstallationSection(
         )
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "EVE Online character settings directory",
-            style = RiftTheme.typography.bodyPrimary,
-        )
-        RequirementIcon(
-            isFulfilled = state.isSettingsDirectoryValid,
-            fulfilledTooltip = "Settings directory valid",
-            notFulfilledTooltip = if (state.settingsDirectory.isBlank()) "No settings directory" else "Invalid settings directory",
-        )
-    }
+    Text(
+        text = "EVE Online character settings directory",
+        style = RiftTheme.typography.detailPrimary,
+        modifier = Modifier.padding(top = Spacing.medium, bottom = Spacing.verySmall)
+    )
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
@@ -884,6 +874,11 @@ private fun EveInstallationSection(
                 viewModel.onSettingsDirectoryChanged(it)
             },
             modifier = Modifier.weight(1f),
+        )
+        RequirementIcon(
+            isFulfilled = state.isSettingsDirectoryValid,
+            fulfilledTooltip = "Settings directory valid",
+            notFulfilledTooltip = if (state.settingsDirectory.isBlank()) "No settings directory" else "Invalid settings directory",
         )
         RiftFileChooserButton(
             fileSelectionMode = JFileChooser.DIRECTORIES_ONLY,
@@ -900,6 +895,92 @@ private fun EveInstallationSection(
             text = "Detect",
             type = if (state.isSettingsDirectoryValid) ButtonType.Secondary else ButtonType.Primary,
             onClick = viewModel::onDetectSettingsDirectoryClick,
+        )
+    }
+
+    Text(
+        text = "EVE Online shared cache directory",
+        style = RiftTheme.typography.detailPrimary,
+        modifier = Modifier.padding(top = Spacing.medium, bottom = Spacing.verySmall)
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
+        var text by remember(state.sharedCacheDirectory) { mutableStateOf(state.sharedCacheDirectory) }
+        RiftTextField(
+            text = text,
+            onTextChanged = {
+                text = it
+                viewModel.onSharedCacheDirectoryChanged(it)
+            },
+            modifier = Modifier.weight(1f),
+        )
+        RequirementIcon(
+            isFulfilled = state.isSharedCacheDirectoryValid,
+            fulfilledTooltip = "Shared cache directory valid",
+            notFulfilledTooltip = if (state.sharedCacheDirectory.isBlank()) "No shared cache directory" else "Invalid shared cache directory",
+        )
+        RiftFileChooserButton(
+            fileSelectionMode = JFileChooser.DIRECTORIES_ONLY,
+            typesDescription = "EVE shared cache directory",
+            currentPath = text,
+            type = ButtonType.Secondary,
+            cornerCut = ButtonCornerCut.None,
+            onFileChosen = {
+                text = it.absolutePathString()
+                viewModel.onSharedCacheDirectoryChanged(it.absolutePathString())
+            },
+        )
+        RiftButton(
+            text = "Detect",
+            type = if (state.isSharedCacheDirectoryValid) ButtonType.Secondary else ButtonType.Primary,
+            onClick = viewModel::onDetectSharedCacheDirectoryClick,
+        )
+    }
+
+    Text(
+        text = "EVE Launcher logs directory",
+        style = RiftTheme.typography.detailPrimary,
+        modifier = Modifier.padding(top = Spacing.medium, bottom = Spacing.verySmall)
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
+    ) {
+        var text by remember(state.launcherLogsDirectory) { mutableStateOf(state.launcherLogsDirectory) }
+        RiftTextField(
+            text = text,
+            onTextChanged = {
+                text = it
+                viewModel.onLauncherLogsDirectoryChanged(it)
+            },
+            modifier = Modifier.weight(1f),
+        )
+        RequirementIcon(
+            isFulfilled = state.isLauncherLogsDirectoryValid,
+            fulfilledTooltip = "Launcher logs directory valid",
+            notFulfilledTooltip = if (state.launcherLogsDirectory.isBlank()) {
+                "No launcher logs directory"
+            } else {
+                "Invalid launcher logs directory"
+            },
+        )
+        RiftFileChooserButton(
+            fileSelectionMode = JFileChooser.DIRECTORIES_ONLY,
+            typesDescription = "Launcher logs directory",
+            currentPath = text,
+            type = ButtonType.Secondary,
+            cornerCut = ButtonCornerCut.None,
+            onFileChosen = {
+                text = it.absolutePathString()
+                viewModel.onLauncherLogsDirectoryChanged(it.absolutePathString())
+            },
+        )
+        RiftButton(
+            text = "Detect",
+            type = if (state.isLauncherLogsDirectoryValid) ButtonType.Secondary else ButtonType.Primary,
+            onClick = viewModel::onDetectLauncherLogsDirectoryClick,
         )
     }
 }

@@ -16,8 +16,13 @@ object Cursors {
     val pointerInteractive = createCursor("files/window_cursor_interactive.png")
     val pointerDropdown = createCursor("files/window_cursor_dropdown.png")
     val hand = createCursor("files/window_cursor_hand.png")
+    val move = createCursor("files/window_cursor_move.png")
     val drag = createCursor("files/window_cursor_drag.png")
     val dragHorizontal = createCursor("files/window_cursor_drag_horizontal.png")
+    val resizeHorizontal = createCursor("files/window_cursor_resize_horizontal.png")
+    val resizeVertical = createCursor("files/window_cursor_resize_vertical.png")
+    val resizeSlash = createCursor("files/window_cursor_resize_slash.png")
+    val resizeBackslash = createCursor("files/window_cursor_resize_backslash.png")
 
     private fun createCursor(resource: String): Cursor {
         val originalImage = runBlocking { ImageIO.read(Res.readBytes(resource).inputStream()) }

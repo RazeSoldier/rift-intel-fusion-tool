@@ -910,6 +910,34 @@ object WhatsNew {
                 - The Map can now be zoomed with the Page Up/Down keys
                 """.trimIndent(),
             )
+            add(
+                "5.28.0" description """
+                -! New Feature: Character Settings Management
+                - The character settings copying feature has been replaced with the new, powerful Character Settings Management
+                - View and edit your in-game window layout right from RIFT
+                - Open and close windows, minimize, resize, and move them around, as well as position your ship capacitor and locked targets
+                - Switch between in-space and docked window layouts
+
+                - View and edit your Neocom
+                - Change the Neocom width, add and remove buttons, move them around, and choose button colors
+
+                - View and edit your Fleet Watchlist
+                - Add and remove characters from your watchlist, set colors, and check the standings and details of the characters on your watchlist
+                - While in-game you can only see characters that are actively in a fleet with you, RIFT shows all of them at all times. You might have characters on your watchlist that you don't even remember about!
+
+                - View and edit custom Probe Formations
+                - Create custom formations with precise positioning, and preview how they are going to be launched in-game
+                - Automatically balance off-center formations with a counterweight probe
+
+                - View and leave chat channels you have joined on a given character
+                - Characters are now associated with accounts automatically and no longer need manual corrections in most cases
+                - Copy specific settings between characters. For example, you can copy only your window layout to other characters, without copying over other settings like joined chat channels
+                - Create backups for your character settings, and restore them as a whole, or copy only specific settings from a backup
+
+                - You can now right-click to set a destination to your own structures in the Assets window (e.g. when you are a corporation Director and the structure itself is your asset)
+                - In text intel notifications (e.g. mobile push or system notifications), your reference character is now visible next to the distance
+                """.trimIndent(),
+            )
         }.reversed()
     }
 }

@@ -333,10 +333,18 @@ class AlertsActionController(
             }
 
             is AlertLocationMatch.Character -> {
-                when (val distance = locationMatch.distance) {
-                    0 -> "In your system"
-                    1 -> "1 jump away"
-                    else -> "$distance jumps away"
+                if (locationMatch.characterName != null) {
+                    when (val distance = locationMatch.distance) {
+                        0 -> "In your system (${locationMatch.characterName})"
+                        1 -> "1 jump away from ${locationMatch.characterName}"
+                        else -> "$distance jumps away from ${locationMatch.characterName}"
+                    }
+                } else {
+                    when (val distance = locationMatch.distance) {
+                        0 -> "In your system"
+                        1 -> "1 jump away from your character"
+                        else -> "$distance jumps away from your character"
+                    }
                 }
             }
         }

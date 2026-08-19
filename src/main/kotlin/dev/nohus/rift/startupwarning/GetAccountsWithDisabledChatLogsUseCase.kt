@@ -2,8 +2,8 @@ package dev.nohus.rift.startupwarning
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository.LocalCharacter
-import dev.nohus.rift.charactersettings.AccountAssociationsRepository
-import dev.nohus.rift.charactersettings.GetAccountsUseCase
+import dev.nohus.rift.charactersettings.io.AccountAssociationsRepository
+import dev.nohus.rift.charactersettings.io.GetAccountsUseCase
 import dev.nohus.rift.network.AsyncResource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.FlowPreview

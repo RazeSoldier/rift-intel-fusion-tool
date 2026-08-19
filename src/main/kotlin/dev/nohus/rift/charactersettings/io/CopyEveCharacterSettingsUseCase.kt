@@ -1,4 +1,4 @@
-package dev.nohus.rift.charactersettings
+package dev.nohus.rift.charactersettings.io
 
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -8,8 +8,6 @@ import java.nio.file.Path
 import kotlin.io.path.copyTo
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,6 +64,17 @@ class CopyEveCharacterSettingsUseCase(
         return true
     }
 
+    fun copyFiles(
+        fromCharacterFile: Path,
+        fromAccountFile: Path,
+        toCharacterFiles: List<Path>,
+        toAccountFiles: List<Path>,
+    ): Boolean {
+        if (!replicate(fromCharacterFile, toCharacterFiles.distinct())) return false
+        if (!replicate(fromAccountFile, toAccountFiles.distinct())) return false
+        return true
+    }
+
     private fun replicate(
         fromFile: Path,
         toFiles: List<Path>,
@@ -76,10 +85,6 @@ class CopyEveCharacterSettingsUseCase(
                 return false
             }
             toFiles.filter { it != fromFile }.forEach { toFile ->
-                if (toFile.exists()) {
-                    val backup = getNewBackupFile(toFile.parent, toFile)
-                    toFile.copyTo(backup)
-                }
                 toFile.deleteIfExists()
                 fromFile.copyTo(toFile)
             }
@@ -91,12 +96,4 @@ class CopyEveCharacterSettingsUseCase(
         }
     }
 
-    private fun getNewBackupFile(directory: Path, file: Path): Path {
-        var count = 1
-        while (true) {
-            val backup = directory.resolve("${file.nameWithoutExtension}_rift_backup_$count.${file.extension}")
-            if (!backup.exists()) return backup
-            count++
-        }
-    }
 }

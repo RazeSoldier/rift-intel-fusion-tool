@@ -66,6 +66,7 @@ fun RiftContextMenuArea(
     items: List<ContextMenuItem>,
     acceptsLeftClick: Boolean = false,
     acceptsRightClick: Boolean = true,
+    onMenuShownChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -79,6 +80,7 @@ fun RiftContextMenuArea(
     val contextMenuId = remember { UUID.randomUUID().toString() }
     var isMenuShown by remember { mutableStateOf(false) }
     LaunchedEffect(openContextMenuId) { if (openContextMenuId != contextMenuId) isMenuShown = false }
+    LaunchedEffect(isMenuShown) { onMenuShownChange(isMenuShown) }
 
     val uiScaleController: UiScaleController = remember { koin.get() }
     val scale = uiScaleController.uiScale
@@ -188,7 +190,10 @@ private fun RiftContextMenuPopup(
                         .border(1.dp, RiftTheme.colors.divider)
                         .padding(1.dp),
                 ) {
-                    val hasIconSpace = items.any { it is ContextMenuItem.TextItem && it.iconResource != null || it is ContextMenuItem.CheckboxItem || it is ContextMenuItem.RadioItem }
+                    val hasIconSpace = items.any {
+                        it is ContextMenuItem.TextItem && (it.iconResource != null || it.iconContent != null) ||
+                            it is ContextMenuItem.CheckboxItem || it is ContextMenuItem.RadioItem
+                    }
                     for (item in items) {
                         when (item) {
                             is ContextMenuItem.TextItem -> ContextMenuRow(item.text, item.iconResource, item.iconContent, hasIconSpace, isSelected = null, isHighlighted = item.isHighlighted) {

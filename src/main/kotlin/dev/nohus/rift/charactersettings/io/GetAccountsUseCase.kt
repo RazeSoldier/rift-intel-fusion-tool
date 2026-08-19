@@ -1,4 +1,4 @@
-package dev.nohus.rift.charactersettings
+package dev.nohus.rift.charactersettings.io
 
 import dev.nohus.rift.settings.persistence.Settings
 import io.github.oshai.kotlinlogging.KotlinLogging

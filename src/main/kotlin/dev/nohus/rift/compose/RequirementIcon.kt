@@ -2,6 +2,8 @@ package dev.nohus.rift.compose
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,13 +22,17 @@ fun RequirementIcon(
 ) {
     val tooltip = if (isFulfilled) fulfilledTooltip else notFulfilledTooltip
     RiftTooltipArea(tooltip, modifier) {
-        val icon = if (isFulfilled) Res.drawable.status_ok else Res.drawable.status_warning_orange
-        AnimatedContent(icon) {
-            Image(
-                painter = painterResource(it),
-                contentDescription = null,
-                modifier = Modifier.size(36.dp),
-            )
+        Box(
+            modifier = Modifier.size(24.dp)
+        ) {
+            val icon = if (isFulfilled) Res.drawable.status_ok else Res.drawable.status_warning_orange
+            AnimatedContent(icon) {
+                Image(
+                    painter = painterResource(it),
+                    contentDescription = null,
+                    modifier = Modifier.requiredSize(36.dp),
+                )
+            }
         }
     }
 }

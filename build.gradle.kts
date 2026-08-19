@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.autolink)
     implementation(libs.jts.core)
     implementation(libs.haze)
+    implementation(libs.haze.blur)
     implementation(libs.conveyor.control)
     implementation(libs.androidx.collection)
     implementation(libs.jbr.api)

@@ -3,13 +3,12 @@ package dev.nohus.rift.characters
 import dev.nohus.rift.ViewModel
 import dev.nohus.rift.characters.repositories.LocalCharactersRepository
 import dev.nohus.rift.characters.repositories.OnlineCharactersRepository
-import dev.nohus.rift.charactersettings.GetAccountsUseCase
-import dev.nohus.rift.charactersettings.GetAccountsUseCase.Account
+import dev.nohus.rift.charactersettings.io.GetAccountsUseCase
+import dev.nohus.rift.charactersettings.io.GetAccountsUseCase.Account
 import dev.nohus.rift.clones.Clone
 import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.location.CharacterLocationRepository
 import dev.nohus.rift.location.CharacterLocationRepository.Location
-import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sso.authentication.EveSsoRepository

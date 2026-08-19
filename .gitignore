@@ -25,3 +25,4 @@ website/patrons.txt
 output
 .kotlin/sessions/
 okhttp
+*.md

@@ -21,7 +21,7 @@ flatlaf = "3.4.1"
 jsoup = "1.17.2"
 autolink = "0.11.0"
 jts = "1.19.0"
-haze = "0.7.2"
+haze = "2.0.0-alpha03"
 conveyor-control = "1.1"
 androidx-collection = "1.4.3"
 jbr-api = "1.4.0"
@@ -88,6 +88,7 @@ jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 autolink = { module = "org.nibor.autolink:autolink", version.ref = "autolink" }
 jts-core = { module = "org.locationtech.jts:jts-core", version.ref = "jts" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
 conveyor-control = { module = "dev.hydraulic.conveyor:conveyor-control", version.ref = "conveyor-control" }
 androidx-collection = { module = "androidx.collection:collection", version.ref = "androidx-collection" }
 jbr-api = { module = "com.jetbrains:jbr-api", version.ref = "jbr-api" }

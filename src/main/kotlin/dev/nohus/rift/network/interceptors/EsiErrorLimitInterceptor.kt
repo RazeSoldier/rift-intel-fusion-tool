@@ -23,13 +23,11 @@ class EsiErrorLimitInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response = runBlocking {
         mutex.withLock {
-            if (errorsRemaining < 10) {
+            if (errorsRemaining < 20) {
                 logger.error { "Throttling ESI requests due to being close to the error limit" }
                 delay(Duration.between(Instant.now(), resetTimestamp))
                 errorsRemaining = BASE_ERRORS_REMAINING
             }
-            // Reserve one error for this request so concurrent callers can't all proceed
-            errorsRemaining--
         }
 
         val request = chain.request()

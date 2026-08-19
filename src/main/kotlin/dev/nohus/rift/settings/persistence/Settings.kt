@@ -35,9 +35,17 @@ class Settings(
         get() = model.eveLogsDirectory?.let { Path.of(it) }
         set(value) = update { copy(eveLogsDirectory = value?.pathString) }
 
+    var launcherLogsDirectory: Path?
+        get() = model.launcherLogsDirectory?.let { Path.of(it) }
+        set(value) = update { copy(launcherLogsDirectory = value?.pathString) }
+
     var eveSettingsDirectory: Path?
         get() = model.eveSettingsDirectory?.let { Path.of(it) }
         set(value) = update { copy(eveSettingsDirectory = value?.pathString) }
+
+    var eveSharedCacheDirectory: Path?
+        get() = model.eveSharedCacheDirectory?.let { Path.of(it) }
+        set(value) = update { copy(eveSharedCacheDirectory = value?.pathString) }
 
     var intelMap: IntelMap
         get() = model.intelMap

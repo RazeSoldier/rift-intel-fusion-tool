@@ -88,6 +88,10 @@ class LocalCharactersRepository(
 
     suspend fun load() = withContext(Dispatchers.IO) {
         val characters = loadLocalCharacters()
+        val characterIds = characters.map { it.characterId }
+        withContext(MainUIDispatcher) {
+            _characters.value = _characters.value.filter { it.characterId in characterIds }
+        }
         loadEsiCharacters(characters)
     }
 
