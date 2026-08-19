@@ -3,7 +3,6 @@ package dev.nohus.rift.killboard
 import dev.nohus.rift.alerts.AlertsTriggerController
 import dev.nohus.rift.intel.state.IntelStateController
 import dev.nohus.rift.intel.state.SystemEntity
-import dev.nohus.rift.network.esi.models.CharactersAffiliation
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.repositories.CelestialsRepository
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -64,7 +63,7 @@ class KillmailProcessor(
         val system = solarSystemsRepository.getSystem(message.solarSystemId) ?: return@coroutineScope
 
         val deferredVictim = message.victim.characterId?.let {
-            async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it, message.victim.affiliation) }
+            async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it) }
         }
 
         // Corporation and alliance are only loaded if there is no character, otherwise they are included with the character
@@ -81,7 +80,7 @@ class KillmailProcessor(
 
         val deferredAttackers = message.attackers.mapNotNull {
             if (it.characterId != null) {
-                async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it.characterId, it.affiliation) }
+                async { characterDetailsRepository.getCharacterDetails(Originator.Killmails, it.characterId) }
             } else {
                 null
             }
@@ -168,17 +167,5 @@ class KillmailProcessor(
         } else {
             SystemEntity.Celestial(closestCelestial.celestial, distanceKm)
         }
-    }
-
-    private val Victim.affiliation get() = if (characterId != null && corporationId != null) {
-        CharactersAffiliation(characterId, corporationId, allianceId)
-    } else {
-        null
-    }
-
-    private val Attacker.affiliation get() = if (characterId != null && corporationId != null) {
-        CharactersAffiliation(characterId, corporationId, allianceId)
-    } else {
-        null
     }
 }

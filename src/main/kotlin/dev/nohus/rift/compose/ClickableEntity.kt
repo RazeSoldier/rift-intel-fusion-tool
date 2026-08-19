@@ -107,10 +107,11 @@ fun ClickableShip(
 @Composable
 fun ClickableType(
     type: Type,
+    singletonId: Long? = null,
     content: @Composable () -> Unit,
 ) {
     val interactionProvider: EntityInteractionProvider = remember { koin.get() }
-    val interaction = interactionProvider.getType(type)
+    val interaction = interactionProvider.getType(type, singletonId)
     ClickableEntity(interaction, content)
 }
 

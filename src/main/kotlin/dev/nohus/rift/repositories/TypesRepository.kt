@@ -45,7 +45,9 @@ class TypesRepository(
     private lateinit var types: Map<Int, Type>
     private lateinit var typeIds: Map<String, Int>
     private lateinit var groupNames: Map<Int, String>
+    private lateinit var groupTypes: Map<Int, List<Type>>
     private lateinit var categoryNames: Map<Int, String>
+    private lateinit var categoryTypes: Map<Int, List<Type>>
     private val hasLoaded = CompletableDeferred<Unit>()
 
     init {
@@ -78,12 +80,14 @@ class TypesRepository(
             groupNames = groupRows.associate {
                 it[TypeGroups.groupId] to it[TypeGroups.groupName]
             }
+            groupTypes = types.values.groupBy { it.groupId }
             val categoryRows = staticDatabase.transaction {
                 TypeCategories.selectAll().toList()
             }
             categoryNames = categoryRows.associate {
                 it[TypeCategories.categoryId] to it[TypeCategories.categoryName]
             }
+            categoryTypes = types.values.groupBy { it.categoryId }
             typeIds = rows.groupBy { it[Types.typeName] }.map { (name, rows) ->
                 name to if (rows.size == 1) {
                     rows.single()[Types.typeId]
@@ -147,6 +151,14 @@ class TypesRepository(
             iconId = -1,
             dogmas = Dogmas(null),
         )
+    }
+
+    fun getTypesInGroup(groupId: Int): List<Type> {
+        return groupTypes[groupId] ?: listOf()
+    }
+
+    fun getTypesInCategory(categoryId: Int): List<Type> {
+        return categoryTypes[categoryId] ?: listOf()
     }
 
     fun getGroupName(id: Int): String? {

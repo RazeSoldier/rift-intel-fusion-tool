@@ -27,4 +27,5 @@ sealed class Originator(val name: String, val color: Color) {
     data object Pings : Originator("Jabber Pings", EveColors.white)
     data object DataPreloading : Originator("Data Preloading", EveColors.matteBlack)
     data object UiImage : Originator("UI Image", EveColors.matteBlack)
+    data object Structures : Originator("Structures", EveColors.limeGreen)
 }

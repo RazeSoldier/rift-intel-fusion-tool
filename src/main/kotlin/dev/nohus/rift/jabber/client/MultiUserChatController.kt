@@ -78,7 +78,7 @@ class MultiUserChatController(
     }
 
     /**
-     * Adds to server-side bookmarked chats
+     * Adds to saved chats and joins
      */
     fun addChatRoom(jidLocalPart: String) {
         try {
@@ -97,7 +97,7 @@ class MultiUserChatController(
     }
 
     /**
-     * Removes from server-side bookmarked chats
+     * Removes from saved chats
      */
     fun removeChatRoom(jid: EntityBareJid) {
         settings.jabberConferences -= jid.asEntityBareJidString()
@@ -127,6 +127,9 @@ class MultiUserChatController(
 
     private fun joinChat(muc: MultiUserChatManager, jid: EntityBareJid) {
         val chat = muc.getMultiUserChat(jid)
+        if (chat in _state.value.chats) {
+            return // Already joined
+        }
         chat.addMessageListener(::onChatMessage)
         scope.launch {
             try {

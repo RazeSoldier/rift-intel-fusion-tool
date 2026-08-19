@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import dev.nohus.rift.compose.ButtonCornerCut
-import dev.nohus.rift.compose.ButtonType
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.theme.RiftTheme

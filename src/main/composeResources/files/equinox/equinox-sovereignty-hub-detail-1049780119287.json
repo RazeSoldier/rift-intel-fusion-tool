@@ -1,0 +1,42 @@
+{
+    "id": 1049780119287,
+    "solar_system_id": 30000572,
+    "upgrades": [
+        {
+            "type_id": 82498,
+            "power_state": "Online"
+        }
+    ],
+    "reagent_bay": {
+        "last_updated": "2026-05-10T23:10:04.531793881Z",
+        "reagents": []
+    },
+    "resources": {
+        "power": {
+            "available": 2690,
+            "allocated": 1300
+        },
+        "workforce": {
+            "available": 8180,
+            "allocated": 7300
+        }
+    },
+    "workforce_transport": {
+        "configuration": {
+            "export": {
+                "solar_system_id": 30000558,
+                "amount": 3000
+            }
+        },
+        "state": {
+            "export": {
+                "solar_system_id": 30000558,
+                "amount": 3000
+            }
+        }
+    },
+    "vulnerability_window": {
+        "start": "2026-05-18T14:38:47Z",
+        "end": "2026-05-18T16:38:47Z"
+    }
+}

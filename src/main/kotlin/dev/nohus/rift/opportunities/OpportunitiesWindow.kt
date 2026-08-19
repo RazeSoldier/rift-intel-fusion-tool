@@ -3,7 +3,6 @@ package dev.nohus.rift.opportunities
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -12,7 +11,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -65,7 +62,6 @@ import dev.nohus.rift.compose.ClickableCorporation
 import dev.nohus.rift.compose.ContextMenuItem
 import dev.nohus.rift.compose.LinkText
 import dev.nohus.rift.compose.OnVisibilityChange
-import dev.nohus.rift.compose.PointerInteractionStateHolder
 import dev.nohus.rift.compose.RiftButton
 import dev.nohus.rift.compose.RiftContextMenuPopup
 import dev.nohus.rift.compose.RiftOpportunityCard
@@ -74,20 +70,18 @@ import dev.nohus.rift.compose.RiftOpportunityCardButton
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardCorporation
 import dev.nohus.rift.compose.RiftOpportunityCardTopRight.RiftOpportunityCardProgressGauge
 import dev.nohus.rift.compose.RiftSearchField
+import dev.nohus.rift.compose.RiftStatsRow
+import dev.nohus.rift.compose.RiftStatsRowItem
 import dev.nohus.rift.compose.RiftTabBar
 import dev.nohus.rift.compose.RiftTooltipArea
-import dev.nohus.rift.compose.RiftVerticalGlowLine
 import dev.nohus.rift.compose.RiftWindow
 import dev.nohus.rift.compose.ScrollbarLazyVerticalGrid
 import dev.nohus.rift.compose.SharedTransitionAnimatedContent
-import dev.nohus.rift.compose.Side
 import dev.nohus.rift.compose.Tab
 import dev.nohus.rift.compose.TransparentWindowController
 import dev.nohus.rift.compose.animatedcontentfixed.animateContentSize
-import dev.nohus.rift.compose.getActiveWindowTransitionSpec
 import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.modifyIf
-import dev.nohus.rift.compose.pointerInteraction
 import dev.nohus.rift.compose.sharedTransitionElement
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.EveColors
@@ -128,10 +122,11 @@ import java.time.Instant
 
 @Composable
 fun OpportunitiesWindow(
+    inputModel: OpportunitiesInputModel?,
     windowState: RiftWindowState,
     onCloseRequest: () -> Unit,
 ) {
-    val viewModel: OpportunitiesViewModel = viewModel()
+    val viewModel: OpportunitiesViewModel = viewModel(inputModel)
     val state by viewModel.state.collectAsState()
     RiftWindow(
         title = stringResource(Res.string.opportunities_window_title),
@@ -394,12 +389,10 @@ private fun PrimaryFilterHeader(primary: OpportunityCategoryFilter) {
 private fun CorporationProjectsStatsRow(
     stats: CorporationProjectsStats,
 ) {
-    Row(
-        modifier = Modifier
-            .wrapContentWidth(align = Alignment.Start, unbounded = true)
-            .padding(start = Spacing.large - 7.dp, end = Spacing.large, top = 40.dp, bottom = 32.dp),
+    RiftStatsRow(
+        modifier = Modifier.padding(start = Spacing.large - 7.dp, end = Spacing.large, top = 40.dp, bottom = 32.dp),
     ) {
-        StatsRowItem(
+        RiftStatsRowItem(
             value = formatIskCompact(stats.availableToYou),
             text = "Available to you",
             color = if (stats.availableToYou > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
@@ -412,7 +405,7 @@ private fun CorporationProjectsStatsRow(
                 }
             },
         )
-        StatsRowItem(
+        RiftStatsRowItem(
             value = formatIskCompact(stats.availableTotal),
             text = "Available to all members",
             color = if (stats.availableTotal > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
@@ -425,7 +418,7 @@ private fun CorporationProjectsStatsRow(
                 }
             },
         )
-        StatsRowItem(
+        RiftStatsRowItem(
             value = stats.active.toString(),
             text = "Active Project${stats.active.plural}",
             color = EveColors.airTurquoise,
@@ -433,7 +426,7 @@ private fun CorporationProjectsStatsRow(
                 append("A maximum of 100 Projects\ncan be active at once per corporation")
             },
         )
-        StatsRowItem(
+        RiftStatsRowItem(
             value = stats.completedToday.toString(),
             text = "Completed Today",
             color = if (stats.completedToday > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
@@ -441,7 +434,7 @@ private fun CorporationProjectsStatsRow(
                 append("Number of projects completed\nin the last 24 hours")
             },
         )
-        StatsRowItem(
+        RiftStatsRowItem(
             value = stats.completedThisWeek.toString(),
             text = "Completed This Week",
             color = if (stats.completedThisWeek > 0) EveColors.successGreen else RiftTheme.colors.textPrimary,
@@ -453,22 +446,20 @@ private fun CorporationProjectsStatsRow(
 private fun FreelanceJobsStatsRow(
     stats: FreelanceJobsStats,
 ) {
-    Row(
-        modifier = Modifier
-            .wrapContentWidth(align = Alignment.Start, unbounded = true)
-            .padding(start = Spacing.large - 7.dp, end = Spacing.large, top = 40.dp, bottom = 32.dp),
+    RiftStatsRow(
+        modifier = Modifier.padding(start = Spacing.large - 7.dp, end = Spacing.large, top = 40.dp, bottom = 32.dp),
     ) {
-        StatsRowItem(
+        RiftStatsRowItem(
             value = stats.available.toString(),
             text = "Job${stats.available.plural} Available",
             color = if (stats.available > 0) EveColors.airTurquoise else RiftTheme.colors.textPrimary,
         )
-        StatsRowItem(
+        RiftStatsRowItem(
             value = stats.corporations.toString(),
             text = "Corporation${stats.corporations.plural}",
             color = if (stats.corporations > 0) EveColors.airTurquoise else RiftTheme.colors.textPrimary,
         )
-        StatsRowItem(
+        RiftStatsRowItem(
             value = stats.accepted.toString(),
             text = "Job${stats.accepted.plural} Accepted",
             color = if (stats.accepted > 0) EveColors.airTurquoise else RiftTheme.colors.textPrimary,
@@ -476,54 +467,6 @@ private fun FreelanceJobsStatsRow(
                 append("The Freelancing skill determines the maximum number of\nFreelance Jobs that can be accepted simultaneously")
             },
         )
-    }
-}
-
-@Composable
-private fun StatsRowItem(
-    value: String,
-    text: String,
-    suffix: String? = null,
-    color: Color,
-    tooltip: AnnotatedString? = null,
-) {
-    val activeWindowTransition = updateTransition(LocalWindowInfo.current.isWindowFocused)
-    val colorWindowTransitionSpec = getActiveWindowTransitionSpec<Color>()
-    val color by activeWindowTransition.animateColor(colorWindowTransitionSpec) {
-        if (it) color else RiftTheme.colors.textPrimary
-    }
-    val pointerInteractionStateHolder = remember { PointerInteractionStateHolder() }
-    RiftTooltipArea(
-        text = tooltip,
-    ) {
-        Row(
-            modifier = Modifier
-                .pointerInteraction(pointerInteractionStateHolder)
-                .padding(end = Spacing.large)
-                .height(IntrinsicSize.Max),
-        ) {
-            RiftVerticalGlowLine(pointerInteractionStateHolder, color, Side.Right)
-            Spacer(Modifier.width(Spacing.large))
-            Column {
-                AnimatedContent(value) { value ->
-                    Text(
-                        text = buildAnnotatedString {
-                            append(value)
-                            if (suffix != null) {
-                                withStyle(RiftTheme.typography.bodySecondary.toSpanStyle()) {
-                                    append(suffix)
-                                }
-                            }
-                        },
-                        style = RiftTheme.typography.displayHighlighted,
-                    )
-                }
-                Text(
-                    text = text,
-                    style = RiftTheme.typography.bodySecondary,
-                )
-            }
-        }
     }
 }
 
@@ -656,7 +599,9 @@ private fun FiltersRow(
         }
 
         val isInCorporationProjects = state.primaryFilter == OpportunityCategoryFilter.CorporationProjects
+        val isInMercenaryTacticalOperations = state.primaryFilter == OpportunityCategoryFilter.MercenaryTacticalOperations
         val corporationFilters = buildList {
+            if (isInMercenaryTacticalOperations) return@buildList
             if (state.corporations.isNotEmpty()) {
                 if (!isInCorporationProjects) add(CorporationFilter.All)
                 if (state.corporations.size > 1) add(CorporationFilter.MemberCorporations)
@@ -775,13 +720,14 @@ private fun ProjectCard(
         participationLimit = opportunity.details.participationLimit,
         state = opportunity.state,
     )
-    val topRift = when (opportunity.type) {
+    val topRight = when (opportunity.type) {
         OpportunityType.CorporationProject -> progressGauge
         OpportunityType.FreelanceJob -> RiftOpportunityCardCorporation(
-            name = opportunity.creator.corporation.name,
-            id = opportunity.creator.corporation.id,
+            name = opportunity.creator.corporation?.name ?: "",
+            id = opportunity.creator.corporation?.id ?: -1,
             progressGauge = progressGauge,
         )
+        OpportunityType.MercenaryTacticalOperation -> null
     }
     val buttons = buildList {
         add(
@@ -797,6 +743,7 @@ private fun ProjectCard(
             val noun = when (opportunity.type) {
                 OpportunityType.CorporationProject -> "project"
                 OpportunityType.FreelanceJob -> "job"
+                OpportunityType.MercenaryTacticalOperation -> "operation" // Can't happen because MTO's don't have contributions
             }
             add(
                 RiftOpportunityCardButton(
@@ -847,7 +794,7 @@ private fun ProjectCard(
         category = category,
         type = type,
         solarSystemChipState = opportunity.details.solarSystemChipState,
-        topRight = topRift,
+        topRight = topRight,
         bottomContent = bottomContent,
         buttons = buttons,
         isEnforcingHeight = true,
@@ -916,7 +863,14 @@ private fun getProjectBottomContent(opportunity: Opportunity): RiftOpportunityCa
             }
             RiftOpportunityCardBottomContent.Text(Res.drawable.isk, bottomText, bottomTextTooltip)
         } else {
-            RiftOpportunityCardBottomContent.None
+            when (opportunity.type) {
+                OpportunityType.CorporationProject, OpportunityType.FreelanceJob -> {
+                    RiftOpportunityCardBottomContent.None
+                }
+                OpportunityType.MercenaryTacticalOperation -> {
+                    RiftOpportunityCardBottomContent.Text(null, AnnotatedString("In Progress"))
+                }
+            }
         }
     }
 
@@ -954,6 +908,10 @@ private fun getProjectBottomContent(opportunity: Opportunity): RiftOpportunityCa
             icon = Res.drawable.corporation_project_state_close_16px,
             timestamp = opportunity.details.finished ?: opportunity.lastModified,
         )
+    }
+
+    OpportunityState.Available -> {
+        RiftOpportunityCardBottomContent.Text(null, AnnotatedString("Ready to Start"))
     }
 }
 

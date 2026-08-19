@@ -73,7 +73,7 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_loudspeaker_icon, name = stringResource(Res.string.alerts)) { viewModel.onButtonClick(RiftWindow.Alerts) })
             add(ButtonModel(icon = Res.drawable.window_map, name = stringResource(Res.string.map)) { viewModel.onButtonClick(RiftWindow.Map) })
             add(ButtonModel(icon = Res.drawable.window_satellite, name = stringResource(Res.string.intel_feed), shortName = "Feed") { viewModel.onButtonClick(RiftWindow.IntelFeed) })
-            add(ButtonModel(icon = Res.drawable.window_bleedchannel, name = stringResource(Res.string.intel_report), shortName = "Reports") { viewModel.onButtonClick(RiftWindow.IntelReports) })
+            add(ButtonModel(icon = Res.drawable.window_warreport, name = stringResource(Res.string.intel_report), shortName = "Reports") { viewModel.onButtonClick(RiftWindow.IntelReports) })
             add(ButtonModel(icon = Res.drawable.window_characters, name = stringResource(Res.string.characters), "Chars") { viewModel.onButtonClick(RiftWindow.Characters) })
             add(ButtonModel(icon = Res.drawable.window_assets, name = stringResource(Res.string.assets)) { viewModel.onButtonClick(RiftWindow.Assets) })
             add(ButtonModel(icon = Res.drawable.window_wallet, name = stringResource(Res.string.wallet)) { viewModel.onButtonClick(RiftWindow.Wallet) })
@@ -81,8 +81,9 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_opportunities, name = stringResource(Res.string.opportunities), "Opportunities") { viewModel.onButtonClick(RiftWindow.Opportunities) })
             add(ButtonModel(icon = Res.drawable.window_contacts, name = stringResource(Res.string.contacts)) { viewModel.onButtonClick(RiftWindow.Contacts) })
             if (BuildConfig.isDevEnvironment) {
-                add(ButtonModel(icon = Res.drawable.window_chatchannels, name = stringResource(Res.string.chat)) { viewModel.onButtonClick(RiftWindow.Chat) })
+                add(ButtonModel(icon = Res.drawable.window_structures, name = "Structures") { viewModel.onButtonClick(RiftWindow.Structures) })
             }
+            add(ButtonModel(icon = Res.drawable.window_bleedchannel, name = stringResource(Res.string.chat)) { viewModel.onButtonClick(RiftWindow.Chat) })
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })
                 add(ButtonModel(icon = Res.drawable.window_chatchannels, name = "Jabber") { viewModel.onButtonClick(RiftWindow.Jabber) })

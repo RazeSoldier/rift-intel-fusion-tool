@@ -40,7 +40,7 @@ class DynamicPortraitRepository(
         val portrait = dynamicPortraitDiskRepository.load(key)
         if (portrait != null) return portrait
         val output = worker.getOutput(key) ?: return null
-        logger.info { "Generated portrait for character $characterId" }
+        logger.debug { "Generated portrait for character $characterId" }
         return getDynamicPortrait(output)
     }
 

@@ -1,22 +1,14 @@
 package dev.nohus.rift.compose.text
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.LinkAnnotation.Clickable
-import androidx.compose.ui.text.LinkAnnotation.Url
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import dev.nohus.rift.compose.theme.RiftTheme
-import dev.nohus.rift.di.koin
-import dev.nohus.rift.game.GameUiController
-import dev.nohus.rift.utils.openBrowser
-import dev.nohus.rift.utils.toURIOrNull
 
 @Composable
 fun FormattedText.toLinkedAnnotatedString(hoveredLink: Link? = null): LinkedAnnotatedString {
@@ -86,7 +78,7 @@ private fun FormattedText.Formatted.toLinkedAnnotatedString(hoveredLink: Link? =
 
                 is Span.Size -> {
                     with(LocalDensity.current) {
-                        addStyle(SpanStyle(fontSize = span.size.toSp()), indices.start, indices.end)
+                        addStyle(SpanStyle(fontSize = span.size.toSp() * density), indices.start, indices.end)
                     }
                 }
 

@@ -73,24 +73,27 @@ class PlanetsRepository(
 
 object PlanetTypes {
 
+    const val ICE = 12
+
     data class PlanetType(
         val typeId: Int,
         val name: String,
         val icon: DrawableResource,
+        val icon128: DrawableResource,
         val background: DrawableResource,
     )
 
     val types = listOf(
-        PlanetType(11, getStringSync(Res.string.map_window_temperate_planet), Res.drawable.planet_temperate, Res.drawable.planet_background_temperate),
-        PlanetType(12, getStringSync(Res.string.map_window_ice_planet), Res.drawable.planet_ice, Res.drawable.planet_background_ice),
-        PlanetType(13, getStringSync(Res.string.map_window_gas_planet), Res.drawable.planet_gas, Res.drawable.planet_background_gas),
-        PlanetType(2014, getStringSync(Res.string.map_window_oceanic_planet), Res.drawable.planet_ocean, Res.drawable.planet_background_oceanic),
-        PlanetType(2015, getStringSync(Res.string.map_window_lava_planet), Res.drawable.planet_lava, Res.drawable.planet_background_lava),
-        PlanetType(2016, getStringSync(Res.string.map_window_barren_planet), Res.drawable.planet_barren, Res.drawable.planet_background_barren),
-        PlanetType(2017, getStringSync(Res.string.map_window_storm_planet), Res.drawable.planet_storm, Res.drawable.planet_background_storm),
-        PlanetType(2063, getStringSync(Res.string.map_window_plasma_planet), Res.drawable.planet_plasma, Res.drawable.planet_background_plasma),
+        PlanetType(11, getStringSync(Res.string.map_window_temperate_planet), Res.drawable.planet_temperate, Res.drawable.planet_temperate_128, Res.drawable.planet_background_temperate),
+        PlanetType(12, getStringSync(Res.string.map_window_ice_planet), Res.drawable.planet_ice, Res.drawable.planet_ice_128, Res.drawable.planet_background_ice),
+        PlanetType(13, getStringSync(Res.string.map_window_gas_planet), Res.drawable.planet_gas, Res.drawable.planet_gas_128, Res.drawable.planet_background_gas),
+        PlanetType(2014, getStringSync(Res.string.map_window_oceanic_planet), Res.drawable.planet_ocean, Res.drawable.planet_ocean_128, Res.drawable.planet_background_oceanic),
+        PlanetType(2015, getStringSync(Res.string.map_window_lava_planet), Res.drawable.planet_lava, Res.drawable.planet_lava_128, Res.drawable.planet_background_lava),
+        PlanetType(2016, getStringSync(Res.string.map_window_barren_planet), Res.drawable.planet_barren, Res.drawable.planet_barren_128, Res.drawable.planet_background_barren),
+        PlanetType(2017, getStringSync(Res.string.map_window_storm_planet), Res.drawable.planet_storm, Res.drawable.planet_storm_128, Res.drawable.planet_background_storm),
+        PlanetType(2063, getStringSync(Res.string.map_window_plasma_planet), Res.drawable.planet_plasma, Res.drawable.planet_plasma_128, Res.drawable.planet_background_plasma),
 
-        PlanetType(30889, getStringSync(Res.string.map_window_shattered_planet), Res.drawable.planet_lava, Res.drawable.planet_background_lava),
-        PlanetType(73911, getStringSync(Res.string.map_window_scorched_barren_planet), Res.drawable.planet_barren, Res.drawable.planet_background_barren),
+        PlanetType(30889, getStringSync(Res.string.map_window_shattered_planet), Res.drawable.planet_lava, Res.drawable.planet_lava_128, Res.drawable.planet_background_lava),
+        PlanetType(73911, getStringSync(Res.string.map_window_scorched_barren_planet), Res.drawable.planet_barren, Res.drawable.planet_barren_128, Res.drawable.planet_background_barren),
     )
 }

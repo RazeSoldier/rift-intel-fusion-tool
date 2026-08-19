@@ -1,0 +1,86 @@
+{
+    "id": 1049755487730,
+    "solar_system_id": 30000570,
+    "upgrades": [
+        {
+            "type_id": 87703,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 81621,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 81615,
+            "power_state": "Online"
+        },
+        {
+            "type_id": 87708,
+            "power_state": "Online"
+        }
+    ],
+    "reagent_bay": {
+        "last_updated": "2026-05-10T23:10:04.693158242Z",
+        "reagents": [
+            {
+                "type_id": 81143,
+                "amount": 135637,
+                "burning_per_hour": 205
+            },
+            {
+                "type_id": 81144,
+                "amount": 25926,
+                "burning_per_hour": 33
+            }
+        ]
+    },
+    "resources": {
+        "power": {
+            "available": 2670,
+            "allocated": 2550
+        },
+        "workforce": {
+            "available": 40970,
+            "allocated": 40200
+        }
+    },
+    "workforce_transport": {
+        "configuration": {
+            "import": {
+                "sources": [
+                    {
+                        "solar_system_id": 30000548
+                    },
+                    {
+                        "solar_system_id": 30000560
+                    },
+                    {
+                        "solar_system_id": 30000585
+                    }
+                ]
+            }
+        },
+        "state": {
+            "import": {
+                "sources": [
+                    {
+                        "solar_system_id": 30000560,
+                        "amount": 2000
+                    },
+                    {
+                        "solar_system_id": 30000548,
+                        "amount": 3000
+                    },
+                    {
+                        "solar_system_id": 30000585,
+                        "amount": 17000
+                    }
+                ]
+            }
+        }
+    },
+    "vulnerability_window": {
+        "start": "2026-05-20T14:38:47Z",
+        "end": "2026-05-20T16:38:47Z"
+    }
+}

@@ -801,6 +801,15 @@ object WhatsNew {
                 - Several performance improvements
                 """.trimIndent(),
             )
+            add(
+                "5.19.0" description """
+                -! New Feature: Chat
+                - A duplicate of the in-game chat window, allowing you to view the same messages you see in-game
+                - Want to keep tabs on corp chat when you have your game minimized? Now you can.
+                - No space in your in-game window layout? Move your chat windows to a second monitor.
+                - You can open multiple Chat windows in RIFT to view multiple channels at the same time
+                """.trimIndent(),
+                )
         }.reversed()
     }
 }

@@ -8,8 +8,12 @@ import dev.nohus.rift.generated.resources.corporation_16px
 import dev.nohus.rift.generated.resources.fw_complex_type_16px
 import dev.nohus.rift.generated.resources.location_16px
 import dev.nohus.rift.generated.resources.map_marker_resources_storage
+import dev.nohus.rift.generated.resources.mercenary_den_16px
 import dev.nohus.rift.generated.resources.mining_16px
+import dev.nohus.rift.generated.resources.navigate_forward_16px
 import dev.nohus.rift.generated.resources.pilot_or_organization_16px
+import dev.nohus.rift.generated.resources.ship_tree_group_frigate_64
+import dev.nohus.rift.generated.resources.solar_system_16px
 import dev.nohus.rift.generated.resources.spaceship_command_16px
 import dev.nohus.rift.location.LocationRepository
 import dev.nohus.rift.network.esi.models.Archetype
@@ -23,6 +27,7 @@ import dev.nohus.rift.network.esi.models.Location
 import dev.nohus.rift.network.esi.models.OwnerType
 import dev.nohus.rift.network.esi.models.SignatureTypeId
 import dev.nohus.rift.network.requests.Originator
+import dev.nohus.rift.opportunities.TypeListsRepository.TypeList
 import dev.nohus.rift.repositories.FactionNames
 import dev.nohus.rift.repositories.ShipTreeGroups
 import dev.nohus.rift.repositories.SolarSystemsRepository
@@ -33,8 +38,11 @@ import dev.nohus.rift.repositories.TypesRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository
 import dev.nohus.rift.repositories.character.CharacterDetailsRepository.CharacterDetails
 import dev.nohus.rift.utils.mapAsync
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.DrawableResource
 import org.koin.core.annotation.Single
+import kotlin.time.measureTimedValue
 
 @Single
 class GetOpportunityContributionAttributesUseCase(
@@ -56,7 +64,7 @@ class GetOpportunityContributionAttributesUseCase(
         data class Type(val type: TypesRepository.Type) : OpportunityContributionAttribute
         data class TypeGroup(val name: String) : OpportunityContributionAttribute
         data class Ship(val type: TypesRepository.Type) : OpportunityContributionAttribute
-        data class ShipGroup(val name: String, val icon: DrawableResource) : OpportunityContributionAttribute
+        data class ShipGroup(val id: Int, val name: String, val icon: DrawableResource) : OpportunityContributionAttribute
         data class SolarSystem(val solarSystem: MapSolarSystem) : OpportunityContributionAttribute
         data class Constellation(val constellation: MapConstellation) : OpportunityContributionAttribute
         data class Region(val region: MapRegion) : OpportunityContributionAttribute
@@ -71,8 +79,8 @@ class GetOpportunityContributionAttributesUseCase(
     /**
      * characterId is only used to fetch structure details if an attribute contains a structure
      */
-    suspend operator fun invoke(originator: Originator, configuration: OpportunityConfiguration, characterId: Int): List<OpportunityContributionAttributeType> {
-        return when (val configuration = configuration) {
+    suspend operator fun invoke(originator: Originator, configuration: OpportunityConfiguration, characterId: Int): List<OpportunityContributionAttributeType> = withContext(Dispatchers.Default) {
+        when (val configuration = configuration) {
             is OpportunityConfiguration.CaptureFwComplex -> listOf(
                 OpportunityContributionAttributeType(
                     name = "Complex Type",
@@ -336,6 +344,48 @@ class GetOpportunityContributionAttributesUseCase(
                     values = configuration.locations?.mapNotNull(::mapLocation) ?: any(),
                 ),
             )
+            is OpportunityConfiguration.MercenaryTacticalOperation -> listOf(
+                OpportunityContributionAttributeType(
+                    name = "Hostiles",
+                    description = "Hostiles to destroy in this operation",
+                    icon = Res.drawable.pilot_or_organization_16px,
+                    values = listOf(
+                        OpportunityContributionAttribute.Text(configuration.hostiles),
+                    ),
+                ),
+                OpportunityContributionAttributeType(
+                    name = "Status",
+                    description = "Current status of this operation",
+                    icon = Res.drawable.navigate_forward_16px,
+                    values = listOf(
+                        OpportunityContributionAttribute.Text(configuration.status, isPlain = true),
+                    ),
+                ),
+                OpportunityContributionAttributeType(
+                    name = "Location",
+                    description = "The location of the operation",
+                    icon = Res.drawable.solar_system_16px,
+                    values = listOfNotNull(
+                        configuration.solarSystem?.let { OpportunityContributionAttribute.SolarSystem(it) },
+                    ),
+                ),
+                OpportunityContributionAttributeType(
+                    name = "Ship Restrictions",
+                    description = "The types or groups of ships\nthat can access this site.",
+                    icon = Res.drawable.spaceship_command_16px,
+                    values = configuration.allowedShipsLists?.let(::mapShipLists) ?: any(),
+                ),
+                OpportunityContributionAttributeType(
+                    name = "Mercenary Den Effects",
+                    description = "The effects completing this\noperation will provide to\nthe Mercenary Den",
+                    icon = Res.drawable.mercenary_den_16px,
+                    values = listOf(
+                        OpportunityContributionAttribute.Text("Development Impact: ${configuration.developmentImpact}", isPlain = true),
+                        OpportunityContributionAttribute.Text("Anarchy Impact: ${configuration.anarchyImpact}", isPlain = true),
+                        OpportunityContributionAttribute.Text("Infomorph Bonus: ${configuration.infomorphBonus}", isPlain = true),
+                    ),
+                ),
+            )
             is OpportunityConfiguration.Unknown -> listOf()
         }
     }
@@ -368,11 +418,47 @@ class GetOpportunityContributionAttributesUseCase(
         }
     }
 
+    private fun mapShipLists(lists: List<TypeList>): List<OpportunityContributionAttribute> {
+        val allShips = lists.flatMap { list ->
+            buildList {
+                addAll(list.includedCategoryIDs?.flatMap { typesRepository.getTypesInCategory(it) } ?: emptyList())
+                removeAll(list.excludedCategoryIDs?.flatMap { typesRepository.getTypesInCategory(it) } ?: emptyList())
+                addAll(list.includedGroupIDs?.flatMap { typesRepository.getTypesInGroup(it) } ?: emptyList())
+                removeAll(list.excludedGroupIDs?.flatMap { typesRepository.getTypesInGroup(it) } ?: emptyList())
+                addAll(list.includedTypeIDs?.map { typesRepository.getType(it) } ?: emptyList())
+                removeAll(list.excludedTypeIDs?.map { typesRepository.getType(it) } ?: emptyList())
+            }.filterNotNull()
+        }
+        val includedShips = allShips.toMutableList()
+        val includedGroups = buildList {
+            allShips.map { it.groupId }.distinct().forEach { groupId ->
+                val shipsInGroup = typesRepository.getTypesInGroup(groupId)
+                if (shipsInGroup.all { it in allShips }) {
+                    // The entire group is included
+                    add(groupId)
+                    includedShips.removeAll(shipsInGroup)
+                }
+            }
+        }
+        val groups = includedGroups.mapNotNull { groupId ->
+            val name = typesRepository.getGroupName(groupId) ?: return@mapNotNull null
+            ShipTreeGroups[name]
+        }.sortedBy {
+            it.id
+        }.map {
+            OpportunityContributionAttribute.ShipGroup(it.id, it.name, it.icon)
+        }
+        val ships = includedShips.map { ship ->
+            OpportunityContributionAttribute.Ship(ship)
+        }
+        return groups + ships
+    }
+
     private fun mapShip(item: Item): OpportunityContributionAttribute? {
         return when {
             item.groupId != null -> {
                 ShipTreeGroups[item.groupId.toInt()]?.let {
-                    OpportunityContributionAttribute.ShipGroup(it.name, it.icon)
+                    OpportunityContributionAttribute.ShipGroup(it.id, it.name, it.icon)
                 }
             }
             item.typeId != null -> {

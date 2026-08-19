@@ -10,7 +10,6 @@ import dev.nohus.rift.network.AsyncResource.Ready
 import dev.nohus.rift.network.HttpGetUseCase.CacheBehavior
 import dev.nohus.rift.utils.OperatingSystem
 import dev.nohus.rift.utils.directories.AppDirectories
-import dev.nohus.rift.utils.openFileManager
 import dev.nohus.rift.windowing.WindowManager
 import dev.nohus.rift.windowing.WindowManager.RiftWindow
 import kotlinx.coroutines.flow.MutableStateFlow

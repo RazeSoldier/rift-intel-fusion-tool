@@ -13,14 +13,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
+import org.koin.core.annotation.InjectedParam
 import java.time.Duration
 import java.time.Instant
 import kotlin.collections.filter
 
 @Factory
 class OpportunitiesViewModel(
+    @InjectedParam private val inputModel: OpportunitiesInputModel?,
     private val corporationProjectsRepository: CorporationProjectsRepository,
     private val freelanceJobsRepository: FreelanceJobsRepository,
+    private val mercenaryTacticalOperationsRepository: MercenaryTacticalOperationsRepository,
     private val gameUiController: GameUiController,
     private val localCharactersRepository: LocalCharactersRepository,
 ) : ViewModel() {
@@ -108,12 +111,19 @@ class OpportunitiesViewModel(
 
     private val _state = MutableStateFlow(
         UiState(
-            isLoading = corporationProjectsRepository.projects.value.isLoading || freelanceJobsRepository.projects.value.isLoading,
+            isLoading = corporationProjectsRepository.projects.value.isLoading ||
+                freelanceJobsRepository.projects.value.isLoading ||
+                mercenaryTacticalOperationsRepository.operations.value.isLoading,
         ),
     )
     val state = _state.asStateFlow()
 
+    private var deeplinkOpportunityId: String? = null
+
     init {
+        inputModel?.let {
+            deeplinkOpportunityId = it.opportunityId
+        }
         updateLoading()
         viewModelScope.launch {
             corporationProjectsRepository.projects.collect { projects ->
@@ -123,6 +133,12 @@ class OpportunitiesViewModel(
         }
         viewModelScope.launch {
             freelanceJobsRepository.projects.collect { jobs ->
+                updateLoading()
+                updateOpportunities()
+            }
+        }
+        viewModelScope.launch {
+            mercenaryTacticalOperationsRepository.operations.collect { operations ->
                 updateLoading()
                 updateOpportunities()
             }
@@ -223,6 +239,7 @@ class OpportunitiesViewModel(
         when (opportunity.type) {
             OpportunityType.CorporationProject -> gameUiController.pushCorporationProject(opportunity.id, opportunity.name)
             OpportunityType.FreelanceJob -> gameUiController.pushFreelanceProject(opportunity.id, opportunity.name)
+            OpportunityType.MercenaryTacticalOperation -> gameUiController.pushMercenaryTacticalOperation(opportunity.id, opportunity.name)
         }
     }
 
@@ -231,13 +248,9 @@ class OpportunitiesViewModel(
     }
 
     private fun updateOpportunities() {
-        // Corporation projects
-        val corporationProjectsState = corporationProjectsRepository.projects.value
-        val corporationProjects = corporationProjectsState.corporationProjects.flatMap { it.opportunities }
-
-        // Freelance jobs
-        val freelanceJobsState = freelanceJobsRepository.projects.value
-        val freelanceJobs = freelanceJobsState.jobs.opportunities
+        val corporationProjects = corporationProjectsRepository.projects.value.corporationProjects.flatMap { it.opportunities }
+        val freelanceJobs = freelanceJobsRepository.projects.value.jobs.opportunities
+        val mercenaryTacticalOperations = mercenaryTacticalOperationsRepository.operations.value.opportunities
 
         // Member corporations
         val memberCorporations = localCharactersRepository.characters.value.mapNotNull { character ->
@@ -247,7 +260,7 @@ class OpportunitiesViewModel(
         }.toSet()
         _state.update { it.copy(corporations = memberCorporations.toList()) }
 
-        val opportunities = corporationProjects + freelanceJobs
+        val opportunities = corporationProjects + freelanceJobs + mercenaryTacticalOperations
 
         // Primary filter is always kept enabled even when not applicable, as it represents the chosen side navigation page
         val primaryFilter = _state.value.primaryFilter
@@ -290,6 +303,12 @@ class OpportunitiesViewModel(
                 _state.update { it.copy(view = View.DetailsView(updatedViewedProject)) }
             }
         }
+
+        // Navigate to opportunity if was deep linked and is now loaded
+        opportunities.firstOrNull { it.id == deeplinkOpportunityId }?.let { deeplinkOpportunity ->
+            deeplinkOpportunityId = null
+            _state.update { it.copy(view = View.DetailsView(deeplinkOpportunity)) }
+        }
     }
 
     private fun getCorporationProjectsStats(opportunities: List<Opportunity>): CorporationProjectsStats {
@@ -323,7 +342,7 @@ class OpportunitiesViewModel(
         val activeJobs = opportunities.filter { it.state == OpportunityState.Active }
         return FreelanceJobsStats(
             available = activeJobs.size,
-            corporations = activeJobs.map { it.creator.corporation.id }.toSet().size,
+            corporations = activeJobs.map { it.creator.corporation?.id }.toSet().size,
             accepted = activeJobs.count { it.contributions.isNotEmpty() },
         )
     }
@@ -384,16 +403,17 @@ class OpportunitiesViewModel(
     private fun getOpportunitiesFilteredByLifecycle(opportunities: List<Opportunity>): List<Opportunity> {
         return opportunities
             .filter {
+                val activeStates = listOf(OpportunityState.Available, OpportunityState.Active)
                 when (state.value.lifecycleFilter) {
-                    OpportunityLifecycleFilter.Active -> it.state == OpportunityState.Active
-                    OpportunityLifecycleFilter.History -> it.state != OpportunityState.Active
+                    OpportunityLifecycleFilter.Active -> it.state in activeStates
+                    OpportunityLifecycleFilter.History -> it.state !in activeStates
                 }
             }
     }
 
     private fun getOpportunitiesFilteredByParticipation(opportunities: List<Opportunity>, isEnabled: Boolean): List<Opportunity> {
         if (!isEnabled) return opportunities
-        return opportunities
+        val ids1 = opportunities
             .filter { opportunity -> opportunity.contributions.any { it.contribution.isSuccess } }
             .filter { opportunity ->
                 if (state.value.lifecycleFilter == OpportunityLifecycleFilter.History) return@filter true
@@ -401,7 +421,14 @@ class OpportunitiesViewModel(
                 val limitSum = ((opportunity.details.participationLimit ?: opportunity.desiredProgress) * opportunity.contributions.size)
                     .coerceAtMost(opportunity.desiredProgress)
                 contributionsSum < limitSum
-            }
+            }.map { it.id }
+        val ids2 = opportunities
+            .filter { opportunity ->
+                opportunity.type == OpportunityType.MercenaryTacticalOperation &&
+                    opportunity.state == OpportunityState.Active
+            }.map { it.id }
+        val ids = (ids1 + ids2).toSet()
+        return opportunities.filter { it.id in ids }
     }
 
     private fun getApplicableCategoryFilters(opportunities: List<Opportunity>): Set<OpportunityCategoryFilter> {

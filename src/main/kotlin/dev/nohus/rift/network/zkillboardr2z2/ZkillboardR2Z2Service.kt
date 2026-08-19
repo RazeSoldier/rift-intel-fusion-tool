@@ -3,7 +3,6 @@ package dev.nohus.rift.network.zkillboardr2z2
 import dev.nohus.rift.network.requests.Endpoint
 import dev.nohus.rift.network.requests.EndpointTag
 import dev.nohus.rift.network.requests.Originator
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Tag

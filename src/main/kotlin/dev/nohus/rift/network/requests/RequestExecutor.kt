@@ -5,7 +5,6 @@ import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.Result.Success
 import dev.nohus.rift.network.esi.EsiErrorException
 import dev.nohus.rift.network.esi.EsiErrorResponse
-import dev.nohus.rift.sso.authentication.EveSsoRepository
 import dev.nohus.rift.sso.authentication.SsoException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CancellationException

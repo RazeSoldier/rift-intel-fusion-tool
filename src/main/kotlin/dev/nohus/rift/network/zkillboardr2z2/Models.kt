@@ -1,7 +1,6 @@
 package dev.nohus.rift.network.zkillboardr2z2
 
 import dev.nohus.rift.network.InstantSecondsSerializer
-import dev.nohus.rift.network.InstantSerializer
 import dev.nohus.rift.network.IsoDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

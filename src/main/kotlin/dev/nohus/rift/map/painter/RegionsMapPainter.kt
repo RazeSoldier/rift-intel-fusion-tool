@@ -71,14 +71,14 @@ class RegionsMapPainter(
         center: DoubleOffset,
         scale: Float,
     ) {
-        val fromLayoutPosition = layout[connection.from]!!.position
-        val toLayoutPosition = layout[connection.to]!!.position
+        val fromLayoutPosition = layout[connection.from]?.position ?: return
+        val toLayoutPosition = layout[connection.to]?.position ?: return
         val from = getCanvasCoordinates(fromLayoutPosition.x, fromLayoutPosition.y, center, scale)
         val to = getCanvasCoordinates(toLayoutPosition.x, toLayoutPosition.y, center, scale)
         val deltaOffset = to - from
 
-        val fromColor = RegionColors.getColor(regionNames[connection.from]!!)
-        val toColor = RegionColors.getColor(regionNames[connection.to]!!)
+        val fromColor = RegionColors.getColor(regionNames[connection.from] ?: return)
+        val toColor = RegionColors.getColor(regionNames[connection.to] ?: return)
         val brush = Brush.linearGradient(listOf(fromColor, toColor), start = Offset.Zero, end = deltaOffset)
 
         translate(from.x, from.y) {

@@ -7,7 +7,6 @@ import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
 import dev.nohus.rift.network.esi.models.CharacterIdOnline
 import dev.nohus.rift.network.esi.models.CharacterIdShip
-import dev.nohus.rift.network.esi.models.CharactersAffiliation
 import dev.nohus.rift.network.esi.models.CharactersIdCharacter
 import dev.nohus.rift.network.esi.models.CharactersIdClones
 import dev.nohus.rift.network.esi.models.CharactersIdFleet
@@ -37,7 +36,20 @@ import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.KillmailIdHash
 import dev.nohus.rift.network.esi.models.LoyaltyPoints
 import dev.nohus.rift.network.esi.models.MarketsPrice
+import dev.nohus.rift.network.esi.models.MercenaryDen
+import dev.nohus.rift.network.esi.models.MercenaryDens
+import dev.nohus.rift.network.esi.models.MercenaryDensId
+import dev.nohus.rift.network.esi.models.MercenaryTacticalOperation
+import dev.nohus.rift.network.esi.models.MercenaryTacticalOperations
+import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationsId
 import dev.nohus.rift.network.esi.models.NewMailRequest
+import dev.nohus.rift.network.esi.models.Skyhook
+import dev.nohus.rift.network.esi.models.Skyhooks
+import dev.nohus.rift.network.esi.models.SkyhooksId
+import dev.nohus.rift.network.esi.models.SkyhooksRaidable
+import dev.nohus.rift.network.esi.models.SovereigntyHub
+import dev.nohus.rift.network.esi.models.SovereigntyHubs
+import dev.nohus.rift.network.esi.models.SovereigntyHubsId
 import dev.nohus.rift.network.esi.models.SovereigntySystem
 import dev.nohus.rift.network.esi.models.Status
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
@@ -100,14 +112,6 @@ interface EsiService {
         @Tag originator: Originator,
         @Path("id") characterId: Int,
     ): CharactersIdCharacter
-
-    @POST("/characters/affiliation")
-    @EndpointTag(Endpoint.GetCharactersAffiliation::class)
-    @RateLimit(RateLimitGroup.Character::class)
-    suspend fun getCharactersAffiliation(
-        @Tag originator: Originator,
-        @Body characterIds: List<Int>,
-    ): List<CharactersAffiliation>
 
     @GET("/corporations/{id}")
     @EndpointTag(Endpoint.GetCorporationsId::class)
@@ -743,4 +747,93 @@ interface EsiService {
         @Path("killmail_id") killmailId: String,
         @Path("killmail_hash") killmailHash: String,
     ): KillmailIdHash
+
+    @GET("/characters/{character_id}/structures/mercenary-dens")
+    @EndpointTag(Endpoint.GetCharactersIdStructuresMercenaryDens::class)
+    @Scope(EsiScope.Structures.ReadCharacter::class)
+    suspend fun getCharactersIdStructuresMercenaryDens(
+        @Tag originator: Originator,
+        @Path("character_id") characterId: Int,
+        @Tag character: Character,
+    ): MercenaryDens
+
+    @GET("/characters/{character_id}/structures/mercenary-dens/{mercenary_den_id}")
+    @EndpointTag(Endpoint.GetCharactersIdStructuresMercenaryDensId::class)
+    @Scope(EsiScope.Structures.ReadCharacter::class)
+    suspend fun getCharactersIdStructuresMercenaryDensId(
+        @Tag originator: Originator,
+        @Path("character_id") characterId: Int,
+        @Path("mercenary_den_id") mercenaryDenId: Long,
+        @Tag character: Character,
+    ): MercenaryDensId
+
+    @GET("/corporations/{corporation_id}/structures/skyhooks")
+    @EndpointTag(Endpoint.GetCorporationsIdStructuresSkyhooks::class)
+    @Scope(EsiScope.Structures.ReadCorporation::class)
+    suspend fun getCorporationsIdStructuresSkyhooks(
+        @Tag originator: Originator,
+        @Path("corporation_id") corporationId: Int,
+        @Tag character: Character,
+    ): Skyhooks
+
+    @GET("/corporations/{corporation_id}/structures/skyhooks/{skyhook_id}")
+    @EndpointTag(Endpoint.GetCorporationsIdStructuresSkyhooksId::class)
+    @Scope(EsiScope.Structures.ReadCorporation::class)
+    suspend fun getCorporationsIdStructuresSkyhooksId(
+        @Tag originator: Originator,
+        @Path("corporation_id") corporationId: Int,
+        @Path("skyhook_id") skyhookId: Long,
+        @Tag character: Character,
+    ): SkyhooksId
+
+    @GET("/corporations/{corporation_id}/structures/sovereignty-hubs")
+    @EndpointTag(Endpoint.GetCorporationsIdStructuresSovereigntyHubs::class)
+    @Scope(EsiScope.Structures.ReadCorporation::class)
+    suspend fun getCorporationsIdStructuresSovereigntyHubs(
+        @Tag originator: Originator,
+        @Path("corporation_id") corporationId: Int,
+        @Tag character: Character,
+    ): SovereigntyHubs
+
+    @GET("/corporations/{corporation_id}/structures/sovereignty-hubs/{sovereignty_hub_id}")
+    @EndpointTag(Endpoint.GetCorporationsIdStructuresSovereigntyHubsId::class)
+    @Scope(EsiScope.Structures.ReadCorporation::class)
+    suspend fun getCorporationsIdStructuresSovereigntyHubsId(
+        @Tag originator: Originator,
+        @Path("corporation_id") corporationId: Int,
+        @Path("sovereignty_hub_id") sovereigntyHubId: Long,
+        @Tag character: Character,
+    ): SovereigntyHubsId
+
+    @GET("/characters/{character_id}/mercenary-tactical-operations")
+    @EndpointTag(Endpoint.GetCharactersIdMercenaryTacticalOperations::class)
+    @Scope(EsiScope.Activities.ReadCharacter::class)
+    suspend fun getCharactersIdMercenaryTacticalOperations(
+        @Tag originator: Originator,
+        @Path("character_id") characterId: Int,
+        @Tag character: Character,
+    ): MercenaryTacticalOperations
+
+    @GET("/characters/{character_id}/mercenary-tactical-operations/{operation_id}")
+    @EndpointTag(Endpoint.GetCharactersIdMercenaryTacticalOperationsId::class)
+    @Scope(EsiScope.Activities.ReadCharacter::class)
+    suspend fun getCharactersIdMercenaryTacticalOperationsId(
+        @Tag originator: Originator,
+        @Path("character_id") characterId: Int,
+        @Path("operation_id") operationId: String,
+        @Tag character: Character,
+    ): MercenaryTacticalOperationsId
+
+    @GET("/skyhooks/raidable")
+    @EndpointTag(Endpoint.GetSkyhooksRaidable::class)
+    suspend fun getSkyhooksRaidable(
+        @Tag originator: Originator,
+    ): SkyhooksRaidable
+
+    @GET("/skyhooks/raidable")
+    @EndpointTag(Endpoint.GetSkyhooksRaidable::class)
+    suspend fun getSkyhooksRaidable(
+        @Tag originator: Originator,
+        @Tag character: Character, // TODO: EA Temporary token
+    ): SkyhooksRaidable
 }

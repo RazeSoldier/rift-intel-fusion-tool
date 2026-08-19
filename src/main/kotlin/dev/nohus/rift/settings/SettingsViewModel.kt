@@ -118,6 +118,8 @@ class SettingsViewModel(
         // Sovereignty
         val isSovereigntyUpgradesHackImportingEnabled: Boolean,
         val isSovereigntyUpgradesHackImportingOfflineEnabled: Boolean,
+        // Development
+        val isEquinoxMockingEnabled: Boolean,
     )
 
     sealed class SettingsTab(val id: Int) {
@@ -192,6 +194,8 @@ class SettingsViewModel(
             // Sovereignty
             isSovereigntyUpgradesHackImportingEnabled = settings.isSovereigntyUpgradesHackImportingEnabled,
             isSovereigntyUpgradesHackImportingOfflineEnabled = settings.isSovereigntyUpgradesHackImportingOfflineEnabled,
+            // Development
+            isEquinoxMockingEnabled = settings.isEquinoxMockingEnabled,
         ),
     )
     val state = _state.asStateFlow()
@@ -229,6 +233,8 @@ class SettingsViewModel(
                         // Sovereignty
                         isSovereigntyUpgradesHackImportingEnabled = settings.isSovereigntyUpgradesHackImportingEnabled,
                         isSovereigntyUpgradesHackImportingOfflineEnabled = settings.isSovereigntyUpgradesHackImportingOfflineEnabled,
+                        // Development
+                        isEquinoxMockingEnabled = settings.isEquinoxMockingEnabled,
                     )
                 }
                 val logsDirectory = settings.eveLogsDirectory
@@ -423,6 +429,11 @@ class SettingsViewModel(
     }
 
     fun onIsZkillboardMonitoringChanged(enabled: Boolean) {
+        if (enabled) {
+            showRestartRequiredDialog("Enabling killmail monitoring will take effect after you restart the application.")
+        } else {
+            showRestartRequiredDialog("Disabling killmail monitoring will take effect after you restart the application.")
+        }
         settings.isZkillboardMonitoringEnabled = enabled
     }
 
@@ -620,6 +631,10 @@ class SettingsViewModel(
 
     fun onClipboardTesterClick() {
         windowManager.onWindowOpen(RiftWindow.ClipboardTest)
+    }
+
+    fun onIsEquinoxMockingEnabledChange(enabled: Boolean) {
+        settings.isEquinoxMockingEnabled = enabled
     }
 
     fun onOpenAppData() {

@@ -298,6 +298,7 @@ private fun ColumnScope.SystemInfoTypes(
                     MapSystemInfoType.FactionWarfare -> {} // In column
                     MapSystemInfoType.Sovereignty -> {} // In column
                     MapSystemInfoType.SovereigntyUpgrades -> {} // In column
+                    MapSystemInfoType.RaidableSkyhooks -> {} // In column
                     MapSystemInfoType.MetaliminalStorms -> {} // In column
                     MapSystemInfoType.Planets -> {} // In column
                     MapSystemInfoType.JoveObservatories -> {
@@ -409,6 +410,9 @@ private fun ColumnScope.SystemInfoTypes(
                     systemStatus?.sovereigntyUpgrades?.takeIf { it.isNotEmpty() }?.let {
                         SovereigntyUpgradesIndicators(it, isExpanded = true)
                     }
+                }
+                MapSystemInfoType.RaidableSkyhooks -> {
+                    RaidableSkyhooksInfo(systemStatus, isShowingDetail = true)
                 }
                 MapSystemInfoType.MetaliminalStorms -> {
                     systemStatus?.storms?.let {
@@ -554,6 +558,9 @@ private fun SystemInfoTypesIndicators(
                         SovereigntyUpgradesIndicators(it, isExpanded = false)
                     }
                 }
+                MapSystemInfoType.RaidableSkyhooks -> {
+                    RaidableSkyhooksInfo(systemStatus, isShowingDetail = false)
+                }
                 MapSystemInfoType.MetaliminalStorms -> {
                     systemStatus?.storms?.takeIf { it.isNotEmpty() }?.let { storms ->
                         InfoTypeIndicator(
@@ -642,6 +649,18 @@ private fun SystemInfoTypesIndicators(
     if (!isExpanded) {
         systemStatus?.markers?.forEach { marker ->
             InfoTypeIndicator(marker.label, marker.icon, tint = marker.color)
+        }
+    }
+}
+
+@Composable
+private fun RaidableSkyhooksInfo(systemStatus: SolarSystemStatus?, isShowingDetail: Boolean) {
+    systemStatus?.raidableSkyhooks?.takeIf { it.isNotEmpty() }?.let {
+        val now = getNow()
+        Column {
+            it.filter { it.vulnerableTo > now }.forEach { skyhook ->
+                RaidableSkyhookIndicator(skyhook, now, isShowingDetail = isShowingDetail)
+            }
         }
     }
 }

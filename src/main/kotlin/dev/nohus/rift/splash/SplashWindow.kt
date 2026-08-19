@@ -93,32 +93,31 @@ private fun SplashWindowContent(state: UiState) {
             modifier = Modifier.fillMaxSize(),
         )
         val isDarkBackground = false
-        Column(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            val shadeColor = if (isDarkBackground) {
-                Color.White.copy(alpha = 0.15f)
-            } else {
-                Color.Black.copy(alpha = 0.5f)
-            }
+        val shadeColor = if (isDarkBackground) {
+            Color.White.copy(alpha = 0.15f)
+        } else {
+            Color.Black.copy(alpha = 0.75f)
+        }
 
-            Column(
-                modifier = Modifier
-                    .padding(vertical = Spacing.medium)
-                    .clip(RoundedCornerShape(topEndPercent = 100, bottomEndPercent = 100))
-                    .background(shadeColor)
-                    .padding(vertical = Spacing.large)
-                    .padding(start = Spacing.large, end = 32.dp),
-            ) {
-                RiftAppName()
-                Text(
-                    text = state.version,
-                    style = RiftTheme.typography.headlinePrimary.copy(color = Color.White),
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            if (state.patrons.isNotEmpty()) {
-                VerticalPatrons(isDarkBackground, state.patrons)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.large),
+            modifier = Modifier
+                .padding(vertical = Spacing.medium)
+                .clip(RoundedCornerShape(topEndPercent = 100, bottomEndPercent = 100))
+                .background(shadeColor)
+                .padding(vertical = Spacing.medium)
+                .padding(start = Spacing.large, end = 32.dp),
+        ) {
+            RiftAppName()
+            Text(
+                text = state.version,
+                style = RiftTheme.typography.headlinePrimary.copy(color = Color.White),
+            )
+        }
+        if (state.patrons.isNotEmpty()) {
+            Box(Modifier.align(Alignment.BottomEnd)) {
+                VerticalPatrons(shadeColor, state.patrons)
             }
         }
     }
@@ -175,20 +174,15 @@ fun RiftAppName() {
 
 @Composable
 private fun VerticalPatrons(
-    isDarkBackground: Boolean,
+    shadeColor: Color,
     patrons: List<Patron>,
 ) {
     var isVisible by remember { mutableStateOf(false) }
     AnimatedVisibility(visible = isVisible, enter = fadeIn(tween(delayMillis = 500))) {
-        val shadeColor = if (isDarkBackground) {
-            Color.White.copy(alpha = 0.15f)
-        } else {
-            Color.Black.copy(alpha = 0.5f)
-        }
         Column(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
             modifier = Modifier
-                .clip(RoundedCornerShape(topEnd = 48.dp))
+                .clip(RoundedCornerShape(topStart = 48.dp))
                 .background(shadeColor)
                 .padding(horizontal = Spacing.large)
                 .padding(vertical = Spacing.large),
@@ -199,7 +193,7 @@ private fun VerticalPatrons(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
 
-            val shuffledPatrons = remember(patrons) { patrons.shuffled().take(4) }
+            val shuffledPatrons = remember(patrons) { patrons.shuffled().take(5) }
             shuffledPatrons.forEach {
                 Patron(it)
             }

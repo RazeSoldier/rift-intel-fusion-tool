@@ -9,8 +9,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.bytedeco.opencv.global.opencv_imgcodecs.imwrite
 import org.bytedeco.opencv.opencv_core.Mat
@@ -18,14 +16,8 @@ import org.jetbrains.skia.Image
 import org.koin.core.annotation.Single
 import java.io.IOException
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
 import kotlin.io.path.readBytes
 
 private val logger = KotlinLogging.logger {}
@@ -65,6 +57,9 @@ class DynamicPortraitDiskRepository(
                     background = loadImageBitmap(backgroundPath).await(),
                 )
             }
+        } catch (e: IllegalArgumentException) {
+            logger.error { "Failed decoding portrait for character ${key.characterId}: ${e.message}" }
+            null
         } catch (e: IOException) {
             logger.error { "Failed loading portrait for character ${key.characterId}: ${e.message}" }
             null

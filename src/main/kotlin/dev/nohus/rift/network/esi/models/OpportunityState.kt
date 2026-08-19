@@ -8,6 +8,12 @@ enum class OpportunityState {
     @SerialName("Unspecified")
     Unspecified,
 
+    /**
+     * No serial name as this state doesn't exist in the schema of Corporation Projects and Freelance Jobs.
+     * This state is created from Mercenary Tactical Operations.
+     */
+    Available,
+
     @SerialName("Active")
     Active,
 

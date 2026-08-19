@@ -1,5 +1,6 @@
 package dev.nohus.rift.network.esi
 
+import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.esi.models.AlliancesIdAlliance
 import dev.nohus.rift.network.esi.models.Asset
@@ -8,7 +9,6 @@ import dev.nohus.rift.network.esi.models.AssetName
 import dev.nohus.rift.network.esi.models.CharacterIdLocation
 import dev.nohus.rift.network.esi.models.CharacterIdOnline
 import dev.nohus.rift.network.esi.models.CharacterIdShip
-import dev.nohus.rift.network.esi.models.CharactersAffiliation
 import dev.nohus.rift.network.esi.models.CharactersIdCharacter
 import dev.nohus.rift.network.esi.models.CharactersIdClones
 import dev.nohus.rift.network.esi.models.CharactersIdFleet
@@ -38,7 +38,16 @@ import dev.nohus.rift.network.esi.models.IndustrySystem
 import dev.nohus.rift.network.esi.models.KillmailIdHash
 import dev.nohus.rift.network.esi.models.LoyaltyPoints
 import dev.nohus.rift.network.esi.models.MarketsPrice
+import dev.nohus.rift.network.esi.models.MercenaryDens
+import dev.nohus.rift.network.esi.models.MercenaryDensId
+import dev.nohus.rift.network.esi.models.MercenaryTacticalOperations
+import dev.nohus.rift.network.esi.models.MercenaryTacticalOperationsId
 import dev.nohus.rift.network.esi.models.NewMailRequest
+import dev.nohus.rift.network.esi.models.Skyhooks
+import dev.nohus.rift.network.esi.models.SkyhooksId
+import dev.nohus.rift.network.esi.models.SkyhooksRaidable
+import dev.nohus.rift.network.esi.models.SovereigntyHubs
+import dev.nohus.rift.network.esi.models.SovereigntyHubsId
 import dev.nohus.rift.network.esi.models.SovereigntySystem
 import dev.nohus.rift.network.esi.models.Status
 import dev.nohus.rift.network.esi.models.UniverseIdsResponse
@@ -53,6 +62,7 @@ import dev.nohus.rift.network.requests.Character
 import dev.nohus.rift.network.requests.Originator
 import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.network.requests.RequestExecutor
+import dev.nohus.rift.settings.persistence.Settings
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -64,9 +74,10 @@ import java.util.UUID
 
 @Single
 class EsiApi(
-    @Named("network") json: Json,
+    @Named("network") private val json: Json,
     @Named("esi") client: OkHttpClient,
     requestExecutor: RequestExecutor,
+    private val settings: Settings,
 ) : RequestExecutor by requestExecutor {
 
     private val contentType = "application/json".toMediaType()
@@ -78,6 +89,17 @@ class EsiApi(
     private val service = retrofit.create(EsiService::class.java)
 
     private val Int.authorization get() = Character(this)
+
+    private suspend inline fun <reified T> getMock(file: String): Result<T> {
+        try {
+            val text = Res.readBytes("files/$file").toString(Charsets.UTF_8)
+            val data = json.decodeFromString<T>(text)
+            return Result.Success(data)
+        } catch (e: Exception) {
+            println("Mock failed: ${e.message}")
+            return Result.Failure(e)
+        }
+    }
 
     suspend fun getStatus(originator: Originator, characterId: Int): Result<Status> {
         return execute { service.getStatus(originator, UUID.randomUUID().toString(), characterId.authorization) }
@@ -93,10 +115,6 @@ class EsiApi(
 
     suspend fun getCharactersId(originator: Originator, characterId: Int): Result<CharactersIdCharacter> {
         return execute { service.getCharactersId(originator, characterId) }
-    }
-
-    suspend fun getCharactersAffiliation(originator: Originator, characterIds: List<Int>): Result<List<CharactersAffiliation>> {
-        return execute { service.getCharactersAffiliation(originator, characterIds) }
     }
 
     suspend fun getCorporationsId(originator: Originator, corporationId: Int): Result<CorporationsIdCorporation> {
@@ -576,6 +594,126 @@ class EsiApi(
     ): Result<KillmailIdHash> {
         return execute {
             service.getKillmailIdHash(originator, killmailId, killmailHash)
+        }
+    }
+
+    suspend fun getCharactersIdStructuresMercenaryDens(
+        originator: Originator,
+        characterId: Int,
+    ): Result<MercenaryDens> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<MercenaryDens>("equinox/equinox-mercenary-dens.json")
+        } else {
+            execute {
+                service.getCharactersIdStructuresMercenaryDens(originator, characterId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCharactersIdStructuresMercenaryDensId(
+        originator: Originator,
+        characterId: Int,
+        mercenaryDenId: Long,
+    ): Result<MercenaryDensId> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<MercenaryDensId>("equinox/equinox-mercenary-den-detail-$mercenaryDenId.json")
+        } else {
+            execute {
+                service.getCharactersIdStructuresMercenaryDensId(originator, characterId, mercenaryDenId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCorporationsIdStructuresSkyhooks(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+    ): Result<Skyhooks> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<Skyhooks>("equinox/equinox-skyhooks.json")
+        } else {
+            execute {
+                service.getCorporationsIdStructuresSkyhooks(originator, corporationId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCorporationsIdStructuresSkyhooksId(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+        skyhookId: Long,
+    ): Result<SkyhooksId> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<SkyhooksId>("equinox/equinox-skyhook-detail-$skyhookId.json")
+        } else {
+            execute {
+                service.getCorporationsIdStructuresSkyhooksId(originator, corporationId, skyhookId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCorporationsIdStructuresSovereigntyHubs(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+    ): Result<SovereigntyHubs> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<SovereigntyHubs>("equinox/equinox-sovereignty-hubs.json")
+        } else {
+            execute {
+                service.getCorporationsIdStructuresSovereigntyHubs(originator, corporationId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCorporationsIdStructuresSovereigntyHubsId(
+        originator: Originator,
+        characterId: Int,
+        corporationId: Int,
+        sovereigntyHubId: Long,
+    ): Result<SovereigntyHubsId> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<SovereigntyHubsId>("equinox/equinox-sovereignty-hub-detail-$sovereigntyHubId.json")
+        } else {
+            execute {
+                service.getCorporationsIdStructuresSovereigntyHubsId(originator, corporationId, sovereigntyHubId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCharactersIdMercenaryTacticalOperations(
+        originator: Originator,
+        characterId: Int,
+    ): Result<MercenaryTacticalOperations> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<MercenaryTacticalOperations>("equinox/equinox-mercenary-tactical-operations.json")
+        } else {
+            execute {
+                service.getCharactersIdMercenaryTacticalOperations(originator, characterId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getCharactersIdMercenaryTacticalOperationsId(
+        originator: Originator,
+        characterId: Int,
+        operationId: String,
+    ): Result<MercenaryTacticalOperationsId> {
+        return if (settings.isEquinoxMockingEnabled) {
+            getMock<MercenaryTacticalOperationsId>("equinox/equinox-mercenary-tactical-operations-$operationId.json")
+        } else {
+            execute {
+                service.getCharactersIdMercenaryTacticalOperationsId(originator, characterId, operationId, characterId.authorization)
+            }
+        }
+    }
+
+    suspend fun getSkyhooksRaidable(
+        originator: Originator,
+    ): Result<SkyhooksRaidable> {
+        return execute {
+            service.getSkyhooksRaidable(originator, 91217127.authorization)
         }
     }
 }

@@ -38,7 +38,9 @@ import dev.nohus.rift.generated.resources.window_rift_64
 import dev.nohus.rift.generated.resources.window_satellite
 import dev.nohus.rift.generated.resources.window_settings
 import dev.nohus.rift.generated.resources.window_sovereignty
+import dev.nohus.rift.generated.resources.window_structures
 import dev.nohus.rift.generated.resources.window_wallet
+import dev.nohus.rift.generated.resources.window_warreport
 import dev.nohus.rift.neocom.NeocomViewModel
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.tray.TrayMenuItem.Separator
@@ -121,7 +123,7 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Alerts", Res.drawable.window_loudspeaker_icon) { onButtonClick(RiftWindow.Alerts) })
         add(TrayMenuTextItem("Map", Res.drawable.window_map) { onButtonClick(RiftWindow.Map) })
         add(TrayMenuTextItem("Intel Feed", Res.drawable.window_satellite) { onButtonClick(RiftWindow.IntelFeed) })
-        add(TrayMenuTextItem("Intel Reports", Res.drawable.window_bleedchannel) { onButtonClick(RiftWindow.IntelReports) })
+        add(TrayMenuTextItem("Intel Reports", Res.drawable.window_warreport) { onButtonClick(RiftWindow.IntelReports) })
         add(TrayMenuTextItem("Characters", Res.drawable.window_characters) { onButtonClick(RiftWindow.Characters) })
         add(TrayMenuTextItem("Assets", Res.drawable.window_assets) { onButtonClick(RiftWindow.Assets) })
         add(TrayMenuTextItem("Wallets", Res.drawable.window_wallet) { onButtonClick(RiftWindow.Wallet) })
@@ -129,8 +131,9 @@ private fun getTrayMenuItems(
         add(TrayMenuTextItem("Opportunities", Res.drawable.window_opportunities) { onButtonClick(RiftWindow.Opportunities) })
         add(TrayMenuTextItem("Contacts", Res.drawable.window_contacts) { onButtonClick(RiftWindow.Contacts) })
         if (BuildConfig.isDevEnvironment) {
-            add(TrayMenuTextItem("Chat", Res.drawable.window_chatchannels) { onButtonClick(RiftWindow.Chat) })
+            add(TrayMenuTextItem("Structures", Res.drawable.window_structures) { onButtonClick(RiftWindow.Structures) })
         }
+        add(TrayMenuTextItem("Chat", Res.drawable.window_bleedchannel) { onButtonClick(RiftWindow.Chat) })
         if (isJabberEnabled) {
             add(TrayMenuTextItem("Pings", Res.drawable.window_sovereignty) { onButtonClick(RiftWindow.Pings) })
             add(TrayMenuTextItem("Jabber", Res.drawable.window_chatchannels) { onButtonClick(RiftWindow.Jabber) })

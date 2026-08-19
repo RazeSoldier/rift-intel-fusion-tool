@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -90,6 +91,7 @@ fun ScrollbarLazyColumn(
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
+    isScrollbarConditional: Boolean = false,
     scrollbarBackground: Color = RiftTheme.colors.windowBackground,
     modifier: Modifier = Modifier,
     scrollbarModifier: Modifier = Modifier,
@@ -106,6 +108,7 @@ fun ScrollbarLazyColumn(
             contentPadding = contentPadding,
             reverseLayout = reverseLayout,
             modifier = Modifier
+                .fillMaxHeight()
                 .weight(1f)
                 .onSizeChanged {
                     with(density) {
@@ -114,12 +117,16 @@ fun ScrollbarLazyColumn(
                 },
             content = content,
         )
-        RiftVerticalScrollbar(
-            listState = listState,
-            reverseLayout = reverseLayout,
-            background = scrollbarBackground,
-            modifier = scrollbarModifier.height(scrollbarHeight),
-        )
+        val canScroll = listState.canScrollBackward || listState.canScrollForward
+        val hasScrollbar = !isScrollbarConditional || canScroll && scrollbarHeight > 0.dp
+        if (hasScrollbar) {
+            RiftVerticalScrollbar(
+                listState = listState,
+                reverseLayout = reverseLayout,
+                background = scrollbarBackground,
+                modifier = scrollbarModifier.height(scrollbarHeight),
+            )
+        }
     }
 }
 

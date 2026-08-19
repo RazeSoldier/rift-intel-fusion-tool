@@ -10,7 +10,8 @@ import org.koin.core.annotation.Single
  * [Documentation](https://developers.eveonline.com/docs/services/esi/overview/#versioning)
  */
 @Single
-class EsiCompatibilityInterceptor : Interceptor {
+class EsiCompatibilityInterceptor(
+) : Interceptor {
 
     companion object {
         const val COMPATIBILITY_DATE_KEY = "X-Compatibility-Date"
@@ -32,6 +33,6 @@ class EsiCompatibilityInterceptor : Interceptor {
 
     @Suppress("UnusedReceiverParameter")
     private fun Request.isEarlyAccess(): Boolean {
-        return false
+        return "/skyhooks/raidable" in url.encodedPath
     }
 }

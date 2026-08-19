@@ -271,7 +271,7 @@ private fun BlurEffect(dynamicPortrait: DynamicPortrait, size: Dp) {
     )
 }
 
-private val globalStartTimeNanos = System.nanoTime()
+private var globalStartTimeNanos = -1L
 
 @Composable
 private fun rememberSynchronizedAnimationLoop(durationMillis: Int): Float {
@@ -280,6 +280,7 @@ private fun rememberSynchronizedAnimationLoop(durationMillis: Int): Float {
     LaunchedEffect(durationMillis) {
         while (true) {
             withFrameNanos { now ->
+                if (globalStartTimeNanos == -1L) globalStartTimeNanos = now
                 val elapsedMillis = (now - globalStartTimeNanos).toFloat() / 1_000_000f
                 val halfMillis = durationMillis / 2f
                 val progressMillis = elapsedMillis % durationMillis

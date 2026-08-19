@@ -1,0 +1,21 @@
+{
+    "id": 1049414232767,
+    "planet_id": 40034889,
+    "enabled": true,
+    "reagents": [
+        {
+            "type_id": 81143,
+            "secured_stock": 1020419,
+            "unsecured_stock": 150419,
+            "last_cycle": "2026-05-03T22:54:52.805467575Z"
+        }
+    ],
+    "reinforcement_timer": {
+        "end": "2026-05-20T16:38:47Z"
+    },
+    "theft_vulnerability": {
+        "start": "2026-05-20T14:38:47Z",
+        "end": "2026-05-20T16:38:47Z"
+    },
+    "state": "ArmorReinforced"
+}

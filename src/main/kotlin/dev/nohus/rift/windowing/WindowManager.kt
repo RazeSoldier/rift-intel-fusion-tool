@@ -38,6 +38,7 @@ import dev.nohus.rift.map.MapWindow
 import dev.nohus.rift.map.markers.MapMarkersInputModel
 import dev.nohus.rift.map.markers.MapMarkersWindow
 import dev.nohus.rift.neocom.NeocomWindow
+import dev.nohus.rift.opportunities.OpportunitiesInputModel
 import dev.nohus.rift.opportunities.OpportunitiesWindow
 import dev.nohus.rift.pings.PingsWindow
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryWindow
@@ -48,6 +49,7 @@ import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.settings.persistence.WindowSettings
 import dev.nohus.rift.startupwarning.StartupWarningInputModel
 import dev.nohus.rift.startupwarning.StartupWarningWindow
+import dev.nohus.rift.structures.StructuresWindow
 import dev.nohus.rift.utils.Pos
 import dev.nohus.rift.utils.Size
 import dev.nohus.rift.wallet.WalletWindow
@@ -161,6 +163,9 @@ class WindowManager(
         @SerialName("Chat")
         Chat,
 
+        @SerialName("Structures")
+        Structures,
+
         @Deprecated("Removed")
         @SerialName("CorporationProjects")
         CorporationProjects,
@@ -222,6 +227,7 @@ class WindowManager(
     )
     private val multiInstanceWindows = listOf(
         RiftWindow.Map,
+        RiftWindow.Chat,
     )
     private val scope = CoroutineScope(Job())
     private var states: MutableState<Map<RiftWindow, List<RiftWindowState>>> = mutableStateOf(emptyMap())
@@ -279,11 +285,12 @@ class WindowManager(
                             RiftWindow.CharacterSettings -> CharacterSettingsWindow(state, onCloseRequest = { onWindowClose(RiftWindow.CharacterSettings, state.uuid) })
                             RiftWindow.Jukebox -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Jukebox, state.uuid) })
                             RiftWindow.JukeboxCollapsed -> JukeboxWindow(state, onCloseRequest = { onWindowClose(RiftWindow.JukeboxCollapsed, state.uuid) })
-                            RiftWindow.Opportunities -> OpportunitiesWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Opportunities, state.uuid) })
+                            RiftWindow.Opportunities -> OpportunitiesWindow(state.inputModel as? OpportunitiesInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.Opportunities, state.uuid) })
                             RiftWindow.InfoDialog -> InfoDialogWindow(state.inputModel as InfoDialogInputModel, state, onCloseRequest = { onWindowClose(RiftWindow.InfoDialog, state.uuid) })
                             RiftWindow.Wallet -> WalletWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Wallet, state.uuid) })
                             RiftWindow.ClipboardTest -> ClipboardTestWindow(state, onCloseRequest = { onWindowClose(RiftWindow.ClipboardTest, state.uuid) })
                             RiftWindow.Chat -> ChatWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Chat, state.uuid) })
+                            RiftWindow.Structures -> StructuresWindow(state, onCloseRequest = { onWindowClose(RiftWindow.Structures, state.uuid) })
                             RiftWindow.CorporationProjects -> {}
                             RiftWindow.MapSettings -> {}
                             RiftWindow.NonEnglishEveClientWarning -> {}
@@ -422,7 +429,7 @@ class WindowManager(
             RiftWindow.Pings -> WindowSizing(defaultSize = saved ?: (440 to 500), minimumSize = (440 to 300))
             RiftWindow.ConfigurationPackReminder -> WindowSizing(defaultSize = (450 to null), minimumSize = (450 to null))
             RiftWindow.Assets -> WindowSizing(defaultSize = saved ?: (500 to 500), minimumSize = (500 to 300))
-            RiftWindow.WhatsNew -> WindowSizing(defaultSize = (450 to 800), minimumSize = (450 to 800))
+            RiftWindow.WhatsNew -> WindowSizing(defaultSize = (450 to 600), minimumSize = (450 to 600))
             RiftWindow.Debug -> WindowSizing(defaultSize = saved ?: (1500 to 950), minimumSize = (450 to 500))
             RiftWindow.LogLite -> WindowSizing(defaultSize = saved ?: (1200 to 600), minimumSize = (1000 to 500))
             RiftWindow.Fleets -> WindowSizing(defaultSize = saved ?: (300 to 300), minimumSize = 300 to 300)
@@ -442,6 +449,7 @@ class WindowManager(
             RiftWindow.MapSettings -> WindowSizing(defaultSize = (400 to 450), minimumSize = 400 to 450)
             RiftWindow.NonEnglishEveClientWarning -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
             RiftWindow.Pushover -> WindowSizing(defaultSize = (200 to 200), minimumSize = (200 to 200))
+            RiftWindow.Structures -> WindowSizing(defaultSize = saved ?: (600 to 800), minimumSize = 600 to 300)
         }
         return windowSizing.scaled(uiScaleController.uiScale)
     }

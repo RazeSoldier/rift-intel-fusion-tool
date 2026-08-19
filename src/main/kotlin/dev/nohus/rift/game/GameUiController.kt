@@ -61,8 +61,8 @@ class GameUiController(
         }
     }
 
-    fun pushType(type: Type, category: String) {
-        pushLink(GameLink.forType(type), category)
+    fun pushType(type: Type, category: String, singletonId: Long? = null) {
+        pushLink(GameLink.forType(type, singletonId), category)
     }
 
     fun pushSystem(system: MapSolarSystem) {
@@ -79,6 +79,10 @@ class GameUiController(
 
     fun pushFreelanceProject(id: String, name: String) {
         pushLink(GameLink.forFreelanceJob(id, name), "freelance project")
+    }
+
+    fun pushMercenaryTacticalOperation(id: String, name: String) {
+        pushLink(GameLink.forMercenaryTacticalOperation(id, name), "mercenary tactical operation")
     }
 
     fun pushUrl(link: String, name: String) {

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.nohus.rift.compose.LoadingSpinner
 import dev.nohus.rift.compose.RiftToggleButton
@@ -38,6 +39,7 @@ import dev.nohus.rift.compose.RiftTooltipArea
 import dev.nohus.rift.compose.RiftVerticalGlowLine
 import dev.nohus.rift.compose.Side
 import dev.nohus.rift.compose.ToggleButtonType
+import dev.nohus.rift.compose.fadingRightEdge
 import dev.nohus.rift.compose.getActiveWindowTransitionSpec
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.pointerInteraction
@@ -239,9 +241,15 @@ private fun Item(
             Text(
                 text = text,
                 style = RiftTheme.typography.bodyPrimary.copy(color = color),
-                modifier = Modifier.padding(start = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Visible,
+                softWrap = false,
+                modifier = Modifier
+                    .padding(end = Spacing.medium)
+                    .fadingRightEdge()
+                    .padding(start = 8.dp)
+                    .weight(1f),
             )
-            Spacer(Modifier.weight(1f))
             if (isEnabled) {
                 Text(
                     text = "$count",

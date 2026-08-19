@@ -1,5 +1,6 @@
 package dev.nohus.rift.repositories
 
+import dev.nohus.rift.BuildConfig
 import dev.nohus.rift.assets.AssetsRepository
 import dev.nohus.rift.clones.ClonesRepository
 import dev.nohus.rift.map.MapJumpRangeController
@@ -23,6 +24,8 @@ import dev.nohus.rift.repositories.RatsRepository.RatType
 import dev.nohus.rift.repositories.StationsRepository.Station
 import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController
 import dev.nohus.rift.sovupgrades.MapSovereigntyUpgradesController.SovereigntyUpgrade
+import dev.nohus.rift.structures.RaidableSkyhooksRepository
+import dev.nohus.rift.structures.RaidableSkyhooksRepository.RaidableSkyhook
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -50,6 +53,7 @@ class MapStatusRepository(
     private val ratsRepository: RatsRepository,
     private val solarSystemsRepository: SolarSystemsRepository,
     private val mapMarkersRepository: MapMarkersRepository,
+    private val raidableSkyhooksRepository: RaidableSkyhooksRepository,
 ) {
 
     private data class UniverseSystemStatus(
@@ -81,6 +85,7 @@ class MapStatusRepository(
         val clones: Map<Int, Int>, // Character ID -> Count
         val ratType: RatType?,
         val markers: List<MapMarker>,
+        val raidableSkyhooks: List<RaidableSkyhook>,
     )
 
     private val universeSystemStatus = MutableStateFlow<Map<Int, UniverseSystemStatus>>(emptyMap())
@@ -90,6 +95,7 @@ class MapStatusRepository(
     private val storms = MutableStateFlow<Map<Int, List<Storm>>>(emptyMap())
     private val wormholes = MutableStateFlow<Map<Int, List<Wormhole>>>(emptyMap())
     private val industryIndices = MutableStateFlow<Map<Int, Map<IndustryActivity, Float>>>(emptyMap())
+    private val raidableSkyhooks = MutableStateFlow<Map<Int, List<RaidableSkyhook>>>(emptyMap())
     private val _status = MutableStateFlow<Map<Int, SolarSystemStatus>>(emptyMap())
     val status = _status.asStateFlow()
 
@@ -116,7 +122,8 @@ class MapStatusRepository(
                 planetaryIndustryRepository.colonies,
                 clonesRepository.clones,
                 mapMarkersRepository.markers,
-            ) { universe, incursions, factionWarfare, sovereignty, sovereigntyUpgrades, storms, wormholes, industryIndices, assets, distances, planets, colonies, clones, markers ->
+                raidableSkyhooks,
+            ) { universe, incursions, factionWarfare, sovereignty, sovereigntyUpgrades, storms, wormholes, industryIndices, assets, distances, planets, colonies, clones, markers, raidableSkyhooks ->
                 val assetsPerSystem = getAssetCountPerSystem(assets)
                 val stationsPerSystem = stationsRepository.getStations()
                 val systems = (
@@ -156,6 +163,7 @@ class MapStatusRepository(
                         clones = clones[systemId] ?: emptyMap(),
                         ratType = ratsRepository.getRats(systemId),
                         markers = markers[systemId] ?: emptyList(),
+                        raidableSkyhooks = raidableSkyhooks[systemId] ?: emptyList(),
                     )
                 }
             }.collect {
@@ -186,6 +194,11 @@ class MapStatusRepository(
             }
             launch {
                 loadIndustryIndices()
+            }
+            if (BuildConfig.isDevEnvironment) {
+                launch {
+                    loadRaidableSkyhooks()
+                }
             }
         }
     }
@@ -272,8 +285,18 @@ class MapStatusRepository(
         }
     }
 
+    private suspend fun loadRaidableSkyhooks() {
+        val response = raidableSkyhooksRepository.getRaidableSkyhooks(Originator.Map).success ?: return
+        raidableSkyhooks.value = response
+            .groupBy { it.solarSystemId }
+            .entries
+            .associate { (solarSystemId, raidableSkyhooks) ->
+                solarSystemId to raidableSkyhooks
+            }
+    }
+
     @Suppress("UNCHECKED_CAST")
-    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, R> combine(
+    private fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> combine(
         flow: Flow<T1>,
         flow2: Flow<T2>,
         flow3: Flow<T3>,
@@ -288,8 +311,9 @@ class MapStatusRepository(
         flow12: Flow<T12>,
         flow13: Flow<T13>,
         flow14: Flow<T14>,
-        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) -> R,
-    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11, flow12, flow13, flow14) { args: Array<*> ->
+        flow15: Flow<T15>,
+        transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) -> R,
+    ): Flow<R> = combine(flow, flow2, flow3, flow4, flow5, flow6, flow7, flow8, flow9, flow10, flow11, flow12, flow13, flow14, flow15) { args: Array<*> ->
         transform(
             args[0] as T1,
             args[1] as T2,
@@ -305,6 +329,7 @@ class MapStatusRepository(
             args[11] as T12,
             args[12] as T13,
             args[13] as T14,
+            args[14] as T15,
         )
     }
 }

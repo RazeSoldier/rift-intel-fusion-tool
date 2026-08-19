@@ -1,14 +1,33 @@
 package dev.nohus.rift.characters
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -34,9 +53,30 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
-import dev.nohus.rift.characters.CharactersViewModel.*
+import dev.nohus.rift.characters.CharactersViewModel.AuthenticationStatus
+import dev.nohus.rift.characters.CharactersViewModel.CharacterItem
+import dev.nohus.rift.characters.CharactersViewModel.UiState
 import dev.nohus.rift.clones.Clone
-import dev.nohus.rift.compose.*
+import dev.nohus.rift.compose.AsyncAllianceLogo
+import dev.nohus.rift.compose.AsyncCorporationLogo
+import dev.nohus.rift.compose.AsyncTypeIcon
+import dev.nohus.rift.compose.ButtonCornerCut
+import dev.nohus.rift.compose.ButtonType
+import dev.nohus.rift.compose.ClickableLocation
+import dev.nohus.rift.compose.ClickableShip
+import dev.nohus.rift.compose.ContextMenuItem
+import dev.nohus.rift.compose.PointerInteractionStateHolder
+import dev.nohus.rift.compose.RiftButton
+import dev.nohus.rift.compose.RiftDialog
+import dev.nohus.rift.compose.RiftIconButton
+import dev.nohus.rift.compose.RiftImageButton
+import dev.nohus.rift.compose.RiftIndicatorDot
+import dev.nohus.rift.compose.RiftTooltipArea
+import dev.nohus.rift.compose.RiftWindow
+import dev.nohus.rift.compose.ScrollbarLazyColumn
+import dev.nohus.rift.compose.hoverBackground
+import dev.nohus.rift.compose.pointerInteraction
+import dev.nohus.rift.compose.rememberPointerInteractionStateHolder
 import dev.nohus.rift.compose.theme.Cursors
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
@@ -477,7 +517,7 @@ private fun LocationText(location: Location?) {
                                 append(stringResource(Res.string.dockedin_if_unknown_ship_name))
                             }
                             if (location.station != null) {
-                                execIfLocaleNotInZh { append(getStringSync(Res.string.a_with_space)) }
+                                append("a ")
                                 withColor(RiftTheme.colors.textHighlighted) {
                                     append(getStringSync(Res.string.station))
                                 }
@@ -712,33 +752,13 @@ private fun OnlineIndicatorBar(isOnline: Boolean) {
 @Composable
 fun OnlineIndicatorDot(
     isOnline: Boolean,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    val color by animateColorAsState(
-        targetValue = if (isOnline) RiftTheme.colors.successGreen else RiftTheme.colors.hotRed,
-        animationSpec = tween(1000),
-    )
-    val blur by animateFloatAsState(
-        targetValue = if (isOnline) 4f else 1f,
-        animationSpec = tween(1000),
-    )
-    Box(
-        contentAlignment = Alignment.Center,
+    RiftIndicatorDot(
+        color = if (isOnline) RiftTheme.colors.successGreen else RiftTheme.colors.hotRed,
+        isActive = isOnline,
         modifier = modifier,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .graphicsLayer(renderEffect = BlurEffect(blur, blur, edgeTreatment = TileMode.Decal))
-                .border(2.dp, color, CircleShape),
-        ) {}
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(color),
-        ) {}
-    }
+    )
 }
 
 @Composable
@@ -874,7 +894,7 @@ private fun CloneLocation(station: Station?, structure: Structure?) {
             Text(
                 text = systemName,
                 style = RiftTheme.typography.bodyLink,
-                modifier = Modifier.widthIn(max = 70.dp),
+                modifier = Modifier.widthIn(max = 50.dp),
             )
             RiftTooltipArea(
                 text = tooltip,

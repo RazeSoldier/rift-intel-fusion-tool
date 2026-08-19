@@ -3,7 +3,6 @@ package dev.nohus.rift.network.zkillboardr2z2
 import dev.nohus.rift.network.Result
 import dev.nohus.rift.network.Result.Failure
 import dev.nohus.rift.network.requests.Originator
-import dev.nohus.rift.network.requests.Reply
 import dev.nohus.rift.network.requests.RequestExecutor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.Json

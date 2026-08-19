@@ -53,7 +53,7 @@ fun IntelReportsWindow(
     val state by viewModel.state.collectAsState()
     RiftWindow(
         title = stringResource(Res.string.intel_reports_window_title),
-        icon = Res.drawable.window_bleedchannel,
+        icon = Res.drawable.window_warreport,
         state = windowState,
         tuneContextMenuItems = getTuneContextMenuItems(state, viewModel),
         onCloseClick = onCloseRequest,

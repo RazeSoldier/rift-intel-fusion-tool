@@ -23,6 +23,7 @@ import dev.nohus.rift.map.MapJumpRangeController
 import dev.nohus.rift.network.zkillboardr2z2.ZkillboardR2Z2Observer
 import dev.nohus.rift.opportunities.CorporationProjectsRepository
 import dev.nohus.rift.opportunities.FreelanceJobsRepository
+import dev.nohus.rift.opportunities.MercenaryTacticalOperationsRepository
 import dev.nohus.rift.pings.PingsRepository
 import dev.nohus.rift.planetaryindustry.PlanetaryIndustryRepository
 import dev.nohus.rift.repositories.MapStatusRepository
@@ -30,6 +31,7 @@ import dev.nohus.rift.repositories.character.ZkillboardRecentActivityRepository
 import dev.nohus.rift.settings.persistence.Settings
 import dev.nohus.rift.sovupgrades.SovereigntyUpgradesHackWatcher
 import dev.nohus.rift.standings.StandingsRepository
+import dev.nohus.rift.structures.StructuresRepository
 import dev.nohus.rift.utils.ResetSparkleUpdateCheckUseCase
 import dev.nohus.rift.utils.activewindow.ActiveEveWindowRepository
 import dev.nohus.rift.utils.sound.SoundPlayer
@@ -72,6 +74,8 @@ class BackgroundProcesses(
     private val sovereigntyUpgradesHackWatcher: SovereigntyUpgradesHackWatcher,
     private val corporationProjectsRepository: CorporationProjectsRepository,
     private val freelanceJobsRepository: FreelanceJobsRepository,
+    private val mercenaryTacticalOperationsRepository: MercenaryTacticalOperationsRepository,
+    private val structuresRepository: StructuresRepository,
     private val checkForUpdatesUseCase: CheckForUpdatesUseCase,
     private val settings: Settings,
 ) {
@@ -177,6 +181,12 @@ class BackgroundProcesses(
             }
             launch {
                 freelanceJobsRepository.start()
+            }
+            launch {
+                mercenaryTacticalOperationsRepository.start()
+            }
+            launch {
+                structuresRepository.start()
             }
         }
     }

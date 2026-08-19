@@ -39,14 +39,22 @@ object OpportunitiesUtils {
 
     fun getOpportunityType(opportunity: Opportunity): RiftOpportunityCardType {
         val metadata = getOpportunityTypeMetadata(opportunity)
-        return RiftOpportunityCardType(
-            text = AnnotatedString(metadata.name),
-            icon = metadata.icon,
-            tooltip = metadata.tooltip,
-        )
+        return if (metadata != null) {
+            RiftOpportunityCardType(
+                text = AnnotatedString(metadata.name),
+                icon = metadata.icon,
+                tooltip = metadata.tooltip,
+            )
+        } else {
+            RiftOpportunityCardType(
+                text = opportunity.details.career.name,
+                icon = null,
+                tooltip = null,
+            )
+        }
     }
 
-    fun getOpportunityTypeMetadata(opportunity: Opportunity): OpportunityCategoryMetadata {
+    fun getOpportunityTypeMetadata(opportunity: Opportunity): OpportunityCategoryMetadata? {
         return when (val configuration = opportunity.details.configuration) {
             is OpportunityConfiguration.CaptureFwComplex -> OpportunityCategoryMetadata(
                 name = getStringSync(Res.string.opportunities_window_opportunity_type_capture_fw_complexes),
@@ -182,6 +190,8 @@ object OpportunitiesUtils {
                 progressUnit = null,
                 rewardPer = null,
             )
+
+            is OpportunityConfiguration.MercenaryTacticalOperation -> null
         }
     }
 
@@ -220,6 +230,7 @@ object OpportunitiesUtils {
                 is OpportunityConfiguration.SalvageWreck -> listOf()
                 is OpportunityConfiguration.ScanSignature -> listOf(OpportunityCategoryFilter.CosmicSignatures)
                 is OpportunityConfiguration.ShipInsurance -> listOf(OpportunityCategoryFilter.Combat, OpportunityCategoryFilter.Fleet, OpportunityCategoryFilter.Logistics)
+                is OpportunityConfiguration.MercenaryTacticalOperation -> listOf(OpportunityCategoryFilter.Combat)
                 is OpportunityConfiguration.Unknown -> listOf()
                 null -> listOf()
             }.let { addAll(it) }

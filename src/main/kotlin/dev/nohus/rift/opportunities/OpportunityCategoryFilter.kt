@@ -42,8 +42,16 @@ sealed class OpportunityCategoryFilter(
         icon = Res.drawable.freelance_projects_16px,
     )
 
-    data object Enforcer : OpportunityCategoryFilter(
+    data object MercenaryTacticalOperations : OpportunityCategoryFilter(
         order = 3,
+        name = "Mercenary Tactical Operations",
+        type = OpportunityCategoryFilterType.Feature,
+        description = "Mercenary Tactical Operations are available when at least one\nMercenary Den is deployed. While only the Den's owner can\ntrack these operations, they can still be completed by other\ncapsuleers.",
+        icon = Res.drawable.mercenary_den_16px,
+    )
+
+    data object Enforcer : OpportunityCategoryFilter(
+        order = 4,
         name = getStringSync(Res.string.opportunities_window_enforecer),
         type = OpportunityCategoryFilterType.CareerPath,
         description = getStringSync(Res.string.opportunities_window_enforecer_description),
@@ -51,7 +59,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Explorer : OpportunityCategoryFilter(
-        order = 4,
+        order = 5,
         name = getStringSync(Res.string.opportunities_window_explorer),
         type = OpportunityCategoryFilterType.CareerPath,
         description = getStringSync(Res.string.opportunities_window_explorer_description),
@@ -59,7 +67,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Industrialist : OpportunityCategoryFilter(
-        order = 5,
+        order = 6,
         name = getStringSync(Res.string.opportunities_window_industrialist),
         type = OpportunityCategoryFilterType.CareerPath,
         description = getStringSync(Res.string.opportunities_window_industrialist_description),
@@ -67,7 +75,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object SoldierOfFortune : OpportunityCategoryFilter(
-        order = 6,
+        order = 7,
         name = getStringSync(Res.string.opportunities_window_soldier_of_fortune),
         type = OpportunityCategoryFilterType.CareerPath,
         description = getStringSync(Res.string.opportunities_window_soldier_of_fortune_description),
@@ -75,7 +83,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Combat : OpportunityCategoryFilter(
-        order = 7,
+        order = 8,
         name = getStringSync(Res.string.opportunities_window_combat),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_combat_description),
@@ -83,7 +91,7 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object CosmicSignatures : OpportunityCategoryFilter(
-        order = 8,
+        order = 9,
         name = getStringSync(Res.string.opportunities_window_cosmic_signatures),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_cosmic_signatures_description),
@@ -91,35 +99,35 @@ sealed class OpportunityCategoryFilter(
     )
 
     data object Fleet : OpportunityCategoryFilter(
-        order = 9,
+        order = 10,
         name = getStringSync(Res.string.opportunities_window_fleet),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_fleet_description),
     )
 
     data object Hauling : OpportunityCategoryFilter(
-        order = 10,
+        order = 11,
         name = getStringSync(Res.string.opportunities_window_hauling),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_hauling_description),
     )
 
     data object Logistics : OpportunityCategoryFilter(
-        order = 11,
+        order = 13,
         name = getStringSync(Res.string.opportunities_window_logistics),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_logistics_description),
     )
 
     data object Manufacturing : OpportunityCategoryFilter(
-        order = 12,
+        order = 14,
         name = getStringSync(Res.string.opportunities_window_manufacturing),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_manufacturing_description),
     )
 
     data object Mining : OpportunityCategoryFilter(
-        order = 13,
+        order = 15,
         name = getStringSync(Res.string.opportunities_window_mining),
         type = OpportunityCategoryFilterType.Activity,
         description = getStringSync(Res.string.opportunities_window_mining_description),

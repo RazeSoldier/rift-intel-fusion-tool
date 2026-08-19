@@ -88,7 +88,9 @@ class ContactsRepository(
     suspend fun start() = coroutineScope {
         launch {
             localCharactersRepository.characters.debounce(500).collectLatest {
-                reloadEventFlow.emit(Unit)
+                if (it.isNotEmpty()) {
+                    reloadEventFlow.emit(Unit)
+                }
             }
         }
         launch {

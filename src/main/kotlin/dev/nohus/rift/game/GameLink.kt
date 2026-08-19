@@ -5,8 +5,12 @@ import dev.nohus.rift.repositories.TypesRepository
 
 object GameLink {
 
-    fun forType(type: TypesRepository.Type): String {
-        return "<url=showinfo:${type.id}>${type.name}</url>"
+    fun forType(type: TypesRepository.Type, singletonId: Long? = null): String {
+        return if (singletonId != null) {
+            "<url=showinfo:${type.id}//$singletonId>${type.name}</url>"
+        } else {
+            "<url=showinfo:${type.id}>${type.name}</url>"
+        }
     }
 
     fun forSystem(system: MapSolarSystem): String {
@@ -23,5 +27,9 @@ object GameLink {
 
     fun forFreelanceJob(id: String, name: String): String {
         return "<url=opportunity:freelance_projects:$id>$name</url>"
+    }
+
+    fun forMercenaryTacticalOperation(id: String, name: String): String {
+        return "<url=opportunity:mercenary_tactical_ops:$id>$name</url>"
     }
 }

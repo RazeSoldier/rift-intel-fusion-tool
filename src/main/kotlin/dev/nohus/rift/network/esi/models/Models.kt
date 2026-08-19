@@ -89,18 +89,6 @@ data class CharactersIdCharacter(
 )
 
 @Serializable
-data class CharactersAffiliation(
-    @SerialName("character_id")
-    val characterId: Int,
-    @SerialName("corporation_id")
-    val corporationId: Int,
-    @SerialName("alliance_id")
-    val allianceId: Int? = null,
-    @SerialName("faction_id")
-    val factionId: Int? = null,
-)
-
-@Serializable
 data class CorporationsIdCorporation(
     @SerialName("name")
     val name: String,

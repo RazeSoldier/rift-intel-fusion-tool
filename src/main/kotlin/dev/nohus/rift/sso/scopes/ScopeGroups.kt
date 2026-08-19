@@ -118,6 +118,19 @@ object ScopeGroups {
             EsiScope.Universe.ReadStructures,
         ),
     )
+    val readYourStructures = ScopeGroup(
+        name = "Read your structures",
+        reasons = listOf(
+            "Needed to show your structures on the map",
+            "Needed to show your structures in the Structures window",
+            "Needed to show your MTO activity in the Structures and Opportunities windows",
+        ),
+        scopes = listOf(
+            EsiScope.Structures.ReadCharacter,
+            EsiScope.Structures.ReadCorporation,
+            EsiScope.Activities.ReadCharacter,
+        ),
+    )
     val updateAutopilot = ScopeGroup(
         name = "Update autopilot",
         reasons = listOf(
@@ -199,6 +212,7 @@ object ScopeGroups {
         readCorporationWallet,
         readLoyaltyPoints,
         readStructures,
+        readYourStructures,
         updateAutopilot,
         openWindow,
         readAssets,

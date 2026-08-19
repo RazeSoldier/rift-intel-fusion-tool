@@ -41,7 +41,7 @@ private data class OpportunityState(
 fun OpportunityStateInfo(state: OpportunityState) {
     val state = when (state) {
         OpportunityState.Unspecified -> null
-        OpportunityState.Active -> null
+        OpportunityState.Available, OpportunityState.Active -> null
         OpportunityState.Closed -> OpportunityState(
             text = "Closed",
             color = EveColors.warningOrange,

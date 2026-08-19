@@ -127,7 +127,7 @@ val factoryModule = module {
             .addInterceptor(get<RequestIdInterceptor>())
             .addInterceptor(get<CacheStatisticsLocalInterceptor>())
             .addInterceptor(get<EsiCompatibilityInterceptor>())
-            .addNetworkInterceptor(get<EsiAuthorizationInterceptor>())
+            .addInterceptor(get<EsiAuthorizationInterceptor>())
             .addNetworkInterceptor(get<CacheStatisticsNetworkInterceptor>())
             .addNetworkInterceptor(get<EsiErrorLimitInterceptor>())
             .addNetworkInterceptor(get<EsiRateLimitInterceptor>())

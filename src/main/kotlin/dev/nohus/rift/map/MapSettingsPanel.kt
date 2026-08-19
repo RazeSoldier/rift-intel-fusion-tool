@@ -347,6 +347,7 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.IntelHostiles,
                                     MapSystemInfoType.FactionWarfare,
                                     MapSystemInfoType.RatsType,
+                                    MapSystemInfoType.RaidableSkyhooks,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeIndicatorName,
                                 selected = systemInfoTypes.indicators[settingsMapType].orEmpty(),
@@ -372,6 +373,7 @@ fun MapSettingsPanel(
                                     MapSystemInfoType.StarColor,
                                     MapSystemInfoType.NullSecurity,
                                     MapSystemInfoType.IntelHostiles,
+                                    MapSystemInfoType.RaidableSkyhooks,
                                 ),
                                 getInfoTypeNames = ::getMapStarInfoTypeInfoBoxName,
                                 selected = systemInfoTypes.infoBox[settingsMapType].orEmpty(),
@@ -792,7 +794,8 @@ private fun SystemColorPills(
         verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
     ) {
-        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation)
+        val colorEntries = MapSystemInfoType.entries - listOf(MapSystemInfoType.Planets, MapSystemInfoType.Region, MapSystemInfoType.Constellation,
+            MapSystemInfoType.RaidableSkyhooks)
         val pills = if (isCellColor) colorEntries + null else colorEntries
         pills.filter { isExpanded || selected == it }
             .forEach { type ->
@@ -866,6 +869,7 @@ private fun getMapStarInfoTypeColorName(color: MapSystemInfoType?): Pair<String,
         MapSystemInfoType.FactionWarfare -> getStringSync(Res.string.map_window_faction_warfare) to getStringSync(Res.string.map_window_faction_warfare_tooltip)
         MapSystemInfoType.Sovereignty -> getStringSync(Res.string.map_window_sovereignty) to getStringSync(Res.string.map_window_sovereignty_tooltip)
         MapSystemInfoType.SovereigntyUpgrades -> getStringSync(Res.string.map_window_sov_upgrades) to getStringSync(Res.string.map_window_sov_upgrades_tooltip)
+        MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Colored when\na Skyhook is or will shortly be raidable"
         MapSystemInfoType.MetaliminalStorms -> getStringSync(Res.string.map_window_metaliminal_storms) to getStringSync(Res.string.map_window_metaliminal_storms_tooltip)
         MapSystemInfoType.JumpRange -> getStringSync(Res.string.map_window_jump_range) to getStringSync(Res.string.map_window_jump_range_tooltip)
         MapSystemInfoType.Planets -> throw IllegalArgumentException("Not used for colors")
@@ -907,6 +911,7 @@ private fun getMapStarInfoTypeIndicatorName(color: MapSystemInfoType?): Pair<Str
         MapSystemInfoType.FactionWarfare -> "" to ""
         MapSystemInfoType.Sovereignty -> getStringSync(Res.string.map_window_indicator_sovereignty) to getStringSync(Res.string.map_window_indicator_sovereignty_tooltip)
         MapSystemInfoType.SovereigntyUpgrades -> getStringSync(Res.string.map_window_indicator_sov_upgrades) to getStringSync(Res.string.map_window_indicator_sov_upgrades_tooltip)
+        MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Indicators for raidable Skyhooks"
         MapSystemInfoType.MetaliminalStorms -> getStringSync(Res.string.map_window_indicator_metaliminal_storms) to getStringSync(Res.string.map_window_indicator_metaliminal_storms_tooltip)
         MapSystemInfoType.JumpRange -> getStringSync(Res.string.map_window_indicator_jump_range) to getStringSync(Res.string.map_window_indicator_jump_range_tooltip)
         MapSystemInfoType.Planets -> getStringSync(Res.string.map_window_indicator_planets) to getStringSync(Res.string.map_window_indicator_planets_tooltip)
@@ -948,6 +953,7 @@ private fun getMapStarInfoTypeInfoBoxName(color: MapSystemInfoType?): Pair<Strin
         MapSystemInfoType.FactionWarfare -> getStringSync(Res.string.map_window_info_box_faction_warfare) to getStringSync(Res.string.map_window_info_box_faction_warfare_tooltip)
         MapSystemInfoType.Sovereignty -> getStringSync(Res.string.map_window_info_box_sov) to getStringSync(Res.string.map_window_info_box_sov_tooltip)
         MapSystemInfoType.SovereigntyUpgrades -> getStringSync(Res.string.map_window_info_box_sov_upgrades) to getStringSync(Res.string.map_window_info_box_sov_upgrades_tooltip)
+        MapSystemInfoType.RaidableSkyhooks -> "Raidable Skyhooks" to "Raidable Skyhooks information and timers"
         MapSystemInfoType.MetaliminalStorms -> getStringSync(Res.string.map_window_info_box_metaliminal_storms) to getStringSync(Res.string.map_window_info_box_metaliminal_storms_tooltip)
         MapSystemInfoType.JumpRange -> getStringSync(Res.string.map_window_info_box_jump_range) to getStringSync(Res.string.map_window_info_box_jump_range_tooltip)
         MapSystemInfoType.Planets -> getStringSync(Res.string.map_window_info_box_planets) to getStringSync(Res.string.map_window_info_box_planets_tooltip)

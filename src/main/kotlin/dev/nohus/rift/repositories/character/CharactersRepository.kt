@@ -17,7 +17,6 @@ import org.jetbrains.exposed.sql.selectAll
 import org.koin.core.annotation.Single
 import java.time.Instant
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 import dev.nohus.rift.database.local.CharacterStatus as DbCharacterStatus
 
 private val logger = KotlinLogging.logger {}
