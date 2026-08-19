@@ -61,7 +61,6 @@ import dev.nohus.rift.compose.getNow
 import dev.nohus.rift.compose.getRelativeTime
 import dev.nohus.rift.compose.hoverBackground
 import dev.nohus.rift.compose.keepScrolledToBottomItem
-import dev.nohus.rift.compose.text.FormattedTextColor
 import dev.nohus.rift.compose.text.LinkedText
 import dev.nohus.rift.compose.text.buildFormattedText
 import dev.nohus.rift.compose.theme.Cursors
@@ -76,7 +75,6 @@ import dev.nohus.rift.generated.resources.default_character
 import dev.nohus.rift.generated.resources.map_marker_pilot_person
 import dev.nohus.rift.generated.resources.window_bleedchannel
 import dev.nohus.rift.standings.Standing
-import dev.nohus.rift.standings.getColor
 import dev.nohus.rift.utils.formatTime
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
@@ -210,7 +208,6 @@ private fun ChatWindowContent(
         if (state.selectedChannel != null) {
             key(state.selectedChannel) {
                 ChatChannel(
-                    channel = state.selectedChannel,
                     messages = state.messages,
                     displayTimezone = state.displayTimezone,
                     isShowingPortraits = state.isShowingPortraits,
@@ -236,7 +233,6 @@ private fun ChatWindowContent(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ChatChannel(
-    channel: Channel,
     messages: List<RichChatMessage>,
     displayTimezone: ZoneId,
     isShowingPortraits: Boolean,
@@ -260,7 +256,7 @@ private fun ChatChannel(
                 keepScrolledToBottomItem()
                 items(
                     items = messages.reversed(),
-                    key = { "${channel.name}-${channel.characterId}-${it.timestamp}-${it.author}-${it.message}" },
+                    key = { it.id },
                 ) { message ->
                     ChatMessageItem(
                         message = message,

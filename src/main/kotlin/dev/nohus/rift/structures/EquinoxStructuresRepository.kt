@@ -132,10 +132,10 @@ class EquinoxStructuresRepository(
             val cyclePeriod: Int,
             val securedStock: Int,
             val securedCapacity: Int,
-            val securedStockFullTimestamp: Instant,
+            val securedStockFullTimestamp: Instant?,
             val unsecuredStock: Int,
             val unsecuredCapacity: Int,
-            val unsecuredStockFullTimestamp: Instant,
+            val unsecuredStockFullTimestamp: Instant?,
         ) : SkyhookResource
     }
 
@@ -403,8 +403,8 @@ class EquinoxStructuresRepository(
     private data class ReagentSimulationResult(
         val securedStock: Int,
         val unsecuredStock: Int,
-        val securedStockFullTimestamp: Instant,
-        val unsecuredStockFullTimestamp: Instant,
+        val securedStockFullTimestamp: Instant?,
+        val unsecuredStockFullTimestamp: Instant?,
     )
 
     private fun simulateReagentExtraction(
@@ -470,10 +470,10 @@ class EquinoxStructuresRepository(
         } while (securedStock < planetResource.securedCapacity || unsecuredStock < planetResource.unsecuredCapacity)
 
         return ReagentSimulationResult(
-            securedStock = securedStockNow ?: throw IllegalStateException("Skyhook simulation failed"),
-            unsecuredStock = unsecuredStockNow ?: throw IllegalStateException("Skyhook simulation failed"),
-            securedStockFullTimestamp = securedStockFullTimestamp ?: throw IllegalStateException("Skyhook simulation failed"),
-            unsecuredStockFullTimestamp = unsecuredStockFullTimestamp ?: throw IllegalStateException("Skyhook simulation failed"),
+            securedStock = securedStockNow ?: securedStock,
+            unsecuredStock = unsecuredStockNow ?: unsecuredStock,
+            securedStockFullTimestamp = securedStockFullTimestamp,
+            unsecuredStockFullTimestamp = unsecuredStockFullTimestamp,
         )
     }
 

@@ -26,7 +26,11 @@ class OpenAlPlayer {
     }
 
     fun shutdown() {
-        ALut.alutExit()
+        try {
+            ALut.alutExit()
+        } catch (e: ALException) {
+            logger.error { "Could not shutdown OpenAL: ${e.message}" }
+        }
     }
 
     suspend fun play(

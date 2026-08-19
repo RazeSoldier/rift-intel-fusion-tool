@@ -44,7 +44,7 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.configurationpack.displayName
 import dev.nohus.rift.generated.resources.Res
 import dev.nohus.rift.generated.resources.partner_400
-import dev.nohus.rift.generated.resources.tray_tray_64
+import dev.nohus.rift.generated.resources.tray_tray_dark_128
 import dev.nohus.rift.generated.resources.window_agent
 import dev.nohus.rift.get
 import dev.nohus.rift.settings.persistence.ConfigurationPack
@@ -470,8 +470,9 @@ private fun FinishStep(
                 .padding(top = Spacing.large),
         ) {
             Image(
-                painter = painterResource(Res.drawable.tray_tray_64),
+                painter = painterResource(Res.drawable.tray_tray_dark_128),
                 contentDescription = null,
+                modifier = Modifier.size(64.dp),
             )
         }
     }

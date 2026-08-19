@@ -87,7 +87,6 @@ class SettingsViewModel(
         val isRememberWindowPlacement: Boolean,
         val isEditNotificationWindowOpen: Boolean = false,
         val notificationEditPlacement: Pos? = null,
-        val isUsingDarkTrayIcon: Boolean,
         val isShowIskCents: Boolean,
         val isSmartAlwaysAbove: Boolean,
         val soundsVolume: Int,
@@ -164,7 +163,6 @@ class SettingsViewModel(
             isRememberOpenWindows = settings.isRememberOpenWindows,
             isRememberWindowPlacement = settings.isRememberWindowPlacement,
             notificationEditPlacement = settings.notificationEditPosition,
-            isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
             isShowIskCents = settings.isShowIskCents,
             isSmartAlwaysAbove = settings.isSmartAlwaysAbove,
             soundsVolume = settings.soundsVolume,
@@ -210,7 +208,6 @@ class SettingsViewModel(
                         isRememberOpenWindows = settings.isRememberOpenWindows,
                         isRememberWindowPlacement = settings.isRememberWindowPlacement,
                         notificationEditPlacement = settings.notificationEditPosition,
-                        isUsingDarkTrayIcon = settings.isUsingDarkTrayIcon,
                         isShowIskCents = settings.isShowIskCents,
                         isSmartAlwaysAbove = settings.isSmartAlwaysAbove,
                         soundsVolume = settings.soundsVolume,
@@ -428,13 +425,6 @@ class SettingsViewModel(
             showRestartRequiredDialog("Disabling killmail monitoring will take effect after you restart the application.")
         }
         settings.isZkillboardMonitoringEnabled = enabled
-    }
-
-    fun onIsUsingDarkTrayIconChanged(enabled: Boolean) {
-        if (settings.isUsingDarkTrayIcon != enabled) {
-            showRestartRequiredDialog("New tray icon will take effect after you restart the application.")
-            settings.isUsingDarkTrayIcon = enabled
-        }
     }
 
     fun onIsShowIskCentsChanged(enabled: Boolean) {

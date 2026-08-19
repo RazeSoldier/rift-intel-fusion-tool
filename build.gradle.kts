@@ -100,19 +100,12 @@ dependencies {
     implementation(libs.smack.im)
     implementation(libs.smack.extensions)
 
-    // SystemTray
-    implementation(libs.dorkbox.collections)
-    implementation(libs.dorkbox.executor)
-    implementation(libs.dorkbox.desktop)
-    implementation(libs.dorkbox.jna)
-    implementation(files("libs/OS.jar"))
-    implementation(libs.dorkbox.updates)
-    implementation(libs.dorkbox.utilities)
-    implementation(libs.javassist)
+    // JNA
     implementation(libs.jna)
     implementation(libs.jna.platform)
-    implementation(libs.slf4j.api)
-    implementation(files("libs/SystemTray.jar"))
+
+    // System tray
+    implementation(libs.compose.native.tray)
 
     // Exposed
     implementation(libs.exposed.core)

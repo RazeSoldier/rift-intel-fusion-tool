@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPlacement.Maximized
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import com.kdroid.composetray.utils.getTrayWindowPosition
 import dev.nohus.rift.Event
 import dev.nohus.rift.about.AboutWindow
 import dev.nohus.rift.alerts.list.AlertsWindow
@@ -400,7 +401,7 @@ class WindowManager(
         }
         return savedPlacements.map { saved ->
             val sizing = getWindowOpenSizing(window, saved)
-            val position = getWindowOpenPosition(window, saved)
+            val position = getWindowOpenPosition(window, saved, sizing)
             val geometry = WindowGeometry(sizing, position)
             WindowInfo(
                 uuid = saved?.uuid ?: UUID.randomUUID(),
@@ -414,7 +415,7 @@ class WindowManager(
 
         @Suppress("DEPRECATION")
         val windowSizing = when (window) {
-            RiftWindow.Neocom -> WindowSizing(defaultSize = saved ?: (160 to 650), minimumSize = 143 to 106)
+            RiftWindow.Neocom -> WindowSizing(defaultSize = saved ?: (160 to 650), minimumSize = 150 to 106)
             RiftWindow.IntelReports -> WindowSizing(defaultSize = saved ?: (800 to 500), minimumSize = 400 to 200)
             RiftWindow.IntelReportsSettings -> WindowSizing(defaultSize = (400 to null), minimumSize = 400 to null)
             RiftWindow.IntelFeed -> WindowSizing(defaultSize = saved ?: (500 to 600), minimumSize = (500 to 250))
@@ -461,13 +462,16 @@ class WindowManager(
         )
     }
 
-    private fun getWindowOpenPosition(window: RiftWindow, savedPlacement: WindowSettings?): WindowPosition {
+    private fun getWindowOpenPosition(window: RiftWindow, savedPlacement: WindowSettings?, sizing: WindowSizing): WindowPosition {
         val position = when (window) {
             RiftWindow.Jukebox -> {
                 states.value[RiftWindow.JukeboxCollapsed]?.singleOrNull()?.windowState?.position
             }
             RiftWindow.JukeboxCollapsed -> {
                 states.value[RiftWindow.Jukebox]?.singleOrNull()?.windowState?.position
+            }
+            RiftWindow.Neocom -> {
+                getTrayWindowPosition(sizing.defaultSize.first ?: 0, sizing.defaultSize.second ?: 0)
             }
             else -> null
         }

@@ -125,10 +125,6 @@ class Settings(
         get() = model.isSettingsReadFailure
         set(value) = update { copy(isSettingsReadFailure = value) }
 
-    var isUsingDarkTrayIcon: Boolean
-        get() = model.isUsingDarkTrayIcon
-        set(value) = update { copy(isUsingDarkTrayIcon = value) }
-
     var intelReports: IntelReports
         get() = model.intelReports
         set(value) = update { copy(intelReports = value) }

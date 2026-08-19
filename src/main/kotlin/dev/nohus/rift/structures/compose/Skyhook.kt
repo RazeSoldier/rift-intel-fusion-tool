@@ -481,11 +481,13 @@ private fun StorageStock(
                 }
             }
 
-            val durationToFull = Duration.between(now, stockFullTimestamp)
-            TitledText(
-                title = "$title Full",
-                text = "in ${formatDurationCompact(durationToFull)}",
-            )
+            if (stockFullTimestamp != null) {
+                val durationToFull = Duration.between(now, stockFullTimestamp)
+                TitledText(
+                    title = "$title Full",
+                    text = "in ${formatDurationCompact(durationToFull)}",
+                )
+            }
         }
     }
 }

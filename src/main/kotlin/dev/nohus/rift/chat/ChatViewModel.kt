@@ -70,6 +70,7 @@ class ChatViewModel(
     )
 
     data class RichChatMessage(
+        val id: UUID,
         val timestamp: Instant,
         val author: Author,
         val authorText: FormattedText,
@@ -78,9 +79,14 @@ class ChatViewModel(
 
     sealed interface Author {
         data class Character(
+            val name: String,
             val characterId: Int?,
             val characterDetails: CharacterDetails?,
-        ) : Author
+        ) : Author {
+            override fun toString(): String {
+                return "$name-$characterId"
+            }
+        }
         data object EveSystem : Author
     }
 
@@ -242,8 +248,9 @@ class ChatViewModel(
      * since no more processing is required
      */
     private fun getRichChatMessageImmediate(message: ChatMessage): RichChatMessage {
-        val author = if (message.author == "EVE System") Author.EveSystem else Author.Character(null, null)
+        val author = if (message.author == "EVE System") Author.EveSystem else Author.Character(message.author, null, null)
         return RichChatMessage(
+            id = UUID.randomUUID(),
             timestamp = message.timestamp,
             author = author,
             authorText = message.author.toFormattedText(),
@@ -267,13 +274,13 @@ class ChatViewModel(
 
                     var stub = processedStub
                     if (authorCharacterId != null && characterDetails != null) {
-                        stub = stub.copy(author = Author.Character(authorCharacterId, characterDetails))
+                        stub = stub.copy(author = Author.Character(message.author, authorCharacterId, characterDetails))
                         _state.value.messages.indexOfLast { it == processedStub }.takeIf { it >= 0 }?.let { index ->
                             _state.update { it.copy(messages = it.messages.toMutableList().apply { set(index, stub) }) }
                         }
                     }
 
-                    val processed = processMessage(message, authorCharacterId, characterDetails)
+                    val processed = processMessage(message, processedStub, authorCharacterId, characterDetails)
                     _state.value.messages.indexOfLast { it == stub }.takeIf { it >= 0 }?.let { index ->
                         _state.update { it.copy(messages = it.messages.toMutableList().apply { set(index, processed) }) }
                     }
@@ -285,7 +292,12 @@ class ChatViewModel(
     private val processedMessagesCache = Cache.Builder<ChatMessage, RichChatMessage>()
         .maximumCacheSize(1_000)
         .build()
-    private suspend fun processMessage(message: ChatMessage, characterId: Int?, characterDetails: CharacterDetails?): RichChatMessage {
+    private suspend fun processMessage(
+        message: ChatMessage,
+        processedStub: RichChatMessage,
+        characterId: Int?,
+        characterDetails: CharacterDetails?
+    ): RichChatMessage {
         processedMessagesCache.get(message)?.let { return it }
 
         val authorFormattedText = buildFormattedText {
@@ -305,8 +317,9 @@ class ChatViewModel(
         }
         val formattedText = linkMessageUseCase(message.message)
         return RichChatMessage(
+            id = processedStub.id,
             timestamp = message.timestamp,
-            author = Author.Character(characterId, characterDetails),
+            author = Author.Character(message.author, characterId, characterDetails),
             authorText = authorFormattedText,
             message = formattedText,
         ).also { processedMessagesCache.put(message, it) }

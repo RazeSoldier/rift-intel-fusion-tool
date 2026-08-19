@@ -124,10 +124,13 @@ fun RiftTabBar(
                     // May need to start at a further along tab in order for the selected tab to always be visible
                     var firstTabIndex = 0
                     while (true) {
-                        val tabsWidthToFitSelectedTab = overflowPlaceableTabs.drop(firstTabIndex).take(selectedTab - firstTabIndex + 1).sumOf { it.width }
-                        if (tabsWidthToFitSelectedTab <= widthForTabs) break
-                        firstTabIndex++
-                        if (firstTabIndex >= tabs.lastIndex) break
+                        val n = selectedTab - firstTabIndex + 1
+                        if (n >= 0) {
+                            val tabsWidthToFitSelectedTab = overflowPlaceableTabs.drop(firstTabIndex).take(selectedTab - firstTabIndex + 1).sumOf { it.width }
+                            if (tabsWidthToFitSelectedTab <= widthForTabs) break
+                            firstTabIndex++
+                            if (firstTabIndex >= tabs.lastIndex) break
+                        } else break
                     }
 
                     var x = 0

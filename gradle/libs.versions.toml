@@ -30,15 +30,8 @@ gluegen = "2.5.0"
 jlayer = "1.0.1"
 opencv = "4.10.0-1.5.11"
 smack = "4.4.8"
-dorkbox-collections = "2.8"
-dorkbox-executor = "3.14"
-dorkbox-desktop = "1.1"
-dorkbox-jna = "1.4"
-dorkbox-updates = "1.1"
-dorkbox-utilities = "1.48"
-javassist = "3.30.2-GA"
 jna = "5.14.0"
-slf4j = "2.0.13"
+compose-native-tray = "1.3.0"
 exposed = "0.51.1"
 sqlite-jdbc = "3.45.3.0"
 retrofit = "3.0.0"
@@ -110,16 +103,9 @@ smack-tcp = { module = "org.igniterealtime.smack:smack-tcp", version.ref = "smac
 smack-im = { module = "org.igniterealtime.smack:smack-im", version.ref = "smack" }
 smack-extensions = { module = "org.igniterealtime.smack:smack-extensions", version.ref = "smack" }
 
-dorkbox-collections = { module = "com.dorkbox:Collections", version.ref = "dorkbox-collections" }
-dorkbox-executor = { module = "com.dorkbox:Executor", version.ref = "dorkbox-executor" }
-dorkbox-desktop = { module = "com.dorkbox:Desktop", version.ref = "dorkbox-desktop" }
-dorkbox-jna = { module = "com.dorkbox:JNA", version.ref = "dorkbox-jna" }
-dorkbox-updates = { module = "com.dorkbox:Updates", version.ref = "dorkbox-updates" }
-dorkbox-utilities = { module = "com.dorkbox:Utilities", version.ref = "dorkbox-utilities" }
-javassist = { module = "org.javassist:javassist", version.ref = "javassist" }
 jna = { module = "net.java.dev.jna:jna-jpms", version.ref = "jna" }
 jna-platform = { module = "net.java.dev.jna:jna-platform-jpms", version.ref = "jna" }
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+compose-native-tray = { module = "io.github.kdroidfilter:composenativetray", version.ref = "compose-native-tray" }
 
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }

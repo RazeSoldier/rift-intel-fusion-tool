@@ -48,7 +48,6 @@ data class SettingsModel(
     val jabberConferences: Set<String> = emptySet(),
     val isDemoMode: Boolean = false,
     val isSettingsReadFailure: Boolean = false,
-    val isUsingDarkTrayIcon: Boolean = false,
     val intelReports: IntelReports = IntelReports(),
     val intelFeed: IntelFeed = IntelFeed(),
     val soundsVolume: Int = 100,

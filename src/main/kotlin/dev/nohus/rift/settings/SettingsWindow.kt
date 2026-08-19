@@ -459,13 +459,6 @@ private fun UserInterfaceSection(
         modifier = Modifier.padding(bottom = Spacing.small),
     )
     RiftCheckboxWithLabel(
-        label = "Use dark tray icon",
-        tooltip = "Enable to use a dark tray icon,\nif you prefer it.",
-        isChecked = state.isUsingDarkTrayIcon,
-        onCheckedChange = viewModel::onIsUsingDarkTrayIconChanged,
-        modifier = Modifier.padding(bottom = Spacing.small),
-    )
-    RiftCheckboxWithLabel(
         label = "Show ISK cents",
         tooltip = "Enable to show decimal places in ISK amounts",
         isChecked = state.isShowIskCents,
