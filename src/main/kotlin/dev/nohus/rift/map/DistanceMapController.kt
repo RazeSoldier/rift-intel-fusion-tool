@@ -51,7 +51,7 @@ class DistanceMapController(
 
         val systemId = firstCharacterWithLocation?.let { character ->
             locations[character.characterId]?.solarSystemId
-        } ?: solarSystemsRepository.getSystemId("Central Point")!! // Fallback if no character location found
+        } ?: 30005283 // Fallback if no character location found
 
         return DistanceMapState(
             centerSystemId = systemId,
