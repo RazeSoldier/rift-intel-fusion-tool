@@ -881,6 +881,17 @@
         <item quantity="other">%1$d items</item>
     </plurals>
     <string name="assets_window_units_count">%1$d units</string>
+    <string name="assets_window_icon_rename_location">Rename location</string>
+    <string name="assets_window_icon_unpin">Unpin</string>
+    <string name="assets_window_icon_pin">Pin</string>
+    <string name="assets_window_icon_unhide">Unhide</string>
+    <string name="assets_window_icon_hide">Hide</string>
+    <!-- RenameLocationDialog.kt -->
+    <string name="assets_rename_location_dialog_title">Name location</string>
+    <string name="assets_rename_location_dialog_description_1">You can give this location a custom name below:</string>
+    <string name="assets_rename_location_dialog_description_2">ESI does not provide any info about this location, but you can give it a name below:</string>
+    <string name="assets_rename_location_dialog_rename">Rename</string>
+    <string name="assets_rename_location_dialog_custom_name">Custom name</string>
     <!-- AssetsViewModel.kt -->
     <string name="assets_view_model_asset_safety">Asset Safety</string>
     <string name="assets_view_model_unknown">Unknown</string>

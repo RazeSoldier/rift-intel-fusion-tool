@@ -866,6 +866,17 @@
         <item quantity="other">%1$d个物品</item>
     </plurals>
     <string name="assets_window_units_count">%1$d个单位</string>
+    <string name="assets_window_icon_rename_location">自定义位置</string>
+    <string name="assets_window_icon_unpin">取消置顶</string>
+    <string name="assets_window_icon_pin">置顶</string>
+    <string name="assets_window_icon_unhide">取消隐藏</string>
+    <string name="assets_window_icon_hide">隐藏</string>
+    <!-- RenameLocationDialog.kt -->
+    <string name="assets_rename_location_dialog_title">命名位置</string>
+    <string name="assets_rename_location_dialog_description_1">你可以在下方为该位置自定义名称：</string>
+    <string name="assets_rename_location_dialog_description_2">ESI不提供关于此位置的任何信息，但你可以在下方为其命名：</string>
+    <string name="assets_rename_location_dialog_rename">重命名</string>
+    <string name="assets_rename_location_dialog_custom_name">自定义名字</string>
     <!-- AssetsViewModel.kt -->
     <string name="assets_view_model_asset_safety">资产安全</string>
     <string name="assets_view_model_unknown">未知</string>

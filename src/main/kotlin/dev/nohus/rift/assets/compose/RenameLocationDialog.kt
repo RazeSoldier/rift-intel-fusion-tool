@@ -26,9 +26,10 @@ import dev.nohus.rift.compose.RiftTextField
 import dev.nohus.rift.compose.theme.RiftTheme
 import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_assets
+import dev.nohus.rift.generated.resources.*
 import dev.nohus.rift.utils.withColor
 import dev.nohus.rift.windowing.WindowManager
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WindowScope.RenameLocationDialog(
@@ -38,7 +39,7 @@ fun WindowScope.RenameLocationDialog(
     onConfirmClick: (name: String) -> Unit,
 ) {
     RiftDialog(
-        title = "Name location",
+        title = stringResource(Res.string.assets_rename_location_dialog_title),
         icon = Res.drawable.window_assets,
         parentState = parentWindowState,
         state = rememberWindowState(width = 400.dp, height = Dp.Unspecified),
@@ -70,9 +71,9 @@ private fun RenameLocationDialogContent(
 
         val description = buildAnnotatedString {
             if (location.isNameAuthoritative) {
-                append("You can give this location a custom name below:")
+                append(stringResource(Res.string.assets_rename_location_dialog_description_1))
             } else {
-                append("ESI does not provide any info about this location, but you can give it a name below:")
+                append(stringResource(Res.string.assets_rename_location_dialog_description_2))
             }
         }
         Text(
@@ -81,7 +82,7 @@ private fun RenameLocationDialogContent(
         )
         val initialText = location.customName ?: ""
         var text by remember { mutableStateOf(initialText) }
-        val placeholder = if (location.isNameAuthoritative) "Custom name" else location.name
+        val placeholder = if (location.isNameAuthoritative) stringResource(Res.string.assets_rename_location_dialog_custom_name) else location.name
         RiftTextField(
             text = text,
             placeholder = placeholder,
@@ -93,14 +94,14 @@ private fun RenameLocationDialogContent(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
             RiftButton(
-                text = "Cancel",
+                text = stringResource(Res.string.cancel),
                 cornerCut = ButtonCornerCut.BottomLeft,
                 type = ButtonType.Secondary,
                 onClick = onCancelClick,
                 modifier = Modifier.weight(1f),
             )
             RiftButton(
-                text = "Rename",
+                text = stringResource(Res.string.assets_rename_location_dialog_rename),
                 onClick = { onConfirmClick(text) },
                 modifier = Modifier.weight(1f),
             )

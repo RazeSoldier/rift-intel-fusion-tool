@@ -388,7 +388,7 @@ private fun LocationHeader(
                 ) {
                     if (pointerState.isHovered) {
                         RiftTooltipArea(
-                            text = "Rename location",
+                            text = stringResource(Res.string.assets_window_icon_rename_location),
                         ) {
                             RiftImageButton(
                                 resource = Res.drawable.editplanicon,
@@ -399,7 +399,7 @@ private fun LocationHeader(
                         when (pinStatus) {
                             LocationPinStatus.Pinned -> {
                                 RiftTooltipArea(
-                                    text = "Unpin",
+                                    text = stringResource(Res.string.assets_window_icon_unpin),
                                 ) {
                                     RiftImageButton(
                                         resource = Res.drawable.menu_unpin,
@@ -410,7 +410,7 @@ private fun LocationHeader(
                             }
                             LocationPinStatus.Hidden -> {
                                 RiftTooltipArea(
-                                    text = "Unhide",
+                                    text = stringResource(Res.string.assets_window_icon_unhide),
                                 ) {
                                     RiftImageButton(
                                         resource = Res.drawable.menu_hide,
@@ -421,7 +421,7 @@ private fun LocationHeader(
                             }
                             LocationPinStatus.None -> {
                                 RiftTooltipArea(
-                                    text = "Hide",
+                                    text = stringResource(Res.string.assets_window_icon_hide),
                                 ) {
                                     RiftImageButton(
                                         resource = Res.drawable.menu_unhide,
@@ -430,7 +430,7 @@ private fun LocationHeader(
                                     )
                                 }
                                 RiftTooltipArea(
-                                    text = "Pin",
+                                    text = stringResource(Res.string.assets_window_icon_pin),
                                 ) {
                                     RiftImageButton(
                                         resource = Res.drawable.menu_pinned,
