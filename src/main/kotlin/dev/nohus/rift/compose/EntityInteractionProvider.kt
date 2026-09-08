@@ -7,9 +7,8 @@ import dev.nohus.rift.contacts.ContactsRepository.EntityType
 import dev.nohus.rift.game.AutopilotController
 import dev.nohus.rift.game.GameUiController
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.map_marker_place_bookmark
-import dev.nohus.rift.generated.resources.menu_add
-import dev.nohus.rift.generated.resources.menu_set_destination
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.map.MapExternalControl
 import dev.nohus.rift.map.MapViewModel.MapType
 import dev.nohus.rift.map.markers.MapMarkersInputModel
@@ -44,7 +43,7 @@ class EntityInteractionProvider(
         val contextMenuItems = buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = getStringSync(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.openInfoWindow(characterId) },
                 ),
@@ -86,7 +85,7 @@ class EntityInteractionProvider(
         val contextMenuItems = buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = getStringSync(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.openInfoWindow(corporationId) },
                 ),
@@ -110,7 +109,7 @@ class EntityInteractionProvider(
         val contextMenuItems = buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = getStringSync(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.openInfoWindow(allianceId) },
                 ),
@@ -134,7 +133,7 @@ class EntityInteractionProvider(
         val contextMenuItems = buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = getStringSync(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.pushType(type, "ship") },
                 ),
@@ -156,7 +155,7 @@ class EntityInteractionProvider(
         val contextMenuItems = buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = getStringSync(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = { gameUiController.pushType(type, "type") },
                 ),
@@ -187,7 +186,7 @@ class EntityInteractionProvider(
         return buildList {
             add(
                 ContextMenuItem.TextItem(
-                    text = "Show Info",
+                    text = getStringSync(Res.string.clickable_entity_show_info),
                     iconContent = { RiftMulticolorIcon(MulticolorIconType.Info, it) },
                     onClick = {
                         if (locationId != null && locationTypeId != null) {
@@ -201,7 +200,7 @@ class EntityInteractionProvider(
             add(ContextMenuItem.DividerItem)
             add(
                 ContextMenuItem.TextItem(
-                    text = "Set Destination",
+                    text = getStringSync(Res.string.clickable_entity_set_destination),
                     iconResource = Res.drawable.menu_set_destination,
                     onClick = {
                         autopilotController.setDestination(locationId ?: systemId.toLong(), systemId)
@@ -210,7 +209,7 @@ class EntityInteractionProvider(
             )
             add(
                 ContextMenuItem.TextItem(
-                    text = "Add Waypoint",
+                    text = getStringSync(Res.string.clickable_entity_add_waypoint),
                     onClick = {
                         autopilotController.addWaypoint(locationId ?: systemId.toLong(), systemId)
                     },
@@ -218,7 +217,7 @@ class EntityInteractionProvider(
             )
             add(
                 ContextMenuItem.TextItem(
-                    text = "Clear Autopilot",
+                    text = getStringSync(Res.string.clickable_entity_clear_autopilot),
                     onClick = {
                         autopilotController.clearRoute()
                     },
@@ -226,7 +225,7 @@ class EntityInteractionProvider(
             )
             add(
                 ContextMenuItem.CheckboxItemWithInternalState(
-                    text = "All Characters",
+                    text = getStringSync(Res.string.clickable_entity_all_characters),
                     isSelected = {
                         settings.isSettingAutopilotToAll
                     },
@@ -238,7 +237,7 @@ class EntityInteractionProvider(
             add(ContextMenuItem.DividerItem)
             add(
                 ContextMenuItem.TextItem(
-                    text = "Copy Name",
+                    text = getStringSync(Res.string.clickable_entity_copy_name),
                     onClick = {
                         Clipboard.copy(system.name)
                     },
@@ -246,7 +245,7 @@ class EntityInteractionProvider(
             )
             add(
                 ContextMenuItem.TextItem(
-                    text = "Add Marker",
+                    text = getStringSync(Res.string.clickable_entity_add_marker),
                     iconResource = Res.drawable.map_marker_place_bookmark,
                     onClick = {
                         val inputModel = MapMarkersInputModel.AddToSystem(systemId)
@@ -258,7 +257,7 @@ class EntityInteractionProvider(
                 if (mapType == null) {
                     add(
                         ContextMenuItem.TextItem(
-                            text = "Show on Map",
+                            text = getStringSync(Res.string.clickable_entity_show_on_map),
                             onClick = {
                                 mapExternalControl.showSystemOnMap(systemId)
                             },
@@ -268,7 +267,7 @@ class EntityInteractionProvider(
                     if (mapType !is MapType.ClusterSystemsMap) {
                         add(
                             ContextMenuItem.TextItem(
-                                text = "Show in New Eden",
+                                text = getStringSync(Res.string.clickable_entity_show_in_new_eden),
                                 onClick = {
                                     mapExternalControl.showSystemOnNewEdenMap(systemId)
                                 },
@@ -278,7 +277,7 @@ class EntityInteractionProvider(
                     if (mapType !is MapType.RegionMap) {
                         add(
                             ContextMenuItem.TextItem(
-                                text = "Show in Region",
+                                text = getStringSync(Res.string.clickable_entity_show_in_region),
                                 onClick = {
                                     mapExternalControl.showSystemOnRegionMap(systemId)
                                 },
@@ -297,9 +296,9 @@ class EntityInteractionProvider(
             contactsExternalControl.editContact(id, type)
         }
         return if (contactsRepository.isCharacterContact(id)) {
-            ContextMenuItem.TextItem("Edit Contact", null, onClick = onEditContact)
+            ContextMenuItem.TextItem(getStringSync(Res.string.clickable_entity_edit_contact), null, onClick = onEditContact)
         } else {
-            ContextMenuItem.TextItem("Add Contact", Res.drawable.menu_add, onClick = onEditContact)
+            ContextMenuItem.TextItem(getStringSync(Res.string.clickable_entity_add_contact), Res.drawable.menu_add, onClick = onEditContact)
         }
     }
 }
