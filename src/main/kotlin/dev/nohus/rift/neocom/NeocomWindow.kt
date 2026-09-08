@@ -81,7 +81,7 @@ fun NeocomWindow(
             add(ButtonModel(icon = Res.drawable.window_opportunities, name = stringResource(Res.string.opportunities), "Opportunities") { viewModel.onButtonClick(RiftWindow.Opportunities) })
             add(ButtonModel(icon = Res.drawable.window_contacts, name = stringResource(Res.string.contacts)) { viewModel.onButtonClick(RiftWindow.Contacts) })
             if (BuildConfig.isDevEnvironment) {
-                add(ButtonModel(icon = Res.drawable.window_chatchannels, name = "Chat") { viewModel.onButtonClick(RiftWindow.Chat) })
+                add(ButtonModel(icon = Res.drawable.window_chatchannels, name = stringResource(Res.string.chat)) { viewModel.onButtonClick(RiftWindow.Chat) })
             }
             if (state.isJabberEnabled) {
                 add(ButtonModel(icon = Res.drawable.window_sovereignty, name = "Pings") { viewModel.onButtonClick(RiftWindow.Pings) })

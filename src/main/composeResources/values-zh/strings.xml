@@ -35,6 +35,7 @@
     <string name="planetary_industry">行星工业</string>
     <string name="opportunities">机遇</string>
     <string name="contacts">联系人</string>
+    <string name="chat">频道</string>
     <string name="settings">设置</string>
     <string name="about">关于</string>
     <string name="quit">退出</string>
@@ -1266,4 +1267,9 @@
     <string name="jabber_window_add_contact_group_placeholder">小组</string>
     <string name="jabber_window_add_chat_room">添加聊天室</string>
     <string name="jabber_window_add_chat_room_name">聊天室名称</string>
+    <!-- ChatWindow.kt -->
+    <string name="chat_window_no_open_channels">没有打开的频道</string>
+    <string name="chat_window_choose_channels_to_open">选择一个频道打开</string>
+    <string name="chat_window_open">打开</string>
+    <string name="chat_window_view">查看</string>
 </resources>

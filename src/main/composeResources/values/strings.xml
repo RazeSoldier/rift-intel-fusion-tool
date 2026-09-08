@@ -36,6 +36,7 @@
     <string name="planetary_industry">Planetary Industry</string>
     <string name="opportunities">Opportunities</string>
     <string name="contacts">Contacts</string>
+    <string name="chat">Chat</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="quit">Quit</string>
@@ -1298,4 +1299,9 @@
     <string name="jabber_window_add_contact_group_placeholder">Group</string>
     <string name="jabber_window_add_chat_room">Add chat room</string>
     <string name="jabber_window_add_chat_room_name">Room name</string>
+    <!-- ChatWindow.kt -->
+    <string name="chat_window_no_open_channels">No open channels</string>
+    <string name="chat_window_choose_channels_to_open">Choose channels to open</string>
+    <string name="chat_window_open">Open</string>
+    <string name="chat_window_view">View</string>
 </resources>

@@ -68,16 +68,14 @@ import dev.nohus.rift.compose.theme.Spacing
 import dev.nohus.rift.di.koin
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.buttoniconplus
-import dev.nohus.rift.generated.resources.chat_eve_system
-import dev.nohus.rift.generated.resources.default_character
-import dev.nohus.rift.generated.resources.map_marker_pilot_person
-import dev.nohus.rift.generated.resources.window_chatchannels
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.standings.Standing
 import dev.nohus.rift.utils.formatTime
 import dev.nohus.rift.viewModel
 import dev.nohus.rift.windowing.WindowManager.RiftWindowState
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import java.time.Instant
 import java.time.ZoneId
 
@@ -90,7 +88,7 @@ fun ChatWindow(
     val state by viewModel.state.collectAsState()
 
     RiftWindow(
-        title = "Chat",
+        title = stringResource(Res.string.chat),
         icon = Res.drawable.window_chatchannels,
         state = windowState,
         onCloseClick = onCloseRequest,
@@ -135,7 +133,7 @@ private fun ToolbarRow(
 
         val tabs = remember(channels, unreadChannels) {
             val emptyChannel = if (channels.isEmpty()) {
-                listOf(Tab(id = 0, title = "No open channels", isCloseable = false))
+                listOf(Tab(id = 0, title = getStringSync(Res.string.chat_window_no_open_channels), isCloseable = false))
             } else {
                 emptyList()
             }
@@ -399,7 +397,7 @@ private fun ChannelList(
             item(key = "header") {
                 Column {
                     Text(
-                        text = "Choose channels to open",
+                        text = stringResource(Res.string.chat_window_choose_channels_to_open),
                         style = RiftTheme.typography.bodyPrimary,
                         modifier = Modifier.padding(start = Spacing.medium, bottom = Spacing.large),
                     )
@@ -462,19 +460,19 @@ private fun ChannelList(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                         ) {
                             RiftButton(
-                                text = "Close",
+                                text = stringResource(Res.string.close),
                                 type = ButtonType.Secondary,
                                 cornerCut = ButtonCornerCut.BottomLeft,
                                 onClick = { onChannelCloseClick(channel) },
                             )
                             RiftButton(
-                                text = "View",
+                                text = stringResource(Res.string.chat_window_open),
                                 onClick = { onChannelClick(channel) },
                             )
                         }
                     } else {
                         RiftButton(
-                            text = "Open",
+                            text = stringResource(Res.string.chat_window_view),
                             onClick = { onChannelOpenClick(channel) },
                         )
                     }
