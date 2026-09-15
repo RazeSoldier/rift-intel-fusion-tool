@@ -1,43 +1,39 @@
 package cn.razesoldier.rift
 
-import dev.nohus.rift.database.static.SolarSystems
-import dev.nohus.rift.database.static.*
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import kotlin.collections.listOf
-
-val TABLES = listOf(
-    SolarSystems,
-    Regions,
-    Constellations,
-    MapLayouts,
-    MapLayout,
-    RegionMapLayout,
-    Ships,
-    Types,
-    TypeGroups,
-    TypeCategories,
-    StarGates,
-    Stations,
-    Planets,
-    PlanetaryIndustrySchematics,
-    PlanetaryIndustrySchematicsTypes,
-    Celestials,
-    TypeDogmas,
-    Backdrops,
-)
 
 fun main() {
     val dbEn = StaticDatabase.enDb
     val dbZh = StaticDatabase.zhDb
-    val results = CompareDatabase(dbEn, dbZh, TABLES).compare()
+    val compareDatabase = CompareDatabase(dbEn, dbZh)
+    // 先检查数据库之间的差异
+    println("Follow tables are missing:")
+    compareDatabase.compareTableDiff().forEach {
+        println(it.tableName)
+    }
+    // 然后检查表之间的差异
+    println("Follow tables is difference:")
+    val results = compareDatabase.compare()
     for (result in results) {
         if (result.diff != 0L) {
             println(result)
         }
     }
+}
+
+private fun getTableList(db: Database): List<Table> {
+    val tables = mutableListOf<Table>()
+    transaction(db) {
+        SchemaUtils.listTables().forEach { name ->
+            val table = Class.forName("dev.nohus.rift.database.static.${name}").kotlin.objectInstance as Table
+            tables.add(table)
+        }
+    }
+    return tables
 }
 
 /**
@@ -77,17 +73,22 @@ data class TableCompareResult(
 class CompareDatabase(
     private val databaseA: Database,
     private val databaseB: Database,
-    private val tables: List<Table>,
 ) {
     /**
      * 执行对比，返回每个表对的行数比较结果
      */
     fun compare(): List<TableCompareResult> {
-        return tables.map {
+        return getTableList(databaseB).map {
             val countA = getRowCount(databaseA, it)
             val countB = getRowCount(databaseB, it)
             TableCompareResult(it::class.simpleName!!, it::class.simpleName!!, countA, countB)
         }
+    }
+
+    fun compareTableDiff(): List<Table> {
+        val aTables = getTableList(databaseA)
+        val bTables = getTableList(databaseB)
+        return aTables.filter { it !in bTables }
     }
 
     private fun getRowCount(database: Database, table: Table): Long {
