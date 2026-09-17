@@ -1272,4 +1272,23 @@
     <string name="chat_window_choose_channels_to_open">选择一个频道打开</string>
     <string name="chat_window_open">打开</string>
     <string name="chat_window_view">查看</string>
+    <!-- AlertsActionController.kt -->
+    <string name="alerts_notification_title_hostile_reported">敌对已报告</string>
+    <string name="alerts_notification_title_hostile_labeled_reported">敌对标签%1$s已报告</string>
+    <string name="alerts_notification_message_system_current_system">当前星系</string>
+    <plurals name="alerts_notification_message_system_jumps">
+        <item quantity="other">%1$d跳外</item>
+    </plurals>
+    <string name="alerts_notification_message_character_current_system">在你当前星系</string>
+    <plurals name="alerts_notification_message_character_jumps">
+        <item quantity="other">%1$d跳外</item>
+    </plurals>
+    <!-- NotificationWindows.kt -->
+    <string name="notification_content_intel_system_current_system">当前星系</string>
+    <plurals name="notification_content_intel_jumps">
+        <item quantity="other">%1$d跳外</item>
+    </plurals>
+    <string name="notification_content_intel_character_reference_system">参考星系</string>
+    <string name="notification_content_intel_character_current_system">在你的当前星系</string>
+    <string name="notification_content_intel_character_your_character">你的角色</string>
 </resources>

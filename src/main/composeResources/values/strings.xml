@@ -1304,4 +1304,26 @@
     <string name="chat_window_choose_channels_to_open">Choose channels to open</string>
     <string name="chat_window_open">Open</string>
     <string name="chat_window_view">View</string>
+    <!-- AlertsActionController.kt -->
+    <string name="alerts_notification_title_hostile_reported">Hostile reported</string>
+    <string name="alerts_notification_title_hostile_labeled_reported">Hostile labeled %1$s reported</string>
+    <string name="alerts_notification_message_system_current_system">In system</string>
+    <plurals name="alerts_notification_message_system_jumps">
+        <item quantity="one">1 jump away from</item>
+        <item quantity="other">%1$d jumps away from</item>
+    </plurals>
+    <string name="alerts_notification_message_character_current_system">In your system</string>
+    <plurals name="alerts_notification_message_character_jumps">
+        <item quantity="one">1 jump away</item>
+        <item quantity="other">%1$d jumps away</item>
+    </plurals>
+    <!-- NotificationWindows.kt -->
+    <string name="notification_content_intel_system_current_system">In the system</string>
+    <plurals name="notification_content_intel_jumps">
+        <item quantity="one">1 jump away</item>
+        <item quantity="other">%1$d jumps away</item>
+    </plurals>
+    <string name="notification_content_intel_character_reference_system">Reference system</string>
+    <string name="notification_content_intel_character_current_system">In your system</string>
+    <string name="notification_content_intel_character_your_character">Your character</string>
 </resources>

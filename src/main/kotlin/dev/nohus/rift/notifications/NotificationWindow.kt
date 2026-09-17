@@ -62,8 +62,9 @@ import dev.nohus.rift.di.koin
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitParallax
 import dev.nohus.rift.dynamicportraits.DynamicCharacterPortraitStandings
 import dev.nohus.rift.generated.resources.Res
-import dev.nohus.rift.generated.resources.window_loudspeaker_icon
-import dev.nohus.rift.generated.resources.window_titlebar_close
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getPluralStringSync
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.notifications.NotificationsController.Notification
 import dev.nohus.rift.repositories.SolarSystemsRepository.MapSolarSystem
 import dev.nohus.rift.standings.Standing
@@ -316,12 +317,11 @@ fun NotificationContent(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             val systemSubtext = when (val distance = notification.locationMatch.distance) {
-                                0 -> "In the system"
-                                1 -> "1 jump away"
-                                else -> "$distance jumps away"
+                                0 -> getStringSync(Res.string.notification_content_intel_system_current_system)
+                                else -> getPluralStringSync(Res.plurals.notification_content_intel_jumps, distance, distance)
                             }
                             SolarSystem(notification.solarSystem, systemSubtext)
-                            SolarSystem(notification.locationMatch.system, "Reference system")
+                            SolarSystem(notification.locationMatch.system, getStringSync(Res.string.notification_content_intel_character_reference_system))
                         }
                     }
 
@@ -331,12 +331,11 @@ fun NotificationContent(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             val systemSubtext = when (val distance = notification.locationMatch.distance) {
-                                0 -> "In your system"
-                                1 -> "1 jump away"
-                                else -> "$distance jumps away"
+                                0 -> getStringSync(Res.string.notification_content_intel_character_current_system)
+                                else -> getPluralStringSync(Res.plurals.notification_content_intel_jumps, distance, distance)
                             }
                             SolarSystem(notification.solarSystem, systemSubtext)
-                            Character(notification.locationMatch.characterId, "Your character")
+                            Character(notification.locationMatch.characterId, getStringSync(Res.string.notification_content_intel_character_your_character))
                         }
                     }
                 }

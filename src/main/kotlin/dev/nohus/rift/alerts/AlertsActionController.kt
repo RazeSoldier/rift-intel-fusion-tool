@@ -6,6 +6,10 @@ import androidx.compose.ui.text.withAnnotation
 import dev.nohus.rift.alerts.AlertsTriggerController.AlertLocationMatch
 import dev.nohus.rift.contacts.ContactsRepository
 import dev.nohus.rift.gamelogs.GameLogAction
+import dev.nohus.rift.generated.resources.Res
+import dev.nohus.rift.generated.resources.*
+import dev.nohus.rift.i18n.getPluralStringSync
+import dev.nohus.rift.i18n.getStringSync
 import dev.nohus.rift.intel.state.SystemEntity
 import dev.nohus.rift.logs.parse.ChannelChatMessage
 import dev.nohus.rift.network.requests.Originator
@@ -265,13 +269,13 @@ class AlertsActionController(
                     }
                 }.flatten().map { it.name }.distinct()
                 val labelsText = matchedLabels.joinToString(", ")
-                "Hostile labeled \"$labelsText\" reported"
+                getStringSync(Res.string.alerts_notification_title_hostile_labeled_reported, labelsText)
             } else if (it.any { it.first is IntelReportType.SpecificCharacters }) {
                 "Specific hostile reported"
             } else if (it.any { it.first is IntelReportType.SpecificShipClasses }) {
                 "Specific ship class reported"
             } else if (it.any { it.first is IntelReportType.AnyCharacter }) {
-                "Hostile reported"
+                getStringSync(Res.string.alerts_notification_title_hostile_reported)
             } else if (it.any { it.first is IntelReportType.GateCamp }) {
                 "Gate camp reported"
             } else if (it.any { it.first is IntelReportType.AnyShip }) {
@@ -293,18 +297,16 @@ class AlertsActionController(
         val message = when (locationMatch) {
             is AlertLocationMatch.System -> {
                 val distanceText = when (val distance = locationMatch.distance) {
-                    0 -> "In system"
-                    1 -> "1 jump away from"
-                    else -> "$distance jumps away from"
+                    0 -> getStringSync(Res.string.alerts_notification_message_system_current_system)
+                    else -> getPluralStringSync(Res.plurals.alerts_notification_message_system_jumps, distance, distance)
                 }
                 "$distanceText ${locationMatch.system.name}"
             }
 
             is AlertLocationMatch.Character -> {
                 when (val distance = locationMatch.distance) {
-                    0 -> "In your system"
-                    1 -> "1 jump away"
-                    else -> "$distance jumps away"
+                    0 -> getStringSync(Res.string.alerts_notification_message_character_current_system)
+                    else -> getPluralStringSync(Res.plurals.alerts_notification_message_character_jumps, distance, distance)
                 }
             }
         }
